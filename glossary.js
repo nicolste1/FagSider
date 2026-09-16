@@ -19,6 +19,7 @@
 
   var LR = 'kap1/logistisk-regresjon.html';
   var BT = 'kap1/beslutningstraer.html';
+  var RG = 'kap1/regresjon.html';
 
   window.GLOSSARY = {
     /* ── 1.1 Data ── */
@@ -115,7 +116,7 @@
     },
     'bias': {
       term: 'Bias (b)',
-      def: '<p>Konstantleddet i den lineære modellen, <em>z</em> = <strong>w</strong>·<strong>x</strong> + <em>b</em>. Forskyver beslutningsgrensen uavhengig av feature-verdiene. Læres under trening sammen med vektene.</p>',
+      def: '<p>Konstantleddet i den lineære modellen, <em>z</em> = <strong>w</strong>·<strong>x</strong> + <em>b</em>. Forskyver beslutningsgrensen uavhengig av feature-verdiene. Læres under trening sammen med vektene. Kalles β<sub>0</sub> i regresjon. Ikke å forveksle med <em>bias til en læringsalgoritme</em> (avsnitt 1.4.5).</p>',
       more: LR + '#modell'
     },
     'logistisk-regresjon': {
@@ -419,13 +420,13 @@
     },
     'underfit': {
       term: 'Underfit (undertilpasning)',
-      def: '<p>Modellen er for enkel eller har fått for lite data til å fange mønstrene, og gjør det dårlig både på trenings- og testdata. Kan skje ved undersampling.</p>',
-      more: LR + '#ubalanserte-data'
+      def: '<p>Modellen er for enkel eller har fått for lite data til å fange mønstrene, og gjør det dårlig både på trenings- og testdata. Tegn: høyt tap på både trenings- og valideringsdata. Svarer til høy bias i bias–varians-dekomposisjonen. Kan også skje ved undersampling.</p>',
+      more: RG + '#validering'
     },
     'overfit': {
       term: 'Overfit (overtilpasning)',
-      def: '<p>Modellen lærer treningsdataene «utenat», inkludert støy og duplikater, og gjør det dårlig på nye data. Kan skje ved oversampling eller for komplekse modeller.</p>',
-      more: LR + '#ubalanserte-data'
+      def: '<p>Modellen har kapasitet til å tilpasse seg treningsdataene så godt (inkludert støy og duplikater) at det går utover generaliseringen. Tegn: treningstapet synker mens valideringstapet flater ut eller stiger. Svarer til høy varians. Kan skje ved for komplekse modeller, for dype trær eller oversampling.</p>',
+      more: RG + '#validering'
     },
     'vektet-tapsfunksjon': {
       term: 'Vektet tapsfunksjon',
@@ -502,6 +503,149 @@
       term: 'Palmer Penguins',
       def: '<p>Et populært datasett med målinger av pingviner (bl.a. flipper length og body mass). Brukes i forelesningen som eksempel på et beslutningstre som predikerer pingvinkjønn.</p>',
       more: BT + '#bygge'
+    },
+    /* ── 1.4 Regresjon ── */
+    'regresjon': {
+      term: 'Regresjon',
+      def: '<p>Veiledet læring der target er en <em>kontinuerlig</em> verdi i stedet for en klasse: skåren til en film, verdien til en bolig, sykefravær. Generelt estimering av én eller flere kontinuerlige verdier.</p>',
+      more: RG + '#data-tap'
+    },
+    'lineaer-regresjonsmodell': {
+      term: 'Lineær regresjonsmodell',
+      alias: 'β-notasjon',
+      def: '<p><em>f</em>(<em>x</em>) = β<sub>0</sub> + β<sub>1</sub>x<sub>1</sub> + … + β<sub>n</sub>x<sub>n</sub>: én parameter per feature pluss bias β<sub>0</sub>, altså <em>n</em> + 1 parametre. Samme form som <strong>w</strong>·<strong>x</strong> + <em>b</em> i logistisk regresjon, men uten sigmoid og med MSE som tapsfunksjon.</p>',
+      more: RG + '#data-tap'
+    },
+    'beta0': {
+      term: 'Bias-parameteren β<sub>0</sub>',
+      alias: 'konstantledd, intercept',
+      def: '<p>Der regresjonslinjen krysser <em>y</em>-aksen, funksjonsverdien i <em>x</em> = 0. Forflytter alle prediksjoner med en konstant: en «baseline» uten kjennskap til feature-verdiene. Har ingenting med bias til en læringsalgoritme å gjøre.</p>',
+      more: RG + '#data-tap'
+    },
+    'stigningstall': {
+      term: 'Stigningstall β<sub>1</sub>',
+      def: '<p>Hvor mye <em>f</em>(<em>x</em>) endrer seg per enhet <em>x</em><sub>1</sub>. For lav β<sub>1</sub> gir negativ ∂ℒ/∂β<sub>1</sub>, for høy gir positiv, så gradient descent retter den opp.</p>',
+      more: RG + '#data-tap'
+    },
+    'mse': {
+      term: 'Mean squared error (MSE)',
+      def: '<p>Den vanligste tapsfunksjonen for regresjon: gjennomsnittet av kvadrerte avvik mellom target og prediksjon, ofte med en faktor ½ som forsvinner under derivasjon. Har enheten til <em>y</em> i annen, så «høy» MSE må alltid tolkes relativt til skalaen på targets.</p>',
+      more: RG + '#data-tap'
+    },
+    'gaussisk-stoy': {
+      term: 'Gaussisk støy',
+      alias: 'normalfordelt støy',
+      def: '<p>Tilfeldige avvik trukket fra en normalfordeling med forventningsverdi μ (typisk 0) og standardavvik σ, lagt til den underliggende funksjonen når vi genererer eller observerer data.</p>',
+      more: RG + '#polynom'
+    },
+    'feature-engineering': {
+      term: 'Feature engineering',
+      def: '<p>Alle operasjoner vi utfører på datasettet før modellering: feature selection, feature preprocessing og feature extraction. Å lage <em>x</em><sup>2</sup> fra <em>x</em> for å tilpasse en parabel med lineær regresjon er et eksempel. Kan gjøres i alle tilfeller, ikke bare veiledet læring eller regresjon.</p>',
+      more: RG + '#polynom'
+    },
+    'feature-selection': {
+      term: 'Feature selection',
+      def: '<p>Utvelgelse av hvilke features som skal brukes, som da vi valgte å ikke ta med «Name» i Titanic-oppgaven.</p>',
+      more: RG + '#polynom'
+    },
+    'feature-preprocessing': {
+      term: 'Feature preprocessing',
+      def: '<p>Preprosessering av features, som da vi skalerte «Age» til intervallet (0, 1) for Titanic-dataene.</p>',
+      more: RG + '#polynom'
+    },
+    'feature-extraction': {
+      term: 'Feature extraction',
+      def: '<p>Utvinning av nye features fra eksisterende, som <em>x</em><sup>2</sup> fra <em>x</em>, eller kombinasjoner av flere features.</p>',
+      more: RG + '#polynom'
+    },
+    'polynomialfeatures': {
+      term: 'PolynomialFeatures',
+      def: '<p>sklearn-transformasjon som genererer polynomiske features opp til en angitt grad. Skal tilpasses (<code>.fit</code>) på treningsdataene alene og deretter anvendes på testdataene, slik at analysen er uavhengig av testsettet.</p>',
+      more: RG + '#polynom'
+    },
+    'polynomisk-regresjon': {
+      term: 'Polynomisk regresjon',
+      def: '<p>Lineær regresjon på genererte features <em>x</em>, <em>x</em><sup>2</sup>, …, <em>x</em><sup>M</sup>. Modellen er fortsatt lineær i parametrene β, det er features som er transformert. Graden <em>M</em> er en hyperparameter.</p>',
+      more: RG + '#polynom'
+    },
+    'modellkompleksitet': {
+      term: 'Modellkompleksitet',
+      def: '<p>Hvor fleksibel modellen er, f.eks. polynomgrad eller tredybde. For lav kompleksitet gir underfit (høy bias), for høy gir overfit (høy varians). Mer kompleks gir ikke nødvendigvis lavere tap på nye data.</p>',
+      more: RG + '#polynom'
+    },
+    'valideringsdata': {
+      term: 'Valideringsdata',
+      def: '<p>Den tredje delen av datasettet: brukes til å monitorere modellen under trening og justere hyperparametrene, slik at testdataene forblir urørt til den endelige rapporten. Lages ved å kjøre <code>train_test_split</code> to ganger.</p>',
+      more: RG + '#validering'
+    },
+    'sgd': {
+      term: 'Stochastic gradient descent (SGD)',
+      alias: 'SGDRegressor',
+      def: '<p>Gradient descent der hvert steg bruker ett datapunkt eller en liten gruppe i stedet for hele datasettet. <code>SGDRegressor</code> i sklearn har <code>partial_fit</code>, som lar oss trene én epoke om gangen og måle tap på valideringsdata underveis.</p>',
+      more: RG + '#validering'
+    },
+    'early-stopping': {
+      term: 'Early stopping',
+      def: '<p>Et kriterium som stanser treningen når tapet på valideringsdataene ikke har minket innenfor en toleranse i løpet av de siste <em>n</em> epokene. Da trenger vi ikke bestemme antall epoker på forhånd.</p>',
+      more: RG + '#validering'
+    },
+    'kryssvalidering': {
+      term: 'Kryssvalidering',
+      alias: 'cross validation',
+      def: '<p>Å gjenta trening og testing på flere ulike inndelinger av datasettet, og bruke gjennomsnittet av testresultatene som estimat. Håndterer variansen som følger av én tilfeldig splitt, og lar oss bruke alle data til trening til sammen.</p>',
+      more: RG + '#kryssvalidering'
+    },
+    'loocv': {
+      term: 'Leave-one-out cross validation (LOOCV)',
+      def: '<p>Kryssvalidering der ett datapunkt om gangen brukes til testing og de <em>n</em> − 1 andre til trening, gjentatt <em>n</em> ganger. Beste mulige estimat siden alle punkter brukes, men ressurskrevende: modellen tilpasses <em>n</em> ganger.</p>',
+      more: RG + '#kryssvalidering'
+    },
+    'k-fold': {
+      term: 'k-fold cross validation',
+      def: '<p>Datasettet deles i <em>k</em> deler; i hver av <em>k</em> iterasjoner er én del testdata og resten treningsdata. Modellen tilpasses <em>k</em> ganger, og de <em>k</em> testresultatene gir estimatet. Mer utbredt enn LOOCV fordi det er billigere.</p>',
+      more: RG + '#kryssvalidering'
+    },
+    'estimator': {
+      term: 'Estimator',
+      def: '<p>Læringsalgoritmen sett som en prosedyre som lager en modell fra et datasett. For logistisk og lineær regresjon (og nevrale nettverk) er gradient descent estimatoren. En estimator har både bias og varians over ulike trekninger av data.</p>',
+      more: RG + '#bias-varians'
+    },
+    'irredusibel-stoy': {
+      term: 'Irredusibelt støy (ε, σ²)',
+      def: '<p>Avviket mellom den sanne funksjonen <em>F</em>(<em>x</em>) og observert <em>y</em>: måleapparat, eksterne faktorer. Antas normalfordelt med forventning 0 og varians σ². Ingen modell kan fjerne det; det er gulvet for forventet tap.</p>',
+      more: RG + '#bias-varians'
+    },
+    'forventningsverdi': {
+      term: 'Forventningsverdi E[·]',
+      def: '<p>Gjennomsnittet av en tilfeldig variabel over dens fordeling. I bias–varians-analysen tas forventningen over ulike trekninger av treningsdatasettet 𝒟. Regneregler: E[c] = c, E[cX] = cE[X], E[X + Y] = E[X] + E[Y], og E[XY] = E[X]E[Y] for uavhengige X, Y.</p>',
+      more: RG + '#bias-varians'
+    },
+    'bias-estimator': {
+      term: 'Bias (til en læringsalgoritme)',
+      def: '<p>E<sub>𝒟</sub>[<em>f</em>(<em>x</em>; 𝒟)] − <em>F</em>(<em>x</em>): det systematiske avviket mellom modellene algoritmen lager over mange treningsdatasett og den sanne verdien. En tendens til å alltid bomme i samme retning. Høy bias tyder på at modellen ikke klarer å fange sammenhengene (underfit). Har ingenting med konstantleddet β<sub>0</sub> å gjøre.</p>',
+      more: RG + '#bias-varians'
+    },
+    'varians-estimator': {
+      term: 'Varians (til en læringsalgoritme)',
+      def: '<p>E<sub>𝒟</sub>[(E<sub>𝒟</sub>[<em>f</em>] − <em>f</em>(<em>x</em>; 𝒟))²]: hvor mye modellen varierer rundt sitt eget gjennomsnitt fra datasett til datasett. Høy varians betyr at algoritmen er for sensitiv til fluktuasjoner og støy i treningsdataene (overfit). Typisk for modeller med mange parametre.</p>',
+      more: RG + '#bias-varians'
+    },
+    'bias-variance-tradeoff': {
+      term: 'Bias–variance tradeoff',
+      alias: 'bias–variance-dilemma',
+      def: '<p>Forventet tap på et nytt datapunkt kan dekomponeres som Bias² + Varians + σ². Å redusere den ene komponenten øker typisk den andre: enkle modeller har høy bias og lav varians, komplekse modeller lav bias og høy varians. Målet er balansen som generaliserer best.</p>',
+      more: RG + '#bias-varians'
+    },
+    'regresjonstre': {
+      term: 'Regresjonstre',
+      alias: 'DecisionTreeRegressor',
+      def: '<p>Et beslutningstre brukt til regresjon: hver splitt deler datarommet i regioner, og løvnoden predikerer én verdi (gjennomsnittet av targets) per region. Godt egnet til trappeformede data. Uten begrensning på dybde overtilpasser det; dybden er hyperparameteren.</p>',
+      more: RG + '#regresjonstraer'
+    },
+    'tolkbarhet': {
+      term: 'Tolkbarhet',
+      def: '<p>At mennesker kan forstå hvordan modellen kommer fram til prediksjonen. Regresjonsmodeller: størrelsen på parametrene angir viktigheten av hver variabel. Trær: splittkriteriene er forståelige, og tidlige splitter er viktigere enn sene. Gjelder ikke nevrale nettverk.</p>',
+      more: RG + '#regresjonstraer'
     }
   };
 

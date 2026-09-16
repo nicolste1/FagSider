@@ -221,7 +221,7 @@
 
       <div class="callout callout-good">
         <span class="label">Hva plottene avslører</span>
-        <p>Bare ved å se på plottene får vi en idé om at passasjerer i Pclass=1, kvinnelige passasjerer og yngre passasjerer oftere overlever. Det passer godt med det vi vet fra filmen.</p>
+        <p>Bare ved å se på plottene får vi en idé om at passasjerer i Pclass=0 (første klasse, etter skalering av Pclass til [0, 1]), kvinnelige passasjerer og yngre passasjerer oftere overlever. Det passer godt med det vi vet fra filmen.</p>
       </div>
 
       <p>Når dataene er preprosessert og studert, er vi klare for <strong>modellering</strong>. For Titanic ønsker vi en <span class="term" data-term="modell">modell</span> \(f\) som estimerer sannsynligheten for å overleve gitt feature-verdiene, altså \(p(y \mid \mathbf{x})\). Modellen gir oss <span class="term" data-term="prediksjon">prediksjoner</span> \(f(\mathbf{x}) = y_{\text{pred}}\).</p>
@@ -400,8 +400,8 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-retning">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.2 · s. 7</span></div>
-        <div class="o-text"><p>Hvilken retning bør vi bevege oss i? I hvilket rom?</p></div>
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.2.2 · s. 7</span></div>
+        <div class="o-text"><p>Hvilken retning bør vi bevege oss i? I hvilket rom? Tenk over dette før du leser videre.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
@@ -915,8 +915,8 @@ plt.show()</code></pre>
       <p>La oss nå anta tre <em>kontinuerlige</em> features, i stedet for Titanic-tilfellet der Sex og Pclass er kategoriske, og at vi vil estimere simultanfordelingen til disse tre. Vi finner ikke et analytisk uttrykk, men prøver oss på et estimat. Vi lager en tabell, eller lettere: et histogram (en slags visualisering av en tabell). Si at 10 bins er stor nok oppløsning per akse (per feature), og at vi krever 10 datapunkter per bin.</p>
 
       <div class="oppgave" data-quiz id="oppg-tre-features">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.8 · s. 15</span></div>
-        <div class="o-text"><p>Hvor mange datapunkter trenger vi da for tre features? Hva er sammenhengen mellom antall features, antall bins og antall datapunkter?</p></div>
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.2.8 · s. 15</span></div>
+        <div class="o-text"><p>Hvor mange datapunkter trenger vi da for tre features? Hva er sammenhengen mellom antall features, antall bins og antall datapunkter? Tenk over dette før du leser videre.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
@@ -938,8 +938,8 @@ plt.show()</code></pre>
       <p class="dropcap">Vil vi estimere en \(d\)-dimensjonal fordeling, avhenger antallet datapunkter vi må samle inn av \(d\). For å få intuisjon, tenk igjen at vi estimerer fordelingen med et histogram med 10 bins per akse og er fornøyde med 10 datapunkter per bin.</p>
 
       <div class="oppgave" data-quiz id="oppg-skalering">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.9 · s. 15</span></div>
-        <div class="o-text"><p>Hvordan skalerer sammenhengen mellom dimensjoner (i vårt tilfelle antall features) og antall datapunkter vi trenger?</p></div>
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.2.9 · s. 15</span></div>
+        <div class="o-text"><p>Hvordan skalerer sammenhengen mellom dimensjoner (i vårt tilfelle antall features) og antall datapunkter vi trenger? Sjekk tabellen under når du tror du har svaret.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">

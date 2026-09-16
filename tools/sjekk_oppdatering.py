@@ -120,12 +120,15 @@ def lag_rapport(ny_pdf: Path) -> tuple[str, dict]:
     nye_nr = [n for n in nye_map if n not in gamle]
     fjernet_nr = [n for n in gamle if n not in nye_map]
     endret: list[tuple[str, float]] = []
+    smaa: list[tuple[str, float]] = []
     uendret: list[str] = []
     for n, s in nye_map.items():
         if n in gamle:
             r = likhet(gamle[n]["tekst"], s["tekst"])
             if r < 0.985:
                 endret.append((n, r))
+            elif r < 1.0:
+                smaa.append((n, r))
             else:
                 uendret.append(n)
 
@@ -151,6 +154,16 @@ def lag_rapport(ny_pdf: Path) -> tuple[str, dict]:
         s = nye_map[n]
         L(f"### {n} {s['tittel']} — {round(r * 100)} % likt → {dekning_for(n, dekning)}")
         for d in ordnivaa_diff(gamle[n]["tekst"], s["tekst"]):
+            L(d)
+        L("")
+
+    L("## Små endringer (over 98,5 % likt, men ikke identisk)")
+    if not smaa:
+        L("_Ingen._")
+    for n, r in sorted(smaa, key=lambda t: t[1]):
+        s = nye_map[n]
+        L(f"### {n} {s['tittel']} — {round(r * 1000) / 10} % likt → {dekning_for(n, dekning)}")
+        for d in ordnivaa_diff(gamle[n]["tekst"], s["tekst"], maks_linjer=6):
             L(d)
         L("")
 

@@ -22,6 +22,7 @@ begreper.html           begrepsliste, genereres i nettleseren fra glossary.js
 kap1/index.html         kapitteloversikt: helhetsbilde, læringssti, deler, begrepskart, ALLE oppgaver, quiz
 kap1/logistisk-regresjon.html   1A = notatene 1.1–1.2
 kap1/beslutningstraer.html      1B = notatene 1.3
+kap1/regresjon.html             1C = notatene 1.4
 style.css               felles stilark. Variabler: --accent (teal), --warm (rust), --green, --ochre, --red
 glossary.js             window.GLOSSARY = { nokkel: { term, def (HTML), more (rotrelativ url#anker), alias } } + popover
 quiz.js                 [data-quiz] → «Se svar»; .quiz.mcq flervalg
@@ -57,6 +58,7 @@ tools/sjekk_oppdatering.py   diff ny PDF mot kilder/notater.md, rapport, --ta-i-
 
 ## Sjekk før du er ferdig
 
+- Kjør `python tools/valider.py` (sjekker begrepsnøkler, ankre, HTML-balanse, KaTeX-avgrensere, dekning.json og oppgavelista).
 - Alle `data-term`-nøkler finnes i `glossary.js` (grep).
 - Alle `href="#…"` og `more`-ankre peker på eksisterende `id`.
 - Sidene rendrer uten JS-feil på `python -m http.server 8000`.

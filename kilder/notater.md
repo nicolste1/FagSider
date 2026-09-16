@@ -1,6 +1,6 @@
 # Forelesningsnotater TDT4172 — tekstuttrekk
 
-Kilde: `TDT4172_forelesningsnotater.pdf` · datert September 2, 2026 · 20 sider · sha256 `9cba97f4f909…`
+Kilde: `TDT4172_forelesningsnotater.pdf` · datert September 16, 2026 · 32 sider · sha256 `ebd3ea48734b…`
 
 > Generert av `tools/pdf_til_tekst.py`. Formler er uleselige her; filen brukes til å diffe versjoner.
 
@@ -130,7 +130,7 @@ almenngyldig regel for hvor store (hhv hvor mange) bins et histogram bør ha, si
 av dataenes underliggende fordeling. Hvis et histogram ser veldig hakkete ut har man ofte valgt for
 mange bins, som følgelig inneholder for få datapunkter, og hvis det er vanskeligå få øye på en form i
 fordelingen, har man ofte valgt for få bins, som følgelig inneholder for mange datapunkter. Kun ved
-å se på plottene i figur 1 får vi allerede en idé om at passasjerer i Pclass=1, kvinnelige passasjerer og
+å se på plottene i figur 1 får vi allerede en idé om at passasjerer i Pclass=0, kvinnelige passasjerer og
 yngre passasjerer ofte overlever. Dette passer godt med det vi vet fra filmen :).
 Når vi er ferdige medå preprosessere dataene og har studert dem gjennom plott, er vi klare for å
 begynne med modelleringen, altsåå bygge en modell. For Titanic-dataene ønsker viå lage en modell
@@ -252,8 +252,8 @@ og kan gå seg vill mellom fjelltopper uten å vite at det finnes en dypere dal 
 Tapsfunksjonenforlogistiskregresjonerkonveks,oghvilketbetyratdenkunharettoptimum. Figur3a
 viser et eksempel på en konveks funksjon, mens figur 3b viser en ikke-konveks funksjon, med flere
 minima. Så lenge tapsfunksjonen vår er konveks har vi en garanti om at gradient descent som finner
-et minimum har funnet et globalt minimum. Oppgave: Hvilken retning bør vi bevege oss i? I hvilket
-rom?
+et minimum har funnet et globalt minimum. Hvilken retning bør vi bevege oss i? I hvilket rom? Tenk
+over dette før du leser videre.
 Rommet vi beveger oss i er parameterrommet, altså rommet spent ut av θ-verdiene; hvis vi har fire
 parametre, er rommet fire-dimensjonalt. Vi bør bevege oss i den retningen der tapet minker. Det vi
 trenger er altså et mål på hvordan L endrer seg som funksjon av endring i θ. Vi trenger den deriverte
@@ -537,8 +537,8 @@ teorem. Når vi løser en klassifiseringsoppgave, somå beregne sannsynligheten 
 overleverTitanic-ulykken,ønskerviåestimerep(C |x),altsåsannsynlighetenforklassek(ivårttilfelle
 k
 kan k være 0 eller 1), betinget på en ekte observasjon x. Dette kan vi bruke uttrykket over til. For
-enklere notasjon dropper vi vektornotasjonen på x, dvs vi skriver x uten fet skrift, i dette delkapitlet.
-Vi skriver ut Bayes’ teorem forå få et uttrykk for sannsynligheten vi er ute etter:
+enklere notasjon dropper vi vektornotasjonen på x, dvs vi skriver x uten fet skrift heretter. Vi skriver
+ut Bayes’ teorem forå få et uttrykk for sannsynligheten vi er ute etter:
 p(x|C )p(C )
 p(C |x)= k k . (35)
 k p(x)
@@ -648,9 +648,8 @@ kategoriske, og at vi har lyst tilå estimere simultanfordelingen til disse tre.
 analytisk uttrykk for denne simultanfordelingen, men vi prøver oss altså på et estimat. Vi kan lage
 en tabell, men det er lettereå se for oss et histogram (som er en slags visualisering av en tabell). La
 oss si at vi tenker at 10 bins er stor nok oppløsning per akse (altså per feature), og at vi krever 10
-datapunkter per bin.
-Oppgave: Hvor mange datapunkter trenger vi da for tre features? Hva er sammenhengen mellom
-antall features, antall bins og antall datapunkter?
+datapunkter per bin. Hvor mange datapunkter trenger vi da for tre features? Hva er sammenhengen
+mellom antall features, antall bins og antall datapunkter? Tenk over dette før du leser videre.
 Du kommer nok frem til at dette er en simultanfordeling som beregningsmessig lar seg estimere, siden
 vi bare trenger 10,000 datapunkter.
 
@@ -659,20 +658,20 @@ vi bare trenger 10,000 datapunkter.
 
 Om vi ønsker å estimere en d-dimensjonal fordeling, er antallet datapunkter som må samles inn
 avhengig av d. For å få en intuisjon kan vi tenke oss at vi igjen estimerer fordelingen ved hjelp
-av et histogram med 10 bins og der vi er fornøyde med 10 datapunkter per bin.
-Oppgave: Hvordan skalerer sammenhengen mellom dimensioner (i vårt tilfelle antall features) og
-antall datapunkter vi trenger?
+av et histogram med 10 bins og der vi er fornøyde med 10 datapunkter per bin. Hvordan skalerer
+sammenhengen mellom dimensioner (i vårt tilfelle antall features) og antall datapunkter vi trenger?
+Sjekk tabellen under når du tror du har svaret.
 Tabell 5 viser antall nødvendige datapunkter for fire ulike verdier av d. Vedien d = 784 er tatt med
 fordidetteerdimensjonalitetentildetmyebruktedatasettetMNIST,sombeståravhåndskrevnesifre
 i sort-hvitt (gjerne sjekk det ut). Til sammenlikning er det ∼1082 atomer i universet.
+Oppgave: Finn ut hvor stor andel av en d-dimensjonal sfære (kule) som ligger i et tynt skall med
+tykkelse ϵ. Volumet til en 3-dimensjonal kule er 4πr3, og den D-dimensjonale generaliseringen er
 Table 5
 Dimensjoner d Bins Datapunkter
 1 10 102
 3 103 104
 10 1010 1011
 784 10784 10785
-Oppgave: Finn ut hvor stor andel av en d-dimensjonal sfære (kule) som ligger i et tynt skall med
-tykkelse ϵ. Volumet til en 3-dimensjonal kule er 4πr3, og den D-dimensjonale generaliseringen er
 K rD. Du trenger ikkeå tenke på prefaktoren siden du kun er ute etterå finne ut hvor stor andel
 D
 som ligger i et ϵ-skall. Hint: Velg en enhetskube (r =1) og lag et uttrykk for andel volum. Svaret blir
@@ -758,6 +757,8 @@ Beslutningstrær består av trestumper (tree stumps), se figur 9b. En trestump b
 og n løvnoder, for n mulige utfall. Vi holder oss til tilfellet n=2, altså at to mulige utfall etter hver
 splitt. Hver beslutningsnode splitter dataene på én feature, gjennom et såkalt splitt-kriterium. Det
 samme treningsdatasettet og labels kan gi opphav til mange ulike beslutningstrær.
+(a) (b)
+Figure 9: Skisser av (a) et beslutningstre, og (b) en stump.
 Somellersimaskinlæring,brukervitreningsdataforåbyggemodellen,idettetilfelletbeslutningstreet.
 Treningsdataene brukes forå finne ut hvilke trestumper (og tilhørende beslutningskriterier) som bør
 settes sammen for å lage treet. Når vi bygger beslutningstrær ønsker vi alltid å velge det splitt-
@@ -769,8 +770,6 @@ metrikker forå måle hvor mye et splitt-kriterium (feature og verdi) reduserer 
 • Entropi
 Den første av disse, log loss, kjenner vi fra før, se likning 10 for binær klassifisering og likning 32 for
 multiklasse.
-(a) (b)
-Figure 9: Skisser av (a) et beslutningstre, og (b) en stump.
 
 ## 1.3.2 Gini Impurity
 <!-- side 18 -->
@@ -809,7 +808,7 @@ Oppgave: Se på tabell 6. Hvilken splitt bør vi velge, og hvorfor? Svar: Vi bø
 featuren som gir lavest Gini-urenhet.
 
 ## 1.3.3 Entropi
-<!-- side 19 -->
+<!-- side 18 -->
 
 Gitt en sannsynlighetsfordeling over k klasser, er sannsynligheten for hver klasse p . Entropien til
 i
@@ -936,8 +935,535 @@ label_encoder = LabelEncoder()
 df["Sex"] = label_encoder.fit_transform(df["Sex"])
 X_data = df[["Flipper Length (mm)" , "Body Mass (g)"]].values
 y_data = df[’Sex’].values
-X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.3)
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data,
+test_size=0.3)
 clf = tree.DecisionTreeClassifier(max_depth=7, criterion="log_loss")
 clf.fit(X_train, y_train)
 Ogsåerdetbareåkoseseg. Foråvisualiserebeslutningsflatenslikvisåpåiforelesning,kandubruke
 from sklearn.inspection import DecisionBoundaryDisplay.
+
+## 1.4 Regresjon
+<!-- side 20 -->
+
+
+
+## 1.4.1 Data og tapsfunksjon
+<!-- side 20 -->
+
+Se på datasettet i tabell 7, og tilhørende figur 10a. Igjen representerer y targets (“riktig svar”), så vi
+holder oss i regimet til veiledet læring. Men da vi gjorde klassifisering hadde vi targets som fordelte
+seg i predefinerte kategorier (to kategorier i det binære tilfellet). Disse nye dataene våre tilhører
+ikkekategorier,menharkontinuerligeverdier. Viharaltsåikkelengermedenklassifiseringsoppgaveå
+gjøre. Prediksjontilkontinuerligeverdierkallesregresjon. Eksemplerpåregresjonsoppgaverinkluderer
+å predikere skåren til en film, estimere formuesverdien til en bolig, forutse sykefraværet til en ansatt,
+osv. Generelt: estimering av en (eller flere) kontinuerlig(e) verdi(er). Vi starter igjen med det
+(a) (b)
+Figure 10: (a) Datasett til lineær regresjon, og (b) en lineær regresjonsmodell med høy bias.
+enkleste tilfellet, og den enkleste regresjonsmodellen er en lineær modell. Likningen for en lineær
+regresjonsmodell er
+f(x)=β +β x +β x +...β x . (51)
+0 1 1 2 2 n n
+Modellen har en parameter β per feature x (kolonne i datasettet), og en parameter β kalt bias.
+i i 0
+Til sammen har vi (n +1) parametre for n features. Vi kan gjenbruke mesteparten av koden fra
+klassifiseringen forå trene denne modellen, altså tilpasse parametrene basert på dataene. Vi må igjen
+bruke gradient descent forå optimalisere parametrene.
+Oppgave: Hva kan vi ikke gjenbruke fra klassifiseringstilfellet?
+Vi trenger en tapsfunksjon som guider læringsalgoritmens justering av modellparametrene, altså et
+kvantitativt mål på hvor godt modellprediksjonen passer med target per datainstans. Men regresjons-
+modellenvårgjørikkeklassifisering,såvikanikkegjenbruketapsfuksjonenfratidligere. Denvanligste
+tapsfunksjonen for regresjon er mean squared error:
+N
+1 (cid:88)(cid:16) (cid:17)2
+MSE(x)= y(i)−f(x(i)) . (52)
+2N
+i=1
+Her er y(i) er target for datapunkt x(i), f er modellen, og summen (hhv gjennomsnittet) går over alle
+N instansene (radene) i datasettet. Faktoren 1 er kun for convenience, og det finnes definisjoner av
+MSE der den ikke er med. MSE er liten hvis modellens prediksjon f(x) er nærme den sanne verdien
+y, og stor hvis de to er ulike.
+Hvis vi har et datasett med én feature x , har den lineære regresjonsmodellen to parametre, og kan
+skrives som
+f(x)=β +β x . (53)
+0 1 1
+Dennelikningenerpåsammeformsomlikning2,menmedandreparameternavn,valgtkunforåskille
+dettetilfellettydeligfralogistiskregresjon. Bias-parameterenβ ilikning53angirhvorregresjonslinjen
+krysser y-aksen; det er funksjonsverdien i x = 0. Dette leddet forflytter alle modellens prediksjoner
+med en konstant verdi. Tenk på det som en “baseline”-funksjonsverdi uten kjennkap til noen verdier
+av featurene, som justeres til modellens prediksjon når featureverdiene tas i betraktning. Da kommer
+den andre parameteren, β , i spill. Denne angir stigningstallet til linja.
+Den deriverte av tapsfunksjonen med hensyn på de to parametrene er
+N
+∂L 1 (cid:88) ∂ (cid:16) (cid:17)2
+= y(i)−β x(i)−β (54)
+∂β 2N ∂β 1 0
+0 0
+i=1
+N
+1 (cid:88)(cid:16) (cid:17)
+= β x(i)+β −y(i) (55)
+N 1 0
+i=1
+N
+∂L 1 (cid:88) (cid:16) (cid:17)
+= x(i) β x(i)+β −y(i) . (56)
+∂β N 1 0
+i=1
+Her ser vi nytten av faktoren 1: den oppheves av potensen under derivasjonen. Vi kan kontrollere
+at de deriverte gir mening gjennom kontrollspørsmål. Oppgave: Modellen oppfører seg som vist i
+figur 10b, altså den overestimerer konsekvent for alle verdier av x . Har modellen for lav eller for høy
+verdi av β ? Er verdien til ∂L større eller mindre enn 0? Tenk over dette før du leser videre.
+0 ∂β0
+Svaret er at β er for stor. En modell med for høy bias har ∂L > 0, som vil si at tapet øker når β
+0 ∂β0 0
+øker. Oppgave: Hilken tilsvarende sjekk kan vi gjøre for β ?
+Fragradiententiltapsfunksjonenfårvifølgendeoppdateringsregeltilparametreneiregresjonsmodellen
+vår
+N N
+1 (cid:88) 1 (cid:88)
+β ←β −η (f(x(i))−y(i)) β ←β −η x(i)(f(x(i))−y(i)). (57)
+0 0 N 1 1 N
+i=1 i=1
+Mye av koden fra klassifiseringsoppgaven kan gjenbrukes forå tilpasse modellen i likning 53 til et gitt
+datasett.
+Table 7: Datasett for regresjon.
+Datapunkt x y
+1 -10.0 -6.359354964838024
+2 -9.5 -4.206219476164554
+3 -9.0 -11.127060105339346
+4 -8.5 -7.771131386305228
+5 -8.0 -8.124549343247278
+6 -7.5 -7.182177496316401
+7 -7.0 -6.037172478551233
+8 -6.5 -2.504149653937351
+9 -6.0 -5.026172414497464
+10 -5.5 -2.950079094157873
+11 -5.0 -1.4507431897248368
+12 -4.5 -5.336622551581822
+13 -4.0 -4.059330972662908
+14 -3.5 -4.327888761967305
+15 -3.0 -1.0623486580711823
+16 -2.5 -4.409261395640257
+17 -2.0 2.9475603563217945
+18 -1.5 -1.5395408141822513
+19 -1.0 2.4622402587375745
+20 -0.5 2.642472707669069
+21 0.0 2.31891903693072
+22 0.5 3.2425842723044016
+23 1.0 3.537834860795493
+24 1.5 0.3798562973180845
+25 2.0 4.140802310836296
+26 2.5 1.9614206593287309
+27 3.0 5.162903327838864
+28 3.5 3.5197438184133043
+29 4.0 6.243395322509395
+30 4.5 5.141524420933673
+31 5.0 5.370176682456397
+32 5.5 10.254373431713347
+33 6.0 5.43525345790149
+34 6.5 5.159899203707566
+35 7.0 8.114723631612268
+36 7.5 10.611562465835878
+37 8.0 4.08003418246534
+38 8.5 12.898017911956575
+39 9.0 10.838245427992971
+40 9.5 9.886185758809033
+
+## 1.4.2 Polynomisk regresjon og feature engineering
+<!-- side 24 -->
+
+Sepådatasettetvistifigur11a. Denoransjelinjenrepresentererdenunderliggendefordelingen, ogde
+blå punktene representerer datapunkter generert fra denne fordelingen, med tilfeldig støy trukket fra
+en gaussisk fordeling (med forventningsverdi µ=0 og standardavvik σ =0.5) lagt til.
+(a) (b)
+Figure11: (a)Datasett(blåpunkter)generertavenpolynomisklikningavgradto(oransjelinje)med
+gaussisk støy, og (b) en lineær regresjonsmodell tilpasset dette datasettet.
+Oppgave: Hvor godt vil lineær regresjon fungere for å lage en modell som predikerer y for nye
+datapunkterx? Hvorfor? Prøvåformuleresvaretvedhjelpavantakelsen somliggerilineærregresjon.
+Figur 11b viser en lineær modell tilpasset til disse dataene, og denne bekrefter det vi nok forventet:
+Lineær regresjon fungerer dårlig forå modellere en parabel.
+Oppgave: For akkurat min implementasjon fant jeg at modellens MSE ligger rundt 960. Er dette
+et høyt eller lavt tall? Kan vi si generelt hva som er en høy verdi for MSE? For mine data er
+gjennomsnittsverdien av targets ca 28.15, og gjennomsnittsverdien av prediksjonene ca 32.07. MSE
+står for mean squared error, og vi får den avå kvadrere avvik. 302 = 900, så det kvadrerte avviket
+tilsvarer ca størrelsen på targets og prediksjoner. Dette er et forholdsvis stort tap.
+Viharfleremuligheterforålageenbedremodell, ogidetaktuelletilfelletkjennervifunksjonsformen
+til fordelingen som genererte dataene. At vi kjenner funksjonen som ble brukt tilå generere dataene
+vil så godt som aldri være tilfelle, men bare vedå plotte dataene kunne vi se at de fordeler seg som et
+annengrads polynom. Basert på er den enkleste løsningenå lage en ny feature, hvor vi transformerer
+dataene våre polynomisk. Dette kalles feature engineering.
+Siden vi ser at dataene ligger på en parabel, bør vi velge transformasjonen x→x2. Vi kan gjøre dette
+for hånd, eller ved hjelp av sklearn sin innebygde PolynomialFeatures, som lar oss angi graden til
+polynomet vi ønsker å generere. Da lager og anvender vi transformasjonen på treningsdataene, og
+anvender den på testdataene. Det er viktig at vi ikke lager (.fit) transformasjonen på testdataene,
+siden hele analysen skal være uavhengig av testdataene, og disse kun skal brukes for endelig testing.
+Etter transformasjonen har vi generert en ny feature, og der vi før hadde én feature x, har vi nå to
+features {x ,x } = {x,x2}, og har dermed økt dimensjonaliteten til dataene fra én til to. Vi skal
+1 2
+derfor gjøre en ny lineær regresjon, denne gangen med to features, og modellen som skal tilpasses er
+y =β +β x +β x . (58)
+0 1 1 2 2
+Merk at vi fremdeles gjør lineær regresjon, men nå med en generert feature. Merk også at feature
+engineering kan gjøres i alle tilfeller; ikke kun for veiledet læring, og ikke kun for regresjon.
+Generelt er feature engineering alle operasjoner vi utfører på datasettet vi bruker til maskinlæring, og
+inkluderer:
+• Feature selection, altså utvelgelse av features, som da vi valgte å ikke ta med “Name” i
+klassifiseringsoppgaven på Titanic-dataene.
+• Feature preprocessing, altså preprosessering av features, som da vi skalerte “Age” til inter-
+vallet (0,1) for Titanic-dataene.
+• Feature extraction, altså utvinning av features, som da vi nettopp laget en feature x2 fra x.
+Det er også muligå kombinere flere eksisterende features til nye.
+Detfinnesmangemetoderogtriksforfeatureengineering,ogvikommermildtsagtikketilådekkealle
+i dette kurset. Dere kan ta i bruk metoder etter eget ønske og fantasi når dere løser øvingsoppgavene,
+gitt at dere forstår og kan forklare hva dere har gjort og hvorfor.
+For én variabel x kan vi skrive et polynom av grad M som
+f(x)=β +β x+β x2+···+β xM. (59)
+0 1 2 M
+og figur 12 viser data generert fra et polynom av ukjent grad.
+Figure 12: Datasett generert fra polynom av ukjent grad, med gaussisk støy
+Oppgave: Er det muligå se fra dataene i figuren hvilken grad vi bør generere features til?
+(a) (b) (c)
+Figure13: (a)Lineærregresjonogregresjonmedgenerertefeaturestilgrad(b)3og(c)15,tildatasettet
+representert av de blå punktene.
+Figurene 13a, 13b og 13c viser lineær regresjon til dataene i figur 12, med feature transformasjoner
+til ulike grader. Her ser vi at en mer kompleks modell (høyere grads polynom) ikke nødvendigvis gir
+lavere tap (MSE), men at både for lav og for høy kompleksitet i modellen er problematiske.
+Oppgave: Ergradenpåpolynometvitransformererfeaturestilenmodellparameter,enhyperparam-
+eter eller en feature?
+
+## 1.4.3 Trening, testing og validering
+<!-- side 25 -->
+
+Overtilpasningskjernårmodellenharkapasitettilåtilpassesegsågodttiltreningsdataeneatdetgår
+utover generaliseringsevnen på testdataene. Det er viktigå kunne detektere overtilpasning, slik at vi
+kan justere hyperparametrene underveis i treningen. Men husk: Testdataene skal ikke brukes til noen
+som helst justering. De skal kun brukes som en endelig test når modellen er ferdig. Om vi bruker
+testdataforåtilpassehyperparametre,harviikkeusettedataåtestedenendeligemodellenpålenger.
+Vi kan heller ikke bruke treningsdataene tilå detektere overtilpasning, siden treningsprosedyren har
+sommålatmodellenskaltilpassesbestmuligtilnettoppdisse. Sidenhverkentrenings-ellertestdataene
+kan brukes tilå tilpasse hyperparametrene, trenger vi ytterligere data til dette formålet. Standarden
+erå dele det opprinnelige datasettet i tre deler (i stedet for to, som vi har gjort hittil). De tre delene
+og deres bruksområder er:
+• Treningsdata brukes forå tilpasse modellparametrene, altså under trening.
+• Testdatabrukesikketilågjørenoensomhelsttilpasningavmodellen,parametre,hyperparame-
+tre eller treningsprosedyren: De tas i bruk forå rapportere ytelsen til den endelige modellen.
+• Valideringsdata brukes forå monitorere modellen under trening, og på bakgrunn av dette til
+å justere hyperparametrene.
+Metoden train test split fra sklearn.model selection kan brukes tilå splitte det opprinnelige
+datasettet i to, to ganger. Til sammen ender vi da opp med tre uavhengige datasett, hvorav de fleste
+datapunktene bør settes av til trening.
+Foråtaibrukvalideringsdataene,måtreningsprosedyrenviimplementertetidligere(davisåpåklassi-
+fisering), modifiseres. Denbørregneutrelevantemetrikkerpåvalideringsdataeneetgittantallganger
+i løpet av treningen, for eksempel etter hver tiende epoke (frekvensen er avhengig av kompleksiteten
+til oppgaven og hvor mye lagringsplass vi vil avse). Kode for en mulig treningsloop som gjør dette på
+lineær regresjon med stochastic gradient descent fra sklearn er vist under.
+model = sklearn.linear_model.SGDRegressor(learning_rate=’constant’, eta0=0.01)
+Train_losses, val_losses = [], []
+n_epochs = 100
+for epoch in range(n_epochs):
+model.partial_fit(X_train, y_train)
+# Monitor training loss
+y_train_pred = model.predict(X_train)
+train_loss = sklearn.metrics.mean_squared_error(y_train, y_train_pred)
+train_losses.append(train_loss)
+# Monitor validation loss
+y_val_pred = model.predict(X_val)
+val_loss = sklearn.metrics.mean_squared_error(y_val, y_val_pred)
+val_losses.append(val_loss)
+Denne koden vil gi oss to arrays vi kan plotte enten underveis eller i etterkant av treningen, for å
+studere hvordan tapet utvikler seg på henholdsvis trenings- og valideringsdataene.
+Studer figur 14a. Her tilpasses en modell av høy kompleksitet til et datasett, og siden tapet på
+valideringsdataene flater ut imens tapet på treningsdataene fortsetter å minke, kan vi konkludere
+med at modellen overtilpasser, sannsynligvis fordi den har for høy kompleksitet. Overtilpasningen
+gjør at modellen ikke klarer å generalisere på de usette datapunktene i valideringsdatasettet. Det
+motsatte ser vi i figur 14b. Her er tapet høyt på både trenings- og valideringsdataene, som tyder
+på at modellen har for lav kompleksitet forå tilpasse seg til variabiliteten i treningsdataene, men til
+gjengjeld generaliserer like godt til valideringsdataene gjennom hele treningsprosedyren. Se til slutt
+på figur 14c, hvor tapet minker jevnt på både trenings- og valideringsdataene, men flater ut likt for
+begge datasettene. Dette betyr at modellparametrene har oppnådd de mest optimale verdiene vi kan
+forvente i denne treningsprosedyren, men uten at disse er overtilpasset til treningsdataene.
+Forå oppsummere bør modellens ytelse monitoreres under treningen, gjerne i form av plott som viser
+ulike metrikker, inkludert tap, på trenings- og valideringsdataene.
+• Hvis tap på treningsdataene synker jevnt, mens loss på valideringsdataene er høyere og/eller
+flater ut, overtilpasser modellen.
+• Hvis begge kurvene flater ut med høy loss, undertilpasser modellen. Det betyr som oftest at den
+ikke har kapasitet eller riktig form tilå tilpasse seg til dataene. Det meståpenbare tegnet på
+(a) (b) (c)
+Figure 14: Trenings- og valideringstap for tre ulike modeller, se beskrivelse i teksten.
+undertilpasning er høy loss på treningsdataene.
+• Hvis begge kurvene synker jevnt og flater ut, betyr det at modellen klarerå modellere trenings-
+dataene, og samtidig klarerå generalisere til nye data.
+Disse metrikkene kan også brukes tilå justere hyperparametre underveis i treningen. For eksempel er
+det vanligå minke læringsraten i løpet av treningen. De kan også brukes tilå avgjøre når treningen
+bør stanse: det er ikke nødvendigå bestemme på forhånd hvor mange epoker modellen skal trene.
+I stedet kan man lage et early stopping criterion som stanser treningen for eksempel når tapet på
+valideringsdataene ikke har minket innenfor en toleranse i løpet av de siste n epokene.
+
+## 1.4.4 Kryssvalidering
+<!-- side 27 -->
+
+Oppgave: Hvordan velger vi hvilke datapunkter som havner i henholdsvis trenings-, test og valider-
+ingsdatasettet, og påvirker dette testresultatet?
+Inndelingavdatasettetitrenings-,test-ogvalideringsdata(skal)gjørestilfeldig,mendennesplittenkan
+påvirketestresultatet. Vimåaltsåforventenoevarianspåtestresultatet,avhengigavdatasplitt. Dette
+erenutfordringvimåhåndtere. Itilleggerdetutfordrendeatvifårfærredatapunkteråtrenepånår
+visetteravdeleravdataenetilvalideringogtesting. Genereltgjelderatviønskersåmyetreningsdata
+som mulig. En løsning på dette er kryssvalidering. Den enkleste former er såkalt Leave-one-out cross
+validation (LOOCV),hvorénobservasjonfjernes fradetopprinneligedatasettet, ogbrukestiltesting.
+Det opprinnelige datasettet består av n datapunkter, treningsdatasettet har størrelse n−1, og ett
+datapunkt brukes til testing. Valideringssettet lages vedå deretter hente ett eller flere datapunkter
+fra treningsdatasettet. Denne prosedyren gjentas nganger: Trening på n−1 datapunkter og testing
+på ett datapunkt. Vi står da igjen med n testresultater, hvorav hvert er beregnet på ett datapunkt.
+Gjennomsnittet av disse n testresultatene er LOOCV-estimatet av metrikken vi ønsker å beregne.
+Siden estimatet har brukt samtlige tilgjengelige datapunkter til sammen, er det det beste estimatet vi
+kan lage.
+LOOCV er en ressurskrevende prosedyre, da modellen må tilpsses like mange ganger som man har
+treningsdatapunkt. Enmerutbredtmetodeerderfork-fold cross validation,medk splitteristedetfor
+n. Man velger da en verdi for k, og splitter datasettet i k deler. Hvor hver iterasjon k spiller en annen
+del av datasettet rollen som testdata, mens resten brukes til trening, modellen tilpasses k ganger, og
+man oppnår k testresulater som brukes tilå beregne det endelige estimatet av testresultatet.
+Oppgave: Hva er fordeler og ulemper ved k-fold cross validation sammenliknet med LOOCV?
+
+## 1.4.5 Bias variance tradeoff
+<!-- side 27 -->
+
+Når vi velger en læringsalgoritme velger vi en estimator for prediksjonsproblemet vårt. For både
+logistisk og lineær regresjon har vi brukt (og for nevrale nettverk kommer vi til å bruke) gradient
+descent. Dette er vår algoritme forå optimalisere parametre basert på data, så det er vår estimator.
+Vi må forholde oss til at estimatoren vår har både bias og varians.
+Vi antar at target-verdiene vi observerer (for både klassifisering og regresjon) følger en eller annen
+funksjon som ingen unntatt universet kjenner til, la oss kalle denne F. Basert på observasjoner x
+gir denne funksjonen den sanne verdien av y, utover støy som er utenfor vår kontroll (for eksempel
+måleapparatet, eksterne faktorer, osv),
+y =F(x)+ε. (60)
+Dettesåkalteirredusible støyetblirviikkekvitt,menvikanantaatdeternormalfordelt,medforvent-
+ningsverdiµ=0ogstandardavvikσ =1. Nårvigjørmaskinlæringsamlerviinntreningsdatasettgjen-
+nomå trekke tilfeldige n observasjoner fra virkeligheten; D = {(x ,y ),(x ,y ),...(x ,y )}. Basert
+1 1 2 2 n n
+på denne trekningen trener vi en modell f(x;D). Det er akkurat disse modellene vi har holdt på med
+til nå (logistisk og lineær regresjon samt beslutningstrær) og kalt f. Disse har alltid vært basert på
+et datasett, vi har bare ikke skrevet det inn eksplisitt, siden vi har forholdt oss til gitte data. Men
+nå skal vi se hvordan estimatoren oppfører seg under ulike trekninger av dataene, og da er det veldig
+nyttigå ta med D eksplisitt inni f, slik at vi skjønner når vårt (tilfeldige) utvalg av data har noeå si.
+Når vi bruker en læringsalgoritme tilå minimere et tap, i bunn og grunn avviket
+(y−f(x;D))2, (61)
+ønsker viå ende opp med en modell f som også har lavt tap på nye datapunkter, altså datapunkter
+som ikke finnes i D. Det betyr at vi bryr oss om forventningsverdien over mange ulike trekninger av
+treningsdatasetet,
+(cid:104) (cid:105)
+E (y−f(x;D))2 . (62)
+D
+Det viser seg at uansett hvilken funksjon f vi velger, kan vi dekomponere uttrykket over – altså feilen
+vi forventer at den gjør på et nytt datapunkt x – som følger,
+(cid:104) (cid:105)
+E (y−f(x;D))2 =(Bias [f(x;D])2+Var [f(x;D)]+σ2. (63)
+D D D
+Dette er opphavet til bias-variance tradeoff, som forteller oss at tapet en læringsalgoritme ikke klarer
+å minimere vekkstammerfra tre ulike typerfeil, nemlig bias, variansog irredusibeltstøy. La oss først
+se på bias og varians hver for seg, og så se hvordan vi kan utlede denne dekomposisjonen.
+Bias til en læringsalgoritme har ingenting med det konstante leddet i lineære modeller å gjøre, og
+heter det samme kun forå forvirre studenter. Biasen som representerer det systematiske avviket til
+estimatoren beregnes over ulike trekninger av treningsdata,
+Bias [f(x;D)]=E [f(x;D)−F(x)] (64)
+D D
+=E [f(x;D)]−F(x). (65)
+D
+Dette er altså det forventede avviket mellom modellen tilpasset på et gitt datasett og den faktiske
+target-verdien, begge evaluert på datapunktet x. Enkelt sagt: hvor mye vi må forvente at modellen
+bommer på nye data. Vi kan tenke på dette som feilen som følger av de innebyggede forenklingene i
+modellen.
+Oppgave: Hvakommerdenandrelikhetenav,altsåhvorforkanviflytteF(x)utenforforventningsver-
+dien? TENK OVER DETTE FØR DU LESER VIDERE. Fordi den sanne sammenhengen, se likning
+60, ikke er avhengig av datasettet D, som vi tar forventningsverdien over. F(x) er en konstant når x
+er gitt.
+Oppgave: For intuisjon kan vi tenke oss en litt rar situasjon: Vi finner ut at den faktiske gjennom-
+snittshøyden til norske kvinner er 167 cm. Vi måler egenskapene og høyden til mange ulike tilfeldige
+utvalg av norske kvinner, som gir oss flere treningsdatasett. For hvert datasett trener vi en modell (vi
+trener altså flere regresjonsmodeller ved bruk av gradient descent) som estimerer kvinnehøyde basert
+på de andre egenskapene. Vi finner ut at modellene i gjennomsnitt predikerer at kvinner er 165 cm
+høye. Hvor stor bias har læringsalgoritmen?
+En læringsalgoritme med liten bias (i absoluttverdi) har typisk tilstrekkelig kompleksitet forå tilpasse
+seg til treningsdataene. Høy bias tyder typisk på at læringsalgoritmen ikke klarerå modellere alle
+sammenhengene i dataene. Veldig enkelt kan vi tenke på bias som en tendens tilå alltid bomme i
+samme retning.
+Variansen til en læringsalgoritme over ulike trekninger av data er
+(cid:104) (cid:105)
+Var [f(x;D)]=E (E [f(x;D)]−f(x;D))2 (66)
+D D D
+altså hvor mye vi kan forvente at modellen varierer rundt sitt eget gjennomsnitt. En læringsalgoritme
+medhøyvariansertypiskforsensitivtilsmåfluktuasjoneritreningsdataene,ogharkanskjemodellert
+tilfeldig støy vel så mye som faktiske sammenhenger. Mer komplekse modeller, altså modeller med
+mange parametre, har en tendens tilå ende opp med ulike parameterverdier for hver trening, altså for
+hvert treningsdatasett. Slike modeller har stor varians i de estimerte parameterverdiene.
+Nå som vi kjenner uttrykkene for bias og varians kan vi utlede sammenhengen over, gjennomå bruke
+følgende nyttige relasjoner
+E[ε]=0 (67)
+E[c]=c (68)
+E[cX]=cE[X] (69)
+E[X+Y]=E[X]+E[Y] (70)
+E[XY]= ! E[X]E[Y] for statistisk uavhengige X og Y. (71)
+tilå skrive om MSE-tapsfunksjonen. Her er X og Y hvilke som helst tilfeldige variabler, men greier
+som har en sannsynlighetsfordeling vi kan gjøre trekninger fra.
+Vidropperherkonstanten 1 ogindeksen påforventningsverdienforenenklerenotasjoniutledningen,
+2 D
+og skriver
+(cid:20)(cid:16) (cid:17)2 (cid:21)
+MSE=E y−f(x;D) (72)
+(cid:20)(cid:16) (cid:17)2 (cid:21)
+=E F(x)+ε−f(x;D) (73)
+=E (cid:20)(cid:16) F(x)−f(x;D) (cid:17)2 (cid:21) +2E (cid:104)(cid:16) F(x)−f(x;D) (cid:17) ε (cid:105) +E(cid:2) ε2(cid:3) (74)
+=E (cid:20)(cid:16) F(x)−E[f(x;D)]+E[f(x;D)]−f(x;D) (cid:17)2 (cid:21) +0+E(cid:2) ε2(cid:3) (75)
+(cid:20)(cid:16) (cid:17)2 (cid:21) (cid:20)(cid:16) (cid:17)2 (cid:21)
+=E F(x)−E[f(x;D)] +E E[f(x;D)]−f(x;D) (76)
++2E (cid:104)(cid:16) F(x)−E[f(x;D)] (cid:17)(cid:16) E[f(x;D)]−f(x;D) (cid:17)(cid:105) +E(cid:2) ε2(cid:3) (77)
+Vi tar for oss hvert ledd for seg. Det første leddet er
+(cid:20)(cid:16) (cid:17)2 (cid:21) (cid:104) (cid:105)
+E F(x)−E[f(x;D)] =E F(x)2−2(F(x)E[f(x;D)]+E[f(x;D)]2 (78)
+=F(x)2−2F(x)E[f(x;D)]+E[f(x;D)]2 (79)
+(cid:16) (cid:17)2
+= F(x)−E[f(x;D)] (80)
+=Bias [f(x;D)]2 , (81)
+D
+og andre ledd kan vi sammenlikne med likning 66 forå identifisere
+(cid:20)(cid:16) (cid:17)2 (cid:21)
+E E[f(x;D)]−f(x;D) =Var[f(x;D)]. (82)
+Tredje ledd blir
+(cid:104)(cid:16) (cid:17)(cid:16) (cid:17)(cid:105)
+2E F(x)−E[f(x;D)] E[f(x;D)]−f(x;D) (83)
+(cid:104) (cid:105)
+=2E F(x)E[f(x;D)]−F(x)f(x;D)−E[f(x;D)]2+E[f(x;D)]f(x;D) (84)
+(cid:16) (cid:17)
+=2 F(x)E[f(x;D)]−F(x)E[f(x;D)]−E[f(x;D)]2+E[f(x;D)]2 (85)
+=0. (86)
+Til slutt, se på likning 66 og overbevis deg om at
+E[ε2]=Var[ε]=σ2. (87)
+Vi samler leddene og ser at vi kan skrive tapet på et datapunkt x som
+MSE(x)=Bias [f(x;D)]2+Var[f(x;D)]+σ2. (88)
+D
+Denne relasjonen forteller oss at tapet assosiert med en læringsalgoritme består av en komponent som
+skyldesbias,altsåfeilantakelsermodellenegjørgenerelt,ensomskyldesvarians,altsåspesialtilpasning
+modellene gjør til fluktuasjoner i datasettet, og en som representerer irredusibel feil grunnet støy,
+altså en tapskomponent som er utenfor vår kontroll. Vi skjønner atå minimere det forventede tapet
+representerer en konflikt mellom to ulike kilder som representerer motsatt type feil. Derfor omtales
+dette som bias-variance-tradeoff; når den ene minker, øker den andre. Siden
+• høyvariansofteindikereratlæringsalgoritmenerioverkantsensitivtilvariasjoneridata,hvilket
+tyder på overtiplasning (overfit),
+• lav varians ofte indikerer at læringsalgoritmen gir modeller som predikerer for nært gjennom-
+snittsprediksjonen, og ikke gjør tilstrekkelig nytte av informasjonen i features, hvilket tyder på
+undertilpasning (underfit),
+kan vi også tenke på det som et bias-variance-dilemma: Husk at vi alltid ønsker at en modell tilpasset
+på treningsdata skal generalisere godt til testdata. Høy bias representerer en feil generalisering på
+treningsdataene, som overskygger mer subtile, men faktisk relevante relasjoner mellom features og
+targets. Høyvariansrepresentereratmodellenharforhøysensitivitettilvariasjoneritreningsdataene
+(inkludert støy), altså har overmodellert sammenhenger i stedet forå generalisere.
+
+## 1.4.6 Regresjonstrær
+<!-- side 30 -->
+
+Se på dataene i figur 15a. Her har vi én feature x og et target y med en tydelig fordeling, men som
+vi likevel ikke kjenner funksjonsformen til (eller, kanskje du kjenner funksjonsformen, men lat som du
+ikke gjør det).
+3.0
+2.5
+2.0
+1.5
+1.0
+0.5
+0.0
+0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0
+x1
+(a)
+y
+Predictions
+Labels
+(b)
+Figure 15: (a) Stegvise data, se beskrivelse i teksten, og (b) prediksjoner fra et 5. gradspolynom trent
+på disse dataene.
+Oppgave: Prøv gjerneå generere disse dataene selv ved bruk av def f(x): return np.floor(x),
+og se om du klarerå tilpasse et polynom av valgfri grad til dataene.
+Vi innser raskt at y ikke følger et polynom, og at polynomisk regresjon ikke er en god vei til mål. I
+stedet kan vi innse vedå studere dataene at de befinner seg i flere regioner. Vi husker kanskje også at
+beslutningstrærergodtegnettilåsplittedatatilulikeregioner,gjennomulikesplittkriterier. Tidligere
+harvibruktbeslutningstrærtilklassifisering,hvordatasplittesgjennomtreetsnodertilløvnodersom
+predikerer klassen til hver datainstans. Den samme modellstrukturen kan brukes i regresjon, siden
+hver splitt i treet deler opp datarommet. Beslutningstrær kan brukes til regresjon ved at de splitter
+datarommet til flere områder, og predikerer én verdi per område.
+Oppgave: Omduskulletilpasseetbeslutningstretildissedataene,hvordypttrorduatdetminimum
+bør være? Hvor dypt tror du at det optimale treet vil være (med optimalt menes lavest MSE)?
+Koden under kan brukes tilå lage et vilkårlig dypt tre, tilpasse det på en del av dataene og teste det
+på de resterende dataene, og plotte resultatet. Finn ut hvilken dybde som er optimal for dataene du
+genererer.
+def error(mu=0.0, sigma=1.0):
+return np.random.normal(loc=mu, scale=sigma)
+def f_true(x):
+return np.floor(x)
+X_data = np.linspace(xmin, xmax, 100)
+y_true = [f_true(_x) for _x in X_data]
+y_data = [_y + error(0,0.1) for _y in y_true]
+X_data = X_data.reshape(-1, 1)
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data)
+regressor = tree.DecisionTreeRegressor().fit(X_train, y_train)
+y_pred = regressor.predict(X_test)
+print("Tree depth:", regressor.get_depth())
+print("Number of leaves:", regressor.get_n_leaves())
+print("Model MSE:", sklearn.metrics.mean_squared_error(y_test, y_pred))
+plt.scatter(X_test, y_pred, label="Predictions")
+plt.scatter(X_test, y_test, label="Labels")
+plt.xlabel(r"$x_1$")
+plt.ylabel(r"$y$")
+plt.legend()
+plt.show()
+tree.plot_tree(regressor)
+plt.show()
+t = regressor.tree_
+thresholds = t.threshold[t.feature >= 0]
+grid = np.linspace(-3, 3, 500).reshape(-1, 1)
+plt.scatter(X_train.ravel(), np.ravel(y_train), s=15, label="train")
+plt.step(grid.ravel(), regressor.predict(grid), where="post",
+color="green", label="tree")
+plt.plot(grid.ravel(), f_true(grid).ravel(), "k--", label="true")
+for thr, d in zip(thresholds, t.compute_node_depths()[t.feature >= 0]):
+plt.axvline(thr, color="gray", ls=":", lw=3/d, alpha=0.7)
+plt.legend()
+plt.show()
+I forelesningen ser vi at sklearn gjerne prøverå lage et tre med dybde 12 og dermed 85 noder til
+4 train
+tree
+true
+x[0] <= 2.0
+1.539
+True False
+x[0] <= 0.99 x[0] <= 3.071
+0. 3 5 7 27 2. 3 5 8 24 0
+17 20 19 19 2
+0.0 0.976 2.009 3.04
+3 2 1 0 1 2 3 4
+(a) (b)
+Figure 16: (a) Et beslutningstre med dybde 2, tilpasset på de stegvise dataene, og (b) datarommet
+der stiplede linjer indikerer regionene dette treet lager.
+disse dataene. Vi ser på trær med ulike dybder, og finner ut at den laveste MSEen oppnås for et
+tre med dybde 2. Et eksempel på et slikt tre er vist i Figur 16a, og den tilsvarende inndelingen av
+datarommetervistiFigur16b. Lagetdatasettselvmedenstøyetetrekningfrafloor-dataene, tilpass
+ulikebeslutningstrærtildetogsehvilkendybdesklearnvelgersamthvilkendybdesomgirdeglavest
+MSE.
+Oppgave: Til slutt, lag en liste over ulikheter mellom beslutningstrær (både for klassifisering og
+regresjon) og lineær/logistisk regresjon (med polynomisk feature extraction). Se tabell 8 når du gir
+opp.
+Table 8: Forskjeller mellom beslutningstrær og regresjonsmodeller.
+Trær Regresjon
+Feature scaling er ikke nødvendig. Beslut- Features bør ha samme størrelsesorden, helst
+ningstrær deler inn dataene i regioner, så det er O(1),såikketilpasningenavmodellparametrene
+ikke nødvendigå skalere dem. fører til store gradienter.
+Hvis læringsalgoritmen ikke har begrensninger i Funksjonsformenerbestemt. Læringsalgoritmen
+tredybde, kan treet bli for dypt og overtilpasse. kan ikke legge til ledd og lage en mer kompleks
+modell,ellerfjerneleddommindrekompleksitet
+er tilstrekkelig.
+Har en overordnet struktur, men den spesifikke Har en gitt likningsform med antall ledd, og
+oppbygningen–arkitekturen –bestemmesunder parametrene til hver variabel og variabelkombi-
+trening. nasjon tilpasses.
+En viktig egenskap som både regresjonsmodeller og beslutningstrær deler er at de er tolkbare: For
+regresjonsmodeller vet vi at størrelsen til modellparametrene angir viktigheten til hver variabel (hvis
+β , hhv w er stor, har x stor innflytelse på prediksjonen. For beslutningstrær er splittkriteriene
+4 4 4
+forståelige for mennesker, og vi skjønner at features som splittes tidlig er viktigere enn features som
+splittes senere. Det samme gjelder ikke for modelltypen vi skal se på i neste omgang.

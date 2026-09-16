@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Regresjon — Kap 1</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  .legend-row .l-g::before { background: var(--green); }
+  .legend-row .l-ghost::before { background: var(--ink-ghost); }
+  .legend-row .l-dot::before { width: 9px; height: 9px; border-radius: 50%; }
+  svg.mlplot .pt { fill: var(--accent); fill-opacity: 0.85; }
+  svg.mlplot .pt-test { fill: var(--warm); fill-opacity: 0.9; }
+  svg.mlplot .fit-faint { fill: none; stroke: var(--accent); stroke-width: 1; stroke-opacity: 0.18; }
+  svg.mlplot .truth { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; stroke-dasharray: 5 4; }
+  svg.mlplot .step { fill: none; stroke: var(--green); stroke-width: 2.4; }
+  svg.mlplot .bar { fill: var(--accent); fill-opacity: 0.55; }
+  svg.mlplot .bar-2 { fill: var(--warm); fill-opacity: 0.7; }
+  details.deriv-box { border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.5rem 1rem; background: var(--paper-dark); margin: 1.2rem 0; }
+  details.deriv-box summary { cursor: pointer; font-family: var(--sans); font-size: 0.95rem; color: var(--accent); padding: 0.4rem 0; }
+  details.deriv-box .katex-display { margin: 0.5rem 0 !important; }
+  details.data-box { border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.5rem 1rem; background: var(--paper-dark); margin: 1.2rem 0; }
+  details.data-box summary { cursor: pointer; font-family: var(--sans); font-size: 0.95rem; color: var(--accent); padding: 0.4rem 0; }
+  details.data-box table { font-family: var(--mono); font-size: 0.82rem; }
+  details.data-box td, details.data-box th { padding: 0.25rem 0.7rem; }
+  .fold-grid { display: grid; gap: 4px; margin: 0.8rem 0; }
+  .fold-row { display: grid; gap: 2px; align-items: center; }
+  .fold-row .fr-lbl { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-faded); text-align: right; padding-right: 6px; }
+  .fold-row .cell { height: 16px; border-radius: 2px; background: rgba(27,94,90,0.28); }
+  .fold-row .cell.test { background: var(--warm); }
+  .split-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 1.2rem 0; }
+  .split-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.9rem 1rem; border-top: 3px solid var(--accent); }
+  .split-card.test { border-top-color: var(--warm); }
+  .split-card.val { border-top-color: var(--green); }
+  .split-card h4 { margin: 0 0 0.3rem; font-family: var(--serif); text-transform: none; letter-spacing: 0; font-size: 1.05rem; color: var(--ink); }
+  .split-card p { margin: 0; font-size: 0.92rem; color: var(--ink-soft); }
+  .tree-svg text { font-family: var(--mono); font-size: 10.5px; fill: var(--ink); }
+  .tree-svg .edge { stroke: var(--ink-ghost); stroke-width: 1.4; fill: none; }
+  .tree-svg .edge-lbl { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); }
+  .tree-svg rect { rx: 6; stroke-width: 1.2; }
+  .tree-svg .n-root rect { fill: rgba(27,94,90,0.2); stroke: var(--accent); }
+  .tree-svg .n-dec rect { fill: rgba(61,107,58,0.18); stroke: var(--green); }
+  .tree-svg .n-leaf rect { fill: rgba(160,82,45,0.16); stroke: var(--warm); }
+  .diff-table td:first-child { border-right: 1px solid var(--line-soft); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 1</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Veiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · 1C · Notater 1.4 · s. 20–32</div>
+      <h1>Regre<em>sjon</em></h1>
+      <p class="lede">Når target er et tall og ikke en klasse. Lineær regresjon med MSE og gradient descent, feature engineering med polynomer, hvorfor vi trenger valideringsdata og kryssvalidering, hva bias og varians egentlig er, og hvordan et beslutningstre kan gjøre regresjon.</p>
+      <nav class="toc">
+        <a href="#data-tap"><span>01</span> Data og tapsfunksjon</a>
+        <a href="#polynom"><span>02</span> Polynomisk regresjon</a>
+        <a href="#validering"><span>03</span> Trening, test, validering</a>
+        <a href="#kryssvalidering"><span>04</span> Kryssvalidering</a>
+        <a href="#bias-varians"><span>05</span> Bias–varians</a>
+        <a href="#regresjonstraer"><span>06</span> Regresjonstrær</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 01 DATA OG TAPSFUNKSJON ─────────────────────────── -->
+  <section id="data-tap">
+    <div class="container">
+      <div class="section-badge">01 · Data og tapsfunksjon</div>
+      <h2>Fra klasser til <em>kontinuerlige verdier</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.4.1 · s. 20–23</div>
+
+      <p class="dropcap">Se på datasettet i tabell 7 (nederst i avsnittet) og plottet i widgeten under. Igjen representerer \(y\) targets, «riktig svar», så vi holder oss i regimet til veiledet læring. Men da vi gjorde klassifisering fordelte targets seg i predefinerte kategorier. Disse dataene tilhører ikke kategorier, de har kontinuerlige verdier. Prediksjon til kontinuerlige verdier kalles <span class="term" data-term="regresjon">regresjon</span>: å predikere skåren til en film, estimere verdien til en bolig, forutse sykefraværet til en ansatt. Generelt: estimering av én eller flere kontinuerlige verdier.</p>
+
+      <p>Vi starter igjen med det enkleste tilfellet, en lineær modell. Likningen for en <span class="term" data-term="lineaer-regresjonsmodell">lineær regresjonsmodell</span> er</p>
+      \[ f(x) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n. \tag{51} \]
+      <p>Modellen har én parameter \(\beta_i\) per feature \(x_i\) (kolonne i datasettet), og en parameter \(\beta_0\) kalt <span class="term" data-term="beta0">bias</span>. Til sammen \((n + 1)\) parametre for \(n\) features. Vi kan gjenbruke mesteparten av koden fra klassifiseringen for å trene modellen, og vi må igjen bruke gradient descent.</p>
+
+      <div class="oppgave" data-quiz id="oppg-gjenbruk">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 21</span></div>
+        <div class="o-text"><p>Hva kan vi <em>ikke</em> gjenbruke fra klassifiseringstilfellet?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p><strong>Tapsfunksjonen.</strong> Vi trenger et kvantitativt mål på hvor godt prediksjonen passer med target per datainstans, men regresjonsmodellen gjør ikke klassifisering, så cross-entropy kan ikke brukes. Den vanligste tapsfunksjonen for regresjon er <span class="term" data-term="mse">mean squared error</span>:</p>
+            \[ \text{MSE}(x) = \frac{1}{2N}\sum_{i=1}^{N}\bigl(y^{(i)} - f(x^{(i)})\bigr)^2. \tag{52} \]
+            <p>Her er \(y^{(i)}\) target for datapunkt \(x^{(i)}\), \(f\) er modellen, og gjennomsnittet går over alle \(N\) instansene. Faktoren \(\tfrac{1}{2}\) er kun for convenience, og det finnes definisjoner av MSE uten den. MSE er liten hvis prediksjonen \(f(x)\) er nær den sanne verdien \(y\), og stor hvis de er ulike. (Sigmoid-funksjonen trenger vi heller ikke: utdata skal være et vilkårlig tall, ikke en sannsynlighet.)</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Én feature: linje med to parametre</h3>
+      <p>Med én feature \(x_1\) har modellen to parametre,</p>
+      \[ f(x) = \beta_0 + \beta_1 x_1. \tag{53} \]
+      <p>Dette er på samme form som likning (2), bare med andre parameternavn, valgt for å skille tilfellet tydelig fra logistisk regresjon. <span class="term" data-term="beta0">Bias-parameteren</span> \(\beta_0\) angir hvor regresjonslinjen krysser \(y\)-aksen, funksjonsverdien i \(x_1 = 0\). Den forflytter alle prediksjoner med en konstant: tenk på den som en «baseline» uten kjennskap til noen feature-verdier. Så kommer \(\beta_1\), <span class="term" data-term="stigningstall">stigningstallet</span> til linja, i spill.</p>
+
+      <p>Den deriverte av tapsfunksjonen med hensyn på de to parametrene er</p>
+      \[ \begin{aligned}
+        \frac{\partial \mathcal{L}}{\partial \beta_0} &amp;= \frac{1}{2N}\sum_{i=1}^{N}\frac{\partial}{\partial \beta_0}\bigl(y^{(i)} - \beta_1 x^{(i)} - \beta_0\bigr)^2 = \frac{1}{N}\sum_{i=1}^{N}\bigl(\beta_1 x^{(i)} + \beta_0 - y^{(i)}\bigr), \\
+        \frac{\partial \mathcal{L}}{\partial \beta_1} &amp;= \frac{1}{N}\sum_{i=1}^{N} x^{(i)}\bigl(\beta_1 x^{(i)} + \beta_0 - y^{(i)}\bigr).
+      \end{aligned} \tag{54–56} \]
+      <p>Her ser vi nytten av faktoren \(\tfrac{1}{2}\): den oppheves av potensen under derivasjonen. Vi kan kontrollere at de deriverte gir mening gjennom kontrollspørsmål.</p>
+
+      <div class="oppgave" data-quiz id="oppg-beta0">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 22</span></div>
+        <div class="o-text"><p>Modellen oppfører seg som i figur 10b i notatene: den overestimerer konsekvent for alle verdier av \(x_1\) (prøv \(\beta_0 = 5\) i widgeten under). Har modellen for lav eller for høy verdi av \(\beta_0\)? Er verdien til \(\partial\mathcal{L}/\partial\beta_0\) større eller mindre enn 0?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>\(\beta_0\) er <strong>for stor</strong>. En modell med for høy bias har \(\partial\mathcal{L}/\partial\beta_0 \gt 0\), som vil si at tapet øker når \(\beta_0\) øker. (Se på uttrykket: hvert ledd \(f(x^{(i)}) - y^{(i)}\) er positivt når modellen overestimerer, så summen er positiv. Gradient descent trekker da \(\beta_0\) nedover, som er riktig.)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-beta1">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 22</span></div>
+        <div class="o-text"><p>Hvilken tilsvarende sjekk kan vi gjøre for \(\beta_1\)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Gjør linja <strong>for slak</strong> (for lav \(\beta_1\), prøv \(\beta_1 = 0.3\) i widgeten). Da underestimerer modellen for store positive \(x\) (\(f - y \lt 0\)) og overestimerer for negative \(x\) (\(f - y \gt 0\)). I \(\partial\mathcal{L}/\partial\beta_1 = \frac{1}{N}\sum x^{(i)}(f(x^{(i)}) - y^{(i)})\) ganges hvert avvik med \(x^{(i)}\), så begge tilfellene gir negative bidrag: \(\partial\mathcal{L}/\partial\beta_1 \lt 0\), og gradient descent øker \(\beta_1\). For bratt linje gir motsatt fortegn. Sjekken er altså: for lav \(\beta_1\) gir negativ derivert, for høy gir positiv.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Fra gradienten får vi oppdateringsregelen for parametrene i regresjonsmodellen:</p>
+      \[ \begin{aligned} \beta_0 &amp;\leftarrow \beta_0 - \eta\,\frac{1}{N}\sum_{i=1}^{N}\bigl(f(x^{(i)}) - y^{(i)}\bigr), \ \beta_1 &amp;\leftarrow \beta_1 - \eta\,\frac{1}{N}\sum_{i=1}^{N} x^{(i)}\bigl(f(x^{(i)}) - y^{(i)}\bigr). \end{aligned} \tag{57} \]
+      <p>Mye av koden fra klassifiseringsoppgaven kan gjenbrukes for å tilpasse modellen i (53) til et datasett.</p>
+
+      <div class="widget" id="w-linreg">
+        <div class="widget-label">Prøv selv · Lineær regresjon på tabell 7</div>
+        <p class="widget-intro">De 40 datapunktene fra notatene. Still inn \(\beta_0\) og \(\beta_1\) for hånd og les av tapet og fortegnet på de deriverte, eller la gradient descent (57) gjøre jobben.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="Lineær regresjon på tabell 7"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="lr-b0">β₀</label><input type="range" id="lr-b0" min="-10" max="10" step="0.1" value="5"><span class="w-val" id="lr-b0-val">5.0</span></div>
+          <div class="w-ctl"><label for="lr-b1">β₁</label><input type="range" id="lr-b1" min="-1" max="3" step="0.05" value="1"><span class="w-val" id="lr-b1-val">1.00</span></div>
+          <div class="w-ctl"><label for="lr-eta">η</label><input type="range" id="lr-eta" min="0.001" max="0.06" step="0.001" value="0.02"><span class="w-val" id="lr-eta-val">0.020</span></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn" id="lr-step" type="button">Ett GD-steg</button>
+          <button class="w-btn" id="lr-run" type="button">50 steg</button>
+          <button class="w-btn secondary" id="lr-reset" type="button">Nullstill (fig. 10b)</button>
+        </div>
+        <div class="w-out" id="lr-out"></div>
+      </div>
+
+      <details class="data-box">
+        <summary>Tabell 7 i notatene: de 40 datapunktene (x₁, y)</summary>
+        <div class="table-wrap"><table id="tab7"><thead><tr><th>#</th><th>x₁</th><th>y</th><th>#</th><th>x₁</th><th>y</th></tr></thead><tbody></tbody></table></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 POLYNOMISK REGRESJON ─────────────────────────── -->
+  <section id="polynom">
+    <div class="container">
+      <div class="section-badge">02 · Polynomisk regresjon og feature engineering</div>
+      <h2>Når linja <em>ikke strekker til</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.4.2 · s. 24–25</div>
+
+      <p class="dropcap">Figur 11a i notatene viser et datasett der den underliggende fordelingen er parabelen \(1.0x^2 + 2.0x + 0\), og datapunktene er generert fra den med tilfeldig <span class="term" data-term="gaussisk-stoy">gaussisk støy</span> (forventningsverdi \(\mu = 0\), standardavvik \(\sigma = 0.5\)) lagt til.</p>
+
+      <div class="oppgave" data-quiz id="oppg-linreg-parabel">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 24</span></div>
+        <div class="o-text"><p>Hvor godt vil lineær regresjon fungere for å lage en modell som predikerer \(y\) for nye datapunkter \(x\)? Hvorfor? Prøv å formulere svaret ved hjelp av <em>antakelsen</em> som ligger i lineær regresjon.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · notatene bekrefter konklusjonen</span>
+            <p><strong>Dårlig.</strong> Lineær regresjon antar at \(y\) er en lineær funksjon av features: én konstant endring i \(y\) per enhet \(x\), uansett hvor på aksen vi er. En parabel bryter antakelsen fundamentalt, stigningen skifter fortegn i bunnpunktet. Uansett hvilke \(\beta_0, \beta_1\) vi velger, får vi systematiske feil: linja ligger over dataene i midten og under dataene i endene (eller omvendt). Notatene: figur 11b bekrefter det vi nok forventet, lineær regresjon fungerer dårlig for å modellere en parabel. Med begrepene fra avsnitt 05 er dette <em>høy bias</em>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-mse-960">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 24</span></div>
+        <div class="o-text"><p>For akkurat min implementasjon fant jeg at modellens MSE ligger rundt 960. Er dette et høyt eller lavt tall? Kan vi si generelt hva som er en høy verdi for MSE?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>For disse dataene er gjennomsnittsverdien av targets ca. 28.15 og av prediksjonene ca. 32.07. MSE står for mean <em>squared</em> error, vi får den ved å kvadrere avvik. \(30^2 = 900\), så det kvadrerte avviket tilsvarer omtrent størrelsen på targets og prediksjoner selv. Det er et forholdsvis stort tap. Generelt kan vi <em>ikke</em> si hva som er en høy MSE: den har enheten til \(y\) i annen, og må alltid tolkes relativt til skalaen på targets.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Feature engineering: lag en ny feature</h3>
+      <p>Vi har flere muligheter for å lage en bedre modell, og i dette tilfellet kjenner vi funksjonsformen som genererte dataene. Det vil så godt som aldri være tilfelle, men bare ved å plotte dataene kunne vi se at de fordeler seg som et annengradspolynom. Den enkleste løsningen er da å lage en ny feature der vi transformerer dataene polynomisk. Dette kalles <span class="term" data-term="feature-engineering">feature engineering</span>.</p>
+      <p>Siden dataene ligger på en parabel, velger vi transformasjonen \(x \to x^2\), for hånd eller med <span class="term" data-term="polynomialfeatures"><code>PolynomialFeatures</code></span> i sklearn, som lar oss angi graden. Vi lager og anvender transformasjonen på treningsdataene, og anvender den på testdataene.</p>
+
+      <div class="callout callout-warn">
+        <span class="label">Viktig</span>
+        <p>Vi skal <strong>ikke</strong> lage (<code>.fit</code>) transformasjonen på testdataene. Hele analysen skal være uavhengig av testdataene, som kun brukes til endelig testing.</p>
+      </div>
+
+      <p>Etter transformasjonen har vi to features, \(\{x_1, x_2\} = \{x, x^2\}\), og har økt dimensjonaliteten fra én til to. Vi gjør en ny lineær regresjon, nå med to features:</p>
+      \[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2. \tag{58} \]
+      <p>Merk at vi fremdeles gjør <span class="term" data-term="polynomisk-regresjon">lineær regresjon</span>, men med en generert feature. Og merk at feature engineering kan gjøres i alle tilfeller, ikke bare for veiledet læring og ikke bare for regresjon. Generelt er feature engineering alle operasjoner vi utfører på datasettet:</p>
+
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Feature selection</div><div class="fc-val"><span class="term" data-term="feature-selection">Utvelgelse</span> av features, som da vi valgte å ikke ta med «Name» i Titanic-oppgaven.</div></div>
+        <div class="fact-card"><div class="fc-key">Feature preprocessing</div><div class="fc-val"><span class="term" data-term="feature-preprocessing">Preprosessering</span>, som da vi skalerte «Age» til intervallet (0, 1).</div></div>
+        <div class="fact-card"><div class="fc-key">Feature extraction</div><div class="fc-val"><span class="term" data-term="feature-extraction">Utvinning</span> av features, som da vi nettopp laget \(x^2\) fra \(x\). Flere eksisterende features kan også kombineres til nye.</div></div>
+      </div>
+      <p>Det finnes mange metoder og triks, og kurset dekker mildt sagt ikke alle. Dere kan bruke metoder etter eget ønske og fantasi i øvingene, gitt at dere <em>forstår og kan forklare hva dere har gjort og hvorfor</em>.</p>
+
+      <h3>Polynom av grad M</h3>
+      <p>For én variabel \(x\) kan vi skrive et polynom av grad \(M\) som</p>
+      \[ f(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \dots + \beta_M x^M. \tag{59} \]
+      <p>Figur 12 i notatene viser data generert fra et polynom av <em>ukjent</em> grad, og figur 13 viser lineær regresjon (a) og regresjon med genererte features til grad 3 (b) og 15 (c). En mer kompleks modell (høyere grad) gir ikke nødvendigvis lavere tap: både for lav og for høy <span class="term" data-term="modellkompleksitet">kompleksitet</span> er problematisk.</p>
+
+      <div class="oppgave" data-quiz id="oppg-se-grad">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 25</span></div>
+        <div class="o-text"><p>Er det mulig å se fra dataene i figur 12 hvilken grad vi bør generere features til?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Ikke med sikkerhet. Med støy er det umulig å skille «ekte» svingninger fra tilfeldige: punktene i figur 12 kan like gjerne komme fra grad 3 som grad 5. Vi kan telle omtrent hvor mange ganger kurven ser ut til å snu (et polynom av grad \(M\) kan ha inntil \(M - 1\) vendepunkter) og bruke det som et lavt anslag, men graden bør <em>velges med data</em>: tilpass flere grader og sammenlikn tapet på data modellen ikke er trent på. Det er nettopp det avsnitt 03 og 04 handler om. Prøv widgeten under.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-grad-hyper">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 25</span></div>
+        <div class="o-text"><p>Er graden på polynomet vi transformerer features til en modellparameter, en hyperparameter eller en feature?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>En <strong>hyperparameter</strong>. Graden velges av oss før trening og bestemmer modellens form og antall parametre, den læres ikke fra data med gradient descent. Modellparametrene er \(\beta_0, \dots, \beta_M\). Features er kolonnene modellen ser: \(x, x^2, \dots, x^M\) er (genererte) features, men <em>graden</em> som bestemmer hvor mange av dem vi lager, er en innstilling på læringsprosessen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-poly">
+        <div class="widget-label">Prøv selv · Polynomgrad, trenings- og testtap</div>
+        <p class="widget-intro">40 syntetiske punkter fra en ukjent glatt funksjon med støy, delt i 20 treningspunkter (teal) og 20 testpunkter (rust). Velg grad \(M\) og se den tilpassede kurven. Det nederste plottet viser MSE på trening og test for alle grader: tapet på treningsdata faller alltid med graden, tapet på testdata gjør det ikke.</p>
+        <svg id="poly-fit" viewBox="0 0 560 280" data-w="560" data-h="280" aria-label="Polynomtilpasning"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="poly-m">grad M</label><input type="range" id="poly-m" min="0" max="15" step="1" value="1"><span class="w-val" id="poly-m-val">1</span></div>
+          <button class="w-btn secondary" id="poly-new" type="button">Nytt datasett</button>
+        </div>
+        <svg id="poly-mse" viewBox="0 0 560 200" data-w="560" data-h="200" aria-label="MSE per grad"></svg>
+        <div class="legend-row"><span class="l-a">Trening</span><span class="l-w">Test</span></div>
+        <div class="w-out" id="poly-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 TRENING, TEST, VALIDERING ─────────────────────────── -->
+  <section id="validering">
+    <div class="container">
+      <div class="section-badge">03 · Trening, testing og validering</div>
+      <h2>Tre datasett, <em>tre roller</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.4.3 · s. 25–27</div>
+
+      <p class="dropcap"><span class="term" data-term="overfit">Overtilpasning</span> skjer når modellen har kapasitet til å tilpasse seg så godt til treningsdataene at det går utover generaliseringsevnen på testdataene. Vi må kunne <em>detektere</em> overtilpasning, slik at vi kan justere hyperparametrene underveis. Men husk: testdataene skal ikke brukes til noen som helst justering. Brukte vi dem til å tilpasse hyperparametre, hadde vi ikke usette data igjen å teste den endelige modellen på.</p>
+      <p>Vi kan heller ikke bruke treningsdataene til å detektere overtilpasning, siden treningen har som mål å tilpasse modellen best mulig til nettopp dem. Derfor deler vi datasettet i <strong>tre</strong> deler, i stedet for to:</p>
+
+      <div class="split-cards">
+        <div class="split-card"><h4>Treningsdata</h4><p>Brukes for å tilpasse modellparametrene, altså under trening.</p></div>
+        <div class="split-card val"><h4>Valideringsdata</h4><p><span class="term" data-term="valideringsdata">Brukes</span> for å monitorere modellen under trening, og på bakgrunn av det justere hyperparametrene.</p></div>
+        <div class="split-card test"><h4>Testdata</h4><p>Brukes ikke til noen som helst tilpasning av modell, parametre, hyperparametre eller treningsprosedyre. Rapporterer ytelsen til den <em>endelige</em> modellen.</p></div>
+      </div>
+      <p><code>train_test_split</code> kan brukes til å splitte det opprinnelige datasettet i to, to ganger. De fleste datapunktene bør settes av til trening.</p>
+
+      <h3>Monitorere under trening</h3>
+      <p>Treningsprosedyren fra klassifiseringen må modifiseres: den bør regne ut relevante metrikker på valideringsdataene et gitt antall ganger i løpet av treningen, for eksempel etter hver tiende epoke. En mulig treningsloop for lineær regresjon med <span class="term" data-term="sgd">stochastic gradient descent</span> fra sklearn:</p>
+<pre><code>model = sklearn.linear_model.SGDRegressor(learning_rate='constant', eta0=0.01)
+train_losses, val_losses = [], []
+n_epochs = 100
+for epoch in range(n_epochs):
+    model.partial_fit(X_train, y_train)
+
+    # Monitor training loss
+    y_train_pred = model.predict(X_train)
+    train_loss = sklearn.metrics.mean_squared_error(y_train, y_train_pred)
+    train_losses.append(train_loss)
+
+    # Monitor validation loss
+    y_val_pred = model.predict(X_val)
+    val_loss = sklearn.metrics.mean_squared_error(y_val, y_val_pred)
+    val_losses.append(val_loss)</code></pre>
+      <p>Koden gir to arrays vi kan plotte underveis eller etterpå. Figur 14 i notatene viser tre typiske utfall:</p>
+
+      <div class="fig-row" style="grid-template-columns: repeat(3, 1fr);">
+        <figure><svg id="fig-over" viewBox="0 0 220 170" data-w="220" data-h="170" aria-label="Overtilpasning"></svg><figcaption>(a) Overtilpasser</figcaption></figure>
+        <figure><svg id="fig-under" viewBox="0 0 220 170" data-w="220" data-h="170" aria-label="Undertilpasning"></svg><figcaption>(b) Undertilpasser</figcaption></figure>
+        <figure><svg id="fig-good" viewBox="0 0 220 170" data-w="220" data-h="170" aria-label="God tilpasning"></svg><figcaption>(c) Generaliserer</figcaption></figure>
+      </div>
+      <div class="legend-row"><span class="l-a">Treningstap</span><span class="l-w">Valideringstap</span></div>
+
+      <ul>
+        <li><strong>(a)</strong> En modell av høy kompleksitet: tapet på valideringsdataene flater ut mens treningstapet fortsetter å minke. Modellen <em>overtilpasser</em>, og klarer ikke generalisere til de usette valideringspunktene.</li>
+        <li><strong>(b)</strong> Tapet er høyt på både trening og validering. Modellen har for lav kompleksitet til å tilpasse seg variabiliteten i treningsdataene (<span class="term" data-term="underfit">undertilpasser</span>), men generaliserer til gjengjeld like godt til valideringsdataene hele veien. Det mest åpenbare tegnet på undertilpasning er høy loss på treningsdataene.</li>
+        <li><strong>(c)</strong> Tapet minker jevnt på begge og flater ut likt. Parametrene har nådd de mest optimale verdiene vi kan forvente, uten å være overtilpasset.</li>
+      </ul>
+
+      <div class="callout">
+        <span class="label">Bruk kurvene aktivt</span>
+        <p>Metrikkene kan brukes til å justere hyperparametre underveis, for eksempel er det vanlig å minke læringsraten i løpet av treningen. De kan også avgjøre når treningen bør stanse: i stedet for å bestemme antall epoker på forhånd, lager man et <span class="term" data-term="early-stopping">early stopping criterion</span> som stanser når valideringstapet ikke har minket innenfor en toleranse i løpet av de siste \(n\) epokene.</p>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Du velger polynomgrad ved å prøve gradene 1–15 og beholde den med lavest tap på <em>testdataene</em>. Hva er galt, og hva rapporterer du da som modellens ytelse?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Testdataene er brukt til å velge en hyperparameter, så de er ikke lenger usette: det laveste av 15 testtap er en optimistisk skjev måling, og du har ingen data igjen til en ærlig sluttrapport. Riktig er å velge graden med valideringsdata (eller kryssvalidering), og først deretter måle én gang på testdataene.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 KRYSSVALIDERING ─────────────────────────── -->
+  <section id="kryssvalidering">
+    <div class="container">
+      <div class="section-badge">04 · Kryssvalidering</div>
+      <h2>Når splitten selv er <em>tilfeldig</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.4.4 · s. 27</div>
+
+      <div class="oppgave" data-quiz id="oppg-split">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.4 · s. 27</span></div>
+        <div class="o-text"><p>Hvordan velger vi hvilke datapunkter som havner i henholdsvis trenings-, test- og valideringsdatasettet, og påvirker dette testresultatet?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Inndelingen (skal) gjøres <strong>tilfeldig</strong>, men splitten kan påvirke testresultatet. Vi må altså forvente noe varians på testresultatet avhengig av datasplitt, en utfordring vi må håndtere. I tillegg får vi færre datapunkter å trene på når vi setter av data til validering og testing, og generelt ønsker vi så mye treningsdata som mulig. Løsningen er <span class="term" data-term="kryssvalidering">kryssvalidering</span>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-cell warm">
+          <h4>Leave-one-out (LOOCV)</h4>
+          <p>Den enkleste formen: <span class="term" data-term="loocv">én observasjon</span> fjernes fra datasettet og brukes til testing; treningssettet har størrelse \(n - 1\) (valideringssettet hentes deretter fra treningssettet). Gjentas \(n\) ganger, så vi står igjen med \(n\) testresultater, hvert beregnet på ett datapunkt. Gjennomsnittet er LOOCV-estimatet. Siden alle datapunkter er brukt til sammen, er det det beste estimatet vi kan lage. Men ressurskrevende: modellen må tilpasses like mange ganger som vi har datapunkter.</p>
+        </div>
+        <div class="compare-cell accent">
+          <h4>k-fold cross validation</h4>
+          <p>Mer utbredt: <span class="term" data-term="k-fold">\(k\) splitter</span> i stedet for \(n\). Velg \(k\), del datasettet i \(k\) deler. I hver iterasjon spiller én del rollen som testdata mens resten brukes til trening. Modellen tilpasses \(k\) ganger, og de \(k\) testresultatene brukes til å beregne det endelige estimatet.</p>
+        </div>
+      </div>
+
+      <div class="widget" id="w-kfold">
+        <div class="widget-label">Prøv selv · Hvilke punkter tester vi på?</div>
+        <p class="widget-intro">Hver rad er én iterasjon. Rust = testpunkt i den iterasjonen, teal = treningspunkt. Dra \(k\) helt til \(n\) for å få LOOCV.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="kf-n">n</label><input type="number" id="kf-n" min="4" max="40" value="20"></div>
+          <div class="w-ctl"><label for="kf-k">k</label><input type="range" id="kf-k" min="2" max="20" step="1" value="5"><span class="w-val" id="kf-k-val">5</span></div>
+          <button class="w-btn secondary" id="kf-loo" type="button">LOOCV (k = n)</button>
+        </div>
+        <div class="fold-grid" id="kf-grid"></div>
+        <div class="w-out" id="kf-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-kfold-loocv">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.4 · s. 27</span></div>
+        <div class="o-text"><p>Hva er fordeler og ulemper ved k-fold cross validation sammenliknet med LOOCV?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · delvis fra notatene</span>
+            <ul>
+              <li><strong>Kostnad:</strong> k-fold trener \(k\) modeller (typisk 5 eller 10), LOOCV trener \(n\). Med tusen datapunkter er det 100–200 ganger billigere. Notatene kaller LOOCV ressurskrevende og k-fold mer utbredt.</li>
+              <li><strong>Treningsmengde:</strong> LOOCV trener på \(n - 1\) punkter hver gang, nesten hele datasettet, så estimatet gjelder en modell som er nesten identisk med den endelige. k-fold trener på \((k - 1)/k\) av dataene, litt mindre, så estimatet blir litt pessimistisk.</li>
+              <li><strong>Stabilitet:</strong> de \(n\) LOOCV-modellene er nesten like (de deler \(n - 2\) punkter), så testresultatene er sterkt korrelerte og gjennomsnittet kan svinge mye fra datasett til datasett. k-fold gir mer uavhengige folder. Til gjengjeld avhenger k-fold-estimatet av hvilken tilfeldig inndeling vi fikk, og av valget av \(k\); LOOCV er deterministisk.</li>
+              <li><strong>Hvert testsett er større i k-fold</strong> (\(n/k\) punkter mot ett), så metrikker som krever flere punkter, f.eks. ROC AUC, lar seg beregne per fold.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 BIAS–VARIANS ─────────────────────────── -->
+  <section id="bias-varians">
+    <div class="container">
+      <div class="section-badge">05 · Bias–variance tradeoff</div>
+      <h2>Hvor kommer feilen <em>fra</em>?</h2>
+      <div class="source-note">Notatene · avsnitt 1.4.5 · s. 27–30</div>
+
+      <p class="dropcap">Når vi velger en læringsalgoritme, velger vi en <span class="term" data-term="estimator">estimator</span> for prediksjonsproblemet vårt. For både logistisk og lineær regresjon (og senere nevrale nettverk) er gradient descent algoritmen som optimaliserer parametre basert på data, så det er estimatoren vår. Vi må forholde oss til at den har både bias og varians.</p>
+
+      <p>Anta at target-verdiene vi observerer følger en funksjon som ingen unntatt universet kjenner, kall den \(F\). Gitt \(x\) gir den den sanne verdien av \(y\), utover støy utenfor vår kontroll (måleapparat, eksterne faktorer):</p>
+      \[ y = F(x) + \varepsilon. \tag{60} \]
+      <p>Dette <span class="term" data-term="irredusibel-stoy">irredusible</span> støyet blir vi ikke kvitt, men vi antar at det er normalfordelt med \(\mu = 0\) og standardavvik \(\sigma\). Et treningsdatasett er \(n\) tilfeldige observasjoner fra virkeligheten, \(\mathcal{D} = \{(x_1, y_1), \dots, (x_n, y_n)\}\), og på dette trener vi en modell \(f(x; \mathcal{D})\). Det er akkurat modellene vi har holdt på med til nå, vi har bare ikke skrevet \(\mathcal{D}\) eksplisitt. Nå skal vi se hvordan estimatoren oppfører seg under <em>ulike trekninger</em> av data, og da er det nyttig å ha \(\mathcal{D}\) med.</p>
+
+      <p>Når vi minimerer avviket \((y - f(x; \mathcal{D}))^2\), ønsker vi en modell som også har lavt tap på nye datapunkter. Det betyr at vi bryr oss om <span class="term" data-term="forventningsverdi">forventningsverdien</span> over mange ulike trekninger av treningsdatasettet,</p>
+      \[ \mathbb{E}_{\mathcal{D}}\bigl[(y - f(x; \mathcal{D}))^2\bigr]. \tag{62} \]
+      <p>Uansett hvilken funksjon \(f\) vi velger, kan feilen vi forventer på et nytt datapunkt \(x\) dekomponeres som</p>
+      \[ \mathbb{E}_{\mathcal{D}}\bigl[(y - f(x; \mathcal{D}))^2\bigr] = \bigl(\text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]\bigr)^2 + \text{Var}_{\mathcal{D}}[f(x; \mathcal{D})] + \sigma^2. \tag{63} \]
+      <p>Dette er opphavet til <span class="term" data-term="bias-variance-tradeoff">bias-variance tradeoff</span>: tapet en læringsalgoritme ikke klarer å minimere vekk, stammer fra tre typer feil: bias, varians og irredusibelt støy.</p>
+
+      <h3>Bias</h3>
+      <div class="callout callout-warm">
+        <span class="label">Ikke det konstante leddet</span>
+        <p><span class="term" data-term="bias-estimator">Bias til en læringsalgoritme</span> har ingenting med det konstante leddet \(\beta_0\) i lineære modeller å gjøre, og heter det samme kun for å forvirre studenter.</p>
+      </div>
+      <p>Biasen representerer det systematiske avviket til estimatoren, beregnet over ulike trekninger av treningsdata:</p>
+      \[ \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})] = \mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D}) - F(x)] = \mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - F(x). \tag{64–65} \]
+      <p>Altså det forventede avviket mellom modellen tilpasset på et gitt datasett og den faktiske target-verdien, begge evaluert i \(x\). Enkelt sagt: hvor mye vi må forvente at modellen bommer på nye data, feilen som følger av de innebygde forenklingene i modellen.</p>
+
+      <div class="oppgave" data-quiz id="oppg-flytte-F">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.5 · s. 28</span></div>
+        <div class="o-text"><p>Hva kommer den andre likheten i (64–65) av, altså hvorfor kan vi flytte \(F(x)\) utenfor forventningsverdien? Tenk over dette før du leser videre.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Fordi den sanne sammenhengen, likning (60), ikke er avhengig av datasettet \(\mathcal{D}\), som vi tar forventningsverdien over. \(F(x)\) er en konstant når \(x\) er gitt, og \(\mathbb{E}[c] = c\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-hoyde">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.5 · s. 28</span></div>
+        <div class="o-text"><p>For intuisjon, en litt rar situasjon: den faktiske gjennomsnittshøyden til norske kvinner er 167 cm. Vi måler egenskapene og høyden til mange ulike tilfeldige utvalg av norske kvinner, som gir oss flere treningsdatasett. For hvert datasett trener vi en regresjonsmodell (med gradient descent) som estimerer kvinnehøyde fra de andre egenskapene. Modellene predikerer i gjennomsnitt at kvinner er 165 cm høye. Hvor stor bias har læringsalgoritmen?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>\(\text{Bias} = \mathbb{E}_{\mathcal{D}}[f] - F = 165 - 167 = \mathbf{-2\ \text{cm}}\). Læringsalgoritmen bommer systematisk med 2 cm i samme retning (underestimerer), uansett hvilket utvalg den trenes på. At enkeltmodeller varierer rundt 165, er variansen, ikke biasen.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>En læringsalgoritme med liten bias (i absoluttverdi) har typisk tilstrekkelig kompleksitet til å tilpasse seg treningsdataene. Høy bias tyder på at den ikke klarer å modellere alle sammenhengene i dataene. Veldig enkelt: bias er en tendens til å alltid bomme i samme retning.</p>
+
+      <h3>Varians</h3>
+      <p><span class="term" data-term="varians-estimator">Variansen</span> til en læringsalgoritme over ulike trekninger av data er</p>
+      \[ \text{Var}_{\mathcal{D}}[f(x; \mathcal{D})] = \mathbb{E}_{\mathcal{D}}\Bigl[\bigl(\mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - f(x; \mathcal{D})\bigr)^2\Bigr], \tag{66} \]
+      <p>altså hvor mye vi kan forvente at modellen varierer rundt sitt eget gjennomsnitt. Høy varians betyr typisk at algoritmen er for sensitiv til små fluktuasjoner i treningsdataene, og kanskje har modellert tilfeldig støy vel så mye som faktiske sammenhenger. Komplekse modeller med mange parametre ender gjerne opp med ulike parameterverdier for hvert treningsdatasett: stor varians i de estimerte parametrene.</p>
+
+      <div class="widget" id="w-bv">
+        <div class="widget-label">Prøv selv · Bias og varians over 30 trekninger av data</div>
+        <p class="widget-intro">Den sanne funksjonen \(F(x) = 2\sin x\) (stiplet) gir data med støy \(\sigma\). Vi trekker 30 datasett med 25 punkter hver, tilpasser et polynom av grad \(M\) til hvert (svake linjer) og tegner gjennomsnittet (teal). Avstanden fra gjennomsnittet til \(F\) er bias, spredningen rundt gjennomsnittet er varians. Dra \(M\) fra 0 til 9.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="Bias og varians"></svg>
+        <div class="legend-row"><span class="l-ghost">F(x), sann funksjon</span><span class="l-a">E[f(x; D)], gjennomsnitt</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="bv-m">grad M</label><input type="range" id="bv-m" min="0" max="9" step="1" value="1"><span class="w-val" id="bv-m-val">1</span></div>
+          <div class="w-ctl"><label for="bv-sigma">σ</label><input type="range" id="bv-sigma" min="0.1" max="1.5" step="0.1" value="0.5"><span class="w-val" id="bv-sigma-val">0.5</span></div>
+          <button class="w-btn secondary" id="bv-new" type="button">Trekk 30 nye datasett</button>
+        </div>
+        <div class="metric-grid" id="bv-out"></div>
+      </div>
+
+      <h3>Utledningen av dekomposisjonen</h3>
+      <p>Med uttrykkene for bias og varians kan vi utlede (63) ved hjelp av noen nyttige relasjoner for forventningsverdier, der \(X\) og \(Y\) er tilfeldige variabler og \(c\) en konstant:</p>
+      \[ \mathbb{E}[\varepsilon] = 0, \quad \mathbb{E}[c] = c, \quad \mathbb{E}[cX] = c\,\mathbb{E}[X], \quad \mathbb{E}[X + Y] = \mathbb{E}[X] + \mathbb{E}[Y], \quad \mathbb{E}[XY] \overset{!}{=} \mathbb{E}[X]\,\mathbb{E}[Y] \text{ for uavhengige } X, Y. \tag{67–71} \]
+
+      <details class="deriv-box">
+        <summary>Vis hele utledningen (likning 72–88 i notatene)</summary>
+        <p>Vi dropper konstanten \(\tfrac{1}{2}\) og indeksen \(\mathcal{D}\) for enklere notasjon:</p>
+        \[ \begin{aligned}
+          \text{MSE} &amp;= \mathbb{E}\bigl[(y - f(x; \mathcal{D}))^2\bigr] = \mathbb{E}\bigl[(F(x) + \varepsilon - f(x; \mathcal{D}))^2\bigr] \\
+          &amp;= \mathbb{E}\bigl[(F(x) - f(x; \mathcal{D}))^2\bigr] + \underbrace{2\,\mathbb{E}\bigl[(F(x) - f(x; \mathcal{D}))\,\varepsilon\bigr]}_{=\,0 \text{ siden } \varepsilon \text{ er uavhengig og } \mathbb{E}[\varepsilon] = 0} + \mathbb{E}[\varepsilon^2] \\
+          &amp;= \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})] + \mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] + \mathbb{E}[\varepsilon^2] \\
+          &amp;= \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])^2\bigr] + \mathbb{E}\bigl[(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] \\
+          &amp;\quad + 2\,\mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))\bigr] + \mathbb{E}[\varepsilon^2].
+        \end{aligned} \tag{72–77} \]
+        <p>Vi tar hvert ledd for seg. Det første leddet inneholder bare konstanter (gitt \(x\)):</p>
+        \[ \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])^2\bigr] = F(x)^2 - 2F(x)\,\mathbb{E}[f(x; \mathcal{D})] + \mathbb{E}[f(x; \mathcal{D})]^2 = \bigl(F(x) - \mathbb{E}[f(x; \mathcal{D})]\bigr)^2 = \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]^2. \tag{78–81} \]
+        <p>Det andre leddet er per definisjon (66) variansen:</p>
+        \[ \mathbb{E}\bigl[(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] = \text{Var}[f(x; \mathcal{D})]. \tag{82} \]
+        <p>Det tredje leddet blir null:</p>
+        \[ \begin{aligned}
+          &amp;2\,\mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))\bigr] \\
+          &amp;= 2\,\mathbb{E}\bigl[F(x)\mathbb{E}[f(x; \mathcal{D})] - F(x)f(x; \mathcal{D}) - \mathbb{E}[f(x; \mathcal{D})]^2 + \mathbb{E}[f(x; \mathcal{D})]f(x; \mathcal{D})\bigr] \\
+          &amp;= 2\bigl(F(x)\mathbb{E}[f(x; \mathcal{D})] - F(x)\mathbb{E}[f(x; \mathcal{D})] - \mathbb{E}[f(x; \mathcal{D})]^2 + \mathbb{E}[f(x; \mathcal{D})]^2\bigr) = 0.
+        \end{aligned} \tag{83–86} \]
+        <p>Til slutt, \(\mathbb{E}[\varepsilon^2] = \text{Var}[\varepsilon] = \sigma^2\) (87). Samler vi leddene:</p>
+        \[ \text{MSE}(x) = \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]^2 + \text{Var}[f(x; \mathcal{D})] + \sigma^2. \tag{88} \]
+      </details>
+
+      <div class="oppgave" data-quiz id="oppg-eps2">
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.4.5 · s. 30</span></div>
+        <div class="o-text"><p>Se på likning (66) og overbevis deg om at \(\mathbb{E}[\varepsilon^2] = \text{Var}[\varepsilon] = \sigma^2\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Varians er forventet kvadratavvik fra gjennomsnittet: \(\text{Var}[\varepsilon] = \mathbb{E}[(\varepsilon - \mathbb{E}[\varepsilon])^2]\). Siden \(\mathbb{E}[\varepsilon] = 0\) (67), blir det \(\mathbb{E}[\varepsilon^2]\). Og støyet er normalfordelt med standardavvik \(\sigma\), så variansen er \(\sigma^2\) per definisjon.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Tradeoff, eller dilemma</h3>
+      <p>Relasjonen (88) forteller at tapet består av en komponent som skyldes bias (feilantakelser modellene gjør generelt), en som skyldes varians (spesialtilpasning til fluktuasjoner i datasettet), og en irredusibel feil grunnet støy, utenfor vår kontroll. Å minimere det forventede tapet er en konflikt mellom to motsatte typer feil, derav <em>tradeoff</em>: når den ene minker, øker den andre.</p>
+      <div class="compare-grid">
+        <div class="compare-cell warm">
+          <h4>Høy varians → overfit</h4>
+          <p>Læringsalgoritmen er i overkant sensitiv til variasjoner i data (inkludert støy), og har overmodellert sammenhenger i stedet for å generalisere.</p>
+        </div>
+        <div class="compare-cell accent">
+          <h4>Høy bias → underfit</h4>
+          <p>Modellene predikerer for nært gjennomsnittsprediksjonen og gjør ikke nytte av informasjonen i features. En feil generalisering på treningsdataene, som overskygger subtile, men relevante relasjoner mellom features og targets.</p>
+        </div>
+      </div>
+      <p>Husk at vi alltid ønsker at en modell tilpasset på treningsdata skal generalisere godt til testdata. Det er derfor det også kalles et bias-variance-<em>dilemma</em>.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 REGRESJONSTRÆR ─────────────────────────── -->
+  <section id="regresjonstraer">
+    <div class="container">
+      <div class="section-badge">06 · Regresjonstrær</div>
+      <h2>Én verdi per <em>region</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.4.6 · s. 30–32</div>
+
+      <p class="dropcap">Figur 15a i notatene viser data med én feature \(x_1\) og et target \(y\) med en tydelig fordeling, men som vi likevel ikke kjenner funksjonsformen til (eller, kanskje du kjenner den, men lat som du ikke gjør det). Dataene er trappeformet: \(y\) er omtrent 0 for \(x_1 \lt 1\), 1 for \(x_1\) mellom 1 og 2, og så videre.</p>
+
+      <div class="oppgave" data-quiz id="oppg-floor-polynom">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 30</span></div>
+        <div class="o-text"><p>Prøv gjerne å generere disse dataene selv med <code>def f(x): return np.floor(x)</code>, og se om du klarer å tilpasse et polynom av valgfri grad til dataene.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · notatene bekrefter konklusjonen</span>
+            <p>Det går dårlig uansett grad. Et polynom er glatt, mens \(\lfloor x \rfloor\) hopper. Lav grad gir en jevn skrålinje gjennom trappene (tilnærmet \(y \approx x - 0.5\)) og bommer med opptil 0.5 overalt. Høy grad svinger rundt trinnene og bommer særlig i endene (figur 15b viser et 5. gradspolynom). Notatene: vi innser raskt at \(y\) ikke følger et polynom, og at polynomisk regresjon ikke er en god vei til mål.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>I stedet kan vi innse at dataene befinner seg i flere <em>regioner</em>. Beslutningstrær er godt egnet til å splitte data i regioner gjennom splittkriterier. Til nå har vi brukt dem til klassifisering, der løvnodene predikerer klasse. Samme modellstruktur kan brukes i regresjon, siden <strong>hver splitt i treet deler opp datarommet</strong>: et <span class="term" data-term="regresjonstre">regresjonstre</span> splitter datarommet i flere områder og predikerer én verdi per område.</p>
+
+      <div class="oppgave" data-quiz id="oppg-tre-dybde">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 31</span></div>
+        <div class="o-text"><p>Om du skulle tilpasse et beslutningstre til disse dataene, hvor dypt tror du at det <em>minimum</em> bør være? Hvor dypt tror du at det <em>optimale</em> treet vil være (optimalt = lavest MSE)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene (med begrunnelse)</span>
+            <p>Dataene har fire trinn på \([0, 4)\), altså fire regioner med hver sin verdi. Et binært tre trenger fire løvnoder for det, som krever <strong>minimum dybde 2</strong> (2² = 4 løv). Notatene: uten begrensninger prøver sklearn gjerne å lage et tre med <strong>dybde 12 og 85 noder</strong>, men ser vi på trær med ulike dybder, oppnås lavest MSE for et tre med <strong>dybde 2</strong>. Dypere trær splitter på støyen innad i hvert trinn og overtilpasser. Prøv widgeten under.</p>
+          </div>
+        </div>
+      </div>
+
+      <figure>
+        <svg class="tree-svg" viewBox="0 0 600 250" aria-label="Regresjonstre med dybde 2">
+          <path class="edge" d="M300 54 L165 110"/><path class="edge" d="M300 54 L435 110"/>
+          <path class="edge" d="M165 154 L85 205"/><path class="edge" d="M165 154 L245 205"/>
+          <path class="edge" d="M435 154 L355 205"/><path class="edge" d="M435 154 L515 205"/>
+          <text class="edge-lbl" x="225" y="80" text-anchor="end">True</text><text class="edge-lbl" x="375" y="80" text-anchor="start">False</text>
+          <g class="n-root"><rect x="225" y="10" width="150" height="44"/><text x="300" y="27" text-anchor="middle">x[0] ≤ 2.0</text><text x="300" y="42" text-anchor="middle">n = 75 · verdi 1.539</text></g>
+          <g class="n-dec"><rect x="90" y="110" width="150" height="44"/><text x="165" y="127" text-anchor="middle">x[0] ≤ 0.99</text><text x="165" y="142" text-anchor="middle">n = 37 · verdi 0.527</text></g>
+          <g class="n-dec"><rect x="360" y="110" width="150" height="44"/><text x="435" y="127" text-anchor="middle">x[0] ≤ 3.071</text><text x="435" y="142" text-anchor="middle">n = 38 · verdi 2.524</text></g>
+          <g class="n-leaf"><rect x="35" y="205" width="100" height="36"/><text x="85" y="221" text-anchor="middle">n = 17</text><text x="85" y="235" text-anchor="middle">verdi 0.0</text></g>
+          <g class="n-leaf"><rect x="195" y="205" width="100" height="36"/><text x="245" y="221" text-anchor="middle">n = 20</text><text x="245" y="235" text-anchor="middle">verdi 0.976</text></g>
+          <g class="n-leaf"><rect x="305" y="205" width="100" height="36"/><text x="355" y="221" text-anchor="middle">n = 19</text><text x="355" y="235" text-anchor="middle">verdi 2.009</text></g>
+          <g class="n-leaf"><rect x="465" y="205" width="100" height="36"/><text x="515" y="221" text-anchor="middle">n = 19</text><text x="515" y="235" text-anchor="middle">verdi 3.04</text></g>
+        </svg>
+        <figcaption>Etter figur 16a i notatene: et regresjonstre med dybde 2 tilpasset de trappeformede dataene. «Verdi» er gjennomsnittet av \(y\) i noden, det treet predikerer der.</figcaption>
+      </figure>
+
+      <div class="widget" id="w-rtree">
+        <div class="widget-label">Prøv selv · Regresjonstre med valgt maks dybde</div>
+        <p class="widget-intro">100 punkter fra \(\lfloor x \rfloor\) på \([0, 4]\) med støy \(\sigma = 0.1\), delt i trening (teal) og test (rust). Treet velger i hver node den splitten som reduserer kvadratfeilen mest, og predikerer gjennomsnittet i løvnoden (grønn trapp). Se hvordan test-MSE først faller og så stiger med dybden.</p>
+        <svg viewBox="0 0 560 280" data-w="560" data-h="280" aria-label="Regresjonstre"></svg>
+        <div class="legend-row"><span class="l-ghost">⌊x⌋, sann funksjon</span><span class="l-g">treets prediksjon</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="rt-depth">maks dybde</label><input type="range" id="rt-depth" min="1" max="10" step="1" value="2"><span class="w-val" id="rt-depth-val">2</span></div>
+          <button class="w-btn secondary" id="rt-unlimited" type="button">Ubegrenset (som sklearn)</button>
+          <button class="w-btn secondary" id="rt-new" type="button">Nytt datasett</button>
+        </div>
+        <div class="metric-grid" id="rt-out"></div>
+      </div>
+
+      <details class="deriv-box">
+        <summary>Koden fra notatene: lag, tilpass og plott et regresjonstre</summary>
+<pre><code>def error(mu=0.0, sigma=1.0):
+    return np.random.normal(loc=mu, scale=sigma)
+
+def f_true(x):
+    return np.floor(x)
+
+X_data = np.linspace(xmin, xmax, 100)
+y_true = [f_true(_x) for _x in X_data]
+y_data = [_y + error(0, 0.1) for _y in y_true]
+
+X_data = X_data.reshape(-1, 1)
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data)
+
+regressor = tree.DecisionTreeRegressor().fit(X_train, y_train)
+y_pred = regressor.predict(X_test)
+
+print("Tree depth:", regressor.get_depth())
+print("Number of leaves:", regressor.get_n_leaves())
+print("Model MSE:", sklearn.metrics.mean_squared_error(y_test, y_pred))
+
+plt.scatter(X_test, y_pred, label="Predictions")
+plt.scatter(X_test, y_test, label="Labels")
+plt.xlabel(r"$x_1$")
+plt.ylabel(r"$y$")
+plt.legend()
+plt.show()
+
+tree.plot_tree(regressor)
+plt.show()
+
+t = regressor.tree_
+thresholds = t.threshold[t.feature &gt;= 0]
+
+grid = np.linspace(-3, 3, 500).reshape(-1, 1)
+plt.scatter(X_train.ravel(), np.ravel(y_train), s=15, label="train")
+plt.step(grid.ravel(), regressor.predict(grid), where="post",
+         color="green", label="tree")
+plt.plot(grid.ravel(), f_true(grid).ravel(), "k--", label="true")
+
+for thr, d in zip(thresholds, t.compute_node_depths()[t.feature &gt;= 0]):
+    plt.axvline(thr, color="gray", ls=":", lw=3/d, alpha=0.7)
+
+plt.legend()
+plt.show()</code></pre>
+        <p>Lag et datasett selv med en støyete trekning fra floor-dataene, tilpass ulike trær og se hvilken dybde sklearn velger, og hvilken dybde som gir lavest MSE. Bytt ut <code>DecisionTreeRegressor()</code> med <code>DecisionTreeRegressor(max_depth=2)</code> for å begrense dybden.</p>
+      </details>
+
+      <div class="oppgave" data-quiz id="oppg-traer-vs-regresjon">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 32</span></div>
+        <div class="o-text"><p>Til slutt, lag en liste over ulikheter mellom beslutningstrær (både for klassifisering og regresjon) og lineær/logistisk regresjon (med polynomisk feature extraction). Se tabell 8 når du gir opp.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene (tabell 8)</span>
+            <div class="table-wrap">
+              <table class="diff-table">
+                <thead><tr><th>Trær</th><th>Regresjon</th></tr></thead>
+                <tbody>
+                  <tr><td>Feature scaling er ikke nødvendig. Trær deler dataene i regioner, så det er ikke nødvendig å skalere dem.</td><td>Features bør ha samme størrelsesorden, helst \(\mathcal{O}(1)\), så ikke tilpasningen av parametrene fører til store gradienter.</td></tr>
+                  <tr><td>Uten begrensninger i tredybde kan treet bli for dypt og overtilpasse.</td><td>Funksjonsformen er bestemt. Læringsalgoritmen kan ikke legge til ledd for mer kompleksitet, eller fjerne ledd om mindre er tilstrekkelig.</td></tr>
+                  <tr><td>Har en overordnet struktur, men den spesifikke oppbygningen, <em>arkitekturen</em>, bestemmes under trening.</td><td>Har en gitt likningsform med antall ledd, og parametrene til hver variabel og variabelkombinasjon tilpasses.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-good">
+        <span class="label">Felles egenskap: tolkbarhet</span>
+        <p>Både regresjonsmodeller og beslutningstrær er <span class="term" data-term="tolkbarhet">tolkbare</span>. For regresjonsmodeller angir størrelsen på parametrene viktigheten til hver variabel: er \(\beta_4\) (eller \(w_4\)) stor, har \(x_4\) stor innflytelse på prediksjonen. For trær er splittkriteriene forståelige for mennesker, og features som splittes tidlig er viktigere enn features som splittes senere. Det samme gjelder <em>ikke</em> for modelltypen vi skal se på i neste omgang.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Regresjon</strong>Target er kontinuerlig. Lineær modell \(f(x) = \beta_0 + \sum \beta_i x_i\), \(n + 1\) parametre.</div>
+        <div class="recap-pill"><strong>MSE</strong>\(\frac{1}{2N}\sum (y - f(x))^2\). Ikke deriverbar-problem, men skala-avhengig: tolk relativt til \(y\).</div>
+        <div class="recap-pill"><strong>Gradient</strong>\(\partial\mathcal{L}/\partial\beta_0 = \frac{1}{N}\sum (f - y)\), \(\partial\mathcal{L}/\partial\beta_1 = \frac{1}{N}\sum x(f - y)\). Fortegnet sier hvilken vei.</div>
+        <div class="recap-pill"><strong>Feature engineering</strong>Selection, preprocessing, extraction. \(x \to x^2\) gjør en parabel lineær i features. Fit transformasjonen bare på trening.</div>
+        <div class="recap-pill"><strong>Tre splitter</strong>Trening (tilpasse parametre), validering (justere hyperparametre, early stopping), test (rapportere én gang).</div>
+        <div class="recap-pill"><strong>Kurvene</strong>Val flater ut mens trening synker → overfit. Begge høye → underfit. Begge synker og flater likt → bra.</div>
+        <div class="recap-pill"><strong>Kryssvalidering</strong>LOOCV: \(n\) tilpasninger, best estimat, dyrt. k-fold: \(k\) tilpasninger, mer utbredt.</div>
+        <div class="recap-pill"><strong>Bias–varians</strong>\(\text{MSE} = \text{Bias}^2 + \text{Var} + \sigma^2\). Bias = systematisk bom, varians = følsomhet for datasettet, \(\sigma^2\) irredusibelt.</div>
+        <div class="recap-pill"><strong>Regresjonstrær</strong>Splitter datarommet i regioner, én verdi (gjennomsnitt) per region. Dybde er hyperparameteren; for dypt → overfit.</div>
+        <div class="recap-pill"><strong>Trær vs. regresjon</strong>Skalering, fast funksjonsform vs. arkitektur lært under trening, tolkbarhet felles.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Ordet «bias» brukes om to helt forskjellige ting i dette avsnittet. Hvilke?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(1) Konstantleddet \(\beta_0\) i den lineære modellen (kalt \(b\) i logistisk regresjon): der linja krysser \(y\)-aksen. (2) Bias til en læringsalgoritme: \(\mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - F(x)\), det systematiske avviket over mange treningsdatasett. Notatene sier de heter det samme kun for å forvirre studenter.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">En modell har treningstap 2.1 og valideringstap 2.2 etter 500 epoker, begge flate siden epoke 100. En annen har treningstap 0.3 og valideringstap 4.8, valideringstapet flatet ut ved epoke 50. Beskriv hver modell med begrepene bias og varians, og si hva du ville gjort.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Modell 1: lite gap, men er 2.1 «høyt»? Hvis det er høyt relativt til skalaen på \(y\), er det undertilpasning: høy bias, lav varians. Øk kompleksiteten (høyere grad, flere features). Modell 2: stort gap mellom trening og validering, klassisk overtilpasning: lav bias, høy varians. Reduser kompleksiteten, skaff mer data, eller stopp tidligere (early stopping ved epoke ≈ 50).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvorfor må <code>PolynomialFeatures</code> (og <code>MinMaxScaler</code>) tilpasses på treningsdataene alene, når transformasjonen «bare» er \(x \to x^2\)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">For \(x^2\) er det harmløst, men prinsippet er generelt: alt som «lærer» noe av data (skaleringens min og max, gjennomsnitt, valg av grad) er en del av modellen. Tilpasses det på testdata, lekker informasjon fra testsettet inn i modellen, og testresultatet blir for optimistisk. Regelen «fit på trening, transform på alt» gjør at du aldri trenger å tenke på hvilke transformasjoner som er farlige.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Kan et regresjonstre predikere en verdi utenfor intervallet av \(y\)-verdier det ble trent på? Kan en lineær regresjon? Hva sier det om bruk på nye data langt utenfor treningsområdet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei: treet predikerer alltid et gjennomsnitt av treningstargets i en løvnode, så prediksjonen ligger mellom minste og største \(y\) i trening (se figur 16b: treet gir 0 for alle \(x \lt 0\)). Lineær regresjon ekstrapolerer linja uendelig langt. Ingen av delene er «riktig» utenfor treningsområdet: treet er konstant, linja fortsetter en trend som kanskje ikke holder. Begge illustrerer at modellen bare kjenner regionen den har sett data fra.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="beslutningstraer.html" class="prev"><div class="pn-label">← Forrige · 1B</div><div class="pn-title">Beslutningstrær</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 1: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../glossary.js"></script>
+<script src="../quiz.js"></script>
+<script src="../site.js"></script>
+<script src="../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var f3 = function (v) { return window.fmtNum(v, 3); };
+  var f2 = function (v) { return window.fmtNum(v, 2); };
+
+  /* ─── Felles: seedet tilfeldighet og minste kvadraters metode ─── */
+  function rng(seed) {
+    var s = seed >>> 0;
+    var next = function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    return { uniform: next, gauss: function () { var u = 1 - next(), v = next(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); } };
+  }
+  /* Løser min ||A c − b|| med modifisert Gram–Schmidt (QR). cols: array av kolonner. */
+  function lstsq(cols, b) {
+    var n = cols.length, m = b.length, Q = cols.map(function (c) { return c.slice(); }), R = [];
+    for (var j = 0; j < n; j++) {
+      R[j] = new Array(n).fill(0);
+      for (var i = 0; i < j; i++) {
+        var r = 0; for (var k = 0; k < m; k++) r += Q[i][k] * Q[j][k];
+        R[i][j] = r; for (k = 0; k < m; k++) Q[j][k] -= r * Q[i][k];
+      }
+      var nn = 0; for (k = 0; k < m; k++) nn += Q[j][k] * Q[j][k]; nn = Math.sqrt(nn);
+      if (nn < 1e-12) nn = 1e-12;
+      R[j][j] = nn; for (k = 0; k < m; k++) Q[j][k] /= nn;
+    }
+    var qtb = Q.map(function (q) { var s = 0; for (var k = 0; k < m; k++) s += q[k] * b[k]; return s; });
+    var x = new Array(n).fill(0);
+    for (j = n - 1; j >= 0; j--) { var s2 = qtb[j]; for (k = j + 1; k < n; k++) s2 -= R[j][k] * x[k]; x[j] = s2 / R[j][j]; }
+    return x;
+  }
+  /* Polynomtilpasning av grad M på skalert x (x/scale) */
+  function polyfit(xs, ys, M, scale) {
+    var cols = [];
+    for (var d = 0; d <= M; d++) cols.push(xs.map(function (x) { return Math.pow(x / scale, d); }));
+    var c = lstsq(cols, ys);
+    return function (x) { var s = 0, t = x / scale; for (var d2 = 0; d2 <= M; d2++) s += c[d2] * Math.pow(t, d2); return s; };
+  }
+  function mse(xs, ys, f, half) { var s = 0; for (var i = 0; i < xs.length; i++) { var e = ys[i] - f(xs[i]); s += e * e; } return s / ((half ? 2 : 1) * xs.length); }
+  function metric(name, val, extra, cls) { return '<div class="metric"><div class="m-name">' + name + '</div><div class="m-val' + (cls ? ' ' + cls : '') + '">' + (typeof val === 'number' ? (isFinite(val) ? f3(val) : '–') : val) + '</div><div class="m-formula">' + (extra || '') + '</div></div>'; }
+
+  /* ─── Tabell 7 ─── */
+  var T7X = [-10, -9.5, -9, -8.5, -8, -7.5, -7, -6.5, -6, -5.5, -5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5];
+  var T7Y = [-6.359, -4.206, -11.127, -7.771, -8.125, -7.182, -6.037, -2.504, -5.026, -2.950, -1.451, -5.337, -4.059, -4.328, -1.062, -4.409, 2.948, -1.540, 2.462, 2.642, 2.319, 3.243, 3.538, 0.380, 4.141, 1.961, 5.163, 3.520, 6.243, 5.142, 5.370, 10.254, 5.435, 5.160, 8.115, 10.612, 4.080, 12.898, 10.838, 9.886];
+  (function () {
+    var tb = document.querySelector('#tab7 tbody'); if (!tb) return;
+    var rows = '';
+    for (var i = 0; i < 20; i++) rows += '<tr><td>' + (i + 1) + '</td><td>' + T7X[i].toFixed(1) + '</td><td>' + T7Y[i].toFixed(3) + '</td><td>' + (i + 21) + '</td><td>' + T7X[i + 20].toFixed(1) + '</td><td>' + T7Y[i + 20].toFixed(3) + '</td></tr>';
+    tb.innerHTML = rows;
+  })();
+
+  /* ─── W1: Lineær regresjon på tabell 7 ─── */
+  (function () {
+    var root = document.getElementById('w-linreg'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [-11, 11], y: [-14, 16], xLabel: 'x₁', yLabel: 'y', xTicks: [-10, -5, 0, 5, 10], yTicks: [-10, -5, 0, 5, 10, 15] });
+    T7X.forEach(function (x, i) { MLPlot.el('circle', { cx: plot.sx(x), cy: plot.sy(T7Y[i]), r: 3.6, 'class': 'pt' }, plot.layers.data); });
+    var b0In = document.getElementById('lr-b0'), b1In = document.getElementById('lr-b1'), etaIn = document.getElementById('lr-eta');
+    var out = document.getElementById('lr-out');
+    var N = T7X.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (var i = 0; i < N; i++) { sx += T7X[i]; sy += T7Y[i]; sxx += T7X[i] * T7X[i]; sxy += T7X[i] * T7Y[i]; }
+    var b1opt = (N * sxy - sx * sy) / (N * sxx - sx * sx), b0opt = (sy - b1opt * sx) / N;
+    var b0 = +b0In.value, b1 = +b1In.value, t = 0;
+    function grads() { var g0 = 0, g1 = 0; for (var i = 0; i < N; i++) { var r = b0 + b1 * T7X[i] - T7Y[i]; g0 += r; g1 += T7X[i] * r; } return [g0 / N, g1 / N]; }
+    function draw() {
+      document.getElementById('lr-b0-val').textContent = b0.toFixed(1);
+      document.getElementById('lr-b1-val').textContent = b1.toFixed(2);
+      document.getElementById('lr-eta-val').textContent = (+etaIn.value).toFixed(3);
+      plot.clearOverlay();
+      plot.polyline([[-11, b0 - 11 * b1], [11, b0 + 11 * b1]], 'curve-2');
+      var g = grads(), L = mse(T7X, T7Y, function (x) { return b0 + b1 * x; }, true);
+      var over = g[0] > 0.05 ? 'overestimerer i snitt → β₀ skal ned' : g[0] < -0.05 ? 'underestimerer i snitt → β₀ skal opp' : 'treffer riktig i snitt';
+      var slope = g[1] > 0.5 ? 'for bratt → β₁ skal ned' : g[1] < -0.5 ? 'for slak → β₁ skal opp' : 'omtrent riktig stigning';
+      out.innerHTML = 'f(x) = ' + b0.toFixed(2) + ' + ' + b1.toFixed(2) + '·x        (steg t = ' + t + ')\n' +
+        'MSE (52) = <span class="hl">' + f3(L) + '</span>\n' +
+        '∂ℒ/∂β₀ = ' + f3(g[0]) + '  → ' + over + '\n' +
+        '∂ℒ/∂β₁ = ' + f3(g[1]) + '  → ' + slope + '\n' +
+        'Minste kvadraters løsning: β₀* = ' + f3(b0opt) + ', β₁* = ' + f3(b1opt) + ', MSE* = ' + f3(mse(T7X, T7Y, function (x) { return b0opt + b1opt * x; }, true));
+    }
+    function step() { var g = grads(), eta = +etaIn.value; b0 -= eta * g[0]; b1 -= eta * g[1]; t += 1; b0In.value = Math.max(-10, Math.min(10, b0)); b1In.value = Math.max(-1, Math.min(3, b1)); }
+    b0In.addEventListener('input', function () { b0 = +b0In.value; t = 0; draw(); });
+    b1In.addEventListener('input', function () { b1 = +b1In.value; t = 0; draw(); });
+    etaIn.addEventListener('input', draw);
+    document.getElementById('lr-step').addEventListener('click', function () { step(); draw(); });
+    document.getElementById('lr-run').addEventListener('click', function () { for (var i = 0; i < 50; i++) step(); draw(); });
+    document.getElementById('lr-reset').addEventListener('click', function () { b0 = 5; b1 = 1; t = 0; b0In.value = 5; b1In.value = 1; draw(); });
+    draw();
+  })();
+
+  /* ─── W2: Polynomgrad ─── */
+  (function () {
+    var root = document.getElementById('w-poly'); if (!root) return;
+    var fitSvg = document.getElementById('poly-fit'), mseSvg = document.getElementById('poly-mse');
+    var mIn = document.getElementById('poly-m'), mVal = document.getElementById('poly-m-val'), out = document.getElementById('poly-out');
+    var seed = 7, data, fits, errs;
+    var F = function (x) { return 6 * Math.sin(0.35 * x) - 0.02 * x * x + 2; };
+    function gen() {
+      var r = rng(seed), xs = [], ys = [];
+      for (var i = 0; i < 40; i++) { var x = -10 + 20 * (i + 0.5) / 40; xs.push(x); ys.push(F(x) + 1.5 * r.gauss()); }
+      var tr = { x: [], y: [] }, te = { x: [], y: [] };
+      xs.forEach(function (x, i) { (i % 2 === 0 ? tr : te).x.push(x); (i % 2 === 0 ? tr : te).y.push(ys[i]); });
+      data = { tr: tr, te: te };
+      fits = []; errs = [];
+      for (var M = 0; M <= 15; M++) { var f = polyfit(tr.x, tr.y, M, 10); fits.push(f); errs.push([mse(tr.x, tr.y, f), mse(te.x, te.y, f)]); }
+    }
+    var plot, mplot;
+    function build() {
+      while (fitSvg.firstChild) fitSvg.removeChild(fitSvg.firstChild);
+      while (mseSvg.firstChild) mseSvg.removeChild(mseSvg.firstChild);
+      plot = MLPlot.make(fitSvg, { x: [-10, 10], y: [-16, 16], xLabel: 'x', yLabel: 'y', xTicks: [-10, -5, 0, 5, 10], yTicks: [-15, -10, -5, 0, 5, 10, 15] });
+      data.tr.x.forEach(function (x, i) { MLPlot.el('circle', { cx: plot.sx(x), cy: plot.sy(data.tr.y[i]), r: 3.6, 'class': 'pt' }, plot.layers.data); });
+      data.te.x.forEach(function (x, i) { MLPlot.el('circle', { cx: plot.sx(x), cy: plot.sy(data.te.y[i]), r: 3.6, 'class': 'pt-test' }, plot.layers.data); });
+      var maxE = Math.min(200, Math.max.apply(null, errs.map(function (e) { return Math.max(e[0], e[1]); })));
+      mplot = MLPlot.make(mseSvg, { x: [-0.5, 15.5], y: [0, maxE * 1.05], pad: { l: 44, r: 16, t: 12, b: 30 }, xLabel: 'grad M', yLabel: 'MSE', xTicks: [0, 3, 6, 9, 12, 15] });
+      var w = (mplot.sx(1) - mplot.sx(0)) * 0.36;
+      errs.forEach(function (e, M) {
+        var h0 = Math.min(e[0], maxE * 1.05), h1 = Math.min(e[1], maxE * 1.05);
+        MLPlot.el('rect', { x: mplot.sx(M) - w, y: mplot.sy(h0), width: w, height: mplot.sy(0) - mplot.sy(h0), 'class': 'bar' }, mplot.layers.data);
+        MLPlot.el('rect', { x: mplot.sx(M), y: mplot.sy(h1), width: w, height: mplot.sy(0) - mplot.sy(h1), 'class': 'bar-2' }, mplot.layers.data);
+      });
+    }
+    function draw() {
+      var M = +mIn.value; mVal.textContent = M;
+      plot.clearOverlay(); plot.curve(fits[M], 'curve', 240);
+      mplot.clearOverlay(); mplot.vline(M);
+      var best = 0; errs.forEach(function (e, i) { if (e[1] < errs[best][1]) best = i; });
+      out.innerHTML = 'Grad M = ' + M + ':  MSE trening = <span class="hl">' + f2(errs[M][0]) + '</span>,  MSE test = <span class="' + (M === best ? 'ok' : errs[M][1] > 3 * errs[best][1] ? 'bad' : 'hl') + '">' + f2(errs[M][1]) + '</span>\n' +
+        'Lavest testtap for M = ' + best + ' (' + f2(errs[best][1]) + '). ' + (M < best ? 'Lavere grad: modellen har for lite kapasitet (underfit).' : M > best ? 'Høyere grad: treningstapet synker, men testtapet stiger (overfit).' : 'Dette er «sweet spot» for akkurat dette datasettet.');
+    }
+    gen(); build(); draw();
+    mIn.addEventListener('input', draw);
+    document.getElementById('poly-new').addEventListener('click', function () { seed += 1; gen(); build(); draw(); });
+  })();
+
+  /* ─── Figur 14: tre treningsforløp ─── */
+  (function () {
+    function panel(id, tr, va, ymax) {
+      var svg = document.getElementById(id); if (!svg) return;
+      var p = MLPlot.make(svg, { x: [0, 100], y: [0, ymax], pad: { l: 30, r: 8, t: 8, b: 22 }, xLabel: 'epoke', xTicks: [0, 50, 100], yTicks: [0, ymax / 2, ymax] });
+      p.curve(tr, 'curve', 120); p.curve(va, 'curve-2', 120);
+    }
+    panel('fig-over', function (e) { return 0.4 + 0.6 * Math.exp(-e / 18); }, function (e) { return 0.62 + 0.4 * Math.exp(-e / 12) + 0.0025 * e; }, 1.2);
+    panel('fig-under', function (e) { return 0.85 + 0.05 * Math.exp(-e / 15); }, function (e) { return 0.88 + 0.05 * Math.exp(-e / 15); }, 1.2);
+    panel('fig-good', function (e) { return 0.3 + 0.7 * Math.exp(-e / 14); }, function (e) { return 0.34 + 0.72 * Math.exp(-e / 14); }, 1.2);
+  })();
+
+  /* ─── W4: k-fold ─── */
+  (function () {
+    var root = document.getElementById('w-kfold'); if (!root) return;
+    var nIn = document.getElementById('kf-n'), kIn = document.getElementById('kf-k'), kVal = document.getElementById('kf-k-val');
+    var grid = document.getElementById('kf-grid'), out = document.getElementById('kf-out');
+    function draw() {
+      var n = Math.max(4, Math.min(40, +nIn.value || 20)); nIn.value = n; kIn.max = n;
+      var k = Math.max(2, Math.min(n, +kIn.value)); kIn.value = k; kVal.textContent = k;
+      grid.innerHTML = '';
+      var rowsShown = Math.min(k, 12);
+      for (var f = 0; f < rowsShown; f++) {
+        var row = document.createElement('div'); row.className = 'fold-row';
+        row.style.gridTemplateColumns = '70px repeat(' + n + ', 1fr)';
+        var lbl = document.createElement('div'); lbl.className = 'fr-lbl'; lbl.textContent = 'iter ' + (f + 1); row.appendChild(lbl);
+        for (var i = 0; i < n; i++) { var c = document.createElement('div'); c.className = 'cell' + (Math.floor(i * k / n) === f ? ' test' : ''); row.appendChild(c); }
+        grid.appendChild(row);
+      }
+      if (k > rowsShown) { var more = document.createElement('div'); more.className = 'fr-lbl'; more.style.textAlign = 'left'; more.textContent = '… og ' + (k - rowsShown) + ' iterasjoner til'; grid.appendChild(more); }
+      var per = n / k;
+      out.innerHTML = (k === n ? '<span class="hl">LOOCV</span>: k = n = ' + n + '. ' : 'k-fold med k = ' + k + '. ') +
+        'Modellen tilpasses <span class="hl">' + k + '</span> ganger, hver gang på ' + f2(n - per) + ' punkter (' + Math.round(100 * (k - 1) / k) + ' % av dataene) og testes på ' + f2(per) + '.\n' +
+        'Til sammen brukes alle ' + n + ' punktene som testpunkt nøyaktig én gang; gjennomsnittet av de ' + k + ' testresultatene er estimatet.';
+    }
+    nIn.addEventListener('input', draw); kIn.addEventListener('input', draw);
+    document.getElementById('kf-loo').addEventListener('click', function () { kIn.value = +nIn.value; draw(); });
+    draw();
+  })();
+
+  /* ─── W5: Bias–varians-simulering ─── */
+  (function () {
+    var root = document.getElementById('w-bv'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [-3, 3], y: [-4, 4], xLabel: 'x', yLabel: 'y', xTicks: [-3, -2, -1, 0, 1, 2, 3], yTicks: [-4, -2, 0, 2, 4] });
+    var mIn = document.getElementById('bv-m'), sIn = document.getElementById('bv-sigma'), out = document.getElementById('bv-out');
+    var F = function (x) { return 2 * Math.sin(x); };
+    var seed = 11, GRID = []; for (var g = 0; g <= 60; g++) GRID.push(-3 + 6 * g / 60);
+    plot.curve(F, 'truth', 120);
+    function draw() {
+      var M = +mIn.value, sigma = +sIn.value;
+      document.getElementById('bv-m-val').textContent = M; document.getElementById('bv-sigma-val').textContent = sigma.toFixed(1);
+      plot.clearOverlay();
+      var r = rng(seed), preds = GRID.map(function () { return []; }), testErr = 0, testN = 0;
+      for (var d = 0; d < 30; d++) {
+        var xs = [], ys = [];
+        for (var i = 0; i < 25; i++) { var x = -3 + 6 * r.uniform(); xs.push(x); ys.push(F(x) + sigma * r.gauss()); }
+        var f = polyfit(xs, ys, M, 3);
+        plot.curve(f, 'fit-faint', 80);
+        GRID.forEach(function (gx, gi) { preds[gi].push(f(gx)); });
+        for (var q = 0; q < 10; q++) { var tx = -3 + 6 * r.uniform(), ty = F(tx) + sigma * r.gauss(); var e = ty - f(tx); testErr += e * e; testN++; }
+      }
+      var meanPts = [], bias2 = 0, vari = 0;
+      GRID.forEach(function (gx, gi) {
+        var m = preds[gi].reduce(function (a, b) { return a + b; }, 0) / 30;
+        var v = preds[gi].reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / 30;
+        meanPts.push([gx, m]); bias2 += (m - F(gx)) * (m - F(gx)); vari += v;
+      });
+      bias2 /= GRID.length; vari /= GRID.length;
+      plot.polyline(meanPts, 'curve');
+      out.innerHTML = metric('Bias²', bias2, 'gj.snitt over x av (E[f] − F)²') + metric('Varians', vari, 'gj.snitt over x av Var[f]') +
+        metric('σ²', sigma * sigma, 'irredusibelt støy') + metric('Sum (88)', bias2 + vari + sigma * sigma, 'Bias² + Var + σ²') +
+        metric('Målt MSE', testErr / testN, 'på nye datapunkter', Math.abs(testErr / testN - (bias2 + vari + sigma * sigma)) < 0.35 * (bias2 + vari + sigma * sigma) ? 'ok' : '');
+    }
+    mIn.addEventListener('input', draw); sIn.addEventListener('input', draw);
+    document.getElementById('bv-new').addEventListener('click', function () { seed += 1; draw(); });
+    draw();
+  })();
+
+  /* ─── W6: Regresjonstre ─── */
+  (function () {
+    var root = document.getElementById('w-rtree'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [0, 4], y: [-0.5, 3.5], xLabel: 'x₁', yLabel: 'y', xTicks: [0, 1, 2, 3, 4], yTicks: [0, 1, 2, 3] });
+    var dIn = document.getElementById('rt-depth'), dVal = document.getElementById('rt-depth-val'), out = document.getElementById('rt-out');
+    var seed = 3, tr, te, unlimited = false;
+    plot.curve(function (x) { return Math.floor(Math.min(x, 3.999)); }, 'truth', 400);
+    function gen() {
+      var r = rng(seed); tr = { x: [], y: [] }; te = { x: [], y: [] };
+      for (var i = 0; i < 100; i++) { var x = 4 * i / 99, y = Math.floor(Math.min(x, 3.999)) + 0.1 * r.gauss(); (r.uniform() < 0.25 ? te : tr).x.push(x); (r.uniform() < 2 ? (te.x.length > tr.x.length + 100 ? te : (te.x.length && te.x[te.x.length - 1] === x ? te : tr)) : tr); }
+      // enklere og deterministisk: hvert 4. punkt til test
+      tr = { x: [], y: [] }; te = { x: [], y: [] }; r = rng(seed);
+      for (i = 0; i < 100; i++) { x = 4 * i / 99; y = Math.floor(Math.min(x, 3.999)) + 0.1 * r.gauss(); if (i % 4 === 1) { te.x.push(x); te.y.push(y); } else { tr.x.push(x); tr.y.push(y); } }
+      plot.clearData();
+      tr.x.forEach(function (x, i) { MLPlot.el('circle', { cx: plot.sx(x), cy: plot.sy(tr.y[i]), r: 3, 'class': 'pt' }, plot.layers.data); });
+      te.x.forEach(function (x, i) { MLPlot.el('circle', { cx: plot.sx(x), cy: plot.sy(te.y[i]), r: 3, 'class': 'pt-test' }, plot.layers.data); });
+    }
+    function sse(idx, ys) { var m = 0; idx.forEach(function (i) { m += ys[i]; }); m /= idx.length; var s = 0; idx.forEach(function (i) { s += (ys[i] - m) * (ys[i] - m); }); return s; }
+    function build(idx, depth, maxDepth, stats) {
+      var xs = tr.x, ys = tr.y;
+      var mean = 0; idx.forEach(function (i) { mean += ys[i]; }); mean /= idx.length;
+      stats.depth = Math.max(stats.depth, depth);
+      if (idx.length < 2 || (maxDepth !== null && depth >= maxDepth)) { stats.leaves++; return { leaf: true, value: mean }; }
+      var sorted = idx.slice().sort(function (a, b) { return xs[a] - xs[b]; });
+      var base = sse(idx, ys), best = null;
+      for (var s = 1; s < sorted.length; s++) {
+        if (xs[sorted[s]] === xs[sorted[s - 1]]) continue;
+        var L = sorted.slice(0, s), R = sorted.slice(s);
+        var red = base - sse(L, ys) - sse(R, ys);
+        if (best === null || red > best.red) best = { red: red, thr: (xs[sorted[s]] + xs[sorted[s - 1]]) / 2, L: L, R: R };
+      }
+      if (!best || best.red <= 1e-12) { stats.leaves++; return { leaf: true, value: mean }; }
+      stats.splits.push({ thr: best.thr, depth: depth + 1 });
+      return { leaf: false, thr: best.thr, left: build(best.L, depth + 1, maxDepth, stats), right: build(best.R, depth + 1, maxDepth, stats) };
+    }
+    function predict(node, x) { while (!node.leaf) node = x <= node.thr ? node.left : node.right; return node.value; }
+    function draw() {
+      var maxDepth = unlimited ? null : +dIn.value; dVal.textContent = unlimited ? '∞' : dIn.value;
+      var stats = { depth: 0, leaves: 0, splits: [] };
+      var tree = build(tr.x.map(function (_, i) { return i; }), 0, maxDepth, stats);
+      plot.clearOverlay();
+      stats.splits.forEach(function (sp) { if (sp.depth <= 3) plot.vline(sp.thr); });
+      var pts = []; for (var g = 0; g <= 400; g++) { var x = 4 * g / 400; pts.push([x, predict(tree, x)]); }
+      plot.polyline(pts, 'step');
+      var mTr = mse(tr.x, tr.y, function (x) { return predict(tree, x); }), mTe = mse(te.x, te.y, function (x) { return predict(tree, x); });
+      out.innerHTML = metric('Dybde', stats.depth, unlimited ? 'ubegrenset: vokser til rene løv' : 'maks ' + maxDepth) + metric('Løvnoder', stats.leaves, 'regioner med hver sin verdi') +
+        metric('MSE trening', mTr, 'faller alltid med dybden') + metric('MSE test', mTe, 'lavest rundt dybde 2', mTe < 0.02 ? 'ok' : mTe > 0.1 ? 'bad' : '');
+    }
+    dIn.addEventListener('input', function () { unlimited = false; draw(); });
+    document.getElementById('rt-unlimited').addEventListener('click', function () { unlimited = true; draw(); });
+    document.getElementById('rt-new').addEventListener('click', function () { seed += 1; gen(); draw(); });
+    gen(); draw();
+  })();
+})();
+</script>
+</body>
+</html>

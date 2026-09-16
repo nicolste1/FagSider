@@ -7,7 +7,8 @@
   var PAGES = [
     'kap1/index.html',
     'kap1/logistisk-regresjon.html',
-    'kap1/beslutningstraer.html'
+    'kap1/beslutningstraer.html',
+    'kap1/regresjon.html'
   ];
 
   var PREFIX = /\/(kap\d+)\//i.test(window.location.pathname) ? '../' : '';

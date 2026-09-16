@@ -9,13 +9,14 @@ Statisk studieside for TDT4172 *Introduksjon til maskinlæring* ved NTNU, bygget
 - `kap1/index.html` — oversikt over kapittel 1 (helhetsbilde, læringssti, begrepskart, alle oppgaver, quiz)
 - `kap1/logistisk-regresjon.html` — 1A: notatenes avsnitt 1.1–1.2 (data, logistisk regresjon, gradient descent, evaluering, entropi, Bayes, dimensjonsforbannelsen, ubalanserte data)
 - `kap1/beslutningstraer.html` — 1B: notatenes avsnitt 1.3 (beslutningstrær, Gini, entropi, pseudokode)
+- `kap1/regresjon.html` — 1C: notatenes avsnitt 1.4 (lineær og polynomisk regresjon, validering, kryssvalidering, bias–varians, regresjonstrær)
 - `style.css` — felles stilark (parchment-bakgrunn, teal aksent)
 - `glossary.js` — alle fagbegreper + popover-UI for klikkbare begreper
 - `quiz.js` — «Se svar»-knapp på quiz- og oppgavebokser, flervalg
 - `site.js` — notat-versjon i bunntekst, SVG-plottehjelper for widgetene, KaTeX-oppstart
 - `nav-search.js` — Fuse.js-basert søk i alle sider + begreper
 - `kilder/` — PDF-en siden bygger på, tekstuttrekk (`notater.md`, `oppgaver.md`), versjonsinfo og dekningskart
-- `tools/` — verktøy for å hente ut tekst fra PDF-en og sjekke hva som er endret i en ny versjon
+- `tools/` — verktøy for å hente ut tekst fra PDF-en, sjekke hva som er endret i en ny versjon, og validere sidene (`valider.py`)
 
 ## Lokal dev
 
