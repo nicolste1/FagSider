@@ -1,0 +1,21 @@
+{
+  "_kommentar": "Hvilken HTML-side (og anker) som dekker hver seksjon i notatene. Brukes av tools/sjekk_oppdatering.py. Underseksjoner arver fra nærmeste forelder om de ikke er listet.",
+  "1":      { "side": "kap1/index.html" },
+  "1.1":    { "side": "kap1/logistisk-regresjon.html", "anker": "data" },
+  "1.2":    { "side": "kap1/logistisk-regresjon.html", "anker": "modell" },
+  "1.2.1":  { "side": "kap1/logistisk-regresjon.html", "anker": "tap" },
+  "1.2.2":  { "side": "kap1/logistisk-regresjon.html", "anker": "gradient-descent" },
+  "1.2.3":  { "side": "kap1/logistisk-regresjon.html", "anker": "trening" },
+  "1.2.4":  { "side": "kap1/logistisk-regresjon.html", "anker": "evaluering" },
+  "1.2.5":  { "side": "kap1/logistisk-regresjon.html", "anker": "terskel" },
+  "1.2.6":  { "side": "kap1/logistisk-regresjon.html", "anker": "entropi" },
+  "1.2.7":  { "side": "kap1/logistisk-regresjon.html", "anker": "bayes" },
+  "1.2.8":  { "side": "kap1/logistisk-regresjon.html", "anker": "avhengige-features" },
+  "1.2.9":  { "side": "kap1/logistisk-regresjon.html", "anker": "dimensjonsforbannelsen" },
+  "1.2.10": { "side": "kap1/logistisk-regresjon.html", "anker": "ubalanserte-data" },
+  "1.3":    { "side": "kap1/beslutningstraer.html", "anker": "noder" },
+  "1.3.1":  { "side": "kap1/beslutningstraer.html", "anker": "noder" },
+  "1.3.2":  { "side": "kap1/beslutningstraer.html", "anker": "gini" },
+  "1.3.3":  { "side": "kap1/beslutningstraer.html", "anker": "entropi" },
+  "1.3.4":  { "side": "kap1/beslutningstraer.html", "anker": "bygge" }
+}

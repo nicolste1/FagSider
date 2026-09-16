@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Beslutningstrær — Kap 1</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .tree-svg text { font-family: var(--sans); font-size: 12px; fill: var(--ink); }
+  .tree-svg .edge { stroke: var(--ink-ghost); stroke-width: 1.4; fill: none; }
+  .tree-svg .edge-lbl { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); }
+  .tree-svg .node-root rect { fill: var(--accent); }
+  .tree-svg .node-root text { fill: var(--paper); }
+  .tree-svg .node-dec rect { fill: rgba(61,107,58,0.22); stroke: var(--green); }
+  .tree-svg .node-leaf rect { fill: rgba(160,82,45,0.18); stroke: var(--warm); }
+  .tree-svg rect { rx: 8; stroke-width: 1.2; }
+  .tree-svg .node.on rect { stroke: var(--ink); stroke-width: 2.4; }
+  .tree-svg .edge.on { stroke: var(--ink); stroke-width: 3; }
+  .tree-svg .node.dim { opacity: 0.35; }
+  .tree-svg .edge.dim { opacity: 0.25; }
+  .tree-svg .kind { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--ink-faded); }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  .legend-row .l-g::before { background: var(--green); }
+  .split-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 0.6rem; }
+  .split-box { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.7rem 0.9rem; font-family: var(--mono); font-size: 0.82rem; line-height: 1.55; }
+  .split-box .sb-k { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.2rem; }
+  .split-box.total { border-color: var(--accent); background: var(--accent-soft); }
+  .gini-calc { font-family: var(--mono); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 1</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Veiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · 1B · Notater 1.3 · s. 17–20</div>
+      <h1>Beslutnings<em>trær</em></h1>
+      <p class="lede">En modell som stiller ett enkelt spørsmål om gangen. Hvordan et tre er bygget opp av noder og stumper, hvordan Gini-urenhet og entropi måler «uorden», hvordan vi velger den splitten som rydder mest, og når vi skal slutte å splitte.</p>
+      <nav class="toc">
+        <a href="#noder"><span>01</span> Noder</a>
+        <a href="#gini"><span>02</span> Gini-urenhet</a>
+        <a href="#entropi"><span>03</span> Entropi</a>
+        <a href="#bygge"><span>04</span> Bygge treet</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 01 NODER ─────────────────────────── -->
+  <section id="noder">
+    <div class="container">
+      <div class="section-badge">01 · Noder</div>
+      <h2>Et tre av <em>enkle spørsmål</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.3.1 · s. 17</div>
+
+      <p class="dropcap"><span class="term" data-term="beslutningstre">Beslutningstrær</span> hjelper oss å ta beslutninger for datasett ved å splitte dataene i noder som til sammen utgjør en trestruktur. <span class="term" data-term="rotnode">Rotnoden</span> er starten på treet, der data med alle features kommer inn. Under den finner vi <span class="term" data-term="beslutningsnode">beslutningsnoder</span>: alle noder under rotnoden som har ett eller flere splitt-kriterier. Nederst finner vi <span class="term" data-term="lovnode">løvnoder</span>, som ikke splitter dataene, men inneholder predikert verdi for datainstansen som ble sendt gjennom treet.</p>
+
+      <figure>
+        <svg class="tree-svg" viewBox="0 0 600 300" aria-label="Skisse av et beslutningstre">
+          <!-- kanter -->
+          <path class="edge" d="M300 48 L170 100"/><path class="edge" d="M300 48 L430 100"/>
+          <path class="edge" d="M170 136 L90 190"/><path class="edge" d="M170 136 L250 190"/>
+          <path class="edge" d="M430 136 L360 190"/><path class="edge" d="M430 136 L510 190"/>
+          <path class="edge" d="M250 226 L200 270"/><path class="edge" d="M250 226 L300 270"/>
+          <!-- kriterie-etiketter -->
+          <text class="edge-lbl" x="300" y="70" text-anchor="middle">splitt-kriterium</text>
+          <text class="edge-lbl" x="170" y="160" text-anchor="middle">splitt-kriterium</text>
+          <text class="edge-lbl" x="430" y="160" text-anchor="middle">splitt-kriterium</text>
+          <text class="edge-lbl" x="250" y="250" text-anchor="middle">splitt-kriterium</text>
+          <!-- noder -->
+          <g class="node node-root"><rect x="240" y="12" width="120" height="36"/><text x="300" y="35" text-anchor="middle">Rotnode</text></g>
+          <g class="node node-dec"><rect x="105" y="100" width="130" height="36"/><text x="170" y="123" text-anchor="middle">Beslutningsnode</text></g>
+          <g class="node node-dec"><rect x="365" y="100" width="130" height="36"/><text x="430" y="123" text-anchor="middle">Beslutningsnode</text></g>
+          <g class="node node-leaf"><rect x="40" y="190" width="100" height="36"/><text x="90" y="213" text-anchor="middle">Løvnode</text></g>
+          <g class="node node-dec"><rect x="185" y="190" width="130" height="36"/><text x="250" y="213" text-anchor="middle">Beslutningsnode</text></g>
+          <g class="node node-leaf"><rect x="310" y="190" width="100" height="36"/><text x="360" y="213" text-anchor="middle">Løvnode</text></g>
+          <g class="node node-leaf"><rect x="460" y="190" width="100" height="36"/><text x="510" y="213" text-anchor="middle">Løvnode</text></g>
+          <g class="node node-leaf"><rect x="150" y="262" width="100" height="36"/><text x="200" y="285" text-anchor="middle">Løvnode</text></g>
+          <g class="node node-leaf"><rect x="255" y="262" width="100" height="36"/><text x="305" y="285" text-anchor="middle">Løvnode</text></g>
+        </svg>
+        <figcaption>Etter figur 9a i notatene: rotnode (teal), beslutningsnoder (grønn) og løvnoder (rust).</figcaption>
+      </figure>
+
+      <h3>Trestumper</h3>
+      <p>Beslutningstrær består av <span class="term" data-term="trestump">trestumper</span> (tree stumps). En stump består av én rotnode og \(n\) løvnoder, for \(n\) mulige utfall. Vi holder oss til \(n = 2\): to mulige utfall etter hver splitt. Hver beslutningsnode splitter dataene på <em>én</em> feature, gjennom et såkalt <span class="term" data-term="splitt-kriterium">splitt-kriterium</span>. Samme treningsdatasett og labels kan gi opphav til mange ulike beslutningstrær.</p>
+
+      <figure>
+        <svg class="tree-svg" viewBox="0 0 360 190" aria-label="En trestump">
+          <text class="kind" x="180" y="18" text-anchor="middle">Inn: antall bananer</text>
+          <path class="edge" d="M180 70 L100 130"/><path class="edge" d="M180 70 L260 130"/>
+          <text class="edge-lbl" x="120" y="98" text-anchor="end">Nei</text>
+          <text class="edge-lbl" x="240" y="98" text-anchor="start">Ja</text>
+          <g class="node node-root"><rect x="105" y="30" width="150" height="40"/><text x="180" y="49" text-anchor="middle">Antall bananer</text><text x="180" y="63" text-anchor="middle">&gt; 2?</text></g>
+          <g class="node node-leaf"><rect x="50" y="130" width="100" height="36"/><text x="100" y="153" text-anchor="middle">Klasse: 0</text></g>
+          <g class="node node-leaf"><rect x="210" y="130" width="100" height="36"/><text x="260" y="153" text-anchor="middle">Klasse: 1</text></g>
+        </svg>
+        <figcaption>Etter figur 9b i notatene: en stump med ett splitt-kriterium og to løvnoder.</figcaption>
+      </figure>
+
+      <div class="widget" id="w-tree">
+        <div class="widget-label">Prøv selv · Send en pingvin gjennom et tre</div>
+        <p class="widget-intro">Et konstruert tre (ikke det ekte fra forelesningen) som gjetter pingvinkjønn fra kroppsvekt og flipper length. Skriv inn verdier og følg stien: hver node stiller ett spørsmål om én feature, og svaret sender datapunktet videre.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="pg-mass">Body Mass (g)</label><input type="number" id="pg-mass" min="2500" max="6500" step="50" value="4200"></div>
+          <div class="w-ctl"><label for="pg-flip">Flipper Length (mm)</label><input type="number" id="pg-flip" min="170" max="235" step="1" value="200"></div>
+        </div>
+        <svg class="tree-svg" id="pg-svg" viewBox="0 0 600 270" aria-label="Interaktivt beslutningstre">
+          <path class="edge" id="e-0-1" d="M300 52 L160 110"/><path class="edge" id="e-0-2" d="M300 52 L440 110"/>
+          <path class="edge" id="e-1-a" d="M160 150 L80 210"/><path class="edge" id="e-1-b" d="M160 150 L240 210"/>
+          <path class="edge" id="e-2-c" d="M440 150 L360 210"/><path class="edge" id="e-2-d" d="M440 150 L520 210"/>
+          <text class="edge-lbl" x="222" y="78" text-anchor="end">Nei</text><text class="edge-lbl" x="378" y="78" text-anchor="start">Ja</text>
+          <text class="edge-lbl" x="112" y="182" text-anchor="end">Nei</text><text class="edge-lbl" x="208" y="182" text-anchor="start">Ja</text>
+          <text class="edge-lbl" x="392" y="182" text-anchor="end">Nei</text><text class="edge-lbl" x="488" y="182" text-anchor="start">Ja</text>
+          <g class="node node-root" id="n-0"><rect x="215" y="12" width="170" height="40"/><text x="300" y="31" text-anchor="middle">Body Mass</text><text x="300" y="45" text-anchor="middle">&gt; 3800 g?</text></g>
+          <g class="node node-dec" id="n-1"><rect x="80" y="110" width="160" height="40"/><text x="160" y="129" text-anchor="middle">Flipper Length</text><text x="160" y="143" text-anchor="middle">&gt; 195 mm?</text></g>
+          <g class="node node-dec" id="n-2"><rect x="360" y="110" width="160" height="40"/><text x="440" y="129" text-anchor="middle">Flipper Length</text><text x="440" y="143" text-anchor="middle">&gt; 210 mm?</text></g>
+          <g class="node node-leaf" id="n-a"><rect x="30" y="210" width="100" height="36"/><text x="80" y="233" text-anchor="middle">FEMALE</text></g>
+          <g class="node node-leaf" id="n-b"><rect x="190" y="210" width="100" height="36"/><text x="240" y="233" text-anchor="middle">MALE</text></g>
+          <g class="node node-leaf" id="n-c"><rect x="310" y="210" width="100" height="36"/><text x="360" y="233" text-anchor="middle">FEMALE</text></g>
+          <g class="node node-leaf" id="n-d"><rect x="470" y="210" width="100" height="36"/><text x="520" y="233" text-anchor="middle">MALE</text></g>
+        </svg>
+        <div class="w-out" id="pg-out"></div>
+      </div>
+
+      <h3>Hvordan velge splitt?</h3>
+      <p>Som ellers i maskinlæring bruker vi treningsdata for å bygge modellen, her treet. Treningsdataene brukes til å finne ut hvilke stumper (og tilhørende beslutningskriterier) som bør settes sammen. Når vi bygger et tre ønsker vi alltid å velge det splitt-kriteriet som lar oss ta beslutningen <em>tidligst mulig</em>, altså reduserer usikkerheten mest. <strong>Redusert usikkerhet er endringen i usikkerhet etter, sammenliknet med før, splitten.</strong> Tre metrikker brukes for å måle hvor mye et splitt-kriterium (feature og verdi) reduserer usikkerheten:</p>
+
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Log loss</div><div class="fc-val">Kjenner vi fra før: likning (10) for binær klassifisering og (32) for multiklasse. Se <span class="term" data-term="log-loss">log loss</span>.</div></div>
+        <div class="fact-card"><div class="fc-key">Gini impurity</div><div class="fc-val">Sannsynligheten for å gjette feil klasse ved tilfeldig label. Neste avsnitt.</div></div>
+        <div class="fact-card"><div class="fc-key">Entropi</div><div class="fc-val">Usikkerheten i klassefordelingen, målt i bits. Avsnitt 03.</div></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hva er forskjellen på en beslutningsnode og en løvnode?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">En beslutningsnode har et splitt-kriterium og sender datapunktet videre til én av barnenodene. En løvnode splitter ikke; den inneholder prediksjonen (klassen) for alle datapunkter som havner der. Rotnoden er en spesiell beslutningsnode: den øverste, der alle data kommer inn.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 GINI ─────────────────────────── -->
+  <section id="gini">
+    <div class="container">
+      <div class="section-badge">02 · Gini impurity</div>
+      <h2>Hvor sannsynlig er det å <em>gjette feil</em>?</h2>
+      <div class="source-note">Notatene · avsnitt 1.3.2 · s. 18</div>
+
+      <p class="dropcap"><span class="term" data-term="gini">Gini-urenheten</span> er et tall i [0, 0.5] som angir sannsynligheten for at et nytt, tilfeldig datapunkt feilklassifiseres hvis det gis et tilfeldig label i henhold til klassefordelingen i datasettet. Gitt et datasett \(D\) med datapunkter fra \(k\) klasser, med sannsynlighet \(p_i\) for at en instans tilhører klasse \(i\) ved en gitt node, er datasettets Gini-urenhet</p>
+      \[ \text{Gini}(D) = 1 - \sum_{i=1}^{k} p_i^2. \tag{44} \]
+
+      <div class="callout callout-warm">
+        <span class="label">Intuisjon: kuler i en pose</span>
+        <p>Du har en pose med kuler i ulike farger, der farge er klasse. Gini-urenheten måler hvor sannsynlig det er at du gjetter feil farge på en tilfeldig trukket kule, hvis du gjetter i henhold til fargefordelingen i posen. <strong>Lav</strong> Gini: de fleste kulene har samme farge, lav sjanse for å gjette feil, datasettet har lav urenhet. <strong>Høy</strong> Gini: klassene er omtrent likt representert, høy sjanse for å gjette feil, høy urenhet.</p>
+      </div>
+
+      <p>Splittes et datasett \(D\) på feature \(f\) til to subsett \(D_1\) og \(D_2\) med henholdsvis \(n_1\) og \(n_2\) datapunkter, er Gini-urenheten for splitten det vektede gjennomsnittet</p>
+      \[ \text{Gini}_f(D) = \frac{n_1}{n}\,\text{Gini}(D_1) + \frac{n_2}{n}\,\text{Gini}(D_2). \tag{45} \]
+
+      <h3>Tabell 6: tre mulige splitter</h3>
+      <p>Notatene viser tre alternativer for én node med 10 datapunkter. Klikk på et alternativ for å se utregningen.</p>
+
+      <div class="widget" id="w-alt">
+        <div class="widget-label">Prøv selv · Gini for alternativene i tabell 6</div>
+        <div class="alt-row">
+          <div class="alt-card" data-n1="0" data-n2="10"><div class="ac-name">Alt A</div><div class="ac-val">0 / 10</div></div>
+          <div class="alt-card" data-n1="3" data-n2="7"><div class="ac-name">Alt B</div><div class="ac-val">3 / 7</div></div>
+          <div class="alt-card" data-n1="5" data-n2="5"><div class="ac-name">Alt C</div><div class="ac-val">5 / 5</div></div>
+        </div>
+        <div class="w-out gini-calc" id="alt-out">Klikk på et alternativ.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Tabell 6 i notatene: Gini-urenhet for ulike splitter.</caption>
+          <thead><tr><th></th><th>\(n_1\)</th><th>\(n_2\)</th><th>\(p_1\)</th><th>\(p_2\)</th><th>Gini \(= 1 - p_1^2 - p_2^2\)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Alt A</strong></td><td class="mono">0</td><td class="mono">10</td><td class="mono">0</td><td class="mono">1</td><td class="mono">1 − 0² − 1² = 0</td></tr>
+            <tr><td><strong>Alt B</strong></td><td class="mono">3</td><td class="mono">7</td><td class="mono">0.3</td><td class="mono">0.7</td><td class="mono">1 − 0.3² − 0.7² = 0.42</td></tr>
+            <tr><td><strong>Alt C</strong></td><td class="mono">5</td><td class="mono">5</td><td class="mono">0.5</td><td class="mono">0.5</td><td class="mono">1 − 0.5² − 0.5² = 0.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-gini-splitt">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.2 · s. 18</span></div>
+        <div class="o-text"><p>Se på tabell 6. Hvilken splitt bør vi velge, og hvorfor?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Vi bør velge å splitte på den featuren som gir <strong>lavest Gini-urenhet</strong>: Alt A, der alle datapunktene havner i samme klasse og urenheten er 0. Alt C er verst mulig for to klasser (0.5): en 50/50-fordeling gir maksimal sjanse for å gjette feil.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 ENTROPI ─────────────────────────── -->
+  <section id="entropi">
+    <div class="container">
+      <div class="section-badge">03 · Entropi</div>
+      <h2>Informasjonsgevinst: <em>før minus etter</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.3.3 · s. 19</div>
+
+      <p class="dropcap">Gitt en sannsynlighetsfordeling over \(k\) klasser med sannsynlighet \(p_i\) for hver klasse, er <span class="term" data-term="entropi">entropien</span> til fordelingen</p>
+      \[ \mathrm{I}(p_1, \dots, p_k) = -\sum_{i=1}^{k} p_i \log_2(p_i). \tag{46} \]
+
+      <div class="oppgave" data-quiz id="oppg-entropi-verdier">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.3 · s. 19</span></div>
+        <div class="o-text"><p>Hva er entropien til fordelingen (0.5, 0.5), og til fordelingen (0.01, 0.99)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>\(\mathrm{I}(0.5, 0.5) = -(0.5\log_2 0.5 + 0.5\log_2 0.5) = -(−0.5 − 0.5) = 1\). Dette er maksimal entropi for to klasser.</p>
+            <p>\(\mathrm{I}(0.01, 0.99) = -(0.01\log_2 0.01 + 0.99\log_2 0.99) \approx 0.0664 + 0.0144 \approx 0.08\). Nesten ingen usikkerhet: vi vet omtrent hvilken klasse et tilfeldig datapunkt tilhører.</p>
+            <p>Notatene bekrefter ytterpunktene: maksimal entropi for en binær fordeling er 1 (lik sannsynlighet per klasse), minimal er 0 (alle datapunkter i samme klasse).</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Før og etter en splitt</h3>
+      <p>Før vi splitter på en feature har vi et datasett \(D\) med \(p\) positive og \(n\) negative instanser. Det svarer til en binær fordeling der positiv klasse har sannsynlighet \(\frac{p}{p+n}\) og negativ \(\frac{n}{p+n}\), med entropi</p>
+      \[ \mathrm{I}_{\text{før}} = \mathrm{I}(p_{\text{positiv}}, p_{\text{negativ}}) = \mathrm{I}\!\left(\frac{p}{p+n}, \frac{n}{p+n}\right). \tag{47} \]
+      <p>Etter at treet splitter på en feature har vi to nye datasett, \(D_1\) og \(D_2\), ett på hver side. Den <em>forventede</em> entropien etter splitten er generelt</p>
+      \[ \mathbb{E}[\mathrm{I}_{\text{etter}}] = \sum_{i=1}^{s} \frac{p_i + n_i}{p + n}\, \mathrm{I}\!\left(\frac{p_i}{p_i + n_i}, \frac{n_i}{p_i + n_i}\right), \tag{48} \]
+      <p>hvor \(s\) er antall splitter, hos oss \(s = 2\). Hvert barn vektes med andelen av datapunktene som havner der. Vi er interessert i forskjellen, <span class="term" data-term="informasjonsgevinst">informasjonsgevinsten</span>:</p>
+      \[ \Delta\mathrm{I} = \mathrm{I}_{\text{før}} - \mathbb{E}[\mathrm{I}_{\text{etter}}] = \mathrm{I}\!\left(\frac{p}{p+n}, \frac{n}{p+n}\right) - \sum_{i=1}^{s} \frac{p_i + n_i}{p + n}\, \mathrm{I}\!\left(\frac{p_i}{p_i + n_i}, \frac{n_i}{p_i + n_i}\right), \tag{49} \]
+      <p>og vi bør velge den splitten som gir <strong>størst</strong> endring i entropi.</p>
+
+      <div class="oppgave" data-quiz id="oppg-9-5">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.3 · s. 19</span></div>
+        <div class="o-text"><p>Vi har en beslutningsnode bestående av \(p = 9\) positive og \(n = 5\) negative datapunkter. Vis at \(\mathrm{I}_{\text{før}} = 0.94\). Anta deretter at vi splitter datasettet slik at vi får to nye datasett med henholdsvis \((p_1 = 4, n_1 = 5)\) og \((p_2 = 5, n_2 = 0)\). Regn ut endringen i entropi (svaret står i notatene, men prøv selv).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene (likning 50) med mellomregning</span>
+            <p><strong>Før:</strong> \(\mathrm{I}\!\left(\frac{9}{14}, \frac{5}{14}\right) = -\frac{9}{14}\log_2\frac{9}{14} - \frac{5}{14}\log_2\frac{5}{14} \approx 0.410 + 0.531 = 0.94\).</p>
+            <p><strong>Etter:</strong></p>
+            \[ \mathbb{E}[\mathrm{I}_{\text{etter}}] = \frac{4+5}{9+5}\,\mathrm{I}\!\left(\frac{4}{9}, \frac{5}{9}\right) + \frac{5}{9+5}\,\mathrm{I}\!\left(\frac{5}{5}, \frac{0}{5}\right) = -\frac{9}{14}\left(\frac{4}{9}\log_2\frac{4}{9} + \frac{5}{9}\log_2\frac{5}{9}\right) + 0 \approx 0.64. \]
+            <p>Det høyre barnet er rent (bare positive), så det bidrar med 0. Det venstre barnet er nesten 50/50 (entropi ≈ 0.99), men teller bare 9/14.</p>
+            <p><strong>Endring:</strong> \(\Delta\mathrm{I} = 0.94 - 0.64 \approx 0.30\) bits. Splitten fjerner omtrent en tredjedel av usikkerheten.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-split">
+        <div class="widget-label">Prøv selv · Informasjonsgevinst og Gini for en splitt</div>
+        <p class="widget-intro">Nodens innhold (\(p\) positive, \(n\) negative) og hva som havner i venstre barn (\(p_1\), \(n_1\)). Resten går til høyre. Forhåndsutfylt med oppgaven over.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sp-p">p</label><input type="number" id="sp-p" min="0" value="9"></div>
+          <div class="w-ctl"><label for="sp-n">n</label><input type="number" id="sp-n" min="0" value="5"></div>
+          <div class="w-ctl"><label for="sp-p1">p₁</label><input type="number" id="sp-p1" min="0" value="4"></div>
+          <div class="w-ctl"><label for="sp-n1">n₁</label><input type="number" id="sp-n1" min="0" value="5"></div>
+        </div>
+        <div class="split-grid" id="sp-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 BYGGE ─────────────────────────── -->
+  <section id="bygge">
+    <div class="container">
+      <div class="section-badge">04 · Bygge beslutningstrær</div>
+      <h2>Når skal vi <em>slutte å splitte</em>?</h2>
+      <div class="source-note">Notatene · avsnitt 1.3.4 · s. 19–20</div>
+
+      <p class="dropcap">I dette kurset trenger dere ikke bygge beslutningstrær selv, men dere bør kunne angi <strong>pseudokode</strong> for å bygge ett. I praksis bruker vi <span class="term" data-term="sklearn">scikit-learn</span> med den innebygde <code>DecisionTreeClassifier</code>, som lar oss velge mellom splitt-kriteriene Gini impurity, entropy og log loss.</p>
+
+      <div class="oppgave" data-quiz id="oppg-plott-gini">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.4 · s. 19</span></div>
+        <div class="o-text"><p>Plott Gini impurity og entropi i intervallet [0, 1]. Er kurvene like?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Gini impurity og entropi oppfører seg likt, og vil i hovedsak gi opphav til samme feature splits (se widgeten under: begge er 0 i endene og maksimale ved \(p = 0.5\), Gini topper på 0.5 og entropi på 1). Hovedforskjellen er at entropi krever en ekstra logaritme, som koster mer å beregne. Gini impurity er derfor mindre beregningstungt, altså raskere, og er default i <code>sklearn.DecisionTreeClassifier</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-gini-plot">
+        <div class="widget-label">Prøv selv · Gini og entropi som funksjon av p</div>
+        <p class="widget-intro">For to klasser med \(p\) i den ene og \(1 - p\) i den andre. Slå på «skaler Gini × 2» for å se hvor like formene er.</p>
+        <svg viewBox="0 0 560 240" data-w="560" data-h="240" aria-label="Gini og entropi"></svg>
+        <div class="legend-row"><span class="l-a">Entropi I(p, 1−p)</span><span class="l-w">Gini 1 − p² − (1−p)²</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="gp-p">p</label><input type="range" id="gp-p" min="0" max="1" step="0.01" value="0.3"><span class="w-val" id="gp-p-val">0.30</span></div>
+          <button class="w-btn secondary" id="gp-scale" type="button">Skaler Gini × 2</button>
+        </div>
+        <div class="w-out" id="gp-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-sammenlikn">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.4 · s. 19</span></div>
+        <div class="o-text"><p>Sammenlikn uttrykkene for log loss, entropi og Gini-urenhet. Likner noen av disse? Hvilken går raskest å evaluere?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · delvis fra notatene</span>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Metrikk</th><th>Uttrykk</th><th>Logaritme?</th></tr></thead>
+                <tbody>
+                  <tr><td>Log loss (32)</td><td>\(-\sum_i y_i \log \hat{y}_i\)</td><td>Ja</td></tr>
+                  <tr><td>Entropi (46)</td><td>\(-\sum_i p_i \log_2 p_i\)</td><td>Ja</td></tr>
+                  <tr><td>Gini (44)</td><td>\(1 - \sum_i p_i^2\)</td><td>Nei</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p><strong>Log loss og entropi likner:</strong> begge er «minus sum av sannsynlighet ganger logaritmen av en sannsynlighet». Log loss er kryssentropien mellom labels \(y\) og prediksjoner \(\hat{y}\); entropi er det samme uttrykket med fordelingen mot seg selv (\(p\) begge steder). Gini bytter ut logaritmen med et kvadrat, og \(1 - \sum p_i^2\) kan ses som en enkel tilnærming til entropien.</p>
+            <p><strong>Raskest:</strong> Gini, fordi kvadrering er billigere enn logaritmer. Det er notatenes begrunnelse for at Gini er default i scikit-learn.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>To spørsmål til</h3>
+      <p>Utover valg av beslutningskriterium må vi besvare:</p>
+      <ul>
+        <li>Når skal vi slutte å splitte, selv om nederste node har instanser fra begge klassene?</li>
+        <li>Hva gjør vi med løvnoder som har instanser fra begge klassene?</li>
+      </ul>
+
+      <h4>Tre tilfeller der vi må slutte å splitte</h4>
+      <ol class="steps">
+        <li><strong>Det finnes ikke flere features å splitte på.</strong> Vi kan ha splittet på alle tilgjengelige features uten å klare å lage løvnoder som tilordner alle treningsdatapunkter til riktig klasse. Da kan vi ikke lage en beslutningsnode: inneværende node er nødvendigvis en løvnode, selv om den inneholder datapunkter fra flere klasser.</li>
+        <li><strong>Det finnes ikke flere datapunkter å teste.</strong> Alle kombinasjoner av features som er <em>tilgjengelig i dataene</em> er testet, uten at alle tenkelige kombinasjoner er testet.</li>
+        <li><strong>Treet har nådd en forhåndsdefinert <span class="term" data-term="maks-dybde">maksimal dybde</span>.</strong> Dette er en hyperparameter som velges før man bygger treet.</li>
+      </ol>
+
+      <h4>Hva en «uren» løvnode skal svare</h4>
+      <p>Etter at treet er bygget har vi sannsynligvis løvnoder med treningsdatapunkter fra begge klasser. De vanligste måtene å bestemme beslutningen på er å returnere</p>
+      <ol>
+        <li>den <span class="term" data-term="dominant-klasse">dominante klassen</span> i noden, altså label tilsvarende den dominante klassen fra treningsdataene i løvnoden,</li>
+        <li>et tilfeldig trukket label fra treningsdataene, altså a priori-sannsynligheten.</li>
+      </ol>
+
+      <h3>Pseudokode</h3>
+      <p>Alt vi har vært gjennom kan settes sammen til en algoritme som rekursivt bygger et beslutningstre:</p>
+<pre><code>def build_decision_tree(data, features, depth):
+    if (all data in same class):
+        return class label
+    elif (no features left to test) or (depth &gt;= max_depth):
+        return 1 if p/(p+n) &gt; n/(p+n) else 0
+    elif (no data left to test):
+        return (dominant class in parent node)
+    else:
+        choose best_feature f for split
+        partition data based on f
+        for each data partition:
+            build_decision_tree(data partition, features - best_feature, depth+1)</code></pre>
+
+      <div class="callout">
+        <span class="label">Les pseudokoden mot stoppkriteriene</span>
+        <p>Første <code>if</code> er den «rene» løvnoden. Andre gren dekker stoppkriterium 1 og 3 og returnerer dominant klasse. Tredje gren dekker stoppkriterium 2 og arver dominant klasse fra forelderen. <code>else</code>-grenen er selve byggingen: velg beste splitt (lavest Gini eller størst ΔI), del dataene, og kall rekursivt på hver del med én feature mindre og dybde + 1.</p>
+      </div>
+
+      <h3>Palmer Penguins</h3>
+      <p>I forelesningen brukes datasettet <span class="term" data-term="palmer-penguins">Palmer Penguins</span>, som er superpopulært innen maskinlæring og kan brukes til mye mer enn å finne pingvinkjønn fra kroppsvekt og flipper length. Vil du reprodusere eksemplene, finner du en <code>.csv</code>-fil på internett og kommer i gang med:</p>
+<pre><code>df = pd.read_csv("data/penguins_lter.csv")
+df = df[["Flipper Length (mm)", "Body Mass (g)", "Sex"]].dropna()
+label_encoder = LabelEncoder()
+df["Sex"] = label_encoder.fit_transform(df["Sex"])
+
+X_data = df[["Flipper Length (mm)", "Body Mass (g)"]].values
+y_data = df['Sex'].values
+
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.3)
+
+clf = tree.DecisionTreeClassifier(max_depth=7, criterion="log_loss")
+clf.fit(X_train, y_train)</code></pre>
+      <p>Og så er det bare å kose seg. For å visualisere beslutningsflaten slik vi så i forelesningen: <code>from sklearn.inspection import DecisionBoundaryDisplay</code>.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva skjer med treet og generaliseringen hvis du setter <code>max_depth</code> veldig høyt, og hvorfor?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Treet får splitte til nesten alle løvnoder er rene, også der det bare skiller ut enkeltpunkter og støy. Det tilpasser treningsdataene nesten perfekt, men beslutningsflaten blir hakkete og generaliserer dårlig: overfit. Maks dybde er hyperparameteren som begrenser dette, på samme måte som antall epoker og læringsrate styrer logistisk regresjon.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Struktur</strong>Rotnode → beslutningsnoder → løvnoder. Bygget av stumper med ett kriterium og to utfall.</div>
+        <div class="recap-pill"><strong>Splitt-kriterium</strong>Én feature, én verdi. Velg den som reduserer usikkerheten mest.</div>
+        <div class="recap-pill"><strong>Gini</strong>\(1 - \sum p_i^2\), i [0, 0.5]. Vektet sum over barna. Lavest er best. Raskest, default i sklearn.</div>
+        <div class="recap-pill"><strong>Entropi</strong>\(-\sum p_i \log_2 p_i\), i [0, 1]. \(\Delta\mathrm{I}\) = før − forventet etter. Størst er best.</div>
+        <div class="recap-pill"><strong>Stopp</strong>Ingen features igjen · ingen data igjen · maks dybde (hyperparameter).</div>
+        <div class="recap-pill"><strong>Uren løvnode</strong>Dominant klasse, eller tilfeldig label etter a priori-fordelingen.</div>
+        <div class="recap-pill"><strong>Pseudokode</strong>Rekursiv: sjekk stoppkriterier, velg beste splitt, del data, kall igjen med dybde + 1.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">En node inneholder 8 datapunkter fra klasse A og 2 fra klasse B. Regn ut Gini-urenheten og entropien.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Gini = 1 − 0.8² − 0.2² = 1 − 0.64 − 0.04 = 0.32. Entropi = −(0.8 log₂ 0.8 + 0.2 log₂ 0.2) ≈ 0.258 + 0.464 ≈ 0.72 bits. Prøv tallene i widgeten i avsnitt 03.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">To splitter av samme node gir barn med entropi (0, 1) og (0.5, 0.5). Den første sender 2 av 20 punkter til det rene barnet, den andre sender 10 til hvert. Hvilken har størst informasjonsgevinst?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Forventet entropi etter: første splitt gir (2/20)·0 + (18/20)·1 = 0.90; andre gir (10/20)·0.5 + (10/20)·0.5 = 0.50. Andre splitt har lavest forventet entropi og dermed størst ΔI. Et lite, rent barn hjelper lite når nesten alt havner i det urene barnet. Vektingen med andel datapunkter er poenget med likning (48).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvorfor gir Gini og entropi «i hovedsak» samme splitter, og når kan de være uenige?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Begge er 0 for rene noder, maksimale ved 50/50 og symmetriske om p = 0.5, med nesten samme form (entropi er litt «rundere» ved toppen, se plottet). Rangeringen av kandidat-splitter blir derfor nesten alltid lik. De kan bli uenige når to splitter er svært jevne, siden entropi straffer små, urene barn litt hardere enn Gini.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Skriv pseudokoden for <code>build_decision_tree</code> fra hukommelsen, og pek på hvor hyperparameteren og splitt-kriteriet inngår.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Se pseudokoden i avsnitt 04. Hyperparameteren <code>max_depth</code> inngår i testen <code>depth &gt;= max_depth</code>; splitt-kriteriet (Gini, entropi eller log loss) brukes i <code>choose best_feature f for split</code>, der vi velger featuren og verdien som gir lavest urenhet (Gini) eller størst ΔI (entropi).</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="logistisk-regresjon.html" class="prev"><div class="pn-label">← Forrige · 1A</div><div class="pn-title">Data og logistisk regresjon</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 1: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../glossary.js"></script>
+<script src="../quiz.js"></script>
+<script src="../site.js"></script>
+<script src="../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var f3 = function (v) { return window.fmtNum(v, 3); };
+  function H(p) { if (p <= 0 || p >= 1) return 0; return -(p * Math.log2(p) + (1 - p) * Math.log2(1 - p)); }
+  function G(p) { return 1 - p * p - (1 - p) * (1 - p); }
+
+  /* ─── Interaktivt tre ─── */
+  (function () {
+    var root = document.getElementById('w-tree'); if (!root) return;
+    var mass = document.getElementById('pg-mass'), flip = document.getElementById('pg-flip'), out = document.getElementById('pg-out');
+    var svg = document.getElementById('pg-svg');
+    function setState(ids) {
+      svg.querySelectorAll('.node, .edge').forEach(function (el) {
+        var on = ids.indexOf(el.id) !== -1;
+        el.classList.toggle('on', on); el.classList.toggle('dim', !on);
+      });
+    }
+    function run() {
+      var m = +mass.value || 0, fl = +flip.value || 0;
+      var path = ['n-0'], steps = ['Rot: Body Mass = ' + m + ' g > 3800 g? ' + (m > 3800 ? 'Ja' : 'Nei')];
+      var leaf;
+      if (m > 3800) {
+        path.push('e-0-2', 'n-2');
+        steps.push('Node: Flipper Length = ' + fl + ' mm > 210 mm? ' + (fl > 210 ? 'Ja' : 'Nei'));
+        if (fl > 210) { path.push('e-2-d', 'n-d'); leaf = 'MALE'; } else { path.push('e-2-c', 'n-c'); leaf = 'FEMALE'; }
+      } else {
+        path.push('e-0-1', 'n-1');
+        steps.push('Node: Flipper Length = ' + fl + ' mm > 195 mm? ' + (fl > 195 ? 'Ja' : 'Nei'));
+        if (fl > 195) { path.push('e-1-b', 'n-b'); leaf = 'MALE'; } else { path.push('e-1-a', 'n-a'); leaf = 'FEMALE'; }
+      }
+      setState(path);
+      out.innerHTML = steps.join('\n') + '\nLøvnode: prediksjon = <span class="hl">' + leaf + '</span>  (' + (path.length - 1) / 2 + ' spørsmål stilt)';
+    }
+    mass.addEventListener('input', run); flip.addEventListener('input', run);
+    run();
+  })();
+
+  /* ─── Gini for tabell 6 ─── */
+  (function () {
+    var root = document.getElementById('w-alt'); if (!root) return;
+    var cards = root.querySelectorAll('.alt-card'), out = document.getElementById('alt-out');
+    cards.forEach(function (c) {
+      c.addEventListener('click', function () {
+        cards.forEach(function (x) { x.classList.toggle('active', x === c); });
+        var n1 = +c.dataset.n1, n2 = +c.dataset.n2, n = n1 + n2;
+        var p1 = n1 / n, p2 = n2 / n, g = 1 - p1 * p1 - p2 * p2;
+        out.innerHTML = c.querySelector('.ac-name').textContent + ': n₁ = ' + n1 + ', n₂ = ' + n2 + ' (n = ' + n + ')\n' +
+          'p₁ = ' + n1 + '/' + n + ' = ' + p1.toFixed(2) + ',  p₂ = ' + n2 + '/' + n + ' = ' + p2.toFixed(2) + '\n' +
+          'Gini = 1 − ' + p1.toFixed(2) + '² − ' + p2.toFixed(2) + '² = 1 − ' + (p1 * p1).toFixed(2) + ' − ' + (p2 * p2).toFixed(2) + ' = <span class="hl">' + f3(g) + '</span>\n' +
+          (g === 0 ? 'Ren node: ingen sjanse for å gjette feil.' : g >= 0.5 ? 'Maksimal urenhet for to klasser.' : 'Sannsynligheten for å gjette feil farge på en tilfeldig kule er ' + Math.round(g * 100) + ' %.');
+      });
+    });
+    cards[0].click();
+  })();
+
+  /* ─── Splitt-kalkulator ─── */
+  (function () {
+    var root = document.getElementById('w-split'); if (!root) return;
+    var ids = ['sp-p', 'sp-n', 'sp-p1', 'sp-n1'], out = document.getElementById('sp-out');
+    function box(k, body, total) { return '<div class="split-box' + (total ? ' total' : '') + '"><div class="sb-k">' + k + '</div>' + body + '</div>'; }
+    function draw() {
+      var p = Math.max(0, +document.getElementById('sp-p').value || 0), n = Math.max(0, +document.getElementById('sp-n').value || 0);
+      var p1 = Math.min(p, Math.max(0, +document.getElementById('sp-p1').value || 0)), n1 = Math.min(n, Math.max(0, +document.getElementById('sp-n1').value || 0));
+      var p2 = p - p1, n2 = n - n1, N = p + n, N1 = p1 + n1, N2 = p2 + n2;
+      if (N === 0) { out.innerHTML = box('Feil', 'Noden må ha datapunkter.'); return; }
+      var Hb = H(p / N), H1 = N1 ? H(p1 / N1) : 0, H2 = N2 ? H(p2 / N2) : 0;
+      var Ha = (N1 / N) * H1 + (N2 / N) * H2;
+      var Gb = G(p / N), G1 = N1 ? G(p1 / N1) : 0, G2 = N2 ? G(p2 / N2) : 0, Ga = (N1 / N) * G1 + (N2 / N) * G2;
+      out.innerHTML =
+        box('Før splitt', 'p = ' + p + ', n = ' + n + '<br>I(' + p + '/' + N + ', ' + n + '/' + N + ') = ' + f3(Hb) + '<br>Gini = ' + f3(Gb)) +
+        box('Venstre barn', 'p₁ = ' + p1 + ', n₁ = ' + n1 + ' (vekt ' + N1 + '/' + N + ')<br>I = ' + f3(H1) + '<br>Gini = ' + f3(G1)) +
+        box('Høyre barn', 'p₂ = ' + p2 + ', n₂ = ' + n2 + ' (vekt ' + N2 + '/' + N + ')<br>I = ' + f3(H2) + '<br>Gini = ' + f3(G2)) +
+        box('Etter splitt', 'E[I_etter] = ' + N1 + '/' + N + '·' + f3(H1) + ' + ' + N2 + '/' + N + '·' + f3(H2) + ' = <strong>' + f3(Ha) + '</strong><br>Gini_f = <strong>' + f3(Ga) + '</strong>') +
+        box('Gevinst', 'ΔI = ' + f3(Hb) + ' − ' + f3(Ha) + ' = <strong>' + f3(Hb - Ha) + '</strong> bits<br>ΔGini = ' + f3(Gb - Ga), true);
+    }
+    ids.forEach(function (id) { document.getElementById(id).addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ─── Gini vs entropi-plott ─── */
+  (function () {
+    var root = document.getElementById('w-gini-plot'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [0, 1], y: [0, 1], xLabel: 'p', xTicks: [0, 0.25, 0.5, 0.75, 1], yTicks: [0, 0.25, 0.5, 0.75, 1] });
+    var pIn = document.getElementById('gp-p'), pVal = document.getElementById('gp-p-val'), out = document.getElementById('gp-out');
+    var scaleBtn = document.getElementById('gp-scale'), scale = false;
+    function draw() {
+      var p = +pIn.value; pVal.textContent = p.toFixed(2);
+      plot.clearData(); plot.clearOverlay();
+      plot.curve(H, 'curve', 200);
+      plot.curve(function (x) { return (scale ? 2 : 1) * G(x); }, 'curve-2', 200);
+      plot.vline(p);
+      plot.point(p, H(p), 'marker-accent'); plot.point(p, (scale ? 2 : 1) * G(p), 'marker');
+      out.innerHTML = 'p = ' + p.toFixed(2) + '\nEntropi  = −(p log₂ p + (1−p) log₂ (1−p)) = <span class="hl">' + f3(H(p)) + '</span>\nGini     = 1 − p² − (1−p)² = <span class="hl">' + f3(G(p)) + '</span>' + (scale ? '   (tegnet × 2 = ' + f3(2 * G(p)) + ')' : '') +
+        '\nBegge er 0 ved p = 0 og p = 1, og størst ved p = 0.5 (entropi 1, Gini 0.5).';
+    }
+    pIn.addEventListener('input', draw);
+    scaleBtn.addEventListener('click', function () { scale = !scale; scaleBtn.classList.toggle('active', scale); scaleBtn.textContent = scale ? 'Vis Gini uskalert' : 'Skaler Gini × 2'; draw(); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

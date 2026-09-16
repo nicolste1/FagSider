@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Kapittel 1 — Veiledet læring</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Veiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · Notater 1.1–1.3 · s. 2–20</div>
+      <h1>Veiledet <em>læring</em></h1>
+      <p class="lede">Hele grunnoppskriften i maskinlæring, vist med to modeller: logistisk regresjon, som læres med gradient descent, og beslutningstrær, som bygges ved å splitte på den featuren som rydder mest.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgavene fra notatene</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ─────────── Helhetsbilde ─────────── -->
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Veiledet læring er læring fra data der fasiten er kjent: hvert datapunkt har features \(\mathbf{x}\) og en <span class="term" data-term="target">target</span> \(y\), og vi vil lage en modell som estimerer \(y\) for nye \(\mathbf{x}\). Kapittelet går gjennom hele løypa én gang med logistisk regresjon, og viser så en helt annen type modell, beslutningstrær, som løser samme oppgave på en annen måte.</p>
+
+      <ul>
+        <li><strong>Data først.</strong> Kvalitative og kvantitative features, target, preprosessering (dropna, label encoding, skalering) og plotting før modellering.</li>
+        <li><strong>Modell + tapsfunksjon + optimering = læringsalgoritme.</strong> Logistisk regresjon er \(\sigma(\mathbf{w}\mathbf{x} + b)\), tapet er cross-entropy, og <span class="term" data-term="gradient-descent">gradient descent</span> finner parametrene. Dette mønsteret gjentas for nevrale nettverk senere i kurset.</li>
+        <li><strong>Evaluering er ikke «accuracy».</strong> Confusion matrix, TPR/FPR, precision/recall, ROC og terskelvalg. Ubalanserte data avslører hvorfor.</li>
+        <li><strong>Sannsynlighet under panseret.</strong> Entropi og kryssentropi forklarer tapsfunksjonen; Bayes’ teorem og naïv Bayes forklarer hva vi egentlig estimerer, og dimensjonsforbannelsen forklarer hvorfor vi ikke bare regner det ut.</li>
+        <li><strong>Beslutningstrær</strong> splitter på én feature om gangen, med Gini-urenhet eller entropi som mål på hvor mye en splitt rydder.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Sidene bygger på Inga Strümkes <em>Forelesningsnotater Introduksjon til Maskinlæring</em>, kapittel 1 (avsnitt 1.1–1.3). Notatene utvikles gjennom semesteret; versjonen sidene bygger på står nederst på hver side. Alle «Oppgave:»-avsnitt fra notatene er tatt med som egne bokser, med svar fra notatene der de finnes og forslag til svar der de ikke gjør det.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Læringssti ─────────── -->
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Følg rekkefølgen i notatene: alt i 1A bygger på det foregående, og 1B bruker entropi fra 1A.</p>
+
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="logistisk-regresjon.html#data">Data og notasjon</a></div><div class="desc">Features, target, Titanic, preprosessering, plott.</div></div><div class="min">~12 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="logistisk-regresjon.html#modell">Modellen</a></div><div class="desc">Lineær regresjon + sigmoid. Prøv slideren.</div></div><div class="min">~6 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="logistisk-regresjon.html#tap">Tapsfunksjon</a></div><div class="desc">Likelihood → log-likelihood → cross-entropy.</div></div><div class="min">~12 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="logistisk-regresjon.html#gradient-descent">Gradient descent</a></div><div class="desc">Oppdateringsregel, læringsrate, derivasjonen. Prøv stepperen.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="logistisk-regresjon.html#trening">Trening i kode</a></div><div class="desc">fit / predict, epoker, train/test-split.</div></div><div class="min">~6 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="logistisk-regresjon.html#evaluering">Evaluering og terskel</a></div><div class="desc">Confusion matrix, metrikker, ROC, precision/recall.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="logistisk-regresjon.html#entropi">Entropi og Bayes</a></div><div class="desc">Kryssentropi, Bayes’ teorem, naïv Bayes, avhengige features.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">08</div><div><div class="title"><a href="logistisk-regresjon.html#dimensjonsforbannelsen">Dimensjonsforbannelsen og ubalanse</a></div><div class="desc">Hvorfor data blir tynne, og hva 99 % accuracy skjuler.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">09</div><div><div class="title"><a href="beslutningstraer.html#noder">Beslutningstrær: noder</a></div><div class="desc">Rot, beslutningsnoder, løv, stumper, splitt-kriterium.</div></div><div class="min">~6 min</div></div>
+        <div class="path-step"><div class="num">10</div><div><div class="title"><a href="beslutningstraer.html#gini">Gini og entropi</a></div><div class="desc">Urenhet, informasjonsgevinst, regn på 9/5-eksempelet.</div></div><div class="min">~12 min</div></div>
+        <div class="path-step"><div class="num">11</div><div><div class="title"><a href="beslutningstraer.html#bygge">Bygge treet</a></div><div class="desc">Stoppkriterier, urene løvnoder, pseudokode, sklearn.</div></div><div class="min">~8 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Deler ─────────── -->
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="logistisk-regresjon.html" class="subpage-card">
+          <span class="sp-icon">1A</span>
+          <div class="sp-info">
+            <div class="sp-title">Data og logistisk regresjon</div>
+            <div class="sp-desc">Notater 1.1–1.2: data, sigmoid, cross-entropy, gradient descent, trening, evaluering, terskel og ROC, entropi, Bayes, dimensjonsforbannelsen, ubalanserte data. 17 oppgaver, 7 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="beslutningstraer.html" class="subpage-card">
+          <span class="sp-icon">1B</span>
+          <div class="sp-info">
+            <div class="sp-title">Beslutningstrær</div>
+            <div class="sp-desc">Notater 1.3: noder og stumper, Gini-urenhet, entropi og informasjonsgevinst, stoppkriterier, pseudokode, Palmer Penguins. 5 oppgaver, 4 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene fra kapittelet, samlet →</a></p>
+    </div>
+  </section>
+
+  <!-- ─────────── Begrepskart ─────────── -->
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Grunnløypa i midten; teorien som forklarer hvorfor til venstre og høyre. Bruk det som sjekkliste.</p>
+
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 1">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
+            </marker>
+          </defs>
+
+          <!-- Grunnløype -->
+          <rect class="bh" x="290" y="18" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="38" text-anchor="middle">Data (x, y)</text>
+          <text class="cap" x="380" y="54" text-anchor="middle">features · target · preprosessering</text>
+
+          <rect class="bh" x="290" y="96" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="116" text-anchor="middle">Modell f(x; θ)</text>
+          <text class="cap" x="380" y="132" text-anchor="middle">σ(w·x + b) · θ = (w, b)</text>
+
+          <rect class="bh" x="290" y="174" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="194" text-anchor="middle">Tapsfunksjon ℒ</text>
+          <text class="cap" x="380" y="210" text-anchor="middle">cross-entropy = −log-likelihood</text>
+
+          <rect class="bh" x="290" y="252" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="272" text-anchor="middle">Gradient descent</text>
+          <text class="cap" x="380" y="288" text-anchor="middle">θ ← θ − η ∂ℒ/∂θ · epoker</text>
+
+          <rect class="bh" x="290" y="330" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="350" text-anchor="middle">Evaluering</text>
+          <text class="cap" x="380" y="366" text-anchor="middle">confusion matrix · ROC · terskel</text>
+
+          <path class="e" d="M380 64 L380 94"/>
+          <path class="e" d="M380 142 L380 172"/>
+          <path class="e" d="M380 220 L380 250"/>
+          <path class="e" d="M380 298 L380 328"/>
+
+          <!-- Venstre: teori -->
+          <rect class="b" x="40" y="96" width="170" height="46" rx="6"/>
+          <text class="lbl" x="125" y="116" text-anchor="middle">Bayes’ teorem</text>
+          <text class="cap" x="125" y="132" text-anchor="middle">posterior ∝ likelihood · prior</text>
+          <path class="e-faded" d="M210 119 L290 119"/>
+
+          <rect class="b" x="40" y="174" width="170" height="46" rx="6"/>
+          <text class="lbl" x="125" y="194" text-anchor="middle">Entropi H(p), H(p, q)</text>
+          <text class="cap" x="125" y="210" text-anchor="middle">hvorfor tapet heter cross-entropy</text>
+          <path class="e-faded" d="M210 197 L290 197"/>
+
+          <rect class="b" x="40" y="252" width="170" height="46" rx="6"/>
+          <text class="lbl" x="125" y="272" text-anchor="middle">Konveks · deriverbar</text>
+          <text class="cap" x="125" y="288" text-anchor="middle">garanti for globalt minimum</text>
+          <path class="e-faded" d="M210 275 L290 275"/>
+
+          <rect class="b" x="40" y="18" width="170" height="46" rx="6"/>
+          <text class="lbl" x="125" y="38" text-anchor="middle">Dimensjonsforbannelsen</text>
+          <text class="cap" x="125" y="54" text-anchor="middle">bins^d · naïv Bayes som utvei</text>
+          <path class="e-faded" d="M210 41 L290 41"/>
+
+          <!-- Høyre: evaluering + trær -->
+          <rect class="b" x="550" y="330" width="170" height="46" rx="6"/>
+          <text class="lbl" x="635" y="350" text-anchor="middle">Ubalanserte data</text>
+          <text class="cap" x="635" y="366" text-anchor="middle">terskel · resampling · vektet tap</text>
+          <path class="e-faded" d="M470 353 L550 353"/>
+
+          <rect class="b" x="550" y="252" width="170" height="46" rx="6"/>
+          <text class="lbl" x="635" y="272" text-anchor="middle">Hyperparametre</text>
+          <text class="cap" x="635" y="288" text-anchor="middle">η · epoker · max_depth</text>
+          <path class="e-faded" d="M470 275 L550 275"/>
+
+          <rect class="bw" x="550" y="96" width="170" height="46" rx="6"/>
+          <text class="lbl" x="635" y="116" text-anchor="middle">Beslutningstrær</text>
+          <text class="cap" x="635" y="132" text-anchor="middle">noder · stumper · splitt-kriterium</text>
+          <path class="e-faded" d="M470 119 L550 119"/>
+
+          <rect class="bw" x="550" y="174" width="170" height="46" rx="6"/>
+          <text class="lbl" x="635" y="194" text-anchor="middle">Gini · entropi · ΔI</text>
+          <text class="cap" x="635" y="210" text-anchor="middle">velg splitten som rydder mest</text>
+          <path class="e" d="M635 142 L635 172"/>
+          <path class="e-faded" d="M550 197 L470 197"/>
+        </svg>
+        <figcaption>Heltrukne piler: rekkefølgen i løypa. Stiplede: teori som forklarer steget den peker på.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────── Oppgaver ─────────── -->
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra notatene</div>
+      <h2>Alle <em>«Oppgave:»</em>-avsnittene</h2>
+      <p class="section-intro">Notatene har åpne spørsmål underveis. Her er alle 22 (inkludert én tankeøvelse), lenket til stedet på siden der de står. Grønn status betyr at svaret er hentet fra notatene, gul at svaret er et forslag skrevet for denne siden.</p>
+
+      <ul class="oppgave-index">
+        <li><a href="logistisk-regresjon.html#oppg-titanic"><span class="oi-ref">1.1 · s. 2</span><span>Hvilke Titanic-variabler er kategoriske, binære, kontinuerlige, og hvilken bør vi ikke bruke?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-plott"><span class="oi-ref">1.1 · s. 4</span><span>Hva bør vi gjøre før vi plotter dataene?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-z-vektor"><span class="oi-ref">1.2 · s. 4</span><span>Er \(z = \mathbf{w}\mathbf{x} + b\) et tall eller en vektor?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-likelihood-verdier"><span class="oi-ref">1.2.1 · s. 5</span><span>Verdien av \(y_{\text{pred}}^{\,y}(1 - y_{\text{pred}})^{1-y}\) for alle kombinasjoner av \(y\) og \(y_{\text{pred}}\).</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-retning"><span class="oi-ref">1.2.2 · s. 7</span><span>Hvilken retning bør vi bevege oss i? I hvilket rom?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-tap-vs-metrikk"><span class="oi-ref">1.2.4 · s. 10</span><span>Hvorfor ikke bruke samme tapsfunksjon og evalueringsmetrikk?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-sykehus"><span class="oi-ref">1.2.4 · s. 10</span><span>Sykehus-modellen: hvilken metrikk skal være høy? Rakett-modellen: hvilken skal være lav?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-fpr-tpr"><span class="oi-ref">1.2.5 · s. 11</span><span>Høy eller lav FPR og TPR? Hva blir de ved terskel 0 og 1?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-myntkast"><span class="oi-ref">1.2.5 · s. 11</span><span>Hvordan ser ROC-kurven ut for en modell som kaster mynt?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-precision-recall"><span class="oi-ref">1.2.5 · s. 12</span><span>Når er precision = recall? Hvilken avhenger av klassefordelingen?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-avhengige"><span class="oi-ref">1.2.8 · s. 15</span><span>Hvilke features er ikke uavhengige? (crosstab Pclass × Sex)</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-tabell-estimat"><span class="oi-ref">1.2.8 · s. 15</span><span>Estimer simultanfordelingen selv med en tabell. Hva får du ut?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-tre-features"><span class="oi-ref">1.2.8 · s. 15</span><span>Hvor mange datapunkter for tre features med 10 bins og 10 per bin?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-skalering"><span class="oi-ref">1.2.9 · s. 15</span><span>Hvordan skalerer antall datapunkter med antall dimensjoner?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-skall"><span class="oi-ref">1.2.9 · s. 16</span><span>Hvor stor andel av en \(d\)-dimensjonal kule ligger i et tynt skall?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-intervju"><span class="oi-ref">1.2.10 · s. 16</span><span>99 % accuracy, men finner ikke de syke. Hva har skjedd?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-resampling"><span class="oi-ref">1.2.10 · s. 17</span><span>100 vs 1000 datapunkter: totalt etter under- og oversampling, og antall duplikater?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-gini-splitt"><span class="oi-ref">1.3.2 · s. 18</span><span>Tabell 6: hvilken splitt bør vi velge, og hvorfor?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-entropi-verdier"><span class="oi-ref">1.3.3 · s. 19</span><span>Entropien til (0.5, 0.5) og (0.01, 0.99)?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-9-5"><span class="oi-ref">1.3.3 · s. 19</span><span>\(p = 9, n = 5\): vis \(\mathrm{I}_{\text{før}} = 0.94\) og regn ut endringen etter splitt (4, 5) / (5, 0).</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-plott-gini"><span class="oi-ref">1.3.4 · s. 19</span><span>Plott Gini og entropi i [0, 1]. Er kurvene like?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-sammenlikn"><span class="oi-ref">1.3.4 · s. 19</span><span>Sammenlikn log loss, entropi og Gini. Likner noen? Hvilken er raskest?</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────── Quiz ─────────── -->
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever at du ser 1A og 1B i sammenheng. Flere spørsmål finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Både logistisk regresjon og beslutningstrær kan bruke «log loss». Hva brukes det til i hvert tilfelle?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I logistisk regresjon er log loss (cross-entropy) <em>tapsfunksjonen</em> som gradient descent minimerer ved å justere \(\mathbf{w}\) og \(b\). I beslutningstrær er det ett av tre mulige <em>splitt-kriterier</em>, et mål på usikkerheten i en node, som brukes til å velge hvilken feature og verdi som skal splittes på. Samme uttrykk, to roller.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Nevn én hyperparameter for hver av de to modellene, og forklar hva som skjer om den settes for høyt.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Logistisk regresjon: læringsraten \(\eta\). For høy verdi gjør at gradient descent hopper over minimumet og tapet øker eller divergerer. Beslutningstre: <code>max_depth</code>. For høy verdi lar treet splitte til det tilpasser støy i treningsdataene, altså overfit. (Antall epoker er et annet gyldig svar for logistisk regresjon.)</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Naïv Bayes antar uavhengige features. Gjør et beslutningstre en tilsvarende antakelse? Begrunn.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei. Et tre splitter på én feature om gangen, men hver splitt lenger ned skjer <em>betinget</em> på splittene over: «Flipper > 200 <em>gitt at</em> Body Mass > 3800». Treet kan dermed fange samspill mellom features, det naïv Bayes eksplisitt kaster bort ved å faktorisere \(p(\mathbf{x} \mid C_k)\) til et produkt. Prisen er at treet trenger nok data i hver gren, en mild variant av dimensjonsforbannelsen.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Entropi brukes to steder i kapittelet. Forklar begge, og hva som er «p» og «q» i hvert tilfelle.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(1) Som <em>kryssentropi</em> \(H(p, q)\) i tapsfunksjonen: \(p\) er fordelingen av labels i dataene, \(q\) er modellens prediksjoner, og vi minimerer avstanden mellom dem. (2) Som <em>entropi</em> \(H(p)\) i beslutningstrær: \(p\) er klassefordelingen i en node, og vi velger splitten som gir størst nedgang (informasjonsgevinst). Det andre er spesialtilfellet \(q = p\) av det første.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="logistisk-regresjon.html" class="next"><div class="pn-label">Start · 1A</div><div class="pn-title">Data og logistisk regresjon →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../glossary.js"></script>
+<script src="../quiz.js"></script>
+<script src="../site.js"></script>
+<script src="../nav-search.js"></script>
+</body>
+</html>

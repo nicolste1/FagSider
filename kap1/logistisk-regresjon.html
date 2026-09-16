@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Data og logistisk regresjon — Kap 1</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .titanic td.missing { text-align: center; }
+  .notation-table td, .notation-table th { text-align: center; }
+  .notation-table td:first-child { text-align: left; }
+  .lr-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 1.2rem 0; }
+  .lr-flow .step { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.7rem 0.8rem; text-align: center; }
+  .lr-flow .step .s-k { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .lr-flow .step .s-v { font-family: var(--serif); font-size: 1rem; margin-top: 2px; }
+  .lik-table td { font-family: var(--mono); font-size: 0.88rem; text-align: center; }
+  .lik-table td:last-child { text-align: left; font-family: var(--serif); font-size: 0.95rem; }
+  .deriv .katex-display { margin: 0.4rem 0 !important; }
+  .metrics-table td:nth-child(2) { white-space: nowrap; }
+  .metrics-table td:nth-child(2) .katex { font-size: 1em; }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  .legend-row .l-g::before { background: var(--green); }
+  .strip-legend span::before { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 1</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Veiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · 1A · Notater 1.1–1.2 · s. 2–17</div>
+      <h1>Data og <em>logistisk regresjon</em></h1>
+      <p class="lede">Fra rådata til en trent klassifikator: hva features og target er, hvordan sigmoid gjør en lineær modell om til sannsynligheter, hvorfor cross-entropy er tapsfunksjonen, hvordan gradient descent finner parametrene, og hvordan vi evaluerer resultatet ærlig.</p>
+      <nav class="toc">
+        <a href="#data"><span>01</span> Data</a>
+        <a href="#modell"><span>02</span> Modellen</a>
+        <a href="#tap"><span>03</span> Tapsfunksjon</a>
+        <a href="#gradient-descent"><span>04</span> Gradient descent</a>
+        <a href="#trening"><span>05</span> Trening</a>
+        <a href="#evaluering"><span>06</span> Evaluering</a>
+        <a href="#terskel"><span>07</span> Terskel &amp; ROC</a>
+        <a href="#entropi"><span>08</span> Entropi</a>
+        <a href="#bayes"><span>09</span> Bayes</a>
+        <a href="#avhengige-features"><span>10</span> Avhengige features</a>
+        <a href="#dimensjonsforbannelsen"><span>11</span> Dimensjons­forbannelsen</a>
+        <a href="#ubalanserte-data"><span>12</span> Ubalanserte data</a>
+        <a href="#oppsummering"><span>13</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 01 DATA ─────────────────────────── -->
+  <section id="data">
+    <div class="container">
+      <div class="section-badge">01 · Data</div>
+      <h2>Hva maskinlæring <em>lærer fra</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.1 · s. 2–4</div>
+
+      <p class="dropcap"><span class="term" data-term="maskinlaering">Maskinlæring</span> går ut på å programmere datamaskiner slik at de kan lære fra data. To klassiske definisjoner rammer inn hva det betyr:</p>
+
+      <blockquote>“Machine learning is the field of study that gives computers the ability to learn without being explicitly programmed.”<cite>Arthur Samuel, 1959</cite></blockquote>
+      <blockquote>“A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E.”<cite>Tom Mitchell, 1997</cite></blockquote>
+
+      <p>Utgangspunktet er altså <em>experience</em> i form av data, som brukes av et program hvis <em>performance</em> (ytelse) øker på en <em>task</em> (oppgave). Legg merke til at Mitchells definisjon krever et <strong>ytelsesmål P</strong>. Det er grunnen til at vi bruker så mye tid på evaluering senere på siden.</p>
+
+      <div class="lr-flow">
+        <div class="step"><div class="s-k">E · erfaring</div><div class="s-v">Datasettet</div></div>
+        <div class="step"><div class="s-k">T · oppgave</div><div class="s-v">Predikere target</div></div>
+        <div class="step"><div class="s-k">P · ytelse</div><div class="s-v">Tap og metrikker</div></div>
+      </div>
+
+      <h3>Features og target</h3>
+      <p>Et <span class="term" data-term="datasett">datasett</span> består av datapunkter med ulike egenskaper. Egenskapene kalles <em>variabler</em> i statistikk og <span class="term" data-term="feature">features</span> i maskinlæring; vi bruker begrepene om hverandre. I en tabell er <strong>kolonnene features</strong> og <strong>radene datapunkter</strong>. Features kan være av to typer:</p>
+
+      <div class="compare-grid">
+        <div class="compare-cell warm">
+          <h4>Kvalitative variabler</h4>
+          <p><span class="term" data-term="kvalitativ">Kategoriske</span>: beskriver et endelig antall kategorier. Sjanger {action, komedie, …}, aldersgruppe {ung, …, gammel}, type frukt {eple, banan, …}.</p>
+          <p>Må ofte <span class="term" data-term="label-encoding">enkodes</span> før bruk, f.eks. hvis de er lagret som strenger.</p>
+        </div>
+        <div class="compare-cell accent">
+          <h4>Kvantitative variabler</h4>
+          <p><span class="term" data-term="kvantitativ">Numeriske</span>: kan måles, sorteres og regnes på. Inntekt, alder, antall lyttere, areal, nedbørsmengde, temperatur. Diskrete eller kontinuerlige.</p>
+          <p>Kan i prinsippet brukes direkte, men bør ofte <span class="term" data-term="normalisering">skaleres</span> først.</p>
+        </div>
+      </div>
+
+      <p>Hvis datasettet har en kolonne som angir verdien vi vil estimere, kaller vi den <span class="term" data-term="target">target</span>, og vi kan gjøre <span class="term" data-term="veiledet-laering">veiledet læring</span>. Notatene bruker Titanic-datasettet fra Kaggle som gjennomgående eksempel:</p>
+
+      <div class="table-wrap">
+        <table class="titanic">
+          <caption>Tabell 2 i notatene: et utvalg av Titanic-datasettet. Survived er target.</caption>
+          <thead><tr><th>PassengerId</th><th>Pclass</th><th>Name</th><th>Sex</th><th>Age</th><th>Survived</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">1</td><td class="mono">3</td><td>Braund, Mr. Owen Harris</td><td>male</td><td class="mono">22</td><td class="mono">0</td></tr>
+            <tr><td class="mono">2</td><td class="mono">1</td><td>Cumings, Mrs. John Bradley</td><td>female</td><td class="mono">38</td><td class="mono">1</td></tr>
+            <tr><td class="mono">3</td><td class="mono">3</td><td>Heikkinen, Miss. Laina</td><td>female</td><td class="mono">26</td><td class="mono">1</td></tr>
+            <tr><td class="mono">4</td><td class="mono">1</td><td>Futrelle, Mrs. Jacques Heath</td><td>female</td><td class="mono">35</td><td class="mono">1</td></tr>
+            <tr><td class="mono">5</td><td class="mono">3</td><td>Allen, Mr. William Henry</td><td>male</td><td class="mono">35</td><td class="mono">0</td></tr>
+            <tr><td class="mono">6</td><td class="mono">3</td><td>Moran, Mr. James</td><td>male</td><td class="missing">mangler</td><td class="mono">0</td></tr>
+            <tr><td class="mono">7</td><td class="mono">1</td><td>McCarthy, Mr. Timothy J</td><td>male</td><td class="mono">54</td><td class="mono">0</td></tr>
+            <tr><td class="mono">8</td><td class="mono">3</td><td>Palsson, Master. Gosta Leonard</td><td>male</td><td class="mono">2</td><td class="mono">0</td></tr>
+            <tr><td class="mono">9</td><td class="mono">2</td><td>Montvila, Rev. Juozas</td><td>male</td><td class="mono">27</td><td class="mono">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-titanic">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.1 · s. 2–3</span></div>
+        <div class="o-text">
+          <p>Se på Titanic-tabellen over. Tenk deg om før du sjekker svaret.</p>
+          <ol>
+            <li>Hvilke variabler er kategoriske?</li>
+            <li>Hvilke variabler er <span class="term" data-term="binaer">binære</span>?</li>
+            <li>Hvilke variabler er kontinuerlige?</li>
+            <li>Hvilken variabel bør vi ikke bruke?</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <ol>
+              <li>Pclass, Name, Sex, Survived (og PassengerId, om vi anser hver Id som sin egen kategori).</li>
+              <li>Sex, Survived.</li>
+              <li>Age.</li>
+              <li>PassengerId og Name.</li>
+            </ol>
+            <p><strong>Hvorfor:</strong> PassengerId inneholder ingen informasjon om passasjerens egenskaper og er sannsynligvis tilfeldig valgt. Name bør bare brukes om vi lager en modell som forstår språk godt nok til å finne en relasjon mellom typiske navn og for eksempel dyktighet i redningsbåter. For modellene vi skal lage, inneholder ikke Name relevant informasjon.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Notasjon</h3>
+      <p>Vi fjerner variablene vi ikke vil bruke og innfører notasjon. Hver rad er et datapunkt med indeks \(i\) <em>oppe</em>, i parentes for ikke å forveksle den med en eksponent: \(\mathbf{x}^{(i)}\). Hver kolonne er en feature med indeks \(j\) <em>nede</em>: \(x_j\). Fet \(\mathbf{x}\) betyr vektor, \(\mathbf{x}^{(1)} = (x^{(1)}_1, x^{(1)}_2, x^{(1)}_3)\). Target kalles \(y\).</p>
+
+      <div class="table-wrap">
+        <table class="notation-table">
+          <caption>Tabell 3 i notatene: datasettet etter utvalg av variabler, med notasjon.</caption>
+          <thead><tr><th></th><th>\(x_1\) (Pclass)</th><th>\(x_2\) (Sex)</th><th>\(x_3\) (Age)</th><th>\(y\) (Survived)</th></tr></thead>
+          <tbody>
+            <tr><td>\(\mathbf{x}^{(1)}\)</td><td class="mono">3</td><td>male</td><td class="mono">22</td><td class="mono">0</td></tr>
+            <tr><td>\(\mathbf{x}^{(2)}\)</td><td class="mono">1</td><td>female</td><td class="mono">38</td><td class="mono">1</td></tr>
+            <tr><td>\(\mathbf{x}^{(3)}\)</td><td class="mono">3</td><td>female</td><td class="mono">26</td><td class="mono">1</td></tr>
+            <tr><td>\(\mathbf{x}^{(4)}\)</td><td class="mono">1</td><td>female</td><td class="mono">35</td><td class="mono">1</td></tr>
+            <tr><td>\(\mathbf{x}^{(5)}\)</td><td class="mono">3</td><td>male</td><td class="mono">35</td><td class="mono">0</td></tr>
+            <tr><td>\(\mathbf{x}^{(6)}\)</td><td class="mono">3</td><td>male</td><td class="missing">–</td><td class="mono">0</td></tr>
+            <tr><td>\(\mathbf{x}^{(7)}\)</td><td class="mono">1</td><td>male</td><td class="mono">54</td><td class="mono">0</td></tr>
+            <tr><td>\(\mathbf{x}^{(8)}\)</td><td class="mono">3</td><td>male</td><td class="mono">2</td><td class="mono">0</td></tr>
+            <tr><td>\(\mathbf{x}^{(9)}\)</td><td class="mono">2</td><td>male</td><td class="mono">27</td><td class="mono">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Oppgaven vi vil løse kan da skrives som</p>
+      \[ \underbrace{(\text{Pclass},\ \text{Sex},\ \text{Age})}_{\text{features } \mathbf{x}^{(i)} = (x^{(i)}_1,\, x^{(i)}_2,\, x^{(i)}_3)} \;\longrightarrow\; \underbrace{\text{Survived}}_{\text{target } y^{(i)}} \tag{1} \]
+
+      <div class="callout">
+        <span class="label">Oppsummert</span>
+        <ul>
+          <li>Vi har features \(\mathbf{x}\) og targets \(y\).</li>
+          <li>Vi ønsker å estimere \(y\) for nye \(\mathbf{x}\), basert på relasjonene mellom kjente \(\mathbf{x}\) og \(y\).</li>
+        </ul>
+      </div>
+
+      <h3>Før vi plotter: preprosessering</h3>
+      <p>Før vi lager en modell bør vi få oversikt over sammenhengene i dataene, og det gjør vi med plott. Men dataene i tabell 3 er ikke klare for det ennå.</p>
+
+      <div class="oppgave" data-quiz id="oppg-plott">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.1 · s. 4</span></div>
+        <div class="o-text"><p>Se på tabell 3 igjen. Hva bør vi gjøre <em>før</em> vi plotter disse dataene?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <ul>
+              <li><strong>Rad 6 mangler en verdi</strong> for feature 3; det gir feilmelding når vi prøver å plotte. Løsning: <code>dropna()</code> i pandas fjerner rader der minst én verdi mangler.</li>
+              <li><strong>Feature 2 er strenger</strong> (ikke-numeriske verdier) som en datamaskin ikke kan plotte uten videre. Løsning: <code>LabelEncoder</code> mapper hver verdi til et unikt tall, f.eks. «female» → 0 og «male» → 1 (eller omvendt).</li>
+              <li><strong>Feature 3 har en helt annen størrelsesorden</strong> enn features 1 og 2, og kan i verste fall gi misvisende plott. Løsning: <code>MinMaxScaler</code> skalerer verdiene til intervallet [0, 1].</li>
+            </ul>
+            <p>Slike teknikker, der vi fjerner rader, enkoder eller skalerer feature-verdier, kalles <span class="term" data-term="preprosessering">preprosessering</span>.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Plotting: bar-plott og histogram</h3>
+      <p>Når dataene er ryddet, plotter vi dem for å se hvordan features fordeler seg. Plotting og preprosessering skjer gjerne om hverandre, siden plott gir idéer om hvordan dataene bør behandles. Notatene viser to plottyper, begge fargekodet etter target:</p>
+
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Bar-plott</h4>
+          <p>Viser <span class="term" data-term="bar-plott">middelverdien per kategori</span>, her andelen Survived=1 for hver verdi av Pclass og Sex. Brukes for å sammenlikne gjennomsnitt på tvers av kategorier.</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4>Histogram</h4>
+          <p>Viser <span class="term" data-term="histogram">fordelingen</span> av en variabel innad i hver klasse: én fordeling for Survived=1, en annen for Survived=0. Stolpene dekker intervaller kalt <span class="term" data-term="bins">bins</span>.</p>
+        </div>
+      </div>
+
+      <p>Valg av bin-størrelse påvirker hvordan histogrammet ser ut, og det finnes ingen allmenngyldig regel. Ser histogrammet <em>hakkete</em> ut, har man ofte for mange bins med for få datapunkter i hver. Er det <em>vanskelig å se en form</em>, har man ofte for få bins med for mange punkter i hver.</p>
+
+      <div class="callout callout-good">
+        <span class="label">Hva plottene avslører</span>
+        <p>Bare ved å se på plottene får vi en idé om at passasjerer i Pclass=1, kvinnelige passasjerer og yngre passasjerer oftere overlever. Det passer godt med det vi vet fra filmen.</p>
+      </div>
+
+      <p>Når dataene er preprosessert og studert, er vi klare for <strong>modellering</strong>. For Titanic ønsker vi en <span class="term" data-term="modell">modell</span> \(f\) som estimerer sannsynligheten for å overleve gitt feature-verdiene, altså \(p(y \mid \mathbf{x})\). Modellen gir oss <span class="term" data-term="prediksjon">prediksjoner</span> \(f(\mathbf{x}) = y_{\text{pred}}\).</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Pclass har verdiene 1, 2 og 3, og er lagret som tall. Er den kvantitativ eller kvalitativ?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Kvalitativ (kategorisk): tallene er navn på tre klasser, ikke en mengde det gir mening å regne gjennomsnitt av. At den <em>tilfeldigvis</em> er lagret som tall, endrer ikke det. Notatene lister den som kategorisk.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 MODELL ─────────────────────────── -->
+  <section id="modell">
+    <div class="container">
+      <div class="section-badge">02 · Modellen</div>
+      <h2>Fra lineær regresjon til <em>sannsynlighet</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2 · s. 4–5</div>
+
+      <p class="dropcap">Den enkleste modellen vi kan tenke oss er <span class="term" data-term="lineaer-regresjon">lineær regresjon</span>: en vektet sum av features pluss et konstantledd,</p>
+      \[ z = \sum_{i=1}^{n} w_i x_i + b = \mathbf{w}\mathbf{x} + b, \tag{2} \]
+      <p>hvor <span class="term" data-term="vekt">vektene</span> \(w_i\) forteller hvor viktig hver feature \(x_i\) er for utfallet, og \(b\) er <span class="term" data-term="bias">bias</span>.</p>
+
+      <div class="oppgave" data-quiz id="oppg-z-vektor">
+        <div class="o-label"><span>Tankeøvelse fra notatene</span><span class="o-ref">1.2 · s. 4</span></div>
+        <div class="o-text"><p>Er \(z\) et tall eller en vektor? Se på hvordan \(\mathbf{w}\) og \(\mathbf{x}\), som begge er vektorer, kombineres i uttrykket.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>\(z\) er et <strong>tall</strong>. \(\mathbf{w}\mathbf{x} = \sum_i w_i x_i\) er et prikkprodukt av to vektorer med like mange komponenter, og et prikkprodukt er en skalar. Legger vi til skalaren \(b\), er resultatet fortsatt et tall. Det er ett slikt tall per datapunkt \(\mathbf{x}^{(i)}\).</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Problemet er at \(z\) kan bli et hvilket som helst tall, mens vi er ute etter en sannsynlighet for overlevelse, altså et tall mellom 0 og 1. Løsningen er den logistiske funksjonen, <span class="term" data-term="sigmoid">Sigmoid-funksjonen</span>, som mapper alle reelle tall til intervallet (0, 1):</p>
+      \[ \sigma(z) = \frac{1}{1 + e^{-z}}. \tag{3} \]
+
+      <div class="widget" id="w-sigmoid">
+        <div class="widget-label">Prøv selv · Sigmoid av en lineær modell</div>
+        <p class="widget-intro">Én feature \(x\). Juster vekten \(w\) og bias \(b\), og se hvordan \(y_{\text{pred}} = \sigma(w x + b)\) endrer seg. Den stiplede horisontale linjen er terskelen 0.5; den vertikale er der modellen bytter mening om klassen.</p>
+        <svg viewBox="0 0 560 240" data-w="560" data-h="240" aria-label="Sigmoid-kurve"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sig-w">w</label><input type="range" id="sig-w" min="-3" max="3" step="0.1" value="1"><span class="w-val" id="sig-w-val">1.0</span></div>
+          <div class="w-ctl"><label for="sig-b">b</label><input type="range" id="sig-b" min="-6" max="6" step="0.1" value="0"><span class="w-val" id="sig-b-val">0.0</span></div>
+          <button class="w-btn secondary" id="sig-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="sig-out"></div>
+      </div>
+
+      <p>Setter vi likning (2) inn i (3), får vi uttrykket for modellens prediksjon av target \(y\):</p>
+      \[ y_{\text{pred}} = \frac{1}{1 + e^{-\sum_i w_i x_i + b}}. \tag{4} \]
+
+      <div class="callout callout-warm">
+        <span class="label">Husk denne</span>
+        <p>Sigmoid-funksjonen dukker opp igjen når vi diskuterer nevrale nettverk, da under navnet <span class="term" data-term="aktiveringsfunksjon">aktiveringsfunksjon</span>. Dette er <span class="term" data-term="logistisk-regresjon">logistisk regresjon</span>: en lineær modell med sigmoid på toppen.</p>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hva er \(\sigma(0)\)? Og hva skjer med \(\sigma(z)\) når \(z \to -\infty\) og når \(z \to +\infty\)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\sigma(0) = 1/(1 + 1) = 0.5\). Når \(z \to -\infty\) går \(e^{-z} \to \infty\) og \(\sigma(z) \to 0\); når \(z \to +\infty\) går \(e^{-z} \to 0\) og \(\sigma(z) \to 1\). Derfor er utdata alltid strengt mellom 0 og 1, og \(z = 0\) er «tvil».</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 TAPSFUNKSJON ─────────────────────────── -->
+  <section id="tap">
+    <div class="container">
+      <div class="section-badge">03 · Trening og tapsfunksjon</div>
+      <h2>Hvor <em>feil</em> tar modellen?</h2>
+      <div class="source-note">Notatene · avsnitt 1.2.1 · s. 5–6</div>
+
+      <p class="dropcap">Før en modell kan gi gode prediksjoner må den tilpasses dataene våre. Prosessen kalles <span class="term" data-term="trening">læring eller trening</span>: modellen justeres slik at måloppnåelsen øker på datasettet vi bruker, <span class="term" data-term="treningsdata">treningsdataene</span>. Funksjonen som beregner måloppnåelse kalles <span class="term" data-term="tapsfunksjon">tapsfunksjon</span> (loss function). Den forteller hvor nærme prediksjonen er target,</p>
+      \[ \mathcal{L}(y_{\text{pred}}, y). \tag{5} \]
+
+      <p>Hvilken tapsfunksjon vi velger avhenger av oppgaven, og alternativene er mildt sagt mange. Her vil vi maksimere sannsynligheten for riktig kategorisering (Survived = 0 eller 1). Det kan vi tenke på som sannsynligheten for at \(y_{\text{pred}} = 1\) hvis \(y = 1\), og \(y_{\text{pred}} = 0\) hvis \(y = 0\). Kompakt:</p>
+      \[ y_{\text{pred}}^{\,y}\,(1 - y_{\text{pred}})^{1-y}. \tag{6} \]
+
+      <div class="oppgave" data-quiz id="oppg-likelihood-verdier">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.1 · s. 5</span></div>
+        <div class="o-text"><p>Studer uttrykket i (6). Hva er verdien hvis \(y_{\text{pred}} = 1\) og \(y = 1\)? Hva med de andre kombinasjonene av de mulige verdiene til \(y_{\text{pred}}\) og \(y\)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <div class="table-wrap">
+              <table class="lik-table">
+                <thead><tr><th>\(y\)</th><th>\(y_{\text{pred}}\)</th><th>Uttrykk</th><th>Verdi</th><th>Tolkning</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td>1</td><td>1¹ · 0⁰</td><td>1</td><td>Helt sikker på riktig klasse</td></tr>
+                  <tr><td>0</td><td>0</td><td>0⁰ · 1¹</td><td>1</td><td>Helt sikker på riktig klasse</td></tr>
+                  <tr><td>1</td><td>0</td><td>0¹ · 1⁰</td><td>0</td><td>Helt sikker på feil klasse</td></tr>
+                  <tr><td>0</td><td>1</td><td>1⁰ · 0¹</td><td>0</td><td>Helt sikker på feil klasse</td></tr>
+                  <tr><td>1</td><td>0.8</td><td>0.8¹ · 0.2⁰</td><td>0.8</td><td>Sannsynligheten modellen ga riktig klasse</td></tr>
+                  <tr><td>0</td><td>0.8</td><td>0.8⁰ · 0.2¹</td><td>0.2</td><td>Sannsynligheten modellen ga riktig klasse</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Eksponentene fungerer som en bryter: er \(y = 1\) overlever bare første faktor, er \(y = 0\) bare den andre. Uttrykket er alltid «sannsynligheten modellen tilordnet den <em>riktige</em> klassen», og vi vil at den skal være så nær 1 som mulig.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Likelihood, ikke sannsynlighet</h3>
+      <p>Vi har <em>ikke</em> lyst til å endre dataene slik at predikert sannsynlighet endrer seg. Vi vil endre <em>modellen</em> slik at den estimerte sannsynligheten passer med den virkelige. Dataene er gitt, modellen kan endres. Modellen er parametrisert av \(\mathbf{w}\) og \(b\), med \(y_{\text{pred}} = \sigma(\mathbf{w}\mathbf{x} + b)\). Setter vi det inn i (6), får vi</p>
+      \[ L(\mathbf{w}, b \mid \mathbf{x}, y) = \sigma(\mathbf{w}\mathbf{x} + b)^{\,y}\,\bigl(1 - \sigma(\mathbf{w}\mathbf{x} + b)\bigr)^{1-y}. \tag{7} \]
+
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Sannsynlighet</h4>
+          <p>Modellen er fast (parametrene er satt). Vi bruker den til å estimere sannsynligheten for observasjoner, altså ennå ikke observerte \(\mathbf{x}\) og \(y\).</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4>Likelihood</h4>
+          <p>Observasjonene er faste (dataene \(\mathbf{x}\) og utfallene \(y\)). Vi vil tilpasse en modell, og trenger en fordeling over <em>parametrene</em>. Det er en <span class="term" data-term="likelihood">likelihood</span>, derav \(L\)-en i (7).</p>
+        </div>
+      </div>
+
+      <p>Eksponentene i (7) gjør uttrykket tungvint å jobbe med. Siden vi bare vil finne et optimum, kan vi ta logaritmen, som er monoton og derfor ikke flytter optimumet:</p>
+      \[ \begin{aligned} \ln L(\mathbf{w}, b \mid \mathbf{x}, y) &amp;= \ln\Bigl(\sigma(\mathbf{w}\mathbf{x} + b)^{\,y}\,(1 - \sigma(\mathbf{w}\mathbf{x} + b))^{1-y}\Bigr) \\ &amp;= y \ln \sigma(\mathbf{w}\mathbf{x} + b) + (1 - y)\ln\bigl(1 - \sigma(\mathbf{w}\mathbf{x} + b)\bigr), \end{aligned} \tag{8–9} \]
+      <p>ofte kalt <span class="term" data-term="log-likelihood">log-likelihood</span>. Likelihood for å estimere riktig klasse bør <em>maksimeres</em>. Vi legger på et minustegn for å få en tapsfunksjon som skal <em>minimeres</em>, og ender opp med <span class="term" data-term="cross-entropy">cross-entropy loss</span>:</p>
+      \[ \begin{aligned} \mathcal{L}(y_{\text{pred}}, y) &amp;= -\ln L(\mathbf{w}, b \mid \mathbf{x}, y) \\ &amp;= -y \ln \sigma(\mathbf{w}\mathbf{x} + b) - (1 - y)\ln\bigl(1 - \sigma(\mathbf{w}\mathbf{x} + b)\bigr). \end{aligned} \tag{10–11} \]
+
+      <div class="widget" id="w-loss">
+        <div class="widget-label">Prøv selv · Cross-entropy loss for ett datapunkt</div>
+        <p class="widget-intro">Velg fasit \(y\) og dra modellens prediksjon \(y_{\text{pred}}\). Tapet er lavt når prediksjonen er nær fasit og eksploderer når modellen er sikker og tar feil.</p>
+        <svg viewBox="0 0 560 220" data-w="560" data-h="220" aria-label="Tap som funksjon av prediksjon"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label>y (fasit)</label>
+            <div class="w-toggle" id="loss-y"><button type="button" data-y="1" class="active">y = 1</button><button type="button" data-y="0">y = 0</button></div>
+          </div>
+          <div class="w-ctl"><label for="loss-p">y_pred</label><input type="range" id="loss-p" min="0.01" max="0.99" step="0.01" value="0.7"><span class="w-val" id="loss-p-val">0.70</span></div>
+        </div>
+        <div class="w-out" id="loss-out"></div>
+      </div>
+
+      <h3>Optimaliseringsproblemet</h3>
+      <p>Modellen er definert av <span class="term" data-term="parameter">parametrene</span> \(\mathbf{w}\) og \(b\), kompakt \(\theta = (\mathbf{w}, b)\). Vi vil finne parametrene som minimerer tapet <em>i gjennomsnitt over alle datapunktene</em>. Det kalles å trene modellen. Mer formelt velger vi \(\theta\) som maksimerer log-likelihood for target-verdiene \(y\) for hvert datapunkt \(\mathbf{x}\), <span class="term" data-term="mle">conditional maximum likelihood estimation</span>:</p>
+      \[ \hat{\theta} = \arg\min_{\theta} \frac{1}{N} \sum_{i=1}^{N} \mathcal{L}\bigl(f(\mathbf{x}^{(i)}; \theta),\, y^{(i)}\bigr). \tag{12} \]
+      <p>For å løse dette skal vi bruke gradient descent, den samme metoden vi senere bruker til å trene nevrale nettverk.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 GRADIENT DESCENT ─────────────────────────── -->
+  <section id="gradient-descent">
+    <div class="container">
+      <div class="section-badge">04 · Gradient descent</div>
+      <h2>Å finne bunnen <em>med bind for øynene</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.2 · s. 7–8</div>
+
+      <p class="dropcap"><span class="term" data-term="gradient-descent">Gradient descent</span> er en metode for å finne minimumspunktet til en funksjon vi ikke kjenner formen til. Strategien er å finne ut i hvilken retning i parameterrommet funksjonen minker brattest, og gå dit. Intuitivt: du vandrer rundt på et fjell med bind for øynene og skal finne det laveste punktet. Beste strategi er å føle seg frem til den bratteste nedoverbakken og følge den.</p>
+
+      <p>En utfordring er at funksjonen kan ha både <span class="term" data-term="lokalt-minimum">lokale og globale minima</span>. Et lokalt minimum har høyere funksjonsverdi enn det globale, men funksjonen stiger i alle retninger rundt det. I fjell-analogien: du er i en fjellkjede og kan gå deg vill mellom toppene uten å vite at det finnes en dypere dal bak neste topp.</p>
+
+      <div class="fig-row">
+        <figure>
+          <svg id="fig-convex" viewBox="0 0 300 200" data-w="300" data-h="200" aria-label="Konveks funksjon"></svg>
+          <figcaption>(a) Konveks: ett minimum</figcaption>
+        </figure>
+        <figure>
+          <svg id="fig-nonconvex" viewBox="0 0 300 200" data-w="300" data-h="200" aria-label="Ikke-konveks funksjon"></svg>
+          <figcaption>(b) Ikke-konveks: flere minima</figcaption>
+        </figure>
+      </div>
+
+      <div class="callout callout-good">
+        <span class="label">Garanti for logistisk regresjon</span>
+        <p>Tapsfunksjonen for logistisk regresjon er <span class="term" data-term="konveks">konveks</span>: den har bare ett optimum. Så lenge tapsfunksjonen er konveks, er et minimum gradient descent finner garantert et <em>globalt</em> minimum.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-retning">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.2 · s. 7</span></div>
+        <div class="o-text"><p>Hvilken retning bør vi bevege oss i? I hvilket rom?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Rommet er <span class="term" data-term="parameterrom">parameterrommet</span>, altså rommet spent ut av \(\theta\)-verdiene; har vi fire parametre, er rommet firedimensjonalt. Vi bør bevege oss i retningen der tapet minker. Det vi trenger er et mål på hvordan \(\mathcal{L}\) endrer seg som funksjon av endring i \(\theta\): den deriverte av \(\mathcal{L}\) med hensyn på \(\theta\), altså <span class="term" data-term="gradient">gradienten</span>. Det er gradienten i «gradient descent».</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="label">Viktig å huske</span>
+        <p>Siden gradient descent er så utbredt i maskinlæring, også til trening av nevrale nettverk, må tapsfunksjonen være <span class="term" data-term="deriverbar">deriverbar</span>.</p>
+      </div>
+
+      <h3>Oppdateringsregelen</h3>
+      <p>I starten har alle parametrene en tilfeldig verdi, og vi oppdaterer dem iterativt gjennom flere steg. Gradienten peker i retning av <em>økende</em> tap, så vi går motsatt vei. Det gir minustegnet i</p>
+      \[ \theta^{t+1} = \theta^{t} - \eta\, \frac{\partial}{\partial \theta}\mathcal{L}\bigl(f(\mathbf{x}; \theta), y\bigr). \tag{13} \]
+      <p>Den nye verdien \(\theta^{t+1}\) er den forrige \(\theta^{t}\) korrigert med gradienten. Parameteren \(\eta\) bestemmer hvor store korrigeringer som gjøres og kalles <span class="term" data-term="laeringsrate">læringsraten</span>: høy \(\eta\) gir store steg, liten \(\eta\) små.</p>
+
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Modellparametre</h4>
+          <p>\(\theta = (\mathbf{w}, b)\). Definerer <em>modellen</em>. Læres fra data gjennom trening.</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4>Hyperparametre</h4>
+          <p>\(\eta\), antall epoker, … Definerer <em>læringsprosessen</em>, men er ikke en del av modellen. Velges av oss. Det er viktig å forstå forskjellen på <span class="term" data-term="parameter">parametre</span> og <span class="term" data-term="hyperparameter">hyperparametre</span>.</p>
+        </div>
+      </div>
+
+      <h3>Den deriverte av tapsfunksjonen</h3>
+      <p>Vi trenger den deriverte av \(\mathcal{L}\) med hensyn på hver \(w_j\) og på \(b\). Notatene anbefaler å gjøre dette for hånd. Nyttige relasjoner (den siste er <span class="term" data-term="kjerneregelen">kjerneregelen</span>):</p>
+      \[ \frac{\partial}{\partial x}\ln x = \frac{1}{x}, \qquad \frac{\partial}{\partial z}\sigma(z) = \sigma(z)\,(1 - \sigma(z)), \qquad \frac{\partial f}{\partial x} = \frac{\partial f}{\partial u}\frac{\partial u}{\partial x}. \tag{14–16} \]
+
+      <p>Utregningen for \(w_j\), der \(\sigma(\cdot)\) er kort for \(\sigma(\mathbf{w}\mathbf{x} + b)\):</p>
+      <div class="deriv">
+      \[ \begin{aligned}
+        \frac{\partial \mathcal{L}}{\partial w_j} &amp;= \frac{\partial}{\partial w_j}\Bigl[-y \ln \sigma(\mathbf{w}\mathbf{x} + b) - (1 - y)\ln\bigl(1 - \sigma(\mathbf{w}\mathbf{x} + b)\bigr)\Bigr] \\
+        &amp;= -y\,\frac{1}{\sigma(\cdot)}\frac{\partial}{\partial w_j}\sigma(\mathbf{w}\mathbf{x} + b) + (1 - y)\,\frac{1}{1 - \sigma(\cdot)}\frac{\partial}{\partial w_j}\bigl(1 - \sigma(\mathbf{w}\mathbf{x} + b)\bigr) \\
+        &amp;= \frac{-y\,(1 - \sigma(\cdot)) + (1 - y)\,\sigma(\cdot)}{\sigma(\cdot)\,(1 - \sigma(\cdot))}\,\frac{\partial}{\partial w_j}\sigma(\mathbf{w}\mathbf{x} + b) \\
+        &amp;= \frac{\sigma(\cdot) - y}{\sigma(\cdot)\,(1 - \sigma(\cdot))}\,\sigma(\cdot)\,(1 - \sigma(\cdot))\,\frac{\partial}{\partial w_j}(\mathbf{w}\mathbf{x} + b) \\
+        &amp;= \bigl(\sigma(\mathbf{w}\mathbf{x} + b) - y\bigr)\,x_j = (y_{\text{pred}} - y)\,x_j .
+      \end{aligned} \tag{17–22} \]
+      </div>
+      <p>Samme regning for \(b\) gir \(\partial(\mathbf{w}\mathbf{x} + b)/\partial b = 1\), altså</p>
+      \[ \frac{\partial \mathcal{L}}{\partial b} = \bigl(\sigma(\mathbf{w}\mathbf{x} + b) - y\bigr) = (y_{\text{pred}} - y). \tag{23–25} \]
+
+      <div class="callout">
+        <span class="label">Resultatet er overraskende pent</span>
+        <p>Gradienten er bare <strong>feilen</strong> \((y_{\text{pred}} - y)\), ganget med feature-verdien \(x_j\) for vektene. Tar modellen mye feil, blir steget stort; er prediksjonen riktig, blir steget null. Det er dette som gjør cross-entropy og sigmoid til et så godt par.</p>
+      </div>
+
+      <div class="widget" id="w-gd">
+        <div class="widget-label">Prøv selv · Gradient descent i én dimensjon</div>
+        <p class="widget-intro">En modell med én parameter \(\theta\). Velg startpunkt og læringsrate \(\eta\), og ta steg med regelen \(\theta^{t+1} = \theta^{t} - \eta\,\mathcal{L}'(\theta^{t})\). Prøv en høy \(\eta\) på den konvekse funksjonen, og prøv ulike startpunkter på den ikke-konvekse.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label>Funksjon</label>
+            <div class="w-toggle" id="gd-mode"><button type="button" data-mode="convex" class="active">Konveks</button><button type="button" data-mode="nonconvex">Ikke-konveks</button></div>
+          </div>
+          <div class="w-ctl"><label for="gd-start">θ⁰</label><input type="range" id="gd-start" min="-6" max="8" step="0.1" value="7"><span class="w-val" id="gd-start-val">7.0</span></div>
+          <div class="w-ctl"><label for="gd-eta">η</label><input type="range" id="gd-eta" min="0.05" max="2.4" step="0.05" value="0.3"><span class="w-val" id="gd-eta-val">0.30</span></div>
+        </div>
+        <svg viewBox="0 0 560 260" data-w="560" data-h="260" aria-label="Gradient descent"></svg>
+        <div class="w-row">
+          <button class="w-btn" id="gd-step" type="button">Ett steg</button>
+          <button class="w-btn" id="gd-run" type="button">10 steg</button>
+          <button class="w-btn secondary" id="gd-reset" type="button">Nullstill</button>
+          <span class="w-val" id="gd-status"></span>
+        </div>
+        <div class="w-log" id="gd-log"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Du trener logistisk regresjon og ser at tapet <em>øker</em> for hver epoke. Hva er den mest sannsynlige årsaken, og hva bør du prøve først?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Læringsraten \(\eta\) er for høy: stegene hopper over minimumet og lander høyere opp på motsatt side, slik at tapet vokser i stedet for å minke (prøv \(\eta \gt 2\) på den konvekse funksjonen i widgeten over). Første grep er å senke \(\eta\). Siden tapsfunksjonen er konveks, kan ikke problemet være at vi sitter fast i et lokalt minimum.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 TRENING ─────────────────────────── -->
+  <section id="trening">
+    <div class="container">
+      <div class="section-badge">05 · Trening</div>
+      <h2>En <em>læringsalgoritme</em> i kode</h2>
+      <div class="source-note">Notatene · avsnitt 1.2.3 · s. 8–9</div>
+
+      <p class="dropcap">Vi har nå alt vi trenger: en modell, parametrene som definerer den, en tapsfunksjon, og en regel for å oppdatere parametrene slik at tapet minker. Et program som utfører disse stegene er en <span class="term" data-term="laeringsalgoritme">læringsalgoritme</span>. Notatene foreslår denne klassen (du må skrive inn koden for metodene selv):</p>
+
+<pre><code>class LogisticRegression:
+    def __init__(self, learning_rate=0.1, epochs=1000):
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.weights, self.bias = None, None
+        self.losses, self.train_accuracies = [], []
+
+    def sigmoid_function(self, x):
+
+    def _compute_loss(self, y, y_pred):
+
+    def compute_gradients(self, x, y, y_pred):
+
+    def update_parameters(self, grad_w, grad_b):
+
+    def accuracy(true_values, predictions):
+        return np.mean(true_values == predictions)</code></pre>
+
+      <p>I tillegg trengs to viktige metoder, <span class="term" data-term="fit-predict"><code>fit</code> og <code>predict</code></span>. Navnene er så standard i maskinlæringsbiblioteker at man gjør lurt i å holde seg til dem, selv når man skriver fra bunnen. <code>fit</code> tilpasser parametrene til treningsdataene; hyperparameteren <code>epochs</code> angir hvor mange ganger gradient descent skal brukes på alle treningsdataene, altså antall <span class="term" data-term="epoke">epoker</span>. <code>predict</code> returnerer modellens prediksjon.</p>
+
+<pre><code>def fit(self, x, y):
+    self.weights = np.zeros(x.shape[1])   # x.shape = (datapunkter, features)
+    self.bias = 0
+
+    # Gradient descent
+    for _ in range(self.epochs):
+        lin_model = np.matmul(self.weights, x.transpose()) + self.bias
+        y_pred = self._sigmoid(lin_model)
+        grad_w, grad_b = self.compute_gradients(x, y, y_pred)
+        self.update_parameters(grad_w, grad_b)
+
+        loss = self._compute_loss(y, y_pred)
+        pred_to_class = [1 if _y &gt; 0.5 else 0 for _y in y_pred]
+        self.train_accuracies.append(accuracy(y, pred_to_class))
+        self.losses.append(loss)
+
+def predict(self, x):
+    lin_model = np.matmul(x, self.weights) + self.bias
+    y_pred = self._sigmoid(lin_model)
+    return [1 if _y &gt; 0.5 else 0 for _y in y_pred]</code></pre>
+
+      <h3>Trenings- og testdata</h3>
+      <p>Når algoritmen er skrevet, er neste steg å trene den på data. Det bør vi <strong>ikke</strong> bruke hele datasettet til. Etter trening vil vi undersøke hvor godt modellen gjør det på data som <em>ikke</em> ble brukt til å tilpasse parametrene. Et sentralt mål i maskinlæring er å lage modeller som klarer å <span class="term" data-term="generalisering">generalisere</span>, altså gjøre det godt på <em>nye</em> data.</p>
+
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Treningsdata (størst)</h4>
+          <p>Brukes til parametertilpasning. Modellen ser disse dataene under trening.</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4>Testdata (mindre)</h4>
+          <p>Røres ikke før modellen er ferdig tilpasset. Brukes for å evaluere modellen før den tas i bruk. Se <span class="term" data-term="testdata">testdata</span>.</p>
+        </div>
+      </div>
+
+      <p>Delingen gjøres med <span class="term" data-term="train-test-split"><code>train_test_split</code></span> fra scikit-learn. Hele prosedyren ser da omtrent slik ut:</p>
+
+<pre><code># Training
+train_epochs = 30
+
+# Initialize and train the model
+log_reg = LogisticRegression_(learning_rate=0.01, epochs=train_epochs)
+log_reg.fit(X_train, y_train)
+
+# Make predictions
+predictions = log_reg.predict(X_test)</code></pre>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hvorfor får vi et for optimistisk bilde av modellen hvis vi evaluerer den på treningsdataene?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Parametrene er valgt nettopp for å minimere tapet på disse datapunktene, så modellen har «sett fasiten». God ytelse der sier lite om generalisering til nye data. Testdataene, som modellen aldri har sett, gir et ærlig estimat av hvordan den vil gjøre det i bruk.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 EVALUERING ─────────────────────────── -->
+  <section id="evaluering">
+    <div class="container">
+      <div class="section-badge">06 · Evaluering</div>
+      <h2>Hvor <em>god</em> er modellen, egentlig?</h2>
+      <div class="source-note">Notatene · avsnitt 1.2.4 · s. 9–11</div>
+
+      <p class="dropcap">Tenk tilbake på Mitchells definisjon: for å vite at programmet faktisk blir bedre gjennom erfaring, trenger vi en måte å måle ytelsen på. Som et minimum bør vi lagre tapet (loss) og treffsikkerheten (<span class="term" data-term="accuracy">accuracy</span>) underveis i treningen, og plotte dem etterpå:</p>
+
+<pre><code>epoch_list = np.arange(0, train_epochs, 1)
+plt.plot(epoch_list, log_reg.losses, c='red', label="Loss")
+plt.plot(epoch_list, log_reg.train_accuracies, c='blue', label="Accuracy")
+plt.legend()
+plt.show()</code></pre>
+
+      <figure>
+        <svg id="fig-training" viewBox="0 0 560 240" data-w="560" data-h="240" aria-label="Tap og treffsikkerhet over epoker"></svg>
+        <div class="legend-row"><span class="l-w">Loss</span><span class="l-a">Accuracy</span></div>
+        <figcaption>Etter figur 4 i notatene: tap (rust) og treffsikkerhet (teal) over epokene i en vellykket treningsprosedyre.</figcaption>
+      </figure>
+
+      <p>Tapet er høyt i starten og minker jevnt før det flater ut. Det er bra. Treffsikkerheten starter lavt og øker før den flater ut. Også bra. Sammen gir kurvene bildet av en modell som lærer av dataene, og en trening som har foregått lenge nok. Hadde kurvene ikke flatet ut, trengte vi flere epoker. Her kunne vi også stoppet tidligere, etter rundt 20–25 epoker.</p>
+
+      <p>Men tap og treffsikkerhet forteller mildt sagt bare en liten del av historien. De sier ikke hva modellen er god på eller hvilke datapunkter den typisk bommer på, og tallene gir ikke intuitiv mening for mennesker. Vi bør derfor velge én eller flere <span class="term" data-term="metrikk">metrikker</span> som gir mening for mennesker. I motsetning til tapsfunksjonen trenger ikke metrikkene være deriverbare.</p>
+
+      <div class="oppgave" data-quiz id="oppg-tap-vs-metrikk">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.4 · s. 10</span></div>
+        <div class="o-text"><p>Hva er flere grunner til at vi ikke bør velge samme tapsfunksjon og evalueringsmetrikk?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <ul>
+              <li><strong>Ulike krav.</strong> Tapsfunksjonen må være deriverbar for at gradient descent skal fungere. Metrikken må gi mening for mennesker. Accuracy er f.eks. ikke deriverbar (den er trappeformet i parametrene), og cross-entropy er ikke intuitiv.</li>
+              <li><strong>Ulike spørsmål.</strong> Tapet sier hvor godt modellen er tilpasset i gjennomsnitt. Metrikker som recall og precision svarer på konkrete spørsmål: hvor mange syke overser vi, hvor mange falske alarmer gir vi?</li>
+              <li><strong>Kostnaden er skjev.</strong> Tapsfunksjonen straffer alle feil likt, mens den virkelige kostnaden av en falsk negativ og en falsk positiv kan være helt forskjellig. Metrikker lar oss se på hver feiltype for seg.</li>
+              <li><strong>Ærlig evaluering.</strong> Tapet er det modellen er optimert på, og kan minke uten at modellen blir mer nyttig (se ubalanserte data lenger ned). En uavhengig metrikk på testdata avslører det.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h3>Confusion matrix</h3>
+      <p>For klassifisering baseres mange metrikker på <span class="term" data-term="confusion-matrix">confusion matrix</span>, som teller hvor mange datapunkter som klassifiseres riktig (true) og feilaktig (false) i hver klasse. Med to klasser, 0 (negative) og 1 (positive), plasseres de sanne prediksjonene på diagonalen og de falske utenfor:</p>
+
+      <div class="cm" aria-label="Confusion matrix">
+        <div class="cm-corner"></div>
+        <div class="cm-h">Predikert negativ (PN)</div>
+        <div class="cm-h">Predikert positiv (PP)</div>
+        <div class="cm-h row">Sann negativ (N)</div>
+        <div class="cm-cell tn"><div class="cm-name">True negative</div><div class="cm-val">TN</div></div>
+        <div class="cm-cell fp"><div class="cm-name">False positive</div><div class="cm-val">FP</div></div>
+        <div class="cm-h row">Sann positiv (P)</div>
+        <div class="cm-cell fn"><div class="cm-name">False negative</div><div class="cm-val">FN</div></div>
+        <div class="cm-cell tp"><div class="cm-name">True positive</div><div class="cm-val">TP</div></div>
+      </div>
+
+      <p>Fra verdiene <span class="term" data-term="tp-tn-fp-fn">TP, TN, FP og FN</span> kan vi regne ut en rekke metrikker (tabell 4 i notatene):</p>
+
+      <div class="table-wrap">
+        <table class="metrics-table">
+          <thead><tr><th>Betegnelse</th><th>Uttrykk</th><th>Alternative navn</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="tpr">True Positive Rate (TPR)</span></td><td>\(\dfrac{TP}{P} = \dfrac{TP}{TP + FN}\)</td><td>Sensitivitet, recall, sannsynlighet for deteksjon</td></tr>
+            <tr><td><span class="term" data-term="tnr">True Negative Rate (TNR)</span></td><td>\(\dfrac{TN}{N} = \dfrac{TN}{TN + FP}\)</td><td>Spesifisitet</td></tr>
+            <tr><td><span class="term" data-term="fpr">False Positive Rate (FPR)</span></td><td>\(\dfrac{FP}{N} = \dfrac{FP}{FP + TN}\)</td><td>Sannsynlighet for falsk alarm, (1 − spesifisitet)</td></tr>
+            <tr><td><span class="term" data-term="precision">Positive Predictive Value (PPV)</span></td><td>\(\dfrac{TP}{TP + FP}\)</td><td>Precision</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="widget" id="w-metrics">
+        <div class="widget-label">Prøv selv · Metrikker fra en confusion matrix</div>
+        <p class="widget-intro">Skriv inn tellingene og se hvordan metrikkene endrer seg. Prøv f.eks. å sette FN til 0 og se hva som skjer med recall, eller FP til 0 og se på precision.</p>
+        <div class="cm">
+          <div class="cm-corner"></div>
+          <div class="cm-h">Predikert negativ</div>
+          <div class="cm-h">Predikert positiv</div>
+          <div class="cm-h row">Sann negativ</div>
+          <div class="cm-cell tn"><div class="cm-name">TN</div><input type="number" id="m-tn" min="0" value="90"></div>
+          <div class="cm-cell fp"><div class="cm-name">FP</div><input type="number" id="m-fp" min="0" value="20"></div>
+          <div class="cm-h row">Sann positiv</div>
+          <div class="cm-cell fn"><div class="cm-name">FN</div><input type="number" id="m-fn" min="0" value="10"></div>
+          <div class="cm-cell tp"><div class="cm-name">TP</div><input type="number" id="m-tp" min="0" value="80"></div>
+        </div>
+        <div class="metric-grid" id="m-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-sykehus">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.4 · s. 10–11</span></div>
+        <div class="o-text">
+          <p>Du skal levere en maskinlæringsmodell til et sykehus som vil finne ut hvilke pasienter som lider av en dødelig sykdom. (Her er det veldig alvorlig om modellen får en falsk negativ.) Hvilken metrikk bør modellen skåre <em>høyt</em> på?</p>
+          <p>Senere skal du (du har mye å gjøre, ja) levere en modell til klimaaktivister som vil skyte raketter på tomme passasjerfly. (Her er det alvorlig om modellen får en falsk positiv, fordi raketter er dyre.) Hvilken metrikk bør denne modellen skåre <em>lavt</em> på?</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p><strong>Sykehuset:</strong> høy <span class="term" data-term="tpr">TPR / recall / sensitivitet</span> = TP / (TP + FN). Den måler andelen syke modellen faktisk fanger opp, og går ned for hver falsk negativ. Vi vil heller undersøke noen friske ekstra enn å overse en syk.</p>
+            <p><strong>Klimaaktivistene:</strong> lav <span class="term" data-term="fpr">FPR</span> = FP / (FP + TN), sannsynligheten for falsk alarm. Hver falsk positiv er en bortkastet (dyr) rakett. Sagt med en metrikk som skal være <em>høy</em>: høy precision, TP / (TP + FP).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 TERSKEL & ROC ─────────────────────────── -->
+  <section id="terskel">
+    <div class="container">
+      <div class="section-badge">07 · Klassifiseringsterskel</div>
+      <h2>Hvor sikker må modellen være før vi <em>sier «ja»</em>?</h2>
+      <div class="source-note">Notatene · avsnitt 1.2.5 · s. 11–12</div>
+
+      <p class="dropcap">Modellen returnerer et tall i (0, 1). I <code>fit</code> og <code>predict</code> gjorde vi det om til en klasse med linjen</p>
+      <pre><code>[1 if _y &gt; 0.5 else 0 for _y in y_pred]</code></pre>
+      <p>Tallet 0.5 er <span class="term" data-term="terskel">klassifiseringsterskelen</span>, og vi kunne valgt et annet tall. Var det viktig å være forsiktig, altså ikke predikere overlevelse med mindre modellen er helt sikker, kunne vi valgt 0.7. Hvilken terskel som bør velges avhenger av problemet, og vi kan studere hvilket utslag ulike terskler har på ulike metrikker.</p>
+
+      <h3>ROC-kurven</h3>
+      <p>Det vanligste er å studere FPR og TPR som funksjon av terskelen. Det gir <span class="term" data-term="roc">Receiver Operating Characteristic (ROC)</span>-kurven: vi beregner både FPR og TPR for mange terskler fra 1 til 0 og plotter dem mot hverandre.</p>
+
+      <div class="oppgave" data-quiz id="oppg-fpr-tpr">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.5 · s. 11</span></div>
+        <div class="o-text"><p>Ønsker vi høy eller lav verdi for henholdsvis FPR og TPR? Hva blir FPR og TPR for klassifiseringsterskel 0? Tilsvarende for 1?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Vi ønsker <strong>høy TPR</strong> (sann positiv rate) og <strong>lav FPR</strong> (falsk positiv rate). Er terskelen 1, tolkes nærmest ingen prediksjoner som positiv klasse, så både FPR og TPR er lave. Terskel 0 betyr at nærmest alle prediksjoner tolkes som positive, som gir høye verdier for både FPR og TPR. Derfor starter ROC-kurven i (0, 0) og ender i (1, 1). Det interessante er hva som skjer mellom disse punktene, særlig om TPR øker raskere enn FPR, og hvilken terskel som gir best trade-off.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-myntkast">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.5 · s. 11</span></div>
+        <div class="o-text"><p>Hvordan ser ROC-kurven ut for en modell som kaster mynt?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Tilfeldig gjetning gir diagonalen fra (0, 0) til (1, 1). For å være bedre enn tilfeldig gjetning må modellens kurve ligge <em>over</em> diagonalen, og arealet under kurven (<span class="term" data-term="auc">AUC</span>) må være større enn 0.5. Siden begge aksene går fra 0 til 1, er det største mulige arealet 1.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Hva ROC AUC betyr</span>
+        <p>Uansett oppgave ønsker vi høy TPR per FPR, for alle terskler. ROC AUC er sannsynligheten for at modellen gir en høyere verdi (nærmere 1) for et tilfeldig valgt <em>positivt</em> datapunkt enn for et tilfeldig valgt <em>negativt</em>.</p>
+      </div>
+
+      <h3>Precision og recall</h3>
+      <p>Utover ROC kan vi plotte hvilke som helst metrikker for varierende terskler. En annen vanlig kurve er <span class="term" data-term="precision-recall-kurve">precision-recall-kurven</span>. <span class="term" data-term="precision">Presisjon</span> er andelen korrekt predikert positive per predikert positive,</p>
+      \[ \text{Precision} = \frac{TP}{TP + FP}, \tag{26} \]
+      <p>slik at høy presisjon svarer til lavt relativt antall falske alarmer. <span class="term" data-term="recall">Recall</span> er andelen korrekt predikert positive per totalt positive,</p>
+      \[ \text{Recall} = \frac{TP}{TP + FN}, \tag{27} \]
+      <p>slik at høy recall svarer til få missed cases. Når vi justerer terskelen ser vi en trade-off: når den ene øker, minker den andre. Hva som er en god balanse avhenger av bruken. Er falsk alarm dyrt (fører til utrykning), er høy presisjon viktig. Er det dyrt å bomme på en positiv instans (diagnostisering av alvorlig sykdom), er høy recall viktig.</p>
+
+      <div class="oppgave" data-quiz id="oppg-precision-recall">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.5 · s. 12</span></div>
+        <div class="o-text"><p>Når er presisjon = recall? Hvilken av disse metrikkene er avhengig av fordelingen mellom klassene?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p><strong>Precision = recall</strong> nøyaktig når \(TP/(TP + FP) = TP/(TP + FN)\), altså når \(FP = FN\): modellen gir like mange falske alarmer som missed cases. Det er også det samme som at antall <em>predikert</em> positive er lik antall <em>faktisk</em> positive.</p>
+            <p><strong>Precision avhenger av klassefordelingen</strong>, recall gjør det ikke. Recall regnes bare på de faktisk positive (TP og FN). Precision har FP i nevneren, og FP kommer fra den negative klassen: dobler du antall negative datapunkter uten å endre modellen, dobles omtrent FP, og precision faller, selv om TPR og FPR er uendret. Derfor er precision-recall-kurven nyttig på ubalanserte data, der ROC-kurven kan se misvisende bra ut.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-terskel">
+        <div class="widget-label">Prøv selv · Terskel, confusion matrix og ROC</div>
+        <p class="widget-intro">50 syntetiske datapunkter med modellens prediksjon på x-aksen (20 positive, 30 negative). Dra terskelen og se hvordan TP/FP/FN/TN, metrikkene og punktet på ROC-kurven flytter seg. Sjekk svarene på oppgavene over: hva skjer ved terskel 0 og 1?</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="t-thr">Terskel</label><input type="range" id="t-thr" min="0" max="1" step="0.01" value="0.5" style="width:220px"><span class="w-val" id="t-thr-val">0.50</span></div>
+        </div>
+        <div class="w-grid2">
+          <div>
+            <svg id="t-strip" viewBox="0 0 300 150" data-w="300" data-h="150" aria-label="Prediksjoner per klasse"></svg>
+            <div class="legend-row strip-legend"><span class="l-a">y = 1 (positiv)</span><span class="l-w">y = 0 (negativ)</span></div>
+          </div>
+          <div>
+            <svg id="t-roc" viewBox="0 0 300 260" data-w="300" data-h="260" aria-label="ROC-kurve"></svg>
+          </div>
+        </div>
+        <div class="metric-grid" id="t-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 ENTROPI ─────────────────────────── -->
+  <section id="entropi">
+    <div class="container">
+      <div class="section-badge">08 · Entropi og cross-entropy</div>
+      <h2>Hvorfor tapsfunksjonen heter <em>cross-entropy</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.6 · s. 12–13</div>
+
+      <p class="dropcap">I informasjonsteori er <span class="term" data-term="entropi">entropi</span> (Shannon-entropi) en måte å kvantisere usikkerheten, eller mengden informasjon, forbundet med de mulige tilstandene \(x\) til en tilfeldig variabel \(X\):</p>
+      \[ H(X) = \mathbb{E}\!\left[\frac{1}{\log p(X)}\right], \qquad H(X) = -\sum_{x \in X} p(x)\log p(x). \tag{28–29} \]
+      <p>Tilgangen vår til \(X\) kommer fra fordelingen \(p\) vi trekker fra, så vi skriver</p>
+      \[ H(p) = -\sum_i p(x_i)\log p(x_i). \tag{30} \]
+
+      <p>Altså: observasjonene kommer fra fordelingen \(p\), alltid. For Titanic representerer \(p\) fordelingen av targets (Survived) i datasettet. I tillegg har vi en fordeling \(q\) som representerer hva vi <em>tror</em>, altså hva modellen predikerer. <span class="term" data-term="kryssentropi">Kryssentropien</span> representerer forskjellen mellom de to fordelingene:</p>
+      \[ H(p, q) = -\sum_i p(x_i)\log q(x_i). \tag{31} \]
+
+      <div class="callout">
+        <span class="label">Koblingen til tapsfunksjonen</span>
+        <p>Se på (28) igjen: forventningsverdien tas over <em>faktiske</em> observasjoner, mens fordelingen i logaritmen er det vi <em>tror</em> vi kommer til å observere. Sammenlikn så (31) med tapsfunksjonen i (10). Den ene fordelingen er labels i datasettet, den andre modellens prediksjoner. Tapsfunksjonen måler altså <em>forskjellen</em> mellom de to fordelingene, og siden målet er en klassifiseringsmodell, vil vi at forskjellen skal være minst mulig.</p>
+      </div>
+
+      <p>For klassifisering til flere enn to klasser generaliserer (31) til</p>
+      \[ \mathcal{L}(\hat{y}, y) = -\sum_i y_i \log(\hat{y}_i), \tag{32} \]
+      <p>hvor summen går over alle klassene \(i\).</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva er entropien (med \(\log_2\)) til en rettferdig mynt, og til en mynt som alltid viser kron? Hvilken er mest «usikker»?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Rettferdig mynt: \(H = -(0.5\log_2 0.5 + 0.5\log_2 0.5) = 1\) bit, den maksimale usikkerheten for to utfall. Mynten som alltid viser kron: \(H = -(1 \cdot \log_2 1 + 0) = 0\), ingen usikkerhet. Det er de samme ytterpunktene vi møter igjen som splitt-kriterium i <a href="beslutningstraer.html#entropi">beslutningstrær</a>.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 09 BAYES ─────────────────────────── -->
+  <section id="bayes">
+    <div class="container">
+      <div class="section-badge">09 · Bayes’ teorem</div>
+      <h2>Kunne vi bare <em>regnet ut</em> svaret?</h2>
+      <div class="source-note">Notatene · avsnitt 1.2.7 · s. 13–14</div>
+
+      <figure>
+        <svg viewBox="0 0 320 170" aria-label="To delvis overlappende mengder A og B">
+          <rect x="40" y="20" width="150" height="90" rx="4" fill="rgba(27,94,90,0.18)" stroke="#1b5e5a" stroke-width="1.4"/>
+          <rect x="130" y="60" width="150" height="90" rx="4" fill="rgba(160,82,45,0.16)" stroke="#a0522d" stroke-width="1.4"/>
+          <rect x="130" y="60" width="60" height="50" fill="rgba(61,107,58,0.35)" stroke="#3d6b3a" stroke-width="1.2"/>
+          <text x="90" y="50" font-family="IBM Plex Mono, monospace" font-size="16" fill="#1a1612">A</text>
+          <text x="230" y="130" font-family="IBM Plex Mono, monospace" font-size="16" fill="#1a1612">B</text>
+          <text x="140" y="90" font-family="IBM Plex Mono, monospace" font-size="13" fill="#1a1612">A ∩ B</text>
+        </svg>
+        <figcaption>Figur 8 i notatene: to delvis overlappende mengder.</figcaption>
+      </figure>
+
+      <p class="dropcap">Sannsynligheten for å trekke et element fra overlappet \(A \cap B\) kan skrives på to måter,</p>
+      \[ P(A \cap B) = P(A \mid B)\,P(B) = P(B \mid A)\,P(A). \tag{33} \]
+      <p>Beholder vi den siste relasjonen og omskriver, får vi <span class="term" data-term="bayes">Bayes’ teorem</span>, som holder uansett sannsynlighetstolkning (frekventistisk eller Bayesiansk):</p>
+      \[ P(A \mid B) = \frac{P(B \mid A)\,P(A)}{P(B)}. \tag{34} \]
+
+      <p>I en klassifiseringsoppgave vil vi estimere \(p(C_k \mid x)\): sannsynligheten for klasse \(k\) (her 0 eller 1) betinget på en ekte observasjon \(x\). (Vi dropper fet skrift på \(x\) i dette avsnittet.) Bayes’ teorem gir oss et uttrykk for nettopp dette:</p>
+      \[ p(C_k \mid x) = \frac{p(x \mid C_k)\,p(C_k)}{p(x)}. \tag{35} \]
+
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">p(C<sub>k</sub>) · prior</div><div class="fc-val"><span class="term" data-term="prior">A priori</span> sannsynlighet for klasse: fordelingen av klassene i treningsdataene. Kan estimeres uten å vite noe om datapunktet (\(x\) forekommer ikke i leddet).</div></div>
+        <div class="fact-card"><div class="fc-key">p(x) · evidens</div><div class="fc-val">Fordelingen av selve dataene, <span class="term" data-term="evidens">uavhengig av klasse</span>. Like mange dimensjoner som datasettet har features.</div></div>
+        <div class="fact-card"><div class="fc-key">p(x | C<sub>k</sub>) · likelihood</div><div class="fc-val">Den betingede fordelingen av dataene gitt klassen: <span class="term" data-term="klasse-likelihood">én fordeling per klasse</span>, i vårt tilfelle to.</div></div>
+        <div class="fact-card"><div class="fc-key">p(C<sub>k</sub> | x) · posterior</div><div class="fc-val">Det vi <span class="term" data-term="posterior">prøver å estimere</span> med maskinlæring, eller en hvilken som helst dataanalyse.</div></div>
+      </div>
+
+      <h3>Hvorfor regner vi ikke bare ut det?</h3>
+      <p>Gitt (35) finnes det et <em>analytisk</em> uttrykk for \(p(C_k \mid x)\). Klarer vi å beregne alle leddene, trenger vi ikke estimere sannsynligheten, vi kan bare regne den ut. Så hvorfor gjør vi ikke det? La oss se på leddene for Titanic-dataene.</p>
+      <ul>
+        <li><strong>\(p(C_k)\) kan beregnes:</strong> antall Survived=0 og Survived=1 delt på totalt antall datapunkter. Overlever 50 %, er leddet 0.5.</li>
+        <li><strong>\(p(x)\) er problematisk:</strong> vi trenger informasjon om alle mulige verdier av alle features, og det er ikke sikkert vi ender opp med en funksjon med analytisk uttrykk. <em>Men</em>: leddet er uavhengig av klasse, så det har samme verdi for begge klassene. Er vi bare ute etter sannsynligheten for en klasse gitt data, kan vi ignorere det.</li>
+      </ul>
+      <p>Vi dropper \(p(x)\) og gjør sannsynligheten om til en proporsjonalitet:</p>
+      \[ p(C_k \mid x) \propto p(x \mid C_k)\,p(C_k). \tag{36} \]
+      <ul>
+        <li><strong>\(p(x \mid C_k)\) er utfordrende</strong> så lenge features er avhengige av hverandre, siden vi da må finne et uttrykk for en flerdimensjonal <span class="term" data-term="simultanfordeling">simultanfordeling</span>. Det er vanskelig (kanskje umulig) på samme måte som for evidensen.</li>
+      </ul>
+
+      <h3>Naïv Bayes</h3>
+      <p>En løsning som noen ganger fungerer i praksis, er å anta <span class="term" data-term="uavhengige-features">uavhengige features</span>. En passasjer kan for eksempel være kvinne eller mann uavhengig av alder. Holder dette for alle features, kan simultanfordelingen skrives som et produkt av fordelinger over hver enkelt feature:</p>
+      \[ p(C_k \mid x) \propto p(C_k)\prod_{i=1}^{n} p(x_i \mid C_k). \tag{37} \]
+      <p>Dette kalles <span class="term" data-term="naiv-bayes">Naïv Bayes</span>, fordi det er naïvt å behandle features som uavhengige (selv om det i noen tilfeller stemmer). Klassen vi predikerer er</p>
+      \[ \hat{y} = \arg\max_{k \in \{1, \dots, n\}} p(C_k)\prod_{i=1}^{n} p(x_i \mid C_k). \tag{38} \]
+
+      <p>I forelesningen estimeres sannsynligheten for overlevelse for et datapunkt, og man finner at</p>
+      \[ p(C_1)\prod_{i=1}^{n} p(x \mid C_1) \gt p(C_0)\prod_{i=1}^{n} p(x \mid C_0), \tag{39} \]
+      <p>altså at sannsynligheten for å overleve er større enn for å dø, for det datapunktet.</p>
+
+      <div class="callout callout-warm">
+        <span class="label">Ikke en ekte posterior</span>
+        <p>Sannsynligheten fra (37) er ikke <span class="term" data-term="kalibrert">kalibrert</span>, så den er <em>ikke</em> en ekte posterior. Men så lenge vi bare vil vite det relative forholdet mellom to sannsynligheter, beregner begge på samme måte, og antakelsene holder, «er vi good».</p>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor kan vi trygt droppe \(p(x)\) når vi skal bestemme klassen, men ikke når vi vil ha en kalibrert sannsynlighet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(p(x)\) er en felles skaleringsfaktor for alle klassene, så den endrer ikke hvilken klasse som er størst i (38). Men uten den summerer ikke «sannsynlighetene» til 1, så tallverdien er ikke en ekte sannsynlighet. Vil vi si «72 % sjanse for å overleve», må vi normalisere med \(p(x)\), altså dele på summen over alle klassene.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 10 AVHENGIGE FEATURES ─────────────────────────── -->
+  <section id="avhengige-features">
+    <div class="container">
+      <div class="section-badge">10 · Ikke-uavhengige features</div>
+      <h2>Når antakelsen <em>ikke holder</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.8 · s. 15</div>
+
+      <p class="dropcap">Studerer vi Titanic-dataene, ser vi at enkelte features sannsynligvis ikke er uavhengige.</p>
+
+      <div class="oppgave" data-quiz id="oppg-avhengige">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.8 · s. 15</span></div>
+        <div class="o-text">
+          <p>Hvilke features er ikke uavhengige? Hint: bruk følgende kode til å plotte Passenger class mot Sex, slik vi gjorde i forelesningen. Hva ser du? (Sånn utover at livet er lettere når man lærer seg pandas’ innebygde funksjoner.)</p>
+<pre><code>p_cond = pd.crosstab(df.Pclass, df.Sex, normalize="index")
+p_marg = df.Sex.value_counts(normalize=True)
+ax = p_cond.plot.bar(rot=0)
+plt.show()</code></pre>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p><strong>Pclass og Sex er avhengige.</strong> <code>crosstab</code> med <code>normalize="index"</code> gir kjønnsfordelingen <em>innad i hver klasse</em>, \(p(\text{Sex} \mid \text{Pclass})\). Var de uavhengige, ville stolpene vært like høye i alle tre klassene og lik den marginale fordelingen <code>p_marg</code>. I Kaggle-dataene er andelen kvinner omtrent 44 % i 1. klasse, 41 % i 2. klasse og bare 29 % i 3. klasse, så \(p(\text{Sex} \mid \text{Pclass}) \neq p(\text{Sex})\).</p>
+            <p>Også <strong>Age og Pclass</strong> henger sammen (passasjerene i 1. klasse er i snitt eldre). Bytt ut <code>Sex</code> med en binnet <code>Age</code> i crosstab-en for å se det.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Naïv Bayes er fint så lenge antakelsen om uavhengighet holder, i det minste tilnærmet. Men hva om den ikke gjør det? Gå tilbake til (35). Klassefordelingen \(p(C_k)\) klarer vi å estimere. \(p(x)\) er vanskelig, men siden den er uavhengig av klasse er den bare en skalering. Vil vi bare finne ut om en passasjer \(x\) forventes å overleve eller ikke, kan vi se på forholdet</p>
+      \[ \frac{p(x \mid C_0)\,p(C_0)}{p(x \mid C_1)\,p(C_1)}. \tag{41} \]
+      <p>Det vi må estimere er altså simultanfordelingen av features betinget på hver klasse. Konkret: \(p(\text{Sex}, \text{Age}, \text{Pclass} \mid \text{Survived} = 0)\) og \(p(\text{Sex}, \text{Age}, \text{Pclass} \mid \text{Survived} = 1)\).</p>
+
+      <div class="oppgave" data-quiz id="oppg-tabell-estimat">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.8 · s. 15</span></div>
+        <div class="o-text"><p>Du kan gjøre disse estimatene selv, og det beste er å lage en tabell. Da må du kombinere hver verdi av \(x_1\) med hver verdi av \(x_2\), og så igjen med \(x_3\) (du velger selv hvilken feature som er \(x_1, x_2, x_3\); det spiller ingen rolle for resultatet). Siden Age er kontinuerlig kan du dele den inn i ti kategorier med <code>numpy.histogram(data[feature], bins=10)</code>. Hva får du ut av dette?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Du får et <em>bedre</em> estimat av \(\hat{y}\) enn med naïv Bayes, men forskjellen er ikke veldig stor. Inspiserer du tabellen, ser du at mange av cellene inneholder svært få datapunkter: 3 klasser × 2 kjønn × 10 aldersbins = 60 celler per Survived-verdi, fylt av under 900 passasjerer. Dette er en miniversjon av dimensjonsforbannelsen.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>La oss nå anta tre <em>kontinuerlige</em> features, i stedet for Titanic-tilfellet der Sex og Pclass er kategoriske, og at vi vil estimere simultanfordelingen til disse tre. Vi finner ikke et analytisk uttrykk, men prøver oss på et estimat. Vi lager en tabell, eller lettere: et histogram (en slags visualisering av en tabell). Si at 10 bins er stor nok oppløsning per akse (per feature), og at vi krever 10 datapunkter per bin.</p>
+
+      <div class="oppgave" data-quiz id="oppg-tre-features">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.8 · s. 15</span></div>
+        <div class="o-text"><p>Hvor mange datapunkter trenger vi da for tre features? Hva er sammenhengen mellom antall features, antall bins og antall datapunkter?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Med tre features og 10 bins per akse har histogrammet \(10^3 = 1000\) bins, og med 10 datapunkter i hver trenger vi \(10\,000\) datapunkter. Dette er en simultanfordeling som <em>beregningsmessig</em> lar seg estimere. Generelt: antall datapunkter = (bins per akse)<sup>antall features</sup> × datapunkter per bin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 11 DIMENSJONSFORBANNELSEN ─────────────────────────── -->
+  <section id="dimensjonsforbannelsen">
+    <div class="container">
+      <div class="section-badge">11 · Dimensjonsforbannelsen</div>
+      <h2>Hvorfor data blir <em>tynne</em> i høye dimensjoner</h2>
+      <div class="source-note">Notatene · avsnitt 1.2.9 · s. 15–16</div>
+
+      <p class="dropcap">Vil vi estimere en \(d\)-dimensjonal fordeling, avhenger antallet datapunkter vi må samle inn av \(d\). For å få intuisjon, tenk igjen at vi estimerer fordelingen med et histogram med 10 bins per akse og er fornøyde med 10 datapunkter per bin.</p>
+
+      <div class="oppgave" data-quiz id="oppg-skalering">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.9 · s. 15</span></div>
+        <div class="o-text"><p>Hvordan skalerer sammenhengen mellom dimensjoner (i vårt tilfelle antall features) og antall datapunkter vi trenger?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene (tabell 5)</span>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Dimensjoner \(d\)</th><th>Bins</th><th>Datapunkter</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">1</td><td class="mono">10</td><td class="mono">10²</td></tr>
+                  <tr><td class="mono">3</td><td class="mono">10³</td><td class="mono">10⁴</td></tr>
+                  <tr><td class="mono">10</td><td class="mono">10¹⁰</td><td class="mono">10¹¹</td></tr>
+                  <tr><td class="mono">784</td><td class="mono">10⁷⁸⁴</td><td class="mono">10⁷⁸⁵</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Antallet vokser <em>eksponentielt</em> med \(d\): \(10^{d+1}\). Verdien \(d = 784\) er tatt med fordi det er dimensjonaliteten til <span class="term" data-term="mnist">MNIST</span> (28 × 28 piksler med håndskrevne sifre). Til sammenlikning er det omtrent \(10^{82}\) atomer i universet. Dette er <span class="term" data-term="dimensjonsforbannelsen">dimensjonsforbannelsen</span>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-dim">
+        <div class="widget-label">Prøv selv · Datapunkter som funksjon av dimensjon</div>
+        <p class="widget-intro">Velg antall features \(d\), bins per akse og datapunkter per bin. Se også hvor stor andel av en \(d\)-dimensjonal kule som ligger i et tynt skall ved overflaten (oppgaven under).</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="dim-d">d</label><input type="range" id="dim-d" min="1" max="30" step="1" value="3"><span class="w-val" id="dim-d-val">3</span></div>
+          <div class="w-ctl"><label for="dim-bins">bins/akse</label><input type="number" id="dim-bins" min="2" max="100" value="10"></div>
+          <div class="w-ctl"><label for="dim-per">punkter/bin</label><input type="number" id="dim-per" min="1" max="1000" value="10"></div>
+          <button class="w-btn secondary" id="dim-mnist" type="button">d = 784 (MNIST)</button>
+        </div>
+        <div class="w-out" id="dim-out"></div>
+        <div class="w-row" style="margin-top:1rem">
+          <div class="w-ctl"><label for="dim-eps">ε (skalltykkelse)</label><input type="range" id="dim-eps" min="0.01" max="0.5" step="0.01" value="0.05"><span class="w-val" id="dim-eps-val">0.05</span></div>
+        </div>
+        <svg viewBox="0 0 560 200" data-w="560" data-h="200" aria-label="Andel av kulevolum i skall som funksjon av dimensjon"></svg>
+        <div class="w-out" id="dim-shell-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-skall">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.9 · s. 16</span></div>
+        <div class="o-text"><p>Finn ut hvor stor andel av en \(d\)-dimensjonal sfære (kule) som ligger i et tynt skall med tykkelse \(\epsilon\). Volumet til en 3-dimensjonal kule er \(\frac{4\pi}{3}r^3\), og den \(D\)-dimensjonale generaliseringen er \(K_D r^D\). Du trenger ikke tenke på prefaktoren, siden du bare er ute etter en <em>andel</em>. Hint: velg en enhetskule (\(r = 1\)) og lag et uttrykk for andel volum. Svaret blir en funksjon av \(\epsilon\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Skallet er alt som ligger mellom radius \(1 - \epsilon\) og radius 1. Andelen er volumet av hele kulen minus volumet av den indre kulen, delt på hele:</p>
+            \[ \frac{K_D \cdot 1^D - K_D (1 - \epsilon)^D}{K_D \cdot 1^D} = 1 - (1 - \epsilon)^D. \]
+            <p>Prefaktoren \(K_D\) forsvinner. Siden \(0 \lt 1 - \epsilon \lt 1\), går \((1 - \epsilon)^D \to 0\) når \(D\) vokser, så andelen går mot 1: <strong>i høye dimensjoner ligger nesten hele volumet i et tynt skall ved overflaten.</strong> Med \(\epsilon = 0.01\): i 3 dimensjoner er andelen \(1 - 0.99^3 \approx 3\,\%\), i 784 dimensjoner \(1 - 0.99^{784} \approx 99.96\,\%\). Dra i \(\epsilon\)-slideren over for å se kurven.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 12 UBALANSERTE DATA ─────────────────────────── -->
+  <section id="ubalanserte-data">
+    <div class="container">
+      <div class="section-badge">12 · Trening på ubalanserte data</div>
+      <h2>99 % treffsikkerhet, <em>null nytte</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.10 · s. 16–17</div>
+
+      <div class="oppgave" data-quiz id="oppg-intervju">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.10 · s. 16</span></div>
+        <div class="o-text"><p>En masterstudent blir invitert til jobbintervju som ML-utvikler og får spørsmålet: «Vi har et datasett fra det norske helsevesenet, og skal lage en modell som klassifiserer friske og syke personer. Modellen vår får en treffsikkerhet (accuracy) på 99 %, men den klarer nesten ikke å identifisere syke personer. Hva har skjedd?» Hva vil du svare?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Dette skjer typisk om den ene klassen (syke) inneholder mange færre datapunkter enn den andre: klassen er <em>underrepresentert</em>, mens den andre er <em>overrepresentert</em>. Er forskjellen stor nok, belønnes modellen for bare å predikere at alle tilhører den overrepresenterte klassen. Dette kalles også <span class="term" data-term="prior-shift">prior probability shift</span>, siden prediksjonen domineres av \(p(C_k)\) i (35) og ikke av leddene med informasjon om feature-verdiene. Modellen oppnår høy treffsikkerhet uten å være det minste nyttig. Accuracy (og ROC AUC) kan se fine ut, mens andre metrikker er lave: her, der positiv klasse er underrepresentert, blir recall oppsiktsvekkende lav. Derfor må vi studere flere metrikker, og gjøre noe mer når klassene er skjevfordelt.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Tre grep mot skjevfordeling</h3>
+      <p>Den enkleste tilpasningen ved <span class="term" data-term="ubalanserte-data">ubalanserte data</span> er å endre klassifiseringsterskelen i</p>
+      <pre><code>y_pred = [1 if _y &gt; 0.5 else 0 for _y in y_pred]</code></pre>
+      <p>fra 0.5 til en verdi som gir høyere verdi på de andre metrikkene, for eksempel bestemt fra precision-recall-plottet. Ved å senke terskelen øker andelen predicted positive, fordi alt over terskelen predikeres som 1. Å maksimere én metrikk går som oftest på bekostning av andre, og husk: <strong>å justere terskelen forbedrer ikke modellen</strong>. Det endrer bare hvordan vi forholder oss til prediksjonene. Utover terskelen kan vi justere dataene eller tapsfunksjonen.</p>
+
+      <h4>Resampling</h4>
+      <div class="compare-grid">
+        <div class="compare-cell warm">
+          <h4>Undersampling</h4>
+          <p><span class="term" data-term="undersampling">Trekk</span> like mange datapunkter fra den overrepresenterte klassen som vi har i den underrepresenterte. Balanserte klasser, men potensielt veldig få datapunkter totalt. Kan føre til at modellen <span class="term" data-term="underfit">undertilpasser</span> (underfit).</p>
+        </div>
+        <div class="compare-cell accent">
+          <h4>Oversampling</h4>
+          <p><span class="term" data-term="oversampling">Kopier</span> instanser fra den underrepresenterte klassen til klassene er like store. Balanserte klasser, men potensielt mange duplikater. Kan føre til at modellen <span class="term" data-term="overfit">overtilpasser</span> (overfit).</p>
+        </div>
+      </div>
+      <p>De to kan kombineres: undersample den overrepresenterte og oversample den underrepresenterte klassen, slik at resultatet er balansert.</p>
+
+      <div class="oppgave" data-quiz id="oppg-resampling">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.10 · s. 17</span></div>
+        <div class="o-text"><p>Vi har et datasett med 100 datapunkter fra den ene klassen og 1000 fra den andre. Hvor mange datapunkter får vi totalt om vi gjør kun undersampling? Hvor mange får vi totalt om vi gjør kun oversampling, og hvor mange duplikater får vi?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p><strong>Kun undersampling:</strong> vi trekker 100 av de 1000, og sitter igjen med 100 + 100 = <strong>200</strong> datapunkter (900 kastes).</p>
+            <p><strong>Kun oversampling:</strong> vi kopierer den lille klassen opp til 1000, og får 1000 + 1000 = <strong>2000</strong> datapunkter. Av de 1000 i den lille klassen er bare 100 originale, så <strong>900 er duplikater</strong> (hvert originale punkt finnes i snitt 10 ganger).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-resample">
+        <div class="widget-label">Prøv selv · Resampling-regnestykket</div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="rs-min">Liten klasse</label><input type="number" id="rs-min" min="1" value="100"></div>
+          <div class="w-ctl"><label for="rs-maj">Stor klasse</label><input type="number" id="rs-maj" min="1" value="1000"></div>
+        </div>
+        <div class="w-out" id="rs-out"></div>
+      </div>
+
+      <h4>Vektet tapsfunksjon</h4>
+      <p>I stedet for å endre dataene kan vi fortelle modellen at én klasse (ofte den underrepresenterte) er ekstra viktig, ved å straffe feilprediksjoner på den klassen hardere. Se på binary cross entropy igjen:</p>
+      \[ \mathcal{L}(y_{\text{pred}}, y) = -y \ln y_{\text{pred}} - (1 - y)\ln(1 - y_{\text{pred}}). \tag{42} \]
+      <p>Er target \(y = 0\), er første ledd null; bare andre ledd bidrar. En vekt på andre ledd øker derfor tapet for datapunkter med \(y = 0\). Tilsvarende bidrar bare første ledd når \(y = 1\). Den <span class="term" data-term="vektet-tapsfunksjon">vektede tapsfunksjonen</span> blir</p>
+      \[ \mathcal{L}(y_{\text{pred}}, y) = -w_1\, y \ln y_{\text{pred}} - w_0\,(1 - y)\ln(1 - y_{\text{pred}}), \tag{43} \]
+      <p>hvor \(w_0\) og \(w_1\) er vekter for klasse 0 og 1. Er \(w_0\) betydelig større enn \(w_1\), prioriterer modellen å predikere riktig for datapunkter med \(y = 0\), og vice versa.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Sykdomsdatasettet har 1 % syke (klasse 1). Hvilken av \(w_0\) og \(w_1\) bør være størst, og hvorfor er dette noe annet enn å senke terskelen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(w_1\) bør være størst, slik at hver oversett syk (falsk negativ) koster mye mer enn en falsk alarm. Vektingen endrer <em>gradienten</em> og dermed hvilke parametre modellen ender opp med: modellen blir faktisk en annen. Å senke terskelen rører ikke parametrene, det endrer bare tolkningen av de samme prediksjonene.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 13 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">13 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Data</strong>Features \(\mathbf{x}\) (kvalitative/kvantitative), target \(y\). Preprosesser: dropna, enkod, skaler. Plott før du modellerer.</div>
+        <div class="recap-pill"><strong>Modell</strong>\(y_{\text{pred}} = \sigma(\mathbf{w}\mathbf{x} + b)\). Sigmoid mapper ℝ til (0, 1).</div>
+        <div class="recap-pill"><strong>Tap</strong>Cross-entropy = −log-likelihood. Konveks, deriverbar.</div>
+        <div class="recap-pill"><strong>Gradient</strong>\(\partial\mathcal{L}/\partial w_j = (y_{\text{pred}} - y)x_j\), \(\partial\mathcal{L}/\partial b = y_{\text{pred}} - y\).</div>
+        <div class="recap-pill"><strong>Gradient descent</strong>\(\theta^{t+1} = \theta^{t} - \eta\,\partial\mathcal{L}/\partial\theta\). \(\eta\) er en hyperparameter.</div>
+        <div class="recap-pill"><strong>Trening</strong>fit / predict, epoker, train/test-split for å måle generalisering.</div>
+        <div class="recap-pill"><strong>Evaluering</strong>Confusion matrix → TPR, TNR, FPR, precision. Flere metrikker, ikke bare accuracy.</div>
+        <div class="recap-pill"><strong>Terskel</strong>ROC (TPR vs FPR, AUC), precision-recall. Terskel endrer tolkning, ikke modell.</div>
+        <div class="recap-pill"><strong>Entropi</strong>H(p) måler usikkerhet; H(p, q) er tapsfunksjonen.</div>
+        <div class="recap-pill"><strong>Bayes</strong>posterior ∝ likelihood × prior. Naïv Bayes antar uavhengige features.</div>
+        <div class="recap-pill"><strong>Dimensjonsforbannelsen</strong>Datapunkter som trengs vokser som bins<sup>d</sup>.</div>
+        <div class="recap-pill"><strong>Ubalanse</strong>Terskel, under-/oversampling, vektet tap.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er forskjellen på en parameter og en hyperparameter? Gi ett eksempel på hver fra logistisk regresjon.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Parametre definerer modellen og læres fra data: vektene \(\mathbf{w}\) og bias \(b\). Hyperparametre definerer læringsprosessen og velges av oss: læringsraten \(\eta\) og antall epoker.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvorfor tar vi logaritmen av likelihood før vi deriverer, og hvorfor legger vi på et minustegn?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Logaritmen er monoton, så den flytter ikke optimumet, men gjør produkter til summer og eksponenter til faktorer, som er mye lettere å derivere. Likelihood skal maksimeres, men gradient descent minimerer, så vi minimerer −log-likelihood i stedet. Det er cross-entropy loss.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">En modell har TP = 40, FN = 10, FP = 30, TN = 920. Regn ut accuracy, recall og precision. Hva sier tallene?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Accuracy = (40 + 920) / 1000 = 0.96. Recall = 40 / (40 + 10) = 0.80. Precision = 40 / (40 + 30) ≈ 0.57. Accuracy ser strålende ut fordi 95 % av dataene er negative, men modellen overser 20 % av de positive, og nesten halvparten av alarmene er falske. Klassisk ubalanse-situasjon.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Forklar med Bayes’ teorem hvorfor en modell trent på 99 % friske personer nesten alltid predikerer «frisk».</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(p(C_k \mid x) \propto p(x \mid C_k)\,p(C_k)\). Med \(p(\text{frisk}) = 0.99\) og \(p(\text{syk}) = 0.01\) må likelihood-forholdet \(p(x \mid \text{syk}) / p(x \mid \text{frisk})\) overstige 99 før «syk» vinner. Feature-verdiene må altså være ekstremt mye mer typiske for syke enn friske. Prioren dominerer, derav navnet prior probability shift.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 5 · Vanskelig</div>
+        <div class="q-text">To modeller har samme ROC AUC på et datasett med 1 % positive. Hvorfor kan de likevel ha svært ulik precision ved terskel 0.5?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">AUC måler rangeringen av positive mot negative over <em>alle</em> terskler, og er uavhengig av klassefordelingen. Precision ved én bestemt terskel avhenger både av hvor terskelen kutter og av hvor mange negative som finnes: en liten FPR ganget med 99 % negative gir mange FP i absolutte tall. To modeller med lik AUC kan fordele feilene sine ulikt rundt akkurat 0.5.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 1: oversikt</div></a>
+        <a href="beslutningstraer.html" class="next"><div class="pn-label">Neste · 1B</div><div class="pn-title">Beslutningstrær →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../glossary.js"></script>
+<script src="../quiz.js"></script>
+<script src="../site.js"></script>
+<script src="../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var sig = function (z) { return 1 / (1 + Math.exp(-z)); };
+  var f3 = function (v) { return window.fmtNum(v, 3); };
+
+  /* ─── Sigmoid-widget ─── */
+  (function () {
+    var root = document.getElementById('w-sigmoid'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [-10, 10], y: [0, 1], xLabel: 'x', yLabel: 'σ(w·x + b)', xTicks: [-10, -5, 0, 5, 10], yTicks: [0, 0.25, 0.5, 0.75, 1] });
+    var wIn = document.getElementById('sig-w'), bIn = document.getElementById('sig-b');
+    var wVal = document.getElementById('sig-w-val'), bVal = document.getElementById('sig-b-val');
+    var out = document.getElementById('sig-out');
+    function draw() {
+      var w = +wIn.value, b = +bIn.value;
+      wVal.textContent = w.toFixed(1); bVal.textContent = b.toFixed(1);
+      plot.clearData(); plot.clearOverlay();
+      plot.curve(function (x) { return sig(w * x + b); });
+      plot.hline(0.5);
+      var txt = 'y_pred = σ(' + w.toFixed(1) + '·x ' + (b >= 0 ? '+ ' : '− ') + Math.abs(b).toFixed(1) + ')\n';
+      if (w !== 0) {
+        var x0 = -b / w;
+        if (x0 >= -10 && x0 <= 10) { plot.vline(x0); plot.point(x0, 0.5); }
+        txt += 'Terskelen 0.5 krysses der w·x + b = 0, altså x = −b/w = ' + f3(x0) + '.\n';
+        txt += (w > 0 ? 'Positiv w: større x gir høyere sannsynlighet.' : 'Negativ w: større x gir lavere sannsynlighet (kurven speiles).') + ' |w| bestemmer hvor bratt overgangen er.';
+      } else {
+        txt += 'w = 0: modellen ignorerer x og gir alltid σ(b) = ' + f3(sig(b)) + '.';
+      }
+      out.textContent = txt;
+    }
+    wIn.addEventListener('input', draw); bIn.addEventListener('input', draw);
+    document.getElementById('sig-reset').addEventListener('click', function () { wIn.value = 1; bIn.value = 0; draw(); });
+    draw();
+  })();
+
+  /* ─── Cross-entropy-widget ─── */
+  (function () {
+    var root = document.getElementById('w-loss'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [0, 1], y: [0, 5], xLabel: 'y_pred', yLabel: 'tap ℒ', xTicks: [0, 0.25, 0.5, 0.75, 1], yTicks: [0, 1, 2, 3, 4, 5] });
+    var y = 1;
+    var pIn = document.getElementById('loss-p'), pVal = document.getElementById('loss-p-val'), out = document.getElementById('loss-out');
+    var toggle = document.getElementById('loss-y');
+    function loss(p) { return -y * Math.log(p) - (1 - y) * Math.log(1 - p); }
+    function draw() {
+      var p = +pIn.value;
+      pVal.textContent = p.toFixed(2);
+      plot.clearData(); plot.clearOverlay();
+      plot.curve(function (x) { return loss(Math.min(0.999, Math.max(0.001, x))); }, 'curve', 240);
+      var L = loss(p);
+      plot.vline(p); plot.point(p, Math.min(L, 5));
+      var lik = Math.pow(p, y) * Math.pow(1 - p, 1 - y);
+      out.innerHTML = 'y = ' + y + ', y_pred = ' + p.toFixed(2) + '\n' +
+        'Likelihood (6):  y_pred^y · (1 − y_pred)^(1−y) = <span class="hl">' + f3(lik) + '</span>\n' +
+        'Tap (10):        −ln(' + f3(lik) + ') = <span class="' + (L > 2 ? 'bad' : 'hl') + '">' + f3(L) + '</span>' +
+        (L > 2 ? '\nModellen er sikker og tar feil: tapet vokser uten grense når y_pred → ' + (1 - y) + '.' : '');
+    }
+    toggle.querySelectorAll('button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        y = +btn.dataset.y;
+        toggle.querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b === btn); });
+        draw();
+      });
+    });
+    pIn.addEventListener('input', draw);
+    draw();
+  })();
+
+  /* ─── Konveks / ikke-konveks figurer ─── */
+  (function () {
+    var a = document.getElementById('fig-convex'), b = document.getElementById('fig-nonconvex');
+    if (a) { var pa = MLPlot.make(a, { x: [-6, 6], y: [0, 36], pad: { l: 34, r: 10, t: 10, b: 26 }, xTicks: [-6, -3, 0, 3, 6], yTicks: [0, 12, 24, 36] }); pa.curve(function (x) { return x * x; }); }
+    if (b) { var pb = MLPlot.make(b, { x: [-6, 6], y: [-14, 14], pad: { l: 34, r: 10, t: 10, b: 26 }, xTicks: [-6, -3, 0, 3, 6], yTicks: [-14, -7, 0, 7, 14] }); pb.curve(function (x) { return x + 8 * Math.sin(x); }, 'curve-2', 240); }
+  })();
+
+  /* ─── Gradient descent-widget ─── */
+  (function () {
+    var root = document.getElementById('w-gd'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var startIn = document.getElementById('gd-start'), etaIn = document.getElementById('gd-eta');
+    var startVal = document.getElementById('gd-start-val'), etaVal = document.getElementById('gd-eta-val');
+    var status = document.getElementById('gd-status'), log = document.getElementById('gd-log');
+    var modeBtns = document.getElementById('gd-mode').querySelectorAll('button');
+
+    var MODES = {
+      convex: { L: function (t) { return 0.5 * (t - 2) * (t - 2) + 0.3; }, dL: function (t) { return t - 2; }, x: [-6, 8], y: [0, 26], yTicks: [0, 6.5, 13, 19.5, 26], note: 'ℒ(θ) = ½(θ − 2)² + 0.3, minimum i θ = 2. Med η > 2 divergerer stegene.' },
+      nonconvex: { L: function (t) { return 0.05 * Math.pow(t, 4) - 0.6 * t * t + 0.15 * t + 4; }, dL: function (t) { return 0.2 * Math.pow(t, 3) - 1.2 * t + 0.15; }, x: [-4.5, 4.5], y: [0, 14], yTicks: [0, 3.5, 7, 10.5, 14], note: 'ℒ(θ) = 0.05θ⁴ − 0.6θ² + 0.15θ + 4 har to minima: et lokalt nær θ ≈ 2.4 og et globalt nær θ ≈ −2.5. Startpunktet avgjør hvilket du finner.' }
+    };
+    var mode = 'convex', plot = null, theta = 0, t = 0, path = [];
+
+    function rebuild() {
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      var m = MODES[mode];
+      plot = MLPlot.make(svg, { x: m.x, y: m.y, xLabel: 'θ', yLabel: 'ℒ(θ)', yTicks: m.yTicks });
+      plot.curve(m.L, 'curve', 240);
+      startIn.min = m.x[0]; startIn.max = m.x[1];
+      reset();
+    }
+    function reset() {
+      var m = MODES[mode];
+      theta = +startIn.value; t = 0; path = [[theta, m.L(theta)]];
+      log.innerHTML = '';
+      append('t = 0: θ = ' + f3(theta) + ', ℒ = ' + f3(m.L(theta)) + '. ' + m.note);
+      render();
+    }
+    function append(txt, cls) { var e = document.createElement('span'); e.className = 'entry' + (cls ? ' ' + cls : ''); e.textContent = txt; log.appendChild(e); log.scrollTop = log.scrollHeight; }
+    function render() {
+      var m = MODES[mode];
+      plot.clearOverlay();
+      plot.polyline(path, 'curve-2');
+      path.forEach(function (p, i) { plot.point(p[0], Math.min(p[1], m.y[1]), i === path.length - 1 ? 'marker' : 'marker-accent', i === path.length - 1 ? 6 : 3.5); });
+      startVal.textContent = (+startIn.value).toFixed(1); etaVal.textContent = (+etaIn.value).toFixed(2);
+      status.textContent = 't = ' + t + ' · θ = ' + f3(theta) + ' · ℒ = ' + f3(m.L(theta));
+    }
+    function step() {
+      var m = MODES[mode], eta = +etaIn.value;
+      var g = m.dL(theta);
+      var next = theta - eta * g;
+      t += 1;
+      if (!isFinite(next) || Math.abs(next) > 1e6) { append('t = ' + t + ': θ er utenfor alle grenser. Læringsraten er for høy: divergens.', 'bad'); return; }
+      var better = m.L(next) < m.L(theta);
+      append('t = ' + t + ': ∂ℒ/∂θ = ' + f3(g) + '  →  θ = ' + f3(theta) + ' − ' + eta.toFixed(2) + '·' + f3(g) + ' = ' + f3(next) + '   ℒ = ' + f3(m.L(next)) + (better ? '' : '  (tapet økte!)'), better ? '' : 'bad');
+      theta = next;
+      path.push([theta, m.L(theta)]);
+      if (Math.abs(g) < 1e-3) append('Gradienten er nesten null: vi har konvergert.', 'ok');
+      render();
+    }
+    document.getElementById('gd-step').addEventListener('click', step);
+    document.getElementById('gd-run').addEventListener('click', function () { for (var i = 0; i < 10; i++) step(); });
+    document.getElementById('gd-reset').addEventListener('click', reset);
+    startIn.addEventListener('input', reset);
+    etaIn.addEventListener('input', function () { etaVal.textContent = (+etaIn.value).toFixed(2); });
+    modeBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        mode = btn.dataset.mode;
+        modeBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
+        startIn.value = mode === 'convex' ? 7 : 3.5;
+        rebuild();
+      });
+    });
+    rebuild();
+  })();
+
+  /* ─── Trening-figur (tap og treffsikkerhet) ─── */
+  (function () {
+    var svg = document.getElementById('fig-training'); if (!svg) return;
+    var plot = MLPlot.make(svg, { x: [0, 30], y: [0.5, 0.8], xLabel: 'epoker', xTicks: [0, 5, 10, 15, 20, 25, 30], yTicks: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8] });
+    plot.curve(function (e) { return 0.548 + 0.145 * Math.exp(-e / 2.6); }, 'curve-2', 120);
+    plot.curve(function (e) { return 0.775 - 0.18 * Math.exp(-e / 2.2) * (1 + 0.15 * Math.sin(e * 2.1)); }, 'curve', 120);
+  })();
+
+  /* ─── Metrikk-kalkulator ─── */
+  (function () {
+    var root = document.getElementById('w-metrics'); if (!root) return;
+    var ids = ['m-tp', 'm-fp', 'm-fn', 'm-tn'];
+    var out = document.getElementById('m-out');
+    function metric(name, val, formula) {
+      return '<div class="metric"><div class="m-name">' + name + '</div><div class="m-val">' + (isFinite(val) ? f3(val) : '–') + '</div><div class="m-formula">' + formula + '</div></div>';
+    }
+    function draw() {
+      var v = {}; ids.forEach(function (id) { v[id] = Math.max(0, +document.getElementById(id).value || 0); });
+      var TP = v['m-tp'], FP = v['m-fp'], FN = v['m-fn'], TN = v['m-tn'];
+      var N = TP + FP + FN + TN;
+      out.innerHTML =
+        metric('Accuracy', (TP + TN) / N, '(TP + TN) / alle') +
+        metric('TPR · recall', TP / (TP + FN), 'TP / (TP + FN)') +
+        metric('TNR · spesifisitet', TN / (TN + FP), 'TN / (TN + FP)') +
+        metric('FPR', FP / (FP + TN), 'FP / (FP + TN)') +
+        metric('Precision · PPV', TP / (TP + FP), 'TP / (TP + FP)');
+    }
+    ids.forEach(function (id) { document.getElementById(id).addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ─── Terskel / ROC-widget ─── */
+  (function () {
+    var root = document.getElementById('w-terskel'); if (!root) return;
+    var POS = [0.95, 0.91, 0.88, 0.86, 0.83, 0.80, 0.78, 0.75, 0.72, 0.70, 0.67, 0.64, 0.61, 0.58, 0.55, 0.50, 0.46, 0.41, 0.35, 0.28];
+    var NEG = [0.05, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.32, 0.34, 0.36, 0.38, 0.40, 0.42, 0.45, 0.48, 0.51, 0.54, 0.57, 0.60, 0.63, 0.66, 0.71, 0.76, 0.84];
+    var thrIn = document.getElementById('t-thr'), thrVal = document.getElementById('t-thr-val'), out = document.getElementById('t-out');
+    var strip = MLPlot.make(document.getElementById('t-strip'), { x: [0, 1], y: [0, 3], pad: { l: 30, r: 10, t: 10, b: 26 }, xLabel: 'y_pred', xTicks: [0, 0.25, 0.5, 0.75, 1], yTicks: [], grid: false });
+    var roc = MLPlot.make(document.getElementById('t-roc'), { x: [0, 1], y: [0, 1], pad: { l: 34, r: 10, t: 10, b: 30 }, xLabel: 'FPR', yLabel: 'TPR', xTicks: [0, 0.5, 1], yTicks: [0, 0.5, 1] });
+
+    function counts(t) {
+      var TP = POS.filter(function (s) { return s > t; }).length, FN = POS.length - TP;
+      var FP = NEG.filter(function (s) { return s > t; }).length, TN = NEG.length - FP;
+      return { TP: TP, FP: FP, FN: FN, TN: TN, TPR: TP / POS.length, FPR: FP / NEG.length, PREC: TP + FP ? TP / (TP + FP) : NaN };
+    }
+    // ROC over alle terskler
+    var thresholds = [1.01].concat(POS.concat(NEG).sort(function (a, b) { return b - a; })).concat([-0.01]);
+    var rocPts = thresholds.map(function (t) { var c = counts(t); return [c.FPR, c.TPR]; });
+    var auc = 0; for (var i = 1; i < rocPts.length; i++) auc += (rocPts[i][0] - rocPts[i - 1][0]) * (rocPts[i][1] + rocPts[i - 1][1]) / 2;
+    roc.polyline([[0, 0], [1, 1]], 'guide');
+    roc.polyline(rocPts, 'curve');
+    roc.label(0.55, 0.12, 'AUC = ' + f3(auc), 'start');
+    // Strip-plott: faste punkter i data-laget
+    POS.forEach(function (s, i) { MLPlot.el('circle', { cx: strip.sx(s), cy: strip.sy(2.1 + (i % 3) * 0.28), r: 4, fill: '#1b5e5a', 'fill-opacity': 0.85 }, strip.layers.data); });
+    NEG.forEach(function (s, i) { MLPlot.el('circle', { cx: strip.sx(s), cy: strip.sy(0.6 + (i % 3) * 0.28), r: 4, fill: '#a0522d', 'fill-opacity': 0.85 }, strip.layers.data); });
+    var l1 = MLPlot.el('text', { x: 4, y: strip.sy(2.4) + 4, 'class': 'lbl' }, strip.layers.axes); l1.textContent = 'y=1';
+    var l0 = MLPlot.el('text', { x: 4, y: strip.sy(0.9) + 4, 'class': 'lbl' }, strip.layers.axes); l0.textContent = 'y=0';
+
+    function metric(name, val, extra) {
+      return '<div class="metric"><div class="m-name">' + name + '</div><div class="m-val">' + (isFinite(val) ? f3(val) : '–') + '</div><div class="m-formula">' + extra + '</div></div>';
+    }
+    function draw() {
+      var t = +thrIn.value; thrVal.textContent = t.toFixed(2);
+      var c = counts(t);
+      strip.clearOverlay(); strip.vline(t);
+      strip.label(Math.min(t + 0.02, 0.8), 2.95, 'terskel ' + t.toFixed(2), 'start');
+      roc.clearOverlay(); roc.point(c.FPR, c.TPR, 'marker', 7);
+      out.innerHTML =
+        metric('TP', c.TP, 'positive over terskel') + metric('FN', c.FN, 'positive under terskel') +
+        metric('FP', c.FP, 'negative over terskel') + metric('TN', c.TN, 'negative under terskel') +
+        metric('TPR · recall', c.TPR, 'TP / (TP + FN)') + metric('FPR', c.FPR, 'FP / (FP + TN)') +
+        metric('Precision', c.PREC, 'TP / (TP + FP)') + metric('Accuracy', (c.TP + c.TN) / 50, '(TP + TN) / 50');
+    }
+    thrIn.addEventListener('input', draw);
+    draw();
+  })();
+
+  /* ─── Dimensjons-widget ─── */
+  (function () {
+    var root = document.getElementById('w-dim'); if (!root) return;
+    var dIn = document.getElementById('dim-d'), dVal = document.getElementById('dim-d-val');
+    var binsIn = document.getElementById('dim-bins'), perIn = document.getElementById('dim-per');
+    var epsIn = document.getElementById('dim-eps'), epsVal = document.getElementById('dim-eps-val');
+    var out = document.getElementById('dim-out'), shellOut = document.getElementById('dim-shell-out');
+    var svg = root.querySelector('svg');
+    var plot = MLPlot.make(svg, { x: [1, 100], y: [0, 1], pad: { l: 44, r: 16, t: 14, b: 30 }, xLabel: 'dimensjon d', yLabel: 'andel av volum i skallet', xTicks: [1, 25, 50, 75, 100], yTicks: [0, 0.25, 0.5, 0.75, 1] });
+    var dOverride = null;
+    function fmtBig(log10) {
+      if (log10 < 7) return Math.round(Math.pow(10, log10)).toLocaleString('no-NO');
+      var e = Math.floor(log10), m = Math.pow(10, log10 - e);
+      return (Math.abs(m - 1) < 1e-9 ? '' : m.toFixed(2) + ' × ') + '10^' + e;
+    }
+    function draw() {
+      var d = dOverride !== null ? dOverride : +dIn.value;
+      var bins = Math.max(2, +binsIn.value || 10), per = Math.max(1, +perIn.value || 10);
+      dVal.textContent = d;
+      var log10 = d * Math.log10(bins) + Math.log10(per);
+      out.innerHTML = 'd = ' + d + ', ' + bins + ' bins per akse, ' + per + ' punkter per bin\n' +
+        'Antall bins:        ' + bins + '^' + d + ' = ' + fmtBig(d * Math.log10(bins)) + '\n' +
+        'Datapunkter nødvendig: <span class="hl">' + fmtBig(log10) + '</span>' +
+        (log10 > 82 ? '\n<span class="bad">Flere enn de ~10^82 atomene i universet.</span>' : '');
+      var eps = +epsIn.value; epsVal.textContent = eps.toFixed(2);
+      plot.clearData(); plot.clearOverlay();
+      plot.curve(function (x) { return 1 - Math.pow(1 - eps, x); }, 'curve', 200);
+      var frac = 1 - Math.pow(1 - eps, d);
+      if (d <= 100) { plot.vline(d); plot.point(d, frac); }
+      shellOut.innerHTML = 'Andel av enhetskulen i et skall med tykkelse ε = ' + eps.toFixed(2) + ':  1 − (1 − ε)^d\n' +
+        'd = ' + d + ':  1 − ' + (1 - eps).toFixed(2) + '^' + d + ' = <span class="hl">' + f3(frac) + '</span>' +
+        (frac > 0.9 ? '   → nesten alt volumet ligger ved overflaten.' : '');
+    }
+    [dIn, binsIn, perIn, epsIn].forEach(function (el) { el.addEventListener('input', function () { if (el === dIn) dOverride = null; draw(); }); });
+    document.getElementById('dim-mnist').addEventListener('click', function () { dOverride = 784; draw(); });
+    draw();
+  })();
+
+  /* ─── Resampling-widget ─── */
+  (function () {
+    var root = document.getElementById('w-resample'); if (!root) return;
+    var a = document.getElementById('rs-min'), b = document.getElementById('rs-maj'), out = document.getElementById('rs-out');
+    function draw() {
+      var n = Math.max(1, +a.value || 1), m = Math.max(1, +b.value || 1);
+      var lo = Math.min(n, m), hi = Math.max(n, m);
+      out.innerHTML = 'Undersampling:  ' + lo + ' + ' + lo + ' = <span class="hl">' + (2 * lo) + '</span> datapunkter (' + (hi - lo) + ' kastes)\n' +
+        'Oversampling:   ' + hi + ' + ' + hi + ' = <span class="hl">' + (2 * hi) + '</span> datapunkter, hvorav <span class="hl">' + (hi - lo) + '</span> er duplikater' +
+        ' (hvert punkt i den lille klassen finnes i snitt ' + f3(hi / lo) + ' ganger)';
+    }
+    a.addEventListener('input', draw); b.addEventListener('input', draw);
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

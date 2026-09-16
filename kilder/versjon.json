@@ -1,0 +1,137 @@
+{
+  "pdf": "TDT4172_forelesningsnotater.pdf",
+  "dato_i_pdf": "September 2, 2026",
+  "dato_norsk": "2. september 2026",
+  "sider": 20,
+  "sha256": "9cba97f4f90923d6fdbddd630c8a780c35ec59775421d2d3ae1804b39837fcbc",
+  "ekstrahert": "2026-09-16",
+  "antall_oppgaver": 21,
+  "seksjoner": [
+    {
+      "nummer": "1",
+      "tittel": "Veiledet læring",
+      "side": 2,
+      "tegn": 0,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.1",
+      "tittel": "Data",
+      "side": 2,
+      "tegn": 8206,
+      "oppgaver": 2
+    },
+    {
+      "nummer": "1.2",
+      "tittel": "Logistisk regresjon",
+      "side": 4,
+      "tegn": 1116,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.2.1",
+      "tittel": "Trening og tapsfunksjon",
+      "side": 5,
+      "tegn": 3704,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "1.2.2",
+      "tittel": "Gradient descent",
+      "side": 7,
+      "tegn": 3518,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "1.2.3",
+      "tittel": "Trening",
+      "side": 8,
+      "tegn": 3182,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.2.4",
+      "tittel": "Evaluering",
+      "side": 9,
+      "tegn": 3682,
+      "oppgaver": 2
+    },
+    {
+      "nummer": "1.2.5",
+      "tittel": "Klassifiseringsterskel",
+      "side": 11,
+      "tegn": 3620,
+      "oppgaver": 3
+    },
+    {
+      "nummer": "1.2.6",
+      "tittel": "Kort om entropi og cross entropy loss",
+      "side": 12,
+      "tegn": 1774,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.2.7",
+      "tittel": "Bayes’ teorem",
+      "side": 13,
+      "tegn": 4666,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.2.8",
+      "tittel": "Ikke-uavhengige features",
+      "side": 15,
+      "tegn": 2766,
+      "oppgaver": 3
+    },
+    {
+      "nummer": "1.2.9",
+      "tittel": "Dimensjonsforbannelsen",
+      "side": 15,
+      "tegn": 1172,
+      "oppgaver": 2
+    },
+    {
+      "nummer": "1.2.10",
+      "tittel": "Trening på ubalanserte data",
+      "side": 16,
+      "tegn": 4568,
+      "oppgaver": 2
+    },
+    {
+      "nummer": "1.3",
+      "tittel": "Beslutningstrær",
+      "side": 17,
+      "tegn": 0,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.3.1",
+      "tittel": "Noder",
+      "side": 17,
+      "tegn": 1795,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.3.2",
+      "tittel": "Gini Impurity",
+      "side": 18,
+      "tegn": 1558,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "1.3.3",
+      "tittel": "Entropi",
+      "side": 19,
+      "tegn": 1819,
+      "oppgaver": 2
+    },
+    {
+      "nummer": "1.3.4",
+      "tittel": "Bygge beslutningstrær",
+      "side": 19,
+      "tegn": 3745,
+      "oppgaver": 2
+    }
+  ]
+}
