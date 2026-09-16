@@ -10,7 +10,9 @@
     var v = window.NOTATER_VERSJON;
     document.querySelectorAll('[data-notater-versjon]').forEach(function (el) {
       if (!v) { el.textContent = ''; return; }
-      el.textContent = 'Bygger på forelesningsnotatene datert ' + v.dato_norsk + ' (' + v.sider + ' sider)' +
+      if (v.tekst) { el.textContent = v.tekst; return; }   // fag uten PDF-kilde setter hele teksten selv
+      el.textContent = 'Bygger på ' + (v.kilde_navn || 'forelesningsnotatene') + ' datert ' + v.dato_norsk +
+        (v.sider ? ' (' + v.sider + ' sider)' : '') +
         (v.ekstrahert ? ' · tekst hentet ut ' + v.ekstrahert : '');
     });
   }

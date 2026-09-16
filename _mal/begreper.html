@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<title>Begreper — {{KODE}}</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="./" class="brand">{{KODE}}</a>
+    <a href="./" class="nav-back">&larr; Forsiden</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Begreper">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Ordliste · alle kapitler</div>
+      <h1>Fag<em>begreper</em></h1>
+      <p class="lede">Alle begrepene som er klikkbare på kapittelsidene, samlet på ett sted. Hvert begrep lenker til stedet der det behandles.</p>
+      <div class="gloss-filter">
+        <input type="search" id="gloss-q" placeholder="Filtrer begreper…" autocomplete="off">
+      </div>
+      <div class="gloss-count" id="gloss-count"></div>
+    </div>
+  </header>
+
+  <section id="liste">
+    <div class="container">
+      <ul class="gloss-list" id="gloss-list"></ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · {{KODE}} · {{SEMESTER}}</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="kilder/versjon.js"></script>
+<script src="fag.js"></script>
+<script src="begreper.js"></script>
+<script src="../glossary.js"></script>
+<script src="../site.js"></script>
+<script src="../nav-search.js"></script>
+<script>
+(function () {
+  'use strict';
+  var list = document.getElementById('gloss-list');
+  var q = document.getElementById('gloss-q');
+  var count = document.getElementById('gloss-count');
+  var G = window.GLOSSARY || {};
+
+  function plain(html) { var d = document.createElement('div'); d.innerHTML = html; return d.textContent; }
+  function sortKey(e) { return plain(e.term).toLowerCase().replace(/^(ROC|True|False|Positive)\s+/i, function (m) { return m; }); }
+
+  var entries = Object.keys(G).map(function (key) { return { key: key, e: G[key], name: plain(G[key].term), text: plain(G[key].def) }; });
+  entries.sort(function (a, b) { return a.name.localeCompare(b.name, 'no'); });
+
+  function render(filter) {
+    var f = (filter || '').trim().toLowerCase();
+    var shown = 0, lastLetter = '';
+    list.innerHTML = '';
+    entries.forEach(function (it) {
+      var hay = (it.name + ' ' + (it.e.alias || '') + ' ' + it.text).toLowerCase();
+      if (f && hay.indexOf(f) === -1) return;
+      shown++;
+      var letter = it.name.charAt(0).toUpperCase();
+      if (!f && letter !== lastLetter) {
+        lastLetter = letter;
+        var h = document.createElement('li'); h.className = 'gloss-letter'; h.textContent = letter; list.appendChild(h);
+      }
+      var li = document.createElement('li');
+      li.className = 'gloss-item'; li.id = 'begrep-' + it.key;
+      li.innerHTML = '<div class="g-term">' + it.e.term + (it.e.alias ? ' <span class="pill">' + it.e.alias + '</span>' : '') + '</div>' +
+        '<div class="g-def">' + it.e.def + '</div>' +
+        (it.e.more ? '<a class="g-more" href="' + it.e.more + '">Les mer på siden →</a>' : '');
+      list.appendChild(li);
+    });
+    count.textContent = shown + ' av ' + entries.length + ' begreper' + (f ? ' matcher «' + filter.trim() + '»' : '');
+  }
+
+  function highlightHash() {
+    document.querySelectorAll('.gloss-item.target').forEach(function (el) { el.classList.remove('target'); });
+    if (!location.hash) return;
+    var el = document.getElementById(location.hash.slice(1));
+    if (el) { el.classList.add('target'); el.scrollIntoView({ block: 'center' }); }
+  }
+
+  q.addEventListener('input', function () { render(q.value); });
+  window.addEventListener('hashchange', highlightHash);
+  render('');
+  highlightHash();
+})();
+</script>
+</body>
+</html>

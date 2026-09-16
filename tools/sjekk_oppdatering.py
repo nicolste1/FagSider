@@ -1,23 +1,25 @@
-"""Sammenlikn en ny versjon av forelesningsnotatene med den siden bygger på.
+"""Sammenlikn en ny versjon av et fags kilde-PDF med den siden bygger på.
 
 Kjør fra repo-roten:
-    python tools/sjekk_oppdatering.py sti/til/ny_versjon.pdf
-    python tools/sjekk_oppdatering.py sti/til/ny_versjon.pdf --ta-i-bruk
+    python tools/sjekk_oppdatering.py --fag introml sti/til/ny_versjon.pdf
+    python tools/sjekk_oppdatering.py --fag introml sti/til/ny_versjon.pdf --ta-i-bruk
 
 Uten --ta-i-bruk endres ingenting; du får en rapport (skrives også til
-kilder/oppdatering_rapport.md) som sier:
+<fag>/kilder/oppdatering_rapport.md) som sier:
 
   * hvilke seksjoner som er NYE, FJERNET eller ENDRET (med likhetsgrad)
+  * små endringer under terskelen (f.eks. ett ord byttet ut)
   * hvilke «Oppgave:»-avsnitt som er kommet til eller forsvunnet
-  * hvilken HTML-side/anker som dekker hver berørt seksjon (fra kilder/dekning.json)
+  * hvilken HTML-side/anker som dekker hver berørt seksjon (fra <fag>/kilder/dekning.json)
 
-Med --ta-i-bruk kopieres den nye PDF-en inn som kilder/TDT4172_forelesningsnotater.pdf
-og kilder/notater.md, oppgaver.md, versjon.json og versjon.js regenereres.
+Med --ta-i-bruk kopieres den nye PDF-en inn i <fag>/kilder/ (over den gamle)
+og notater.md, oppgaver.md, versjon.json og versjon.js regenereres.
 Deretter må HTML-sidene oppdateres for hånd (eller av Claude) i tråd med rapporten.
 """
 
 from __future__ import annotations
 
+import argparse
 import difflib
 import json
 import re
@@ -29,18 +31,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pdf_til_tekst as p2t  # noqa: E402
 
 REPO_ROOT = p2t.REPO_ROOT
-KILDER = p2t.KILDER
 
 
-def les_gamle_seksjoner() -> dict[str, dict]:
+def les_gamle_seksjoner(kilder: Path) -> dict[str, dict]:
     """Leser kilder/notater.md tilbake til {nummer: {tittel, tekst, oppgaver}}."""
-    sti = KILDER / "notater.md"
+    sti = kilder / "notater.md"
     if not sti.exists():
         return {}
     tekst = sti.read_text(encoding="utf-8")
     ut: dict[str, dict] = {}
     deler = re.split(r"^## (\d+(?:\.\d+)*) (.+)$", tekst, flags=re.M)
-    # deler = [innledning, nummer, tittel, kropp, nummer, tittel, kropp, ...]
     for i in range(1, len(deler) - 2, 3):
         nummer, tittel, kropp = deler[i], deler[i + 1].strip(), deler[i + 2]
         kropp = re.sub(r"^<!-- side \d+ -->\n?", "", kropp.strip())
@@ -48,8 +48,8 @@ def les_gamle_seksjoner() -> dict[str, dict]:
     return ut
 
 
-def les_dekning() -> dict[str, dict]:
-    sti = KILDER / "dekning.json"
+def les_dekning(kilder: Path) -> dict[str, dict]:
+    sti = kilder / "dekning.json"
     if not sti.exists():
         return {}
     return json.loads(sti.read_text(encoding="utf-8"))
@@ -61,8 +61,7 @@ def dekning_for(nummer: str, dekning: dict[str, dict]) -> str:
     while kandidat:
         if kandidat in dekning:
             d = dekning[kandidat]
-            side = d.get("side", "?")
-            anker = d.get("anker")
+            side, anker = d.get("side", "?"), d.get("anker")
             return f"{side}#{anker}" if anker else side
         kandidat = kandidat.rsplit(".", 1)[0] if "." in kandidat else ""
     return "(ingen side dekker denne ennå — må lages)"
@@ -73,7 +72,6 @@ def likhet(a: str, b: str) -> float:
 
 
 def ordnivaa_diff(gammel: str, ny: str, maks_linjer: int = 12) -> list[str]:
-    """Kort, lesbar diff på setningsnivå."""
     g = re.split(r"(?<=[.?!])\s+", gammel)
     n = re.split(r"(?<=[.?!])\s+", ny)
     ut = []
@@ -90,22 +88,22 @@ def ordnivaa_diff(gammel: str, ny: str, maks_linjer: int = 12) -> list[str]:
     return ut
 
 
-def lag_rapport(ny_pdf: Path) -> tuple[str, dict]:
+def lag_rapport(ny_pdf: Path, kilder: Path, fag: str) -> tuple[str, dict]:
     ny = p2t.ekstraher(ny_pdf)
-    gamle = les_gamle_seksjoner()
-    dekning = les_dekning()
+    gamle = les_gamle_seksjoner(kilder)
+    dekning = les_dekning(kilder)
     gammel_versjon = {}
-    if (KILDER / "versjon.json").exists():
-        gammel_versjon = json.loads((KILDER / "versjon.json").read_text(encoding="utf-8"))
+    if (kilder / "versjon.json").exists():
+        gammel_versjon = json.loads((kilder / "versjon.json").read_text(encoding="utf-8"))
 
     nye_map = {s["nummer"]: s for s in ny["seksjoner"]}
     linjer: list[str] = []
     L = linjer.append
 
-    L("# Oppdateringsrapport — forelesningsnotater TDT4172")
+    L(f"# Oppdateringsrapport — {fag}")
     L("")
-    L(f"| | Siden bygger på | Ny PDF |")
-    L(f"|---|---|---|")
+    L("| | Siden bygger på | Ny PDF |")
+    L("|---|---|---|")
     L(f"| Fil | `{gammel_versjon.get('pdf', '?')}` | `{ny_pdf.name}` |")
     L(f"| Datert | {gammel_versjon.get('dato_i_pdf', '?')} | {ny['dato'] or 'ukjent'} |")
     L(f"| Sider | {gammel_versjon.get('sider', '?')} | {len(ny['sider'])} |")
@@ -190,10 +188,11 @@ def lag_rapport(ny_pdf: Path) -> tuple[str, dict]:
     L("")
 
     L("## Neste steg")
-    L("1. Oppdater HTML-sidene som er listet over (nye seksjoner trenger nye `<section id>` + oppføring i `kilder/dekning.json`).")
-    L("2. Legg nye fagbegreper i `glossary.js` og nye «Oppgave:»-avsnitt som `.oppgave`-bokser.")
-    L(f"3. Kjør `python tools/sjekk_oppdatering.py {ny_pdf} --ta-i-bruk` for å ta den nye PDF-en i bruk som kilde.")
-    L("4. Legg nye sider i `PAGES` i `nav-search.js` og på forsiden.")
+    L(f"1. Oppdater HTML-sidene under `{fag}/` som er listet over (nye seksjoner trenger nye `<section id>` + oppføring i `{fag}/kilder/dekning.json`).")
+    L(f"2. Legg nye fagbegreper i `{fag}/begreper.js` og nye «Oppgave:»-avsnitt som `.oppgave`-bokser.")
+    L(f"3. Kjør `python tools/sjekk_oppdatering.py --fag {fag} {ny_pdf} --ta-i-bruk` for å ta den nye PDF-en i bruk som kilde.")
+    L(f"4. Legg nye sider i `sider` i `{fag}/fag.js` og på fagets forside.")
+    L(f"5. Kjør `python tools/valider.py --fag {fag}`.")
 
     return "\n".join(linjer), {"identisk": False, "nye": nye_nr, "fjernet": fjernet_nr, "endret": endret}
 
@@ -201,29 +200,31 @@ def lag_rapport(ny_pdf: Path) -> tuple[str, dict]:
 def main(argv: list[str]) -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    args = [a for a in argv[1:] if not a.startswith("--")]
-    flagg = {a for a in argv[1:] if a.startswith("--")}
-    if not args:
-        sys.exit(__doc__)
-    ny_pdf = Path(args[0])
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("ny_pdf", help="ny versjon av kilde-PDF-en")
+    ap.add_argument("--fag", default="introml", help="fagets mappenavn (standard: introml)")
+    ap.add_argument("--ta-i-bruk", action="store_true", help="kopier PDF-en inn og regenerer kilder/")
+    a = ap.parse_args(argv[1:])
+    kilder = p2t.kilder_for(a.fag)
+    ny_pdf = Path(a.ny_pdf)
     if not ny_pdf.exists():
         sys.exit(f"Fant ikke {ny_pdf}")
 
-    rapport, info = lag_rapport(ny_pdf)
+    rapport, info = lag_rapport(ny_pdf, kilder, a.fag)
     print(rapport)
-    (KILDER / "oppdatering_rapport.md").write_text(rapport + "\n", encoding="utf-8", newline="\n")
-    print(f"\n(Rapporten er også lagret i kilder/oppdatering_rapport.md)")
+    (kilder / "oppdatering_rapport.md").write_text(rapport + "\n", encoding="utf-8", newline="\n")
+    print(f"\n(Rapporten er også lagret i {kilder.relative_to(REPO_ROOT)}/oppdatering_rapport.md)")
 
-    if "--ta-i-bruk" in flagg:
+    if a.ta_i_bruk:
         if info.get("identisk"):
             print("Identisk PDF, ingenting tatt i bruk.")
             return
-        mål = p2t.STANDARD_PDF
+        mål = p2t.standard_pdf(kilder) or (kilder / ny_pdf.name)
         if ny_pdf.resolve() != mål.resolve():
             shutil.copy(ny_pdf, mål)
         r = p2t.ekstraher(mål)
-        p2t.skriv_filer(mål, r["sider"], r["sha"], r["toc"], r["seksjoner"])
-        print(f"\nTatt i bruk: {mål.name} ({len(r['sider'])} sider, datert {r['dato'] or 'ukjent'}). kilder/ er regenerert.")
+        p2t.skriv_filer(kilder, mål, r["sider"], r["sha"], r["seksjoner"])
+        print(f"\nTatt i bruk: {mål.name} ({len(r['sider'])} sider, datert {r['dato'] or 'ukjent'}). {kilder.relative_to(REPO_ROOT)}/ er regenerert.")
         print("Husk å oppdatere HTML-sidene i tråd med rapporten.")
 
 

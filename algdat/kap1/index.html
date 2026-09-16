@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 1 — Kapitteltittel</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* Begrepskart-SVG (kopier fra introml/kap1/index.html og tilpass) */
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4120</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Kapitteltittel">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · Kilde (f.eks. Forelesning 1–3 · Boka kap. 1–2)</div>
+      <h1>Kapittel<em>tittel</em></h1>
+      <p class="lede">To setninger om hva kapittelet handler om og hvorfor det er viktig.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgavene fra fagstoffet</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+      <p class="dropcap">Et avsnitt som setter kapittelet inn i faget. Bruk klikkbare begreper: <span class="term" data-term="eksempelbegrep">eksempelbegrep</span>.</p>
+      <ul>
+        <li><strong>Hovedpoeng 1.</strong> Én setning.</li>
+        <li><strong>Hovedpoeng 2.</strong> Én setning.</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Hvilket fagstoff sidene bygger på, og at alle oppgaver/spørsmål fra stoffet er tatt med som egne bokser.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Én setning om hvorfor rekkefølgen er som den er.</p>
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="del-a.html#intro">Første seksjon</a></div><div class="desc">Stikkord.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="del-a.html#oppsummering">Oppsummering</a></div><div class="desc">Stikkord.</div></div><div class="min">~5 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="del-a.html" class="subpage-card">
+          <span class="sp-icon">1A</span>
+          <div class="sp-info">
+            <div class="sp-title">Tittel på del A</div>
+            <div class="sp-desc">Hva delen dekker. N oppgaver, M interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene fra kapittelet, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Tegn et SVG-kart over begrepene (se introml/kap1/index.html for et komplett eksempel).</p>
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/></marker>
+          </defs>
+          <rect class="bh" x="290" y="18" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="38" text-anchor="middle">Begrep A</text>
+          <text class="cap" x="380" y="54" text-anchor="middle">kort forklaring</text>
+          <rect class="bh" x="290" y="120" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="140" text-anchor="middle">Begrep B</text>
+          <text class="cap" x="380" y="156" text-anchor="middle">kort forklaring</text>
+          <path class="e" d="M380 64 L380 118"/>
+          <rect class="b" x="40" y="120" width="170" height="46" rx="6"/>
+          <text class="lbl" x="125" y="140" text-anchor="middle">Teori som forklarer B</text>
+          <text class="cap" x="125" y="156" text-anchor="middle">kort forklaring</text>
+          <path class="e-faded" d="M210 143 L290 143"/>
+        </svg>
+        <figcaption>Heltrukne piler: rekkefølgen i løypa. Stiplede: teori som forklarer steget den peker på.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">Alle oppgaver og spørsmål i fagstoffet, lenket til stedet på siden der de står. Grønn status betyr at svaret er hentet fra kilden, gul at svaret er et forslag skrevet for denne siden.</p>
+      <ul class="oppgave-index">
+        <!-- Én <li> per .oppgave-boks på innholdssidene. id-en må matche. -->
+        <li><a href="del-a.html#oppg-eksempel-kilde"><span class="oi-ref">1.1 · s. 3</span><span>Spørsmålet i kortform.</span><span class="oi-status notes">Fra kilden</span></a></li>
+        <li><a href="del-a.html#oppg-eksempel-forslag"><span class="oi-ref">1.1 · s. 4</span><span>Spørsmålet i kortform.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Et spørsmål som krever at man ser flere deler i sammenheng.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Svaret.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="del-a.html" class="next"><div class="pn-label">Start · 1A</div><div class="pn-title">Tittel på del A →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4120 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

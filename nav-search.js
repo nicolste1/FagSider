@@ -1,15 +1,12 @@
-/* Søk i alle kapitler (Fuse.js). Indekserer <section id> på hver side i PAGES,
-   pluss alle begreper i glossary.js. Krever at siden serveres over http
-   (fetch fungerer ikke fra file://). */
+/* Søk innenfor ett fag (Fuse.js). FELLES for alle fag.
+   Sidene som indekseres kommer fra fagets fag.js (window.FAG.sider), og alle
+   begreper fra fagets begreper.js (window.GLOSSARY). Krever http (fetch),
+   fungerer ikke fra file://. */
 (function () {
   'use strict';
 
-  var PAGES = [
-    'kap1/index.html',
-    'kap1/logistisk-regresjon.html',
-    'kap1/beslutningstraer.html',
-    'kap1/regresjon.html'
-  ];
+  var FAG = window.FAG || {};
+  var PAGES = FAG.sider || [];
 
   var PREFIX = /\/(kap\d+)\//i.test(window.location.pathname) ? '../' : '';
   var FUSE_SRC = 'https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js';
@@ -133,7 +130,7 @@
           ],
           threshold: 0.3, ignoreLocation: true, includeMatches: true, minMatchCharLength: 2
         });
-        input.placeholder = 'Søk i notatene og begrepene…';
+        input.placeholder = 'Søk i ' + (FAG.kode || 'faget') + '…';
         input.disabled = false;
       })
       .catch(function () { input.placeholder = 'Søk utilgjengelig (krever http)'; });

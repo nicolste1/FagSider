@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Tittel på del A — Kap 1</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt: småting som bare denne siden trenger ─── */
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  /* Array-visualisering (nyttig for algoritmer) */
+  .arr { display: flex; gap: 6px; flex-wrap: wrap; margin: 0.8rem 0; }
+  .arr .cell { min-width: 44px; padding: 8px 6px; text-align: center; font-family: var(--mono); font-size: 0.95rem; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; }
+  .arr .cell.active { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .arr .cell.done { background: rgba(61,107,58,0.18); border-color: var(--green); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">{{KODE}}</a>
+    <a href="./" class="nav-back">&larr; Kap 1</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Kapitteltittel">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · 1A · Kilde (f.eks. Forelesning 1 · slides 1–40)</div>
+      <h1>Tittel på <em>del A</em></h1>
+      <p class="lede">To–tre setninger som sier hva leseren kan etter denne siden.</p>
+      <nav class="toc">
+        <a href="#intro"><span>01</span> Første seksjon</a>
+        <a href="#oppsummering"><span>02</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 01 ─────────────────────────── -->
+  <section id="intro">
+    <div class="container">
+      <div class="section-badge">01 · Første seksjon</div>
+      <h2>Overskrift med ett ord i <em>kursiv</em></h2>
+      <div class="source-note">Kilde · hvor i fagstoffet dette står (avsnitt/slides/sider)</div>
+
+      <p class="dropcap">Brødtekst som forklarer, ikke bare gjengir. Første gang et fagbegrep dukker opp i seksjonen gjøres det klikkbart: <span class="term" data-term="kjoretid">kjøretiden</span> til en algoritme. Nøkkelen må finnes i <code>begreper.js</code>.</p>
+
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Et begrep</div>
+        <p>Definisjonen slik kilden gir den.</p>
+      </div>
+
+      <p>Formler i KaTeX, med samme nummer som i kilden om den nummererer dem:</p>
+      \[ T(n) = 2\,T(n/2) + \Theta(n) \quad\Rightarrow\quad T(n) = \Theta(n \log n). \tag{1} \]
+      <p>Inline: \(\mathcal{O}(n^2)\). Ulikheter skrives \(a \lt b\) og \(a \gt b\).</p>
+
+      <p>Pseudokode og kode i <code>&lt;pre&gt;&lt;code&gt;</code>:</p>
+<pre><code>MERGE-SORT(A, p, r)
+    if p &lt; r
+        q = floor((p + r) / 2)
+        MERGE-SORT(A, p, q)
+        MERGE-SORT(A, q + 1, r)
+        MERGE(A, p, q, r)</code></pre>
+
+      <div class="callout">
+        <span class="label">Nøkkelpoeng</span>
+        <p>Én ting leseren skal huske fra seksjonen.</p>
+      </div>
+
+      <!-- Oppgave fra kilden MED svar i kilden -->
+      <div class="oppgave" data-quiz id="oppg-eksempel-kilde">
+        <div class="o-label"><span>Oppgave fra kilden</span><span class="o-ref">1.1 · s. 3</span></div>
+        <div class="o-text"><p>Spørsmålet slik det står i fagstoffet.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kilden</span>
+            <p>Svaret slik kilden gir det, gjerne med mellomregning.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oppgave fra kilden UTEN svar i kilden: eget forslag, tydelig merket -->
+      <div class="oppgave" data-quiz id="oppg-eksempel-forslag">
+        <div class="o-label"><span>Oppgave fra kilden</span><span class="o-ref">1.1 · s. 4</span></div>
+        <div class="o-text"><p>Et spørsmål kilden stiller uten å svare på det.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra kilden</span>
+            <p>Ditt svar, med begrunnelse.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interaktiv widget: stegvis algoritme på et array -->
+      <div class="widget" id="w-demo">
+        <div class="widget-label">Prøv selv · Stegvis kjøring</div>
+        <p class="widget-intro">Klikk «Ett steg» for å se algoritmen behandle ett element om gangen. Bytt ut logikken i skriptet nederst på siden.</p>
+        <div class="arr" id="demo-arr"></div>
+        <div class="w-row">
+          <button class="w-btn" id="demo-step" type="button">Ett steg</button>
+          <button class="w-btn" id="demo-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="demo-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="demo-out"></div>
+      </div>
+
+      <!-- Interaktiv widget: kurve med MLPlot (kjøretid mot n) -->
+      <div class="widget" id="w-plot">
+        <div class="widget-label">Prøv selv · Kjøretid mot n</div>
+        <p class="widget-intro">Sammenlikn \(n \log n\) og \(n^2\). Dra i slideren for konstantfaktoren.</p>
+        <svg viewBox="0 0 560 240" data-w="560" data-h="240" aria-label="Kjøretid mot n"></svg>
+        <div class="legend-row"><span class="l-a">c · n log n</span><span class="l-w">n²</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="plot-c">c</label><input type="range" id="plot-c" min="1" max="20" step="1" value="5"><span class="w-val" id="plot-c-val">5</span></div>
+        </div>
+        <div class="w-out" id="plot-out"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Et eget kontrollspørsmål til seksjonen.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Svaret, med én setning begrunnelse.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">02 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Poeng 1</strong>Én setning.</div>
+        <div class="recap-pill"><strong>Poeng 2</strong>Én setning.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Spørsmål.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Svar.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 1: oversikt</div></a>
+        <a href="./" class="next placeholder"><div class="pn-label">Neste · 1B</div><div class="pn-title">Kommer →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · {{KODE}} · {{SEMESTER}}</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ─── Widget 1: stegvis algoritme på et array (her: finn maksimum) ─── */
+  (function () {
+    var root = document.getElementById('w-demo'); if (!root) return;
+    var DATA = [5, 2, 8, 1, 9, 3];
+    var arr = document.getElementById('demo-arr'), out = document.getElementById('demo-out');
+    var i = 0, best = -Infinity;
+    function render() {
+      arr.innerHTML = DATA.map(function (v, k) {
+        return '<div class="cell' + (k === i ? ' active' : k < i ? ' done' : '') + '">' + v + '</div>';
+      }).join('');
+      out.innerHTML = i === 0 ? 'Start: best = −∞' : i >= DATA.length ? 'Ferdig: maksimum = <span class="hl">' + best + '</span> etter ' + DATA.length + ' sammenlikninger' : 'Etter ' + i + ' steg: best = <span class="hl">' + best + '</span>';
+    }
+    function step() { if (i >= DATA.length) return; best = Math.max(best, DATA[i]); i += 1; render(); }
+    document.getElementById('demo-step').addEventListener('click', step);
+    document.getElementById('demo-run').addEventListener('click', function () { while (i < DATA.length) step(); });
+    document.getElementById('demo-reset').addEventListener('click', function () { i = 0; best = -Infinity; render(); });
+    render();
+  })();
+
+  /* ─── Widget 2: kurver med MLPlot ─── */
+  (function () {
+    var root = document.getElementById('w-plot'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [1, 100], y: [0, 10000], xLabel: 'n', yLabel: 'operasjoner', xTicks: [1, 25, 50, 75, 100], yTicks: [0, 2500, 5000, 7500, 10000] });
+    var cIn = document.getElementById('plot-c'), cVal = document.getElementById('plot-c-val'), out = document.getElementById('plot-out');
+    function draw() {
+      var c = +cIn.value; cVal.textContent = c;
+      plot.clearData();                                                        // curve() tegner i data-laget: tøm og tegn begge på nytt
+      plot.curve(function (n) { return n * n; }, 'curve-2', 120);
+      plot.curve(function (n) { return c * n * Math.log2(n); }, 'curve', 120);
+      out.innerHTML = 'c · n log₂ n med c = ' + c + '. Ved n = 100: ' + Math.round(c * 100 * Math.log2(100)) + ' mot n² = 10 000.';
+    }
+    cIn.addEventListener('input', draw);
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

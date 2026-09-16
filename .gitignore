@@ -8,4 +8,4 @@ __pycache__/
 *.pyc
 
 # Midlertidig rapport fra tools/sjekk_oppdatering.py
-kilder/oppdatering_rapport.md
+*/kilder/oppdatering_rapport.md

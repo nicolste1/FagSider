@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>TDT4172 — Introduksjon til maskinlæring</title>
+<title>Studiesider — NTNU</title>
 <link rel="stylesheet" href="style.css">
 <style>
   .index-hero { padding: 6rem 0 3rem; }
@@ -13,30 +13,24 @@
   .course-code { display: inline-block; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 5px 12px; border-radius: 14px; margin-bottom: 1.6rem; }
   .lead { font-family: var(--serif); font-style: italic; font-size: 1.5rem; color: var(--ink-soft); max-width: 32em; margin: 1.5rem 0 0; line-height: 1.45; }
 
-  .banner-row { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 3rem 0 0; }
-  .journey-banner { display: flex; align-items: center; gap: 16px; padding: 1.4rem 1.8rem; background: linear-gradient(135deg, rgba(27,94,90,0.08), rgba(160,82,45,0.06)); border: 1px solid var(--line-soft); border-radius: 8px; color: var(--ink); transition: transform .15s, border-color .15s; }
-  .journey-banner:hover { border-color: var(--accent); transform: translateX(2px); }
-  .journey-banner .jb-icon { font-size: 1.6rem; color: var(--accent); }
-  .journey-banner .jb-text { flex: 1; }
-  .journey-banner .jb-title { font-family: var(--serif); font-size: 1.2rem; }
-  .journey-banner .jb-desc { font-size: 0.92rem; color: var(--ink-faded); margin-top: 2px; }
-  .journey-banner .jb-arrow { color: var(--accent); font-family: var(--mono); }
-
-  .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 2.5rem 0; }
-  .chapter-card { display: flex; align-items: center; gap: 14px; padding: 1.1rem 1.3rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 8px; color: var(--ink); transition: background .15s, border-color .15s, transform .15s; }
-  .chapter-card:hover { background: var(--paper); border-color: var(--accent); transform: translateY(-2px); }
-  .chapter-card.soon { opacity: 0.6; pointer-events: none; border-style: dashed; }
-  .ch-num { flex: 0 0 auto; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; color: var(--accent); background: var(--accent-soft); padding: 6px 10px; border-radius: 6px; }
-  .ch-info { flex: 1; min-width: 0; }
-  .ch-title { font-family: var(--serif); font-size: 1.1rem; color: var(--ink); }
-  .ch-desc { font-size: 0.88rem; color: var(--ink-faded); margin-top: 2px; }
-  .ch-arrow { font-family: var(--mono); color: var(--ink-ghost); font-size: 1.2rem; }
-  .chapter-card:hover .ch-arrow { color: var(--accent); }
+  .fag-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 3rem 0 0; }
+  .fag-card { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 1.4rem 1.8rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 8px; color: var(--ink); transition: background .15s, border-color .15s, transform .15s; }
+  .fag-card:hover { background: var(--paper); border-color: var(--accent); transform: translateY(-2px); }
+  .fag-card.soon { border-style: dashed; }
+  .fag-card .fc-code { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.1em; color: var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 6px; white-space: nowrap; }
+  .fag-card.soon .fc-code { color: var(--warm); background: var(--warm-soft); }
+  .fag-card .fc-title { font-family: var(--serif); font-size: 1.35rem; color: var(--ink); }
+  .fag-card .fc-desc { font-size: 0.92rem; color: var(--ink-faded); margin-top: 3px; }
+  .fag-card .fc-status { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-top: 6px; }
+  .fag-card.soon .fc-status { color: var(--warm); }
+  .fag-card .fc-arrow { font-family: var(--mono); color: var(--ink-ghost); font-size: 1.3rem; }
+  .fag-card:hover .fc-arrow { color: var(--accent); }
 
   .info-section { padding: 4rem 0 2rem; border-top: 1px solid var(--line-soft); }
   .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
   .info-grid h3 { font-size: 1.3rem; margin: 0 0 0.8rem; }
   .info-grid p { color: var(--ink-soft); }
+  .info-grid ul { color: var(--ink-soft); padding-left: 1.2rem; }
 
   .contribute-section { padding: 2rem 0 4rem; text-align: center; color: var(--ink-faded); font-size: 0.95rem; }
 
@@ -44,6 +38,8 @@
     .index-hero { padding: 3rem 0 2rem; }
     .index-hero h1 { font-size: 3rem; }
     .info-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .fag-card { grid-template-columns: 1fr; gap: 8px; }
+    .fag-card .fc-arrow { display: none; }
   }
 </style>
 </head>
@@ -51,61 +47,36 @@
 
 <nav class="site-nav">
   <div class="container">
-    <a href="./" class="brand">TDT4172</a>
-    <a href="begreper.html" class="nav-back">Begreper</a>
-    <div class="nav-search-wrapper">
-      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
-      <div id="nav-search-results"></div>
-    </div>
+    <a href="./" class="brand">STUDIESIDER</a>
   </div>
 </nav>
 
-<main data-chapter="Forsiden">
+<main data-chapter="Fagportal">
   <section class="index-hero" style="border:none">
     <div class="container">
-      <span class="course-code">TDT4172 · NTNU · Høst 2026</span>
-      <h1>Introduksjon til <em>maskinlæring</em></h1>
-      <p class="lead">En studieside bygget på forelesningsnotatene: fra features og target til gradient descent, ROC-kurver og beslutningstrær. Med alle oppgavene fra notatene, klikkbare fagbegreper og interaktive figurer.</p>
+      <span class="course-code">NTNU · Høst 2026</span>
+      <h1>Studie<em>sider</em></h1>
+      <p class="lead">Ett fag per side, samme oppsett i alle: kapitler etter pensum, alle oppgavene fra fagstoffet med svar, klikkbare fagbegreper, interaktive figurer og søk. Velg fag.</p>
 
-      <div class="banner-row">
-        <a href="kap1/#oppgaver" class="journey-banner">
-          <span class="jb-icon">?</span>
-          <div class="jb-text">
-            <div class="jb-title">Oppgavene fra notatene</div>
-            <div class="jb-desc">Alle «Oppgave:»-avsnittene samlet, med svar fra notatene eller forslag til svar</div>
+      <div class="fag-grid">
+        <a href="introml/" class="fag-card">
+          <span class="fc-code">TDT4172</span>
+          <div>
+            <div class="fc-title">Introduksjon til maskinlæring</div>
+            <div class="fc-desc">Veiledet læring: data, logistisk regresjon, gradient descent, evaluering, Bayes, beslutningstrær, regresjon og bias–varians. Bygger på forelesningsnotatene.</div>
+            <div class="fc-status">Kapittel 1 ferdig</div>
           </div>
-          <span class="jb-arrow">→</span>
+          <span class="fc-arrow">→</span>
         </a>
-        <a href="begreper.html" class="journey-banner">
-          <span class="jb-icon">§</span>
-          <div class="jb-text">
-            <div class="jb-title">Begrepsliste</div>
-            <div class="jb-desc">Alle fagbegrepene med korte forklaringer og lenke til stedet de behandles</div>
+        <a href="algdat/" class="fag-card soon">
+          <span class="fc-code">TDT4120</span>
+          <div>
+            <div class="fc-title">Algoritmer og datastrukturer</div>
+            <div class="fc-desc">Samme oppsett som maskinlæring: kapitler, oppgaver, begreper og interaktive figurer for algoritmene.</div>
+            <div class="fc-status">Under arbeid</div>
           </div>
-          <span class="jb-arrow">→</span>
+          <span class="fc-arrow">→</span>
         </a>
-      </div>
-
-      <div class="chapter-grid">
-        <a href="kap1/" class="chapter-card">
-          <span class="ch-num">Kap 1</span>
-          <div class="ch-info">
-            <div class="ch-title">Veiledet læring</div>
-            <div class="ch-desc">Data, logistisk regresjon, gradient descent, evaluering, Bayes, beslutningstrær, regresjon, bias–varians</div>
-          </div>
-          <span class="ch-arrow">→</span>
-        </a>
-        <div class="chapter-card soon">
-          <span class="ch-num">Kap 2+</span>
-          <div class="ch-info">
-            <div class="ch-title">Kommer</div>
-            <div class="ch-desc">Nye kapitler legges til etter hvert som notatene utvides</div>
-          </div>
-          <span class="ch-arrow">…</span>
-        </div>
       </div>
     </div>
   </section>
@@ -114,14 +85,18 @@
     <div class="container">
       <div class="info-grid">
         <div>
-          <h3>Om emnet</h3>
-          <p>TDT4172 <em>Introduksjon til maskinlæring</em> ved NTNU. Kapittel 1 dekker veiledet læring: hvordan en modell, en tapsfunksjon og en optimeringsmetode til sammen blir en læringsalgoritme, og hvordan vi evaluerer resultatet ærlig.</p>
-          <p>Sidene er skrevet som et supplement til notatene, ikke en erstatning. Formlene har samme nummerering som i notatene, slik at det er lett å slå opp.</p>
+          <h3>Slik er hvert fag bygget opp</h3>
+          <ul>
+            <li>En forside med kapittelraster og søk.</li>
+            <li>Én oversiktsside per kapittel: helhetsbilde, læringssti, begrepskart, alle oppgaver, quiz.</li>
+            <li>Én innholdsside per del av kapittelet, med formler, figurer og widgeter du kan dra i.</li>
+            <li>Alle spørsmål og oppgaver fra fagstoffet som egne bokser, med svar fra kilden eller tydelig merkede forslag.</li>
+            <li>Klikkbare fagbegreper og en samlet begrepsliste.</li>
+          </ul>
         </div>
         <div>
-          <h3>Pensum</h3>
-          <p>Notater: <em>Inga Strümke, Forelesningsnotater Introduksjon til Maskinlæring</em>. Notatene utvikles gjennom semesteret, og sidene oppdateres når nye versjoner kommer.</p>
-          <p class="notes-version" data-notater-versjon style="font-family: var(--mono); font-size: 0.8rem; color: var(--ink-faded);"></p>
+          <h3>Legge til et fag</h3>
+          <p>Oppskriften ligger i <code>NYTT-FAG.md</code> i repoet, og malen i <code>_mal/</code>. Kopier malen, fyll inn fagkonfigurasjonen, legg fagstoffet i <code>kilder/</code> og bygg kapittelsidene etter mønsteret fra maskinlæring.</p>
         </div>
       </div>
     </div>
@@ -129,7 +104,7 @@
 
   <section class="contribute-section" style="border-top:1px solid var(--line-soft)">
     <div class="container">
-      <p>Funnet en feil eller mangler du noe? Si fra — siden lever av tilbakemelding.</p>
+      <p>Funnet en feil eller mangler du noe? Si fra — sidene lever av tilbakemelding.</p>
     </div>
   </section>
 </main>
@@ -137,13 +112,8 @@
 <footer>
   <div class="container">
     <div class="ornament">&#10043; &#10043; &#10043;</div>
-    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p>NTNU · Studiesider · Høst 2026</p>
   </div>
 </footer>
-
-<script src="kilder/versjon.js"></script>
-<script src="glossary.js"></script>
-<script src="site.js"></script>
-<script src="nav-search.js"></script>
 </body>
 </html>

@@ -1,0 +1,5 @@
+{
+  "_kommentar": "Hvilken HTML-side (og anker) som dekker hver enhet i kilder/notater.md. Nøkkel = nummeret i ## -overskriften. Underseksjoner arver fra nærmeste forelder om de ikke er listet. Brukes av tools/sjekk_oppdatering.py og tools/valider.py.",
+  "1":   { "side": "kap1/index.html" },
+  "1.1": { "side": "kap1/del-a.html", "anker": "intro" }
+}

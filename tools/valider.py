@@ -1,16 +1,22 @@
-"""Enkel konsistenssjekk av sidene. Kjør fra repo-roten:  python tools/valider.py
+"""Konsistenssjekk av sidene. Kjør fra repo-roten:
 
-Sjekker at
-  * alle data-term-nøkler finnes i glossary.js (og lister ubrukte begreper)
+    python tools/valider.py                 # alle fag
+    python tools/valider.py --fag algdat    # ett fag
+
+Sjekker for hvert fag (mapper med fag.js, unntatt _mal/) at
+  * alle data-term-nøkler finnes i <fag>/begreper.js (og lister ubrukte begreper)
+  * alle `more`-lenker i begreper.js peker på eksisterende ankre
   * alle interne lenker og ankre peker på noe som finnes
-  * HTML-taggene er balansert
-  * KaTeX-avgrensere er balansert
-  * kilder/dekning.json dekker alle seksjoner i kilder/versjon.json
+  * HTML-taggene er balansert og KaTeX-avgrensere er balanserte
+  * <fag>/kilder/dekning.json dekker alle seksjoner i versjon.json (om den finnes)
   * alle .oppgave-bokser er listet i kapitteloversikten, og omvendt
+  * sidene i fag.js finnes
+Pluss at lenkene på rot-index.html (portalen) finnes.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -18,7 +24,6 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = sorted(str(p.relative_to(ROOT)).replace("\\", "/") for p in list(ROOT.glob("*.html")) + list(ROOT.glob("kap*/*.html")))
 VOID = {"meta", "link", "br", "hr", "img", "input", "area", "base", "col", "embed", "source", "track", "wbr",
         "path", "circle", "rect", "line", "polyline", "polygon", "use", "stop"}
 
@@ -43,90 +48,119 @@ class Bal(HTMLParser):
             self.errs.append(f"linje {self.getpos()[0]}: </{tag}> lukker <{t}> fra linje {ln}")
 
 
-def main() -> int:
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-    problems: list[str] = []
-    html = {p: (ROOT / p).read_text(encoding="utf-8") for p in PAGES}
+def sjekk_html(rel: str, h: str, ids: dict[str, set], problems: list[str]) -> None:
+    body = re.sub(r"<script.*?</script>", "", h, flags=re.S)
+    for href in re.findall(r'href="([^"]+)"', body):
+        if href.startswith(("http", "mailto")):
+            continue
+        target, _, frag = href.partition("#")
+        if target in ("", "./", "../", "../../"):
+            if frag and target == "" and frag not in ids[rel]:
+                problems.append(f"{rel}: anker #{frag} finnes ikke på siden")
+            continue
+        tp = ((ROOT / rel).parent / target).resolve()
+        if tp.is_dir():
+            tp = tp / "index.html"
+        if not tp.exists():
+            problems.append(f"{rel}: lenke til {href} finnes ikke")
+            continue
+        try:
+            r2 = tp.relative_to(ROOT.resolve()).as_posix()
+        except ValueError:
+            continue
+        if r2 in ids and frag and frag not in ids[r2]:
+            problems.append(f"{rel}: lenke {href}: anker #{frag} finnes ikke i {r2}")
+    b = Bal()
+    b.feed(h)
+    for e in b.errs[:5]:
+        problems.append(f"{rel}: {e}")
+    if b.stack:
+        problems.append(f"{rel}: ulukkede tagger: {b.stack[-3:]}")
+    if body.count("\\(") != body.count("\\)"):
+        problems.append(f"{rel}: ubalansert \\( \\)")
+    if body.count("\\[") != body.count("\\]"):
+        problems.append(f"{rel}: ubalansert \\[ \\]")
+    if body.count("$$") % 2:
+        problems.append(f"{rel}: oddetall $$")
+
+
+def sjekk_fag(fag: str, problems: list[str]) -> None:
+    fd = ROOT / fag
+    pages = sorted(p.relative_to(ROOT).as_posix() for p in list(fd.glob("*.html")) + list(fd.glob("kap*/*.html")))
+    html = {p: (ROOT / p).read_text(encoding="utf-8") for p in pages}
     ids = {p: set(re.findall(r'\sid="([^"]+)"', h)) for p, h in html.items()}
 
-    gl = (ROOT / "glossary.js").read_text(encoding="utf-8")
+    gl_path = fd / "begreper.js"
+    gl = gl_path.read_text(encoding="utf-8") if gl_path.exists() else ""
     keys = set(re.findall(r"^\s*'([a-z0-9-]+)':\s*\{", gl, flags=re.M))
     used: set[str] = set()
     for p, h in html.items():
         for k in re.findall(r'data-term="([^"]+)"', h):
             used.add(k)
             if k not in keys:
-                problems.append(f"{p}: data-term '{k}' mangler i glossary.js")
+                problems.append(f"{p}: data-term '{k}' mangler i {fag}/begreper.js")
     for var, frag in re.findall(r"more:\s*([A-Z]+)\s*\+\s*'#([a-z0-9-]+)'", gl):
-        page = re.search(rf"var {var} = '([^']+)'", gl)
-        if not page:
-            problems.append(f"glossary.js: ukjent sidevariabel {var}")
-        elif frag not in ids.get(page.group(1), set()):
-            problems.append(f"glossary.js: more -> {page.group(1)}#{frag} finnes ikke")
+        m = re.search(rf"var {var} = '([^']+)'", gl)
+        if not m:
+            problems.append(f"{fag}/begreper.js: ukjent sidevariabel {var}")
+        elif frag not in ids.get(f"{fag}/{m.group(1)}", set()):
+            problems.append(f"{fag}/begreper.js: more -> {m.group(1)}#{frag} finnes ikke")
 
     for p, h in html.items():
-        body = re.sub(r"<script.*?</script>", "", h, flags=re.S)
-        for href in re.findall(r'href="([^"]+)"', body):
-            if href.startswith(("http", "mailto")):
-                continue
-            target, _, frag = href.partition("#")
-            if target in ("", "./", "../"):
-                if frag and target == "" and frag not in ids[p]:
-                    problems.append(f"{p}: anker #{frag} finnes ikke på siden")
-                continue
-            tp = ((ROOT / p).parent / target).resolve()
-            if tp.is_dir():
-                tp = tp / "index.html"
-            rel = tp.relative_to(ROOT.resolve()).as_posix() if tp.exists() else None
-            if rel is None:
-                problems.append(f"{p}: lenke til {href} finnes ikke")
-            elif rel in ids and frag and frag not in ids[rel]:
-                problems.append(f"{p}: lenke {href}: anker #{frag} finnes ikke i {rel}")
+        sjekk_html(p, h, ids, problems)
 
-        b = Bal()
-        b.feed(h)
-        for e in b.errs[:5]:
-            problems.append(f"{p}: {e}")
-        if b.stack:
-            problems.append(f"{p}: ulukkede tagger: {b.stack[-3:]}")
+    fagjs = (fd / "fag.js").read_text(encoding="utf-8")
+    for side in re.findall(r"'(kap[^']+\.html)'", fagjs):
+        if not (fd / side).exists():
+            problems.append(f"{fag}/fag.js: siden {side} finnes ikke")
 
-        if body.count("\\(") != body.count("\\)"):
-            problems.append(f"{p}: ubalansert \\( \\)")
-        if body.count("\\[") != body.count("\\]"):
-            problems.append(f"{p}: ubalansert \\[ \\]")
-        if body.count("$$") % 2:
-            problems.append(f"{p}: oddetall $$")
+    kilder = fd / "kilder"
+    if (kilder / "versjon.json").exists():
+        dek = json.loads((kilder / "dekning.json").read_text(encoding="utf-8")) if (kilder / "dekning.json").exists() else {}
+        ver = json.loads((kilder / "versjon.json").read_text(encoding="utf-8"))
+        for s in ver.get("seksjoner", []):
+            n = s["nummer"]
+            if n not in dek:
+                problems.append(f"{fag}/kilder/dekning.json mangler seksjon {n}")
+            else:
+                page, anker = f"{fag}/{dek[n]['side']}", dek[n].get("anker")
+                if page not in ids:
+                    problems.append(f"{fag}/kilder/dekning.json: side {dek[n]['side']} finnes ikke")
+                elif anker and anker not in ids[page]:
+                    problems.append(f"{fag}/kilder/dekning.json: {dek[n]['side']}#{anker} finnes ikke")
 
-    dek = json.loads((ROOT / "kilder/dekning.json").read_text(encoding="utf-8"))
-    ver = json.loads((ROOT / "kilder/versjon.json").read_text(encoding="utf-8"))
-    for s in ver["seksjoner"]:
-        n = s["nummer"]
-        if n not in dek:
-            problems.append(f"dekning.json mangler seksjon {n}")
-        else:
-            page, anker = dek[n]["side"], dek[n].get("anker")
-            if page not in ids:
-                problems.append(f"dekning.json: side {page} finnes ikke")
-            elif anker and anker not in ids[page]:
-                problems.append(f"dekning.json: {page}#{anker} finnes ikke")
-
-    for kap in sorted(ROOT.glob("kap*/index.html")):
-        kaphtml = kaphtml_ = kap.read_text(encoding="utf-8")
-        listed = set(re.findall(r'href="[^"#]+#(oppg-[^"]+)"', kaphtml))
+    for kap in sorted(fd.glob("kap*/index.html")):
+        listed = set(re.findall(r'href="[^"#]+#(oppg-[^"]+)"', kap.read_text(encoding="utf-8")))
         boxes: set[str] = set()
         for sub in kap.parent.glob("*.html"):
-            if sub.name == "index.html":
-                continue
-            boxes |= set(re.findall(r'class="oppgave" data-quiz id="([^"]+)"', sub.read_text(encoding="utf-8")))
+            if sub.name != "index.html":
+                boxes |= set(re.findall(r'class="oppgave" data-quiz id="([^"]+)"', sub.read_text(encoding="utf-8")))
         for b_ in sorted(boxes - listed):
-            problems.append(f"{kap.parent.name}: oppgave {b_} mangler i oversikten")
+            problems.append(f"{fag}/{kap.parent.name}: oppgave {b_} mangler i oversikten")
         for l in sorted(listed - boxes):
-            problems.append(f"{kap.parent.name}: oversikten lenker til {l} som ikke finnes")
-        print(f"{kap.parent.name}: {len(boxes)} oppgavebokser, {len(listed)} i oversikten")
+            problems.append(f"{fag}/{kap.parent.name}: oversikten lenker til {l} som ikke finnes")
+        print(f"  {fag}/{kap.parent.name}: {len(boxes)} oppgavebokser, {len(listed)} i oversikten")
+    print(f"  {fag}: {len(pages)} sider, {len(keys)} begreper definert, {len(used)} brukt; ubrukte: {sorted(keys - used) or 'ingen'}")
 
-    print(f"begreper: {len(keys)} definert, {len(used)} brukt; ubrukte: {sorted(keys - used) or 'ingen'}")
-    print(f"sider sjekket: {', '.join(PAGES)}")
+
+def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--fag", help="bare dette faget")
+    a = ap.parse_args()
+    fag_liste = [a.fag] if a.fag else sorted(p.parent.name for p in ROOT.glob("*/fag.js") if p.parent.name != "_mal")
+    problems: list[str] = []
+    for fag in fag_liste:
+        if not (ROOT / fag / "fag.js").exists():
+            print(f"Fant ikke faget {fag}")
+            return 1
+        print(f"Fag: {fag}")
+        sjekk_fag(fag, problems)
+    portal = ROOT / "index.html"
+    if portal.exists():
+        h = portal.read_text(encoding="utf-8")
+        sjekk_html("index.html", h, {"index.html": set(re.findall(r'\sid="([^"]+)"', h))}, problems)
     if problems:
         print("\nPROBLEMER:")
         for x in problems:
