@@ -1,0 +1,8 @@
+{
+  "_kommentar": "Hvilken HTML-side (og anker) som dekker hvert deltema i kilder/notater.md. Nøkkel = nummeret i ## -overskriften (T1.1 = 1.1 osv.). Brukes av tools/valider.py.",
+  "1":   { "side": "kap1/index.html" },
+  "1.1": { "side": "kap1/intro.html", "anker": "typer" },
+  "1.2": { "side": "kap1/intro.html", "anker": "under-programmet" },
+  "1.3": { "side": "kap1/ytelse.html", "anker": "definere" },
+  "1.4": { "side": "kap1/ytelse.html", "anker": "flerkjerne" }
+}
