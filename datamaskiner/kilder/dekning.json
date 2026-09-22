@@ -4,5 +4,10 @@
   "1.1": { "side": "kap1/intro.html", "anker": "typer" },
   "1.2": { "side": "kap1/intro.html", "anker": "under-programmet" },
   "1.3": { "side": "kap1/ytelse.html", "anker": "definere" },
-  "1.4": { "side": "kap1/ytelse.html", "anker": "flerkjerne" }
+  "1.4": { "side": "kap1/ytelse.html", "anker": "flerkjerne" },
+  "2":   { "side": "kap2/index.html" },
+  "2.1": { "side": "kap2/instruksjoner.html", "anker": "prinsipper" },
+  "2.2": { "side": "kap2/tall.html", "anker": "grunntall" },
+  "2.3": { "side": "kap2/prosedyrer.html", "anker": "kall" },
+  "2.4": { "side": "kap2/prosedyrer.html", "anker": "tekst" }
 }

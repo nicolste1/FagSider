@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 2 — Instruksjonssett</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
+  .lm-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; }
+  .lm-card .lm-k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+  .lm-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; color: var(--ink-soft); }
+  .lm-card .lm-src { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-ghost); margin-top: 0.4rem; }
+  .lm-card .tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-left: 6px; background: var(--accent-soft); color: var(--accent); }
+  .lm-card .tag.regn { background: var(--warm-soft); color: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Instruksjonssett">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · Tema T2 · Boka kap. 2 · Kompendiet kap. 2–3 · Forelesning 2–3 · Praktiske øvinger · ~2,5 t totalt</div>
+      <h1>Instruksjons<em>sett</em></h1>
+      <p class="lede">Datamaskinens språk, RISC-V, ovenfra og ned: fra <code>add a, b, c</code> til 32 bit i felt, fra tall i tokomplement til bit som skiftes og maskeres, fra prosedyrekall og stakk til minnekartet og veien fra C-fil til program i minnet. Grensesnittet mellom programvare og maskinvare.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringsmaal">Læringsmål og prioritet</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">05</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 1 sa at <span class="term" data-term="isa">instruksjonssettarkitekturen</span> er den viktigste abstraksjonen i faget. Kapittel 2 er den arkitekturen, konkret: <span class="term" data-term="risc-v">RISC-V</span>. Boka avdekker språket ett stykke om gangen og forklarer hvert valg med tre designprinsipper: <span class="term" data-term="designprinsipp-1">enkelhet favoriserer regularitet</span>, <span class="term" data-term="designprinsipp-2">mindre er raskere</span>, og <span class="term" data-term="designprinsipp-3">god design krever gode kompromisser</span>. Underveis møter vi hemmeligheten bak all databehandling, at instruksjoner er tall, og lærer å regne på tallene selv.</p>
+
+      <ul>
+        <li><strong>Instruksjoner og operander (2A).</strong> Tre operander alltid. 32 registre; alt fra minnet må lastes og lagres med basis + forskyvning i byte. Konstanter i instruksjonen. Alle instruksjoner er 32 bit i formatene R, I og S; opcode sier hvilket. Betingede hopp er grunnsteinen for if og løkker.</li>
+        <li><strong>Tall (2B).</strong> Binært, hex og desimalt. Usignert mot tokomplement, negering og fortegnsutvidelse, overflyt. AND, OR, XOR og skift som verktøy på bitnivå.</li>
+        <li><strong>Prosedyrer (2C).</strong> jal og jalr, kallkonvensjonen (a-, t- og s-registre), stakken og rammene, rekursjon, minnekartet med tekst, statisk data, heap og stakk.</li>
+        <li><strong>Tekst, adressering, oversettelse (2C).</strong> ASCII og C-strenger. lui for store konstanter, PC-relative hopp, de fire adressemodiene. Kompilator, assembler, lenker og laster; pseudoinstruksjoner, objektfiler, DLL-er, Java og JIT.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilder og utvalg</span>
+        <p>Sidene følger <em>læringsutbyttebeskrivelsene</em> tema T2 (T2.1–T2.4) og bygger på boka kapittel 2.1–2.10 og 2.12 og kompendiets kapittel 2 (instruksjoner) og 3 (tall). Alle bokoppgavene beskrivelsen lister (2.1, 2.2, 2.3, 2.4, 2.10, 2.11, 2.12, 2.13, 2.22, 2.30, 2.31, 2.32, 2.34), bokas og kompendiets eksempler, og de «Check Yourself»-spørsmålene som likner eksamensoppgaver er tatt med som bokser; rene diskusjonsspørsmål (språk og kodelinjer, registertall, C mot Java, sikkerhetsselvstudiet) er tatt ut for å korte ned lesetiden. Boka er skrevet for RV32 i denne utgaven; et par oppgaver (2.4, 2.10) har rester av 64-bits tall fra forrige utgave, og svarene sier hvordan de er tolket. De praktiske øvingene i Ripes bruker samme stoff (assembly med a-, t- og s-registre, <code>ret</code>), men er ikke gjengitt her.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringsmaal">
+    <div class="container">
+      <div class="section-badge">Læringsmål og prioritet</div>
+      <h2>Fra <em>læringsutbyttebeskrivelsen</em></h2>
+      <p class="section-intro">Tema T2 dekker K1, K2 (instruksjonssettet som effektivt grensesnitt mellom programvare og maskinvare), F1 (formulere enkle programmer i assembly) og G1.</p>
+      <div class="lm-grid">
+        <div class="lm-card">
+          <div class="lm-k">T2.1 · Instruksjoner <span class="tag regn">Regn</span><span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten kjenner til de tre designprinsippene for instruksjonssettdesign og deres motivasjon.</li>
+            <li>Studenten kan oversette fra et høynivåspråk til assemblyinstruksjoner (og omvendt).</li>
+            <li>Studenten kan oversette fra assemblyinstruksjoner til maskinkode (og omvendt).</li>
+            <li>Studenten kjenner til instruksjonsformatene i RISC-V og kan forklare hvorfor de er definert slik de er.</li>
+            <li>Studenten forstår hvordan instruksjoner lagres i minnet og hvordan dette utnyttes til å implementere kontrollflyt.</li>
+          </ul>
+          <div class="lm-src">Forelesning 2 og 3 · Boka 2.1–2.7 · Praktiske øvinger · Oppgaver 2.1–2.4, 2.12, 2.13 · Eksamen: Kont 26 oppg. 1, Ord. 25 oppg. 1, Kont 25 oppg. 1, Ord. 24 oppg. 1, Kont 24 oppg. 1, Ord. 22 oppg. 11 · <a href="instruksjoner.html">2A</a> · ~55 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T2.2 · Heltall og logiske operasjoner <span class="tag regn">Regn</span></div>
+          <ul>
+            <li>Studenten skal kunne representere heltall som binære tall (grunntall 2) og heksadesimale tall (grunntall 16) samt kunne oversette mellom disse og tall i det desimale systemet (grunntall 10).</li>
+            <li>Studenten skal kunne representere negative heltall på 2’s komplement form samt kunne oversette mellom dette formatet og tall i det desimale systemet.</li>
+            <li>Studenten skal forstå hvorfor fortegnsutvidelse av et tall på 2’s komplement form beholder samme tallverdi.</li>
+            <li>Studenten vite hva overflyt er og forstå når det oppstår.</li>
+            <li>Studenten skal kunne utføre logiske operasjoner på binære tall, inkludert bitvis AND og OR samt logisk og aritmetisk bitskifting.</li>
+          </ul>
+          <div class="lm-src">Forelesning 2 · Ekstraforelesning 1 · Praktiske øvinger · Oppgaver 2.10, 2.11 · Eksamen: Kont 26 oppg. 1, Ord. 25 oppg. 1 · <a href="tall.html">2B</a> · ~35 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T2.3 · Funksjonskall <span class="tag regn">Regn</span><span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten vet hvilke oppgaver som skal utføres ved et funksjonskall og kan forklare konseptet kallkonvensjon.</li>
+            <li>Studenten kjenner RISC-V minnekartet (kan gjengi og forklare figur 2.13).</li>
+            <li>Studenten forstår forskjellen på statiske og dynamiske data.</li>
+          </ul>
+          <div class="lm-src">Forelesning 3 · Boka 2.8 · Praktiske øvinger · Oppgaver 2.30, 2.31, 2.32 · <a href="prosedyrer.html#kall">2C avsnitt 01–03</a> · ~30 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T2.4 · Instruksjoner, diverse <span class="tag">Forklar</span><span class="tag regn">Regn</span></div>
+          <ul>
+            <li>Studenten kjenner til hvordan tekst representeres i en datamaskin.</li>
+            <li>Studenten skal vite hvordan vi håndterer store konstanter og (unngår) lange hopp (PC-relativ adressering).</li>
+            <li>Studenten skal kunne forklare RISC-Vs fire adressemodi.</li>
+            <li>Studenten skal kunne forklare skrittene involvert i oversettelse og oppstart av programmer (kunne gjengi og forklare figur 2.20).</li>
+          </ul>
+          <div class="lm-src">Forelesning 3 · Boka 2.9, 2.10, 2.12 · Praktiske øvinger · Oppgaver 2.22, 2.34 · <a href="prosedyrer.html#tekst">2C avsnitt 04–06</a> · ~30 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="instruksjoner.html" class="subpage-card">
+          <span class="sp-icon">2A</span>
+          <div class="sp-info">
+            <div class="sp-title">Instruksjoner, operander og formater</div>
+            <div class="sp-desc">T2.1 · Boka 2.1–2.3, 2.5, 2.7: tre designprinsipper, registre og minne, immediates, R/I/S-formatene, hex, maskinkode, betingede hopp og løkker. 23 oppgaver, 3 widgeter (koder, dekoder, løkke steg for steg). ~55 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="tall.html" class="subpage-card">
+          <span class="sp-icon">2B</span>
+          <div class="sp-info">
+            <div class="sp-title">Heltall og logiske operasjoner</div>
+            <div class="sp-desc">T2.2 · Boka 2.4, 2.6: grunntall, usignert og tokomplement, negering, fortegnsutvidelse, overflyt, AND/OR/XOR, skift. 8 oppgaver, 3 widgeter (konverterer, addisjon med overflyt, skift og logikk). ~35 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="prosedyrer.html" class="subpage-card">
+          <span class="sp-icon">2C</span>
+          <div class="sp-info">
+            <div class="sp-title">Prosedyrer, tekst, adressering og oversettelse</div>
+            <div class="sp-desc">T2.3 og T2.4 · Boka 2.8–2.10, 2.12: jal/jalr, kallkonvensjon, stakk, rekursjon, minnekart, ASCII, lui, PC-relativ adressering, fire adressemodi, kompilator–assembler–lenker–laster. 16 oppgaver, 3 widgeter (stakken under fact, streng som byte, lui + addi). ~60 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">47 bokser: bokoppgavene læringsutbyttebeskrivelsen lister, bokas og kompendiets eksempler, og de «Check Yourself»- og selvstudiumsspørsmålene som likner eksamensoppgaver. Grønn status: svar fra boka eller kompendiet. Gul: forslag skrevet for denne siden.</p>
+
+      <h3>2A · Instruksjoner, operander og formater</h3>
+      <ul class="oppgave-index">
+        <li><a href="instruksjoner.html#oppg-eks-to-tilordninger"><span class="oi-ref">Eks. · s. 71</span><span>a = b + c; d = a − e → RISC-V.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-sammensatt"><span class="oi-ref">Eks. · s. 72</span><span>f = (g + h) − (i + j) med temporære variabler.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-2-1"><span class="oi-ref">2.1 · s. 178</span><span>f = g + (h − 5) med færrest instruksjoner.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="instruksjoner.html#oppg-2-2"><span class="oi-ref">2.2 · s. 178</span><span>Én C-setning for add f, g, h / add f, i, f.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-registre"><span class="oi-ref">Eks. · s. 73</span><span>Samme tilordning med registrene x19–x23.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-lw"><span class="oi-ref">Eks. · s. 75</span><span>g = h + A[8] med load.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-lw-sw"><span class="oi-ref">Eks. · s. 77</span><span>A[12] = h + A[8] med load og store (byteforskyvning).</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-komp-rtype"><span class="oi-ref">Komp. eks. 1</span><span>Hva gjør add x5, x1, x2 og sub x6, x3, x4?</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="instruksjoner.html#oppg-komp-itype"><span class="oi-ref">Komp. eks. 2</span><span>Hent y fra minnet og legg til 4 (lw + addi).</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="instruksjoner.html#oppg-2-3"><span class="oi-ref">2.3 · s. 178</span><span>B[8] = A[i − j] i RISC-V.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="instruksjoner.html#oppg-2-4"><span class="oi-ref">2.4 · s. 178</span><span>C-setning for ni gitte RISC-V-instruksjoner (tabellene A og B).</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-hex"><span class="oi-ref">Eks. · s. 89</span><span>eca8 6420hex og 0001 0011 … 1111 til det andre grunntallet.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-maskinkode"><span class="oi-ref">Eks. · s. 91</span><span>A[30] = h + A[30] + 1: maskinkode for lw, add, addi, sw.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-cy-2-5"><span class="oi-ref">§2.5 · s. 95</span><span>Hvilken instruksjon er funct7 = 32, rs2 = 9, rs1 = 10, rd = 11, opcode = 51? 40 i hex?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-2-12"><span class="oi-ref">2.12 · s. 180</span><span>Type og assembly for 0000 0000 0001 0000 1000 0000 1011 0011.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="instruksjoner.html#oppg-2-13"><span class="oi-ref">2.13 · s. 180</span><span>Type og hex for sw x5, 32(x30).</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="instruksjoner.html#oppg-ss-tall"><span class="oi-ref">2.25 · s. 175</span><span>Selvstudium: binærtallet som hex, desimalt, signert/usignert og assembly.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-if"><span class="oi-ref">Eks. · s. 99</span><span>if (i == j) f = g + h; else f = g − h; med bne og beq.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-while"><span class="oi-ref">Eks. · s. 100</span><span>while (save[i] == k) i += 1; i RISC-V.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-eks-grenser"><span class="oi-ref">Eks. · s. 102</span><span>Grensesjekk 0 ≤ x20 &lt; x11 med én bgeu.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-cy-2-7"><span class="oi-ref">§2.7 · s. 103</span><span>Hvorfor C har flere beslutningssetninger enn RISC-V; &amp; mot &amp;&amp;.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-ss-raskere-while"><span class="oi-ref">2.25 · s. 176</span><span>Selvstudium: while-løkka med én hoppinstruksjon per runde.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="instruksjoner.html#oppg-ss-antikompilator"><span class="oi-ref">2.25 · s. 176</span><span>Selvstudium: antikompilatoren, fullfør kommentarene og finn C-koden.</span><span class="oi-status notes">Fra boka</span></a></li>
+      </ul>
+
+      <h3>2B · Heltall og logiske operasjoner</h3>
+      <ul class="oppgave-index">
+        <li><a href="tall.html#oppg-eks-bin-des"><span class="oi-ref">Eks. · s. 83</span><span>Desimalverdien av 1111 … 1100 i tokomplement.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="tall.html#oppg-eks-negering"><span class="oi-ref">Eks. · s. 84</span><span>Neger 2 og −2 med snarveien.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="tall.html#oppg-eks-fortegnsutvidelse"><span class="oi-ref">Eks. · s. 85</span><span>16-bits 2 og −2 til 32 bit.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="tall.html#oppg-cy-2-4"><span class="oi-ref">§2.4 · s. 86</span><span>64-bits 1…1000 som signert og usignert.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="tall.html#oppg-komp-tokomplement"><span class="oi-ref">Komp. kap. 3 eks. 1</span><span>5 − 3 med tokomplement i 4 bit.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="tall.html#oppg-2-10"><span class="oi-ref">2.10 · s. 179</span><span>0x80000000 + / − 0xD0000000: resultat og overflyt (1–6).</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="tall.html#oppg-2-11"><span class="oi-ref">2.11 · s. 180</span><span>x5 = 128: hvilke x6 gir overflyt i add og sub?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="tall.html#oppg-cy-2-6"><span class="oi-ref">§2.6 · s. 98</span><span>Hvilke operasjoner isolerer et felt: AND eller skiftpar?</span><span class="oi-status notes">Fra boka</span></a></li>
+      </ul>
+
+      <h3>2C · Prosedyrer, tekst, adressering og oversettelse</h3>
+      <ul class="oppgave-index">
+        <li><a href="prosedyrer.html#oppg-eks-leaf"><span class="oi-ref">Eks. · s. 106</span><span>leaf_example: push, kropp, returverdi, pop.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-fact"><span class="oi-ref">Eks. · s. 108</span><span>Rekursiv fact(n) i RISC-V.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-2-31"><span class="oi-ref">2.31 · s. 184</span><span>f(a, b, c, d) = g(g(a, b), c + d) i assembly.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="prosedyrer.html#oppg-2-32"><span class="oi-ref">2.32 · s. 184</span><span>Kan f bruke halekall-optimalisering? Antall instruksjoner med og uten.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="prosedyrer.html#oppg-2-30"><span class="oi-ref">2.30 · s. 184</span><span>fib(n): stakkinnholdet etter hvert kall fra sp = 0x7ffffffc.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-ascii-binaer"><span class="oi-ref">Eks. · s. 115</span><span>Én milliard som ASCII mot 32-bits heltall: hvor mye mer plass?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-strcpy"><span class="oi-ref">Eks. · s. 116</span><span>strcpy i RISC-V med lbu og sb.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-cy-2-9"><span class="oi-ref">§2.9 · s. 119</span><span>Strenger i C og Java; hvilken variabel tar mest plass?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-2-34"><span class="oi-ref">2.34 · s. 184</span><span>ASCII-streng med fortegn og sifre → heltall (atoi) i RISC-V.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-lui"><span class="oi-ref">Eks. · s. 120</span><span>32-bits konstant med lui og addi.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-hoppforskyvning"><span class="oi-ref">Eks. · s. 123</span><span>while-løkka fra adresse 80000: maskinkode og hoppforskyvninger.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-langt-hopp"><span class="oi-ref">Eks. · s. 124</span><span>beq med lang rekkevidde: bne + jal.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-dekoding"><span class="oi-ref">Eks. · s. 127</span><span>Dekod 00578833hex.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-cy-2-10"><span class="oi-ref">§2.10 · s. 128</span><span>Rekkevidde for betingede hopp og jal.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="prosedyrer.html#oppg-2-22"><span class="oi-ref">2.22 · s. 182</span><span>PC = 0x20000000: hvilke adresser når jal og beq?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="prosedyrer.html#oppg-eks-lenking"><span class="oi-ref">Eks. · s. 135</span><span>Lenk objektfilene for prosedyre A og B.</span><span class="oi-status notes">Fra boka</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever 2A, 2B og 2C i sammenheng. Flere finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Oversett <code>addi x5, x6, -1</code> til maskinkode, og forklar hvordan tokomplement gjør «subi» unødvendig.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I-type: immediate −1 = 111111111111, rs1 = 00110, funct3 = 000, rd = 00101, opcode = 0010011 → 111111111111 00110 000 00101 0010011 = 0xfff30293. Immediaten er et 12-bits tokomplementtall som fortegnsutvides til 32 bit før addisjonen, så addi med negativ konstant er subtraksjon.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvorfor må kompilatoren gange indeksen med 4 med slli før lw, og hva har det med fortegnsutvidelse å gjøre når indeksen er negativ?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Minnet er byteadressert og et ord er 4 byte, så A[i] ligger på basis + 4i; slli med 2 er ×4. Er i negativ (tokomplement), er venstreskift fortsatt ×4 (bitene som faller ut er kopier av fortegnsbiten), så adressen blir basis − 4|i|, riktig for peker-aritmetikk bakover.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">En prosedyre p skal kalle q og deretter bruke både q sitt resultat og et argument p selv fikk. Hvilke registre må p lagre, hvor, og hvor mange byte trekker den fra sp?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">x1 (returadressen, overskrives av jal) og argumentet (a-registrene bevares ikke over kall), enten kopiert til et s-register som p da må lagre og gjenopprette, eller lagt direkte på stakken. To ord = 8 byte, men konvensjonen holder sp justert til 16 byte, så typisk <code>addi sp, sp, -16</code>. q sitt resultat kommer i x10 etter kallet.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Et program lastes på en annen adresse enn lenkeren antok. Hvilke instruksjoner virker likevel, og hvilke må relokeres? Bruk adressemodiene.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">PC-relative hopp (beq/bne/jal) virker som før: avstanden mellom hopp og mål er uendret. Register- og immediate-adressering påvirkes ikke. Basisadressering via gp/sp virker hvis registrene settes riktig ved oppstart. Det som må relokeres er absolutte adresser bygget med lui + addi/jalr (adresser til statiske data og fjerne prosedyrer), og det er nettopp disse relokeringsinformasjonen i objektfila peker på.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 5 · Middels</div>
+        <div class="q-text">Ordet 0x00000041 lagres på adresse 100. Hva gir <code>lbu x5, 100(x0)</code>, <code>lb x5, 100(x0)</code> og <code>lbu x5, 103(x0)</code>, og hvilket tegn er det?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Little-endian: byte 100 = 0x41, 101–103 = 0. lbu 100 → 65, lb 100 → 65 (bit 7 er 0, ingen forskjell), lbu 103 → 0. 65 er ASCII «A»; byte 103 er null, slutten på strengen «A».</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap1/" class="prev"><div class="pn-label">← Forrige</div><div class="pn-title">Kapittel 1: Introduksjon og ytelse</div></a>
+        <a href="instruksjoner.html" class="next"><div class="pn-label">Start · 2A</div><div class="pn-title">Instruksjoner, operander og formater →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

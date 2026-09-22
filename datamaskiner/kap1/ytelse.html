@@ -11,6 +11,10 @@
   /* ─── Sidespesifikt ─── */
   .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
   .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
   .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
   .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
   .legend-row .l-a::before { background: var(--accent); }
@@ -19,9 +23,6 @@
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .two-col .col { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.7rem 0.9rem; }
   .two-col .col .ck { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
-  .mix-table { width: 100%; font-family: var(--mono); font-size: 0.85rem; border-collapse: collapse; margin: 0.6rem 0; }
-  .mix-table th, .mix-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--line-soft); text-align: left; }
-  .mix-table input { width: 72px; font-family: var(--mono); font-size: 0.88rem; padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
   @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -44,10 +45,11 @@
 <main data-chapter="Kapittel 1: Introduksjon og ytelse">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · 1B · Læringsmål T1.3 og T1.4 · Boka kap. 1.6–1.9 og 1.11 · Kompendiet kap. 1</div>
+      <div class="eyebrow">Kapittel 1 · 1B · Læringsmål T1.3 og T1.4 · Boka kap. 1.6–1.9 og 1.11 · Kompendiet kap. 1 · ~40 min</div>
       <h1>Ytelse: <em>tid er alt</em></h1>
-      <p class="lede">Hva vi egentlig mener med at én datamaskin er raskere enn en annen, hvordan vi måler det, ytelseslikningen («The Iron Law») som knytter instruksjoner, CPI og klokke til sekunder, hvorfor effekt satte en stopper for høyere klokkefrekvens og tvang oss over på flere kjerner, hva Amdahls lov sier om hvor mye en forbedring kan hjelpe, og hvorfor MIPS er et dårlig mål.</p>
+      <p class="lede">Kjøretid mot gjennomstrømning, ytelseslikningen (Iron Law), effekt, flere kjerner, Amdahls lov, testprogrammer og MIPS-fellen. Dette er regnestoffet i kapittelet: gjør oppgavene.</p>
       <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#definere"><span>01</span> Hva er ytelse?</a>
         <a href="#maale"><span>02</span> Måle tid</a>
         <a href="#ytelseslikningen"><span>03</span> Ytelseslikningen</a>
@@ -55,11 +57,30 @@
         <a href="#flerkjerne"><span>05</span> Flere kjerner</a>
         <a href="#amdahl"><span>06</span> Amdahls lov</a>
         <a href="#benchmarks"><span>07</span> Testprogrammer</a>
-        <a href="#fallgruver"><span>08</span> Fallgruver</a>
+        <a href="#fallgruver"><span>08</span> MIPS-fellen</a>
         <a href="#oppsummering"><span>09</span> Oppsummering</a>
       </nav>
     </div>
   </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Læringsutbyttebeskrivelsen T1.3–T1.4 (26. aug. 2026) · nevnte eksamensoppgaver: Kont 2026 oppg. 5.5, Ord. 2024 oppg. 5.4 · eksamensanalyse for faget er ikke laget ennå</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Ytelseslikningen:</strong> CPU-tid = IC × CPI × T. Sammenlikne to maskiner, finne klokke for ønsket tid, vektet CPI fra instruksjonsmiks (oppgave 1.6, 1.7; eksamen Kont 26 5.5, Ord. 24 5.4).</li>
+          <li><span class="tag regn">Regn</span><strong>Amdahls lov:</strong> ny tid = påvirket/faktor + upåvirket; speedup = 1/((1−P) + P/N); taket 1/(1−P) (oppgave 1.16, 1.10).</li>
+          <li><span class="tag regn">Regn</span><strong>Dynamisk effekt:</strong> P ∝ ½·C·V²·f, skalering med prosent (oppgave 1.9).</li>
+          <li><span class="tag">Forklar</span>Kjøretid mot gjennomstrømning og når hver brukes; hvorfor flere kjerner; hva en testprogramsamling er; hvorfor MIPS er et dårlig mål.</li>
+          <li><span class="tag">Lavere</span>Intel-historikk, SPEC-tabellen, SPECpower og selvstudiene er tatt ut. Boka har det om du vil.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
   <!-- ─────────────────────────── 01 DEFINERE ─────────────────────────── -->
   <section id="definere">
@@ -73,67 +94,46 @@
         <li>Studenten forklare forskjellen på kjøretid og gjennomstrømning og velge den mest hensiktsmessige for gitte arkitekturoppgaver.</li>
       </ul>
 
-      <p class="dropcap">Når vi sier at én datamaskin har bedre <span class="term" data-term="ytelse">ytelse</span> enn en annen, hva mener vi? Boka bruker passasjerfly som analogi. Hvilket fly har best ytelse? Concorde hadde høyest marsjfart, Boeing 777-200LR lengst rekkevidde, Airbus A380-800 størst kapasitet. Selv om vi bestemmer oss for fart, er det to definisjoner: raskest for én passasjer fra A til B (Concorde), eller raskest til å flytte 500 passasjerer (A380, som frakter flest passasjermil per time).</p>
-
-      <div class="table-wrap">
-        <table>
-          <caption>Figur 1.14 i boka: kapasitet, rekkevidde og fart for noen passasjerfly. Siste kolonne er gjennomstrømningen: kapasitet × fart.</caption>
-          <thead><tr><th>Fly</th><th>Passasjerer</th><th>Rekkevidde (miles)</th><th>Fart (mph)</th><th>Passasjerer × mph</th></tr></thead>
-          <tbody>
-            <tr><td>Boeing 737</td><td class="mono">240</td><td class="mono">3000</td><td class="mono">564</td><td class="mono">135 360</td></tr>
-            <tr><td>BAC/Sud Concorde</td><td class="mono">132</td><td class="mono">4000</td><td class="mono">1350</td><td class="mono">178 200</td></tr>
-            <tr><td>Boeing 777-200LR</td><td class="mono">301</td><td class="mono">9395</td><td class="mono">554</td><td class="mono">166 761</td></tr>
-            <tr><td>Airbus A380-800</td><td class="mono">853</td><td class="mono">8477</td><td class="mono">587</td><td class="mono">500 711</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <p class="dropcap"><span class="term" data-term="ytelse">Ytelse</span> kan bety to ting, som for passasjerfly: raskest for én passasjer (Concorde) eller flest passasjerer flyttet per time (A380). Velg målet etter oppgaven.</p>
 
       <div class="compare-grid">
         <div class="compare-cell accent">
           <h4>Kjøretid (responstid)</h4>
-          <p><span class="term" data-term="kjoretid">Kjøretiden</span> er tiden fra en oppgave starter til den er ferdig. Kjører du ett program på to PC-er, er den raskeste den som blir ferdig først. Det en enkeltbruker og en mobil enhet bryr seg om.</p>
+          <p><span class="term" data-term="kjoretid">Tiden</span> fra en oppgave starter til den er ferdig. Det én bruker og en mobil enhet bryr seg om.</p>
         </div>
         <div class="compare-cell warm">
           <h4>Gjennomstrømning (båndbredde)</h4>
-          <p><span class="term" data-term="gjennomstromning">Gjennomstrømningen</span> er den totale mengden arbeid utført på en gitt tid. Driver du et datasenter, er den raskeste maskinen den som gjør ferdig flest jobber på en dag. Det servere måles på.</p>
+          <p><span class="term" data-term="gjennomstromning">Total mengde arbeid</span> per tidsenhet. Det et datasenter og en server måles på.</p>
         </div>
       </div>
-      <p>Kompendiet nevner de samme to som de viktigste metrikkene: kjøretid (execution time) og båndbredde (bandwidth, «mengden data som kan overføres per tidsenhet, ofte målt i GB/s»). Vi trenger altså ulike ytelsesmål, og ulike testprogrammer, for mobile enheter (responstid) og servere (gjennomstrømning).</p>
+
+      <p>I resten av kapittelet betyr ytelse responstid:</p>
+      \[ \text{Ytelse}_X = \frac{1}{\text{Kjøretid}_X} \tag{1} \]
+      <p>«X er \(n\) ganger så rask som Y» betyr forholdet mellom kjøretidene:</p>
+      \[ \frac{\text{Ytelse}_X}{\text{Ytelse}_Y} = \frac{\text{Kjøretid}_Y}{\text{Kjøretid}_X} = n \tag{1b} \]
 
       <div class="oppgave" data-quiz id="oppg-eks-throughput">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.6 · s. 30</span></div>
         <div class="o-text">
-          <p>Øker følgende endringer gjennomstrømningen, reduserer de responstiden, eller begge deler?</p>
-          <ol>
-            <li>Bytte ut prosessoren i en datamaskin med en raskere versjon.</li>
-            <li>Legge til flere prosessorer i et system som bruker flere prosessorer til separate oppgaver, for eksempel websøk.</li>
-          </ol>
+          <p>Øker følgende endringer gjennomstrømningen, reduserer de responstiden, eller begge deler? 1. Bytte ut prosessoren med en raskere. 2. Legge til flere prosessorer i et system som bruker flere prosessorer til separate oppgaver, som websøk.</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>Kortere responstid forbedrer nesten alltid gjennomstrømningen. I tilfelle 1 forbedres derfor både responstid og gjennomstrømning. I tilfelle 2 blir ingen enkeltoppgave ferdig raskere, så bare gjennomstrømningen øker.</p>
-            <p>Men hvis etterspørselen i tilfelle 2 var nesten like stor som gjennomstrømningen, ville systemet tvinge forespørsler til å stå i kø. Da kan økt gjennomstrømning også forbedre responstiden, fordi ventetiden i køen synker. I mange virkelige systemer påvirker endringer i den ene den andre.</p>
+            <p>1: begge deler (kortere responstid forbedrer nesten alltid gjennomstrømningen). 2: bare gjennomstrømning, ingen enkeltoppgave blir raskere. Men er det kø, senker økt gjennomstrømning også ventetiden, og dermed responstiden.</p>
           </div>
         </div>
       </div>
 
-      <h3>Ytelse som tall</h3>
-      <p>I de første kapitlene handler ytelse om responstid, og for å maksimere ytelsen minimerer vi kjøretiden. For en datamaskin X definerer boka</p>
-      \[ \text{Ytelse}_X = \frac{1}{\text{Kjøretid}_X}. \tag{1} \]
-      <p>Er ytelsen til X større enn ytelsen til Y, er kjøretiden på Y lengre enn på X. «X er \(n\) ganger så rask som Y» betyr</p>
-      \[ \frac{\text{Ytelse}_X}{\text{Ytelse}_Y} = \frac{\text{Kjøretid}_Y}{\text{Kjøretid}_X} = n. \tag{2} \]
-      <p>Fordi ytelse og kjøretid er hverandres inverse, krever bedre ytelse kortere kjøretid. For å unngå forvirring mellom «øke» og «minske» sier boka «forbedre ytelsen» eller «forbedre kjøretiden» når den mener høyere ytelse og kortere tid.</p>
-
       <div class="oppgave" data-quiz id="oppg-eks-relativ">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.6 · s. 31</span></div>
-        <div class="o-text"><p>Datamaskin A kjører et program på 10 sekunder, og datamaskin B kjører det samme programmet på 15 sekunder. Hvor mye raskere er A enn B?</p></div>
+        <div class="o-text"><p>Datamaskin A kjører et program på 10 sekunder, B på 15 sekunder. Hvor mye raskere er A enn B?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>A er \(n\) ganger så rask som B hvis \(\text{Ytelse}_A / \text{Ytelse}_B = \text{Kjøretid}_B / \text{Kjøretid}_A = n\). Ytelsesforholdet er \(15/10 = 1{,}5\), så A er 1,5 ganger så rask som B. Vi kan også si at B er 1,5 ganger tregere enn A, siden \(\text{Ytelse}_A/\text{Ytelse}_B = 1{,}5\) betyr \(\text{Ytelse}_A/1{,}5 = \text{Ytelse}_B\).</p>
+            <p>\(\text{Kjøretid}_B / \text{Kjøretid}_A = 15/10 = 1{,}5\). A er 1,5 ganger så rask som B.</p>
           </div>
         </div>
       </div>
@@ -141,29 +141,15 @@
       <div class="oppgave" data-quiz id="oppg-cy-1-6-nett">
         <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§1.6 · s. 33</span></div>
         <div class="o-text">
-          <p>1. Anta at en applikasjon som bruker både mobile enheter og skyen er begrenset av nettverksytelsen. Si for hver av endringene om bare gjennomstrømningen forbedres, om både responstid og gjennomstrømning forbedres, eller ingen av delene.</p>
-          <ol type="a">
-            <li>En ekstra nettverkskanal legges til mellom enheten og skyen, som øker total gjennomstrømning og reduserer ventetiden for å få nettverkstilgang (siden det nå er to kanaler).</li>
-            <li>Nettverksprogramvaren forbedres, slik at kommunikasjonsforsinkelsen reduseres, uten at gjennomstrømningen øker.</li>
-            <li>Det legges til mer minne i datamaskinen.</li>
-          </ol>
-          <p>2. Datamaskin C har fire ganger så høy ytelse som datamaskin B, som kjører en gitt applikasjon på 28 sekunder. Hvor lang tid bruker C på applikasjonen?</p>
+          <p>1. En applikasjon er begrenset av nettverket. Forbedres bare gjennomstrømningen, både responstid og gjennomstrømning, eller ingen av delene når: a. en ekstra nettverkskanal legges til (mer gjennomstrømning og mindre ventetid), b. nettverksprogramvaren får lavere forsinkelse uten mer gjennomstrømning, c. det legges til mer minne i datamaskinen?</p>
+          <p>2. Datamaskin C har fire ganger så høy ytelse som B, som bruker 28 sekunder. Hvor lang tid bruker C?</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>1. a: begge deler. b: bare responstid (latens). c: ingen av delene (flaskehalsen er nettverket). 2. 7 sekunder (\(28/4\)).</p>
+            <p>1. a: begge. b: bare responstid. c: ingen (flaskehalsen er nettverket). 2. \(28/4 = 7\) sekunder.</p>
           </div>
-        </div>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Sjekk forståelsen · Lett</div>
-        <div class="q-text">Du skal velge maskin til (a) en spillkonsoll og (b) en webserver som svarer på millioner av små forespørsler. Hvilket ytelsesmål er viktigst i hvert tilfelle?</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">(a) Responstid: hver bilderamme skal være ferdig innen fristen, og én bruker venter. (b) Gjennomstrømning: antall forespørsler ferdig per sekund. Men som eksempelet fra boka viser: blir køen lang nok, gir høyere gjennomstrømning også kortere responstid for hver bruker.</div>
         </div>
       </div>
     </div>
@@ -177,47 +163,31 @@
       <div class="source-note">Boka · kap. 1.6 · s. 32–35</div>
       <span class="lm-pill">Læringsmål T1.3</span>
 
-      <p class="dropcap">Tid er målet på datamaskinytelse: maskinen som gjør samme arbeid på kortest tid er raskest. Men tid kan defineres på flere måter, avhengig av hva vi teller. Den enkleste er <em>veggklokketid</em>, også kalt responstid eller forløpt tid: total tid for å fullføre en oppgave, medregnet disktilgang, minnetilgang, I/O og operativsystem, alt. Fordi datamaskiner deles og prosessoren gjerne jobber på flere programmer om gangen, skiller vi mellom forløpt tid og tiden prosessoren jobber <em>for oss</em>.</p>
+      <p class="dropcap"><em>Veggklokketid</em> (forløpt tid) er alt: I/O, minne, operativsystem, andre programmer. <span class="term" data-term="cpu-tid">CPU-tid</span> er bare tiden prosessoren regner for vår oppgave, delt i bruker-CPU-tid (i programmet) og system-CPU-tid (i operativsystemet). Boka bruker bruker-CPU-tid i dette kapittelet.</p>
 
-      <div class="def-box">
-        <span class="def-label">Definisjoner</span>
-        <div class="def-term">CPU-tid</div>
-        <p><span class="term" data-term="cpu-tid">CPU-tid</span> (CPU execution time) er tiden CPU-en bruker på å regne for én oppgave, uten ventetid på I/O eller tid brukt på andre programmer. Den deles i <strong>bruker-CPU-tid</strong> (i selve programmet) og <strong>system-CPU-tid</strong> (i operativsystemet på vegne av programmet), et skille som er vanskelig å gjøre nøyaktig. Boka bruker <em>systemytelse</em> om forløpt tid på en ubelastet maskin og <em>CPU-ytelse</em> om bruker-CPU-tid, og konsentrerer seg om CPU-ytelse i dette kapittelet.</p>
-      </div>
-      <p>Husk likevel: responstiden brukeren opplever er den forløpte tiden, ikke CPU-tiden. Serverapplikasjoner avhenger ofte like mye av I/O-ytelse, og for å forbedre et program må du først bestemme hvilket mål som teller og så finne flaskehalsene ved å måle.</p>
-
-      <h3>Klokken</h3>
-      <p>Brukere bryr seg om tid, men designere tenker gjerne i mål som handler om hvor fort maskinvaren gjør grunnfunksjonene. Nesten alle datamaskiner bygges rundt en klokke som bestemmer når ting skjer. De diskrete tidsintervallene kalles <span class="term" data-term="klokkesyklus">klokkesykler</span> (ticks, klokkeperioder, sykler). Lengden av en syklus oppgis både som tiden for en hel syklus (f.eks. 250 pikosekunder, 250 ps) og som <span class="term" data-term="klokkefrekvens">klokkefrekvensen</span> (4 gigahertz, 4 GHz), som er den inverse av klokkeperioden:</p>
-      \[ \text{Klokkefrekvens} = \frac{1}{\text{Klokkeperiode}}, \qquad 4\ \text{GHz} = \frac{1}{250\ \text{ps}}. \tag{3} \]
-
-      <h3>Fra sykler til sekunder</h3>
-      <p>En enkel formel knytter de mest grunnleggende målene, klokkesykler og klokkeperiode, til CPU-tid:</p>
-      \[ \text{CPU-tid} = \text{CPU-klokkesykler for programmet} \times \text{Klokkeperiode} \tag{4} \]
-      \[ \text{CPU-tid} = \frac{\text{CPU-klokkesykler for programmet}}{\text{Klokkefrekvens}} \tag{5} \]
-      <p>Formelen gjør det tydelig at designeren kan forbedre ytelsen ved å redusere antall klokkesykler programmet trenger, eller lengden på hver syklus. Som vi skal se i senere kapitler står designeren ofte overfor en avveining: mange teknikker som senker antall sykler, øker samtidig klokkeperioden.</p>
+      <p>Maskinen styres av en klokke. En <span class="term" data-term="klokkesyklus">klokkesyklus</span> (klokkeperiode) er f.eks. 250 ps; <span class="term" data-term="klokkefrekvens">klokkefrekvensen</span> er den inverse, 4 GHz. CPU-tiden følger av antall sykler:</p>
+      \[ \text{Klokkefrekvens} = \frac{1}{\text{Klokkeperiode}} \tag{2} \]
+      \[ \text{CPU-tid} = \text{CPU-klokkesykler} \times \text{Klokkeperiode} = \frac{\text{CPU-klokkesykler}}{\text{Klokkefrekvens}} \tag{3} \]
+      <p class="eq-note">Designeren kan senke antall sykler eller korte ned hver syklus. Ofte går det ene på bekostning av det andre.</p>
 
       <div class="oppgave" data-quiz id="oppg-eks-forbedring">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.6 · s. 34</span></div>
-        <div class="o-text"><p>Favorittprogrammet vårt kjører på 10 sekunder på datamaskin A, som har 2 GHz klokke. Vi prøver å hjelpe en designer med å bygge datamaskin B, som skal kjøre programmet på 6 sekunder. Designeren har funnet ut at en betydelig økning i klokkefrekvensen er mulig, men økningen påvirker resten av CPU-designet slik at B trenger 1,2 ganger så mange klokkesykler som A for programmet. Hvilken klokkefrekvens skal vi be designeren sikte på?</p></div>
+        <div class="o-text"><p>Et program kjører på 10 s på datamaskin A med 2 GHz klokke. Datamaskin B skal kjøre det på 6 s, men trenger 1,2 ganger så mange klokkesykler som A. Hvilken klokkefrekvens må B ha?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>Først antall klokkesykler for programmet på A:</p>
-            \[ 10\ \text{s} = \frac{\text{Klokkesykler}_A}{2 \cdot 10^9\ \text{sykler/s}} \quad\Rightarrow\quad \text{Klokkesykler}_A = 10 \cdot 2 \cdot 10^9 = 20 \cdot 10^9\ \text{sykler}. \]
-            <p>CPU-tiden for B:</p>
-            \[ 6\ \text{s} = \frac{1{,}2 \cdot 20 \cdot 10^9\ \text{sykler}}{\text{Klokkefrekvens}_B} \quad\Rightarrow\quad \text{Klokkefrekvens}_B = \frac{24 \cdot 10^9}{6\ \text{s}} = 4\ \text{GHz}. \]
-            <p>For å kjøre programmet på 6 sekunder må B ha dobbelt så høy klokkefrekvens som A.</p>
+            \[ \text{Sykler}_A = 10\ \text{s} \cdot 2 \cdot 10^9 = 20 \cdot 10^9, \qquad \text{Klokkefrekvens}_B = \frac{1{,}2 \cdot 20 \cdot 10^9}{6\ \text{s}} = 4\ \text{GHz}. \]
           </div>
         </div>
       </div>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Lett</div>
-        <div class="q-text">Et program bruker 12 sekunder forløpt tid, hvorav 9 sekunder bruker-CPU-tid og 1 sekund system-CPU-tid. Hva er CPU-tiden, og hva har skjedd de resterende 2 sekundene?</div>
+        <div class="q-text">Et program bruker 12 s forløpt tid, hvorav 9 s bruker-CPU-tid og 1 s system-CPU-tid. Hva er CPU-tiden, og hva skjedde de siste 2 sekundene?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">CPU-tiden er 9 + 1 = 10 s. De siste 2 sekundene ventet programmet på I/O eller delte prosessoren med andre programmer. CPU-ytelsen (bokas fokus) regnes på 9 s bruker-CPU-tid; brukeren opplever 12 s.</div>
+          <div class="answer">CPU-tid 10 s. De 2 siste sekundene ventet programmet på I/O eller delte prosessoren med andre.</div>
         </div>
       </div>
     </div>
@@ -228,52 +198,47 @@
     <div class="container">
       <div class="section-badge">03 · Ytelseslikningen</div>
       <h2>«The Iron Law»: <em>instruksjoner × CPI × klokkeperiode</em></h2>
-      <div class="source-note">Boka · kap. 1.6 · s. 35–40 · Kompendiet · kap. 1 «The Iron Law of Performance», «Eksempel: bruk av Iron Law», «Eksempel 1»</div>
+      <div class="source-note">Boka · kap. 1.6 · s. 35–40 · Kompendiet · kap. 1 «The Iron Law of Performance» · Eksamen: Kont 26 oppg. 5.5, Ord. 24 oppg. 5.4</div>
       <span class="lm-pill">Læringsmål T1.3</span>
       <ul class="lm-list">
         <li>Studenten kan forklare «The Iron Law» og kan bruke den til å forutsi hvordan endringer i arkitekturen påvirker kjøretid.</li>
       </ul>
 
-      <p class="dropcap">Likning (4) nevner ikke antall instruksjoner. Men kompilatoren lagde instruksjoner, og maskinen måtte utføre dem, så kjøretiden må avhenge av hvor mange instruksjoner programmet utfører. Én måte å tenke på det: kjøretiden er antall utførte instruksjoner ganger gjennomsnittlig tid per instruksjon. Antall klokkesykler kan derfor skrives</p>
-      \[ \text{CPU-klokkesykler} = \text{Instruksjoner for programmet} \times \text{Gjennomsnittlige klokkesykler per instruksjon}. \tag{6} \]
-      <p>Gjennomsnittlig antall klokkesykler per instruksjon forkortes <span class="term" data-term="cpi">CPI</span>. Ulike instruksjoner tar ulik tid, så CPI er et gjennomsnitt over alle instruksjonene programmet utfører. CPI gir en måte å sammenlikne to implementasjoner av <em>samme</em> instruksjonssett på, siden <span class="term" data-term="instruksjonsantall">instruksjonsantallet</span> da er det samme.</p>
+      <p class="dropcap">Antall sykler er antall utførte instruksjoner ganger gjennomsnittlig sykler per instruksjon, <span class="term" data-term="cpi">CPI</span>. Setter du det inn i (3), får du likningen hele faget hviler på:</p>
 
       <div class="def-box">
         <span class="def-label">Den klassiske ytelseslikningen · The Iron Law</span>
         <div class="def-term">CPU-tid = Instruksjonsantall × CPI × Klokkeperiode</div>
-        \[ \text{CPU-tid} = \text{Instruksjonsantall} \times \text{CPI} \times \text{Klokkeperiode} = \frac{\text{Instruksjonsantall} \times \text{CPI}}{\text{Klokkefrekvens}} \tag{7} \]
-        \[ \frac{\text{Sekunder}}{\text{Program}} = \frac{\text{Instruksjoner}}{\text{Program}} \times \frac{\text{Klokkesykler}}{\text{Instruksjon}} \times \frac{\text{Sekunder}}{\text{Klokkesyklus}} \tag{8} \]
-        <p><span class="term" data-term="ytelseslikningen">Likningen</span> skiller de tre nøkkelfaktorene som påvirker ytelse. Vi kan bruke den til å sammenlikne to implementasjoner, eller til å vurdere et designalternativ hvis vi vet hvordan det påvirker de tre faktorene. Kompendiet kaller den «The Iron Law»: kjøretid = antall instruksjoner × klokkesykler per instruksjon × tiden per klokkesyklus.</p>
+        \[ \text{CPU-tid} = \text{IC} \times \text{CPI} \times \text{Klokkeperiode} = \frac{\text{IC} \times \text{CPI}}{\text{Klokkefrekvens}} \tag{4} \]
+        \[ \frac{\text{Sekunder}}{\text{Program}} = \frac{\text{Instruksjoner}}{\text{Program}} \times \frac{\text{Klokkesykler}}{\text{Instruksjon}} \times \frac{\text{Sekunder}}{\text{Klokkesyklus}} \tag{5} \]
+        <p><span class="term" data-term="ytelseslikningen">Likningen</span> skiller de tre faktorene. <span class="term" data-term="instruksjonsantall">Instruksjonsantallet</span> (IC) er likt for alle implementasjoner av samme ISA, så da er det CPI × klokkeperiode som skiller maskinene.</p>
       </div>
+
+      <p>Ulike instruksjonsklasser har ulik CPI. Med \(n\) klasser, \(\text{CPI}_i\) og antall \(C_i\):</p>
+      \[ \text{CPU-klokkesykler} = \sum_{i=1}^{n} \text{CPI}_i \times C_i, \qquad \text{CPI} = \frac{\text{CPU-klokkesykler}}{\text{IC}}. \tag{6} \]
+      <p>Fordelingen kalles <span class="term" data-term="instruksjonsmiks">instruksjonsmiksen</span>. Boka nevner også IPC = 1/CPI for prosessorer som utfører flere instruksjoner per syklus.</p>
 
       <div class="table-wrap">
         <table>
-          <caption>Figur 1.15 i boka: komponentene i ytelse og hvordan hver måles.</caption>
-          <thead><tr><th>Komponent</th><th>Måleenhet</th></tr></thead>
+          <caption>Boka s. 39: hvem påvirker hvilke faktorer.</caption>
+          <thead><tr><th>Komponent</th><th>Påvirker</th><th>Hvordan</th></tr></thead>
           <tbody>
-            <tr><td>CPU-tid for et program</td><td>Sekunder for programmet</td></tr>
-            <tr><td>Instruksjonsantall</td><td>Instruksjoner utført for programmet</td></tr>
-            <tr><td>Klokkesykler per instruksjon (CPI)</td><td>Gjennomsnittlig antall klokkesykler per instruksjon</td></tr>
-            <tr><td>Klokkeperiode</td><td>Sekunder per klokkesyklus</td></tr>
+            <tr><td>Algoritme</td><td>IC, CPI</td><td>Antall setninger som utføres; kan favorisere trege instruksjoner (divisjon).</td></tr>
+            <tr><td>Programmeringsspråk</td><td>IC, CPI</td><td>Språk med tung dataabstraksjon (Java) gir indirekte kall med høyere CPI.</td></tr>
+            <tr><td>Kompilator</td><td>IC, CPI</td><td>Bestemmer hvilke og hvor mange instruksjoner som brukes.</td></tr>
+            <tr><td>ISA</td><td>IC, CPI, klokke</td><td>Alle tre: instruksjonene som trengs, kostnaden per instruksjon og mulig klokkefrekvens.</td></tr>
           </tbody>
         </table>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-komp-ironlaw">
-        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 1 · «Eksempel: bruk av Iron Law»</span></div>
-        <div class="o-text"><p>Anta at et program trenger 10 millioner instruksjoner, prosessoren bruker i gjennomsnitt 2 klokkesykluser per instruksjon, og tiden per klokkesyklus er 0,5 nanosekunder (ns). Hva blir kjøretiden?</p></div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">
-            <span class="answer-src">Svar fra kompendiet</span>
-            \[ \text{Kjøretid} = 10\,000\,000 \times 2 \times 0{,}5\ \text{ns} = 10\,000\,000\ \text{ns} = 10\ \text{ms}. \]
-          </div>
-        </div>
+      <div class="callout">
+        <span class="label">Big Picture · boka s. 38</span>
+        <p>Tid er det eneste pålitelige målet. Færre instruksjoner er ikke nødvendigvis raskere (CPI kan øke), høyere klokke er ikke nødvendigvis raskere (CPI kan øke). Sammenlikn alltid produktet av alle tre.</p>
       </div>
 
       <div class="widget" id="w-iron">
         <div class="widget-label">Prøv selv · Ytelseslikningen for to maskiner</div>
-        <p class="widget-intro">Fyll inn instruksjonsantall, CPI og klokkefrekvens for to maskiner og se CPU-tid og hvem som er hvor mange ganger så rask. Forhåndsutfylt med bokas eksempel «Using the performance equation» (samme program, \(I = 10^9\) instruksjoner, A: 250 ps og CPI 2,0; B: 500 ps og CPI 1,2).</p>
+        <p class="widget-intro">Forhåndsutfylt med bokas eksempel (samme program, \(10^9\) instruksjoner, A: 250 ps og CPI 2,0; B: 500 ps og CPI 1,2).</p>
         <div class="two-col">
           <div class="col">
             <div class="ck">Maskin A</div>
@@ -297,128 +262,64 @@
 
       <div class="oppgave" data-quiz id="oppg-eks-likningen">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.6 · s. 35–36</span></div>
-        <div class="o-text"><p>Anta at vi har to implementasjoner av samme instruksjonssettarkitektur. Datamaskin A har klokkeperiode 250 ps og CPI 2,0 for et program, og datamaskin B har klokkeperiode 500 ps og CPI 1,2 for det samme programmet. Hvilken datamaskin er raskest for programmet, og med hvor mye?</p></div>
+        <div class="o-text"><p>To implementasjoner av samme ISA. A har klokkeperiode 250 ps og CPI 2,0; B har 500 ps og CPI 1,2 for samme program. Hvilken er raskest, og med hvor mye?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>Begge utfører like mange instruksjoner; kall antallet \(I\). Klokkesykler: \(\text{Klokkesykler}_A = I \times 2{,}0\), \(\text{Klokkesykler}_B = I \times 1{,}2\). CPU-tid:</p>
-            \[ \text{CPU-tid}_A = I \times 2{,}0 \times 250\ \text{ps} = 500 \cdot I\ \text{ps}, \qquad \text{CPU-tid}_B = I \times 1{,}2 \times 500\ \text{ps} = 600 \cdot I\ \text{ps}. \]
-            <p>A er raskest. Hvor mye raskere gis av forholdet mellom kjøretidene: \(600 \cdot I / (500 \cdot I) = 1{,}2\). A er 1,2 ganger så rask som B for dette programmet.</p>
+            <p>Samme IC, kall det \(I\). \(\text{CPU-tid}_A = I \cdot 2{,}0 \cdot 250\ \text{ps} = 500I\ \text{ps}\), \(\text{CPU-tid}_B = I \cdot 1{,}2 \cdot 500\ \text{ps} = 600I\ \text{ps}\). A er raskest, \(600/500 = 1{,}2\) ganger så rask.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-ironlaw">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 1 · «Eksempel: bruk av Iron Law»</span></div>
+        <div class="o-text"><p>Et program trenger 10 millioner instruksjoner, prosessoren bruker i snitt 2 klokkesykler per instruksjon, og tiden per syklus er 0,5 ns. Hva blir kjøretiden?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+            <p>\(10\,000\,000 \times 2 \times 0{,}5\ \text{ns} = 10\,000\,000\ \text{ns} = 10\ \text{ms}\).</p>
           </div>
         </div>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-komp-halvere">
-        <div class="o-label"><span>Oppgave fra kompendiet</span><span class="o-ref">Kap. 1 · «Eksempel 1: Kjøretid og The Iron Law»</span></div>
-        <div class="o-text"><p>Et program tar 3 sekunder å kjøre på en maskin. Hvis vi kan redusere klokkesykler per instruksjon fra 2 til 1, hvor lang blir kjøretiden?</p></div>
+        <div class="o-label"><span>Oppgave fra kompendiet</span><span class="o-ref">Kap. 1 · «Eksempel 1»</span></div>
+        <div class="o-text"><p>Et program tar 3 sekunder. Hvis CPI reduseres fra 2 til 1, hvor lang blir kjøretiden?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra kompendiet</span>
-            <p>Hvis vi halverer klokkesyklusene per instruksjon, halveres også kjøretiden, til 1,5 sekunder. (Forutsatt at instruksjonsantallet og klokkeperioden er uendret; i praksis må man sjekke at et lavere CPI ikke koster en lengre klokkeperiode.)</p>
+            <p>Halvert CPI gir halvert kjøretid: 1,5 sekunder (gitt uendret IC og klokkeperiode).</p>
           </div>
         </div>
       </div>
-
-      <h3>Instruksjonsklasser og instruksjonsmiks</h3>
-      <p>Ulike instruksjonstyper har ulik CPI. Har vi \(n\) klasser med CPI \(\text{CPI}_i\) og antall \(C_i\) i hver, er</p>
-      \[ \text{CPU-klokkesykler} = \sum_{i=1}^{n} \text{CPI}_i \times C_i, \qquad \text{CPI} = \frac{\text{CPU-klokkesykler}}{\text{Instruksjonsantall}}. \tag{9} \]
-      <p>Fordelingen av instruksjonstyper i et program kalles <span class="term" data-term="instruksjonsmiks">instruksjonsmiksen</span>, og fordi den varierer mellom programmer, gjør CPI det også. Bokas eksempel viser hvorfor man ikke kan se på instruksjonsantall alene:</p>
 
       <div class="oppgave" data-quiz id="oppg-eks-kodesekvenser">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.6 · s. 37</span></div>
         <div class="o-text">
-          <p>En kompilatordesigner skal velge mellom to kodesekvenser. Maskinvaredesignerne har oppgitt CPI for tre instruksjonsklasser: A: 1, B: 2, C: 3. For én setning i høynivåspråket vurderer kompilatorskriveren to sekvenser med disse instruksjonsantallene:</p>
-          <div class="table-wrap"><table><thead><tr><th>Kodesekvens</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td>1</td><td class="mono">2</td><td class="mono">1</td><td class="mono">2</td></tr><tr><td>2</td><td class="mono">4</td><td class="mono">1</td><td class="mono">1</td></tr></tbody></table></div>
-          <p>Hvilken sekvens utfører flest instruksjoner? Hvilken er raskest? Hva er CPI for hver sekvens?</p>
+          <p>CPI for tre instruksjonsklasser: A: 1, B: 2, C: 3. To kodesekvenser for samme setning: sekvens 1 har 2 A, 1 B, 2 C; sekvens 2 har 4 A, 1 B, 1 C. Hvilken utfører flest instruksjoner? Hvilken er raskest? Hva er CPI for hver?</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>Sekvens 1 utfører 2 + 1 + 2 = 5 instruksjoner, sekvens 2 utfører 4 + 1 + 1 = 6. Sekvens 1 utfører altså færrest. Klokkesykler etter (9):</p>
-            \[ \text{Klokkesykler}_1 = (2 \cdot 1) + (1 \cdot 2) + (2 \cdot 3) = 2 + 2 + 6 = 10, \qquad \text{Klokkesykler}_2 = (4 \cdot 1) + (1 \cdot 2) + (1 \cdot 3) = 4 + 2 + 3 = 9. \]
-            <p>Sekvens 2 er raskest, selv om den utfører én instruksjon mer. Siden den bruker færre sykler på flere instruksjoner, må den ha lavere CPI: \(\text{CPI}_1 = 10/5 = 2{,}0\), \(\text{CPI}_2 = 9/6 = 1{,}5\).</p>
+            <p>Sekvens 1: 5 instruksjoner, sykler \(2 \cdot 1 + 1 \cdot 2 + 2 \cdot 3 = 10\), CPI 2,0. Sekvens 2: 6 instruksjoner, sykler \(4 + 2 + 3 = 9\), CPI 1,5. Sekvens 2 er raskest selv om den har flere instruksjoner.</p>
           </div>
         </div>
       </div>
-
-      <div class="widget" id="w-miks">
-        <div class="widget-label">Prøv selv · Instruksjonsmiks, CPI og kjøretid</div>
-        <p class="widget-intro">Fire instruksjonsklasser med hver sin CPI og antall (i millioner). Widgeten regner klokkesykler etter (9), samlet CPI og CPU-tid ved valgt klokkefrekvens. Forhåndsutfylt med oppgave 1.7 (P1: 2,5 GHz, CPI 1/2/3/3, én million instruksjoner fordelt 10/20/50/20 %). Endre CPI-ene til 2/2/2/2 og klokken til 3 GHz for å se P2.</p>
-        <table class="mix-table">
-          <thead><tr><th>Klasse</th><th>CPI</th><th>Antall (mill.)</th><th>Sykler (mill.)</th></tr></thead>
-          <tbody id="mix-body">
-            <tr><td>A</td><td><input type="number" step="any" min="0" value="1" data-k="cpi"></td><td><input type="number" step="any" min="0" value="0.1" data-k="n"></td><td class="mono" data-k="cyc"></td></tr>
-            <tr><td>B</td><td><input type="number" step="any" min="0" value="2" data-k="cpi"></td><td><input type="number" step="any" min="0" value="0.2" data-k="n"></td><td class="mono" data-k="cyc"></td></tr>
-            <tr><td>C</td><td><input type="number" step="any" min="0" value="3" data-k="cpi"></td><td><input type="number" step="any" min="0" value="0.5" data-k="n"></td><td class="mono" data-k="cyc"></td></tr>
-            <tr><td>D</td><td><input type="number" step="any" min="0" value="3" data-k="cpi"></td><td><input type="number" step="any" min="0" value="0.2" data-k="n"></td><td class="mono" data-k="cyc"></td></tr>
-          </tbody>
-        </table>
-        <div class="w-row">
-          <div class="w-ctl"><label for="mix-f">klokke (GHz)</label><input type="number" id="mix-f" min="0" step="any" value="2.5"></div>
-        </div>
-        <div class="metric-grid" id="mix-out"></div>
-      </div>
-
-      <h3>Hva påvirker hva?</h3>
-      <p>Hvordan finner vi verdiene i likningen? CPU-tiden måles ved å kjøre programmet, og klokkeperioden står i dokumentasjonen. Instruksjonsantallet kan måles med profileringsverktøy, en simulator eller maskinvaretellere i prosessoren; det avhenger av arkitekturen, men ikke av implementasjonen. CPI avhenger derimot av mange designdetaljer, både minnesystemet og prosessorstrukturen, og av instruksjonsmiksen. Boka oppsummerer:</p>
-      <div class="table-wrap">
-        <table>
-          <caption>Boka s. 39: hvordan maskinvare- og programvarekomponenter påvirker faktorene i ytelseslikningen.</caption>
-          <thead><tr><th>Komponent</th><th>Påvirker</th><th>Hvordan</th></tr></thead>
-          <tbody>
-            <tr><td>Algoritme</td><td>Instruksjonsantall, CPI</td><td>Bestemmer antall kildesetninger som utføres og dermed antall instruksjoner. Kan påvirke CPI ved å favorisere trege eller raske instruksjoner (flere divisjoner gir høyere CPI).</td></tr>
-            <tr><td>Programmeringsspråk</td><td>Instruksjonsantall, CPI</td><td>Setningene oversettes til instruksjoner. Språk med tung støtte for dataabstraksjon (Java) krever indirekte kall, som har høyere CPI.</td></tr>
-            <tr><td>Kompilator</td><td>Instruksjonsantall, CPI</td><td>Kompilatorens effektivitet avgjør både antall instruksjoner og gjennomsnittlig sykler per instruksjon, på sammensatte måter.</td></tr>
-            <tr><td>Instruksjonssettarkitektur</td><td>Instruksjonsantall, klokkefrekvens, CPI</td><td>Påvirker alle tre: instruksjonene som trengs for en funksjon, kostnaden i sykler per instruksjon, og prosessorens klokkefrekvens.</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="callout">
-        <span class="label">Big Picture · boka s. 38</span>
-        <p>Husk alltid at det eneste fullstendige og pålitelige målet på ytelse er tid. Å endre instruksjonssettet for å senke instruksjonsantallet kan gi en organisering med lengre klokkeperiode eller høyere CPI som spiser opp gevinsten. Og fordi CPI avhenger av instruksjonstypene, er koden med færrest instruksjoner ikke nødvendigvis den raskeste. Sammenlikner du to datamaskiner, må du se på alle tre faktorene; er noen like (som klokkefrekvensen i eksempelet over), holder det å sammenlikne de som er forskjellige.</p>
-      </div>
-      <p>To detaljer fra boka: selv om man skulle tro at minste CPI er 1,0, henter og utfører noen prosessorer flere instruksjoner per klokkesyklus (kapittel 4); da snakker designerne heller om IPC, instruksjoner per syklus, der IPC 2 betyr CPI 0,5. Og klokkefrekvensen er ikke lenger fast: prosessorer varierer den for å spare energi eller gi et midlertidig løft (Intels Turbo-modus, ca. 10 % til brikken blir for varm), så vi må bruke gjennomsnittlig klokkefrekvens for programmet.</p>
 
       <div class="oppgave" data-quiz id="oppg-cy-1-6-java">
         <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§1.6 · s. 40</span></div>
         <div class="o-text">
-          <p>En Java-applikasjon kjører på 15 sekunder på en desktop-prosessor. En ny Java-kompilator slippes som bare trenger 0,6 ganger så mange instruksjoner som den gamle. Dessverre øker den CPI med 1,1. Hvor fort kan vi vente at applikasjonen kjører med den nye kompilatoren? Velg riktig svar:</p>
-          <ol type="a">
-            <li>\( \dfrac{15 \times 0{,}6}{1{,}1} = 8{,}2\ \text{s} \)</li>
-            <li>\( 15 \times 0{,}6 \times 1{,}1 = 9{,}9\ \text{s} \)</li>
-            <li>\( \dfrac{15 \times 1{,}1}{0{,}6} = 27{,}5\ \text{s} \)</li>
-          </ol>
+          <p>En Java-applikasjon kjører på 15 s. En ny kompilator trenger bare 0,6 ganger så mange instruksjoner, men øker CPI med faktor 1,1. Ny kjøretid? a. \(15 \cdot 0{,}6 / 1{,}1 = 8{,}2\) s, b. \(15 \cdot 0{,}6 \cdot 1{,}1 = 9{,}9\) s, c. \(15 \cdot 1{,}1 / 0{,}6 = 27{,}5\) s.</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p><strong>b.</strong> Etter (7) er CPU-tid proporsjonal med instruksjonsantall × CPI (klokkeperioden er uendret). Instruksjonsantallet ganges med 0,6 og CPI med 1,1, så tiden blir \(15 \times 0{,}6 \times 1{,}1 = 9{,}9\) sekunder.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="oppgave" data-quiz id="oppg-ss-raskest">
-        <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">1.14 · s. 55–58</span></div>
-        <div class="o-text">
-          <p>Hvordan måler du «raskest»? Tre prosessorer P1, P2 og P3 utfører samme instruksjonssett. P1 har klokkeperiode 0,33 ns og CPI 1,5; P2 har klokkeperiode 0,40 ns og CPI 1,0; P3 har klokkeperiode 0,25 ns og CPI 2,2.</p>
-          <ol type="a">
-            <li>Hvilken har høyest klokkefrekvens? Hva er den?</li>
-            <li>Hvilken er den raskeste datamaskinen? Hvis svaret er et annet enn i a, forklar hvorfor. Hvilken er tregest?</li>
-            <li>Hvordan gjenspeiler svarene på a og b hvor viktige testprogrammer er?</li>
-          </ol>
-        </div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">
-            <span class="answer-src">Svar fra boka</span>
-            <p><strong>a.</strong> Klokkefrekvensen er den inverse av klokkeperioden: P1 = \(1/(0{,}33 \cdot 10^{-9}\ \text{s}) = 3\) GHz; P2 = \(1/(0{,}40 \cdot 10^{-9}\ \text{s}) = 2{,}5\) GHz; P3 = \(1/(0{,}25 \cdot 10^{-9}\ \text{s}) = 4\) GHz. P3 har høyest klokkefrekvens.</p>
-            <p><strong>b.</strong> Siden alle har samme ISA, har alle programmer samme instruksjonsantall, så ytelsen kan måles som CPI × klokkeperiode, som er gjennomsnittlig tid per instruksjon: P1 = 1,5 × 0,33 ns = 0,495 ns; P2 = 1,0 × 0,40 ns = 0,400 ns; P3 = 2,2 × 0,25 ns = 0,550 ns. <strong>P2 er raskest og P3 tregest.</strong> Til tross for høyest klokkefrekvens bruker P3 i snitt så mange flere sykler at fordelen forsvinner.</p>
-            <p><strong>c.</strong> CPI-verdiene kom fra å kjøre noen testprogrammer. Er de representative for reelle arbeidslaster, stemmer svarene; er de urealistiske, stemmer de kanskje ikke. Forskjellen mellom det som er lett å reklamere med (klokkefrekvens) og faktisk ytelse understreker hvor viktig det er å utvikle gode testprogrammer.</p>
+            <p><strong>b.</strong> Tid ∝ IC × CPI når klokken er uendret: \(15 \times 0{,}6 \times 1{,}1 = 9{,}9\) s.</p>
           </div>
         </div>
       </div>
@@ -426,20 +327,20 @@
       <div class="oppgave" data-quiz id="oppg-1-6">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.6 · s. 60</span></div>
         <div class="o-text">
-          <p>Tre prosessorer P1, P2 og P3 utfører samme instruksjonssett. P1 har 3 GHz klokke og CPI 1,5. P2 har 2,5 GHz og CPI 1,0. P3 har 4,0 GHz og CPI 2,2.</p>
+          <p>Tre prosessorer med samme ISA. P1: 3 GHz, CPI 1,5. P2: 2,5 GHz, CPI 1,0. P3: 4,0 GHz, CPI 2,2.</p>
           <ol type="a">
-            <li>Hvilken prosessor har høyest ytelse uttrykt i instruksjoner per sekund?</li>
-            <li>Hvis hver prosessor kjører et program på 10 sekunder, finn antall sykler og antall instruksjoner.</li>
-            <li>Vi prøver å redusere kjøretiden med 30 %, men det fører til en økning på 20 % i CPI. Hvilken klokkefrekvens må vi ha for å få denne tidsreduksjonen?</li>
+            <li>Hvilken har høyest ytelse i instruksjoner per sekund?</li>
+            <li>Hver kjører et program på 10 s. Finn antall sykler og antall instruksjoner.</li>
+            <li>Vi vil redusere kjøretiden 30 %, men det gir 20 % høyere CPI. Hvilken klokkefrekvens trengs?</li>
           </ol>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p><strong>a.</strong> Instruksjoner per sekund = klokkefrekvens / CPI. P1: \(3 \cdot 10^9 / 1{,}5 = 2{,}0 \cdot 10^9\). P2: \(2{,}5 \cdot 10^9 / 1{,}0 = 2{,}5 \cdot 10^9\). P3: \(4 \cdot 10^9 / 2{,}2 = 1{,}82 \cdot 10^9\). <strong>P2</strong> har høyest ytelse, akkurat som i selvstudiet.</p>
-            <p><strong>b.</strong> Sykler = 10 s × klokkefrekvens; instruksjoner = sykler / CPI. P1: \(30 \cdot 10^9\) sykler, \(20 \cdot 10^9\) instruksjoner. P2: \(25 \cdot 10^9\) sykler, \(25 \cdot 10^9\) instruksjoner. P3: \(40 \cdot 10^9\) sykler, \(18{,}2 \cdot 10^9\) instruksjoner.</p>
-            <p><strong>c.</strong> Ny tid 7 s, ny CPI = 1,2 × gammel, samme instruksjonsantall som i b. Klokkefrekvens = instruksjoner × CPI / tid. P1: \(20 \cdot 10^9 \times 1{,}8 / 7 = 5{,}14\) GHz. P2: \(25 \cdot 10^9 \times 1{,}2 / 7 = 4{,}29\) GHz. P3: \(18{,}2 \cdot 10^9 \times 2{,}64 / 7 = 6{,}86\) GHz. Generelt: klokken må øke med faktoren \(1{,}2/0{,}7 = 1{,}714\).</p>
+            <p><strong>a.</strong> Instruksjoner/s = klokke / CPI. P1: \(2{,}0 \cdot 10^9\). P2: \(2{,}5 \cdot 10^9\). P3: \(1{,}82 \cdot 10^9\). <strong>P2</strong> vinner tross lavest klokke. (Bokas selvstudium regner det samme som tid per instruksjon: CPI × periode = 0,495 / 0,400 / 0,550 ns.)</p>
+            <p><strong>b.</strong> Sykler = 10 s × klokke; instruksjoner = sykler / CPI. P1: \(30 \cdot 10^9\) sykler, \(20 \cdot 10^9\) instr. P2: \(25 \cdot 10^9\), \(25 \cdot 10^9\). P3: \(40 \cdot 10^9\), \(18{,}2 \cdot 10^9\).</p>
+            <p><strong>c.</strong> Ny tid 7 s, CPI × 1,2, samme IC. Klokke = IC × CPI / tid, altså faktor \(1{,}2/0{,}7 = 1{,}714\) opp: P1 5,14 GHz, P2 4,29 GHz, P3 6,86 GHz.</p>
           </div>
         </div>
       </div>
@@ -447,19 +348,14 @@
       <div class="oppgave" data-quiz id="oppg-1-7">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.7 · s. 61</span></div>
         <div class="o-text">
-          <p>To implementasjoner av samme ISA. Instruksjonene deles i fire klasser etter CPI (A, B, C og D). P1 har 2,5 GHz klokke og CPI 1, 2, 3 og 3; P2 har 3 GHz klokke og CPI 2, 2, 2 og 2. Et program har dynamisk instruksjonsantall \(1{,}0 \cdot 10^6\) fordelt slik: 10 % klasse A, 20 % B, 50 % C og 20 % D. Hvilken er raskest, P1 eller P2?</p>
-          <ol type="a">
-            <li>Hva er samlet CPI for hver implementasjon?</li>
-            <li>Finn antall klokkesykler i begge tilfeller.</li>
-          </ol>
+          <p>To implementasjoner av samme ISA, fire instruksjonsklasser A–D. P1: 2,5 GHz, CPI 1, 2, 3, 3. P2: 3 GHz, CPI 2, 2, 2, 2. Et program har \(10^6\) instruksjoner fordelt 10 % A, 20 % B, 50 % C, 20 % D. a. Samlet CPI for hver? b. Antall klokkesykler? Hvilken er raskest?</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p><strong>a.</strong> CPI er det vektede gjennomsnittet. P1: \(0{,}1 \cdot 1 + 0{,}2 \cdot 2 + 0{,}5 \cdot 3 + 0{,}2 \cdot 3 = 0{,}1 + 0{,}4 + 1{,}5 + 0{,}6 = 2{,}6\). P2: \(0{,}1 \cdot 2 + 0{,}2 \cdot 2 + 0{,}5 \cdot 2 + 0{,}2 \cdot 2 = 2{,}0\).</p>
-            <p><strong>b.</strong> Sykler = instruksjoner × CPI. P1: \(10^6 \times 2{,}6 = 2{,}6 \cdot 10^6\). P2: \(10^6 \times 2{,}0 = 2{,}0 \cdot 10^6\).</p>
-            <p><strong>Hvem er raskest:</strong> P1: \(2{,}6 \cdot 10^6 / 2{,}5 \cdot 10^9 = 1{,}04\) ms. P2: \(2{,}0 \cdot 10^6 / 3 \cdot 10^9 = 0{,}67\) ms. <strong>P2</strong> er raskest, \(1{,}04/0{,}67 = 1{,}56\) ganger så rask. Prøv tallene i widgeten over.</p>
+            <p><strong>a.</strong> Vektet snitt. P1: \(0{,}1 \cdot 1 + 0{,}2 \cdot 2 + 0{,}5 \cdot 3 + 0{,}2 \cdot 3 = 2{,}6\). P2: \(2{,}0\).</p>
+            <p><strong>b.</strong> P1: \(2{,}6 \cdot 10^6\) sykler → \(2{,}6 \cdot 10^6 / 2{,}5 \cdot 10^9 = 1{,}04\) ms. P2: \(2{,}0 \cdot 10^6\) sykler → 0,67 ms. <strong>P2</strong> er 1,56 ganger så rask.</p>
           </div>
         </div>
       </div>
@@ -469,7 +365,7 @@
         <div class="q-text">Hvorfor kan CPI brukes til å sammenlikne to implementasjoner av samme ISA, men ikke to maskiner med ulik ISA?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Med samme ISA utfører programmet nøyaktig samme instruksjoner på begge, så instruksjonsantallet er likt og bare CPI × klokkeperiode skiller dem. Med ulik ISA trengs ulikt antall instruksjoner for samme oppgave (en instruksjon kan gjøre mer eller mindre), så en lavere CPI kan skjule et høyere instruksjonsantall. Bare produktet, altså tiden, er sammenliknbart.</div>
+          <div class="answer">Samme ISA gir samme instruksjonsantall, så bare CPI × klokkeperiode skiller. Ulik ISA gir ulikt antall instruksjoner for samme oppgave, og lav CPI kan skjule høyt IC. Bare tiden er sammenliknbar.</div>
         </div>
       </div>
     </div>
@@ -486,92 +382,48 @@
         <li>Studenten kjenner til hvordan spenning og klokkefrekvens påvirker effektforbruk og strømforbruk.</li>
       </ul>
 
-      <p class="dropcap">Figur 1.16 i boka viser klokkefrekvens og effekt for ni generasjoner Intel-prosessorer over 36 år. Begge økte raskt i tiår, og flatet så ut eller falt. De vokste sammen fordi de henger sammen, og de stoppet fordi vi traff den praktiske grensen for hvor mye varme som kan kjøles bort fra en vanlig mikroprosessor: <span class="term" data-term="effektmur">effektmuren</span>.</p>
+      <p class="dropcap">Klokkefrekvens og effekt økte sammen i tiår (Pentium 4 Prescott 2004: 3,6 GHz, 103 W) og stoppet så: mer varme kan ikke kjøles bort fra en vanlig brikke. Det er <span class="term" data-term="effektmur">effektmuren</span>.</p>
 
-      <div class="table-wrap">
-        <table>
-          <caption>Utvalg fra figur 1.16: klokkefrekvens og effekt for Intel x86-prosessorer. Pentium 4 Prescott (2004) var toppen; Core 2 gikk tilbake til enklere samlebånd, lavere klokke og flere kjerner.</caption>
-          <thead><tr><th>Prosessor</th><th>År</th><th>Klokke (MHz)</th><th>Effekt (W)</th></tr></thead>
-          <tbody>
-            <tr><td>80286</td><td class="mono">1982</td><td class="mono">12,5</td><td class="mono">3,3</td></tr>
-            <tr><td>80486</td><td class="mono">1989</td><td class="mono">25</td><td class="mono">4,9</td></tr>
-            <tr><td>Pentium</td><td class="mono">1993</td><td class="mono">66</td><td class="mono">10,1</td></tr>
-            <tr><td>Pentium Pro</td><td class="mono">1997</td><td class="mono">200</td><td class="mono">29,1</td></tr>
-            <tr><td>Pentium 4 Willamette</td><td class="mono">2001</td><td class="mono">2000</td><td class="mono">75,3</td></tr>
-            <tr><td>Pentium 4 Prescott</td><td class="mono">2004</td><td class="mono">3600</td><td class="mono">103</td></tr>
-            <tr><td>Core 2 Kentsfield</td><td class="mono">2007</td><td class="mono">2667</td><td class="mono">95</td></tr>
-            <tr><td>Core i5 Skylake</td><td class="mono">2016</td><td class="mono">3500</td><td class="mono">91</td></tr>
-            <tr><td>Core i5 Coffee Lake</td><td class="mono">2018</td><td class="mono">3600</td><td class="mono">95</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p>Effekt setter grensen for hva vi kan kjøle, men i post-PC-æraen er <em>energi</em> den virkelig verdifulle ressursen: batterilevetid kan trumfe ytelse i en mobil enhet, og datasentre med 50 000 servere bruker enorme summer på strøm og kjøling. Akkurat som sekunder er et tryggere ytelsesmål enn en rate som MIPS, er joule et bedre mål enn watt, som bare er joule per sekund.</p>
-
-      <h3>Dynamisk energi i CMOS</h3>
-      <p>Den dominerende teknologien for integrerte kretser er <span class="term" data-term="cmos">CMOS</span>. Hovedkilden til energiforbruk er <span class="term" data-term="dynamisk-energi">dynamisk energi</span>, energien som brukes når transistorer svitsjer fra 0 til 1 og tilbake. Den avhenger av den kapasitive lasten på hver transistor og spenningen:</p>
-      \[ \text{Energi} \propto \text{Kapasitiv last} \times \text{Spenning}^2 \tag{10} \]
-      <p>Det er energien for en puls \(0 \to 1 \to 0\). Én overgang bruker halvparten:</p>
-      \[ \text{Energi}_{\text{overgang}} \propto \tfrac{1}{2} \times \text{Kapasitiv last} \times \text{Spenning}^2 \tag{11} \]
-      <p>Effekten per transistor er energien per overgang ganger hvor ofte den svitsjer:</p>
-      \[ \text{Effekt} \propto \tfrac{1}{2} \times \text{Kapasitiv last} \times \text{Spenning}^2 \times \text{Svitsjefrekvens} \tag{12} \]
-      <p>Svitsjefrekvensen er en funksjon av klokkefrekvensen. Den kapasitive lasten avhenger av antall transistorer koblet til en utgang (fanout) og av teknologien, som bestemmer kapasitansen i tråder og transistorer.</p>
-
-      <div class="callout">
-        <span class="label">Hvordan kunne klokken øke 1000 ganger når effekten bare økte 30 ganger?</span>
-        <p>Fordi effekten avhenger av spenningen i annen potens, og spenningen ble senket med hver ny teknologigenerasjon, typisk 15 % per generasjon. På 20 år gikk spenningen fra 5 V til 1 V. Det er grunnen til at effekten «bare» økte 30 ganger.</p>
-      </div>
+      <p>I <span class="term" data-term="cmos">CMOS</span> er hovedkilden <span class="term" data-term="dynamisk-energi">dynamisk energi</span>, brukt når transistorer svitsjer. Energien per overgang og effekten (energi × hvor ofte) er:</p>
+      \[ \text{Energi} \propto \tfrac{1}{2} \times \text{Kapasitiv last} \times \text{Spenning}^2 \tag{7} \]
+      \[ \text{Effekt} \propto \tfrac{1}{2} \times \text{Kapasitiv last} \times \text{Spenning}^2 \times \text{Svitsjefrekvens} \tag{8} \]
+      <p>Svitsjefrekvensen følger klokken. Spenningen teller kvadratisk: derfor kunne klokken øke 1000 ganger mens effekten bare økte 30 ganger, spenningen gikk fra 5 V til 1 V (ca. 15 % ned per generasjon). Nå kan spenningen ikke senkes mer: transistorene blir lekk, og <span class="term" data-term="lekkasje">lekkasje</span> (statisk effekt) er allerede rundt 40 % i serverbrikker. Løsningen ble flere kjerner (avsnitt 05).</p>
 
       <div class="oppgave" data-quiz id="oppg-eks-effekt">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.7 · s. 41–42</span></div>
-        <div class="o-text"><p>Anta at vi utvikler en ny, enklere prosessor som har 85 % av den kapasitive lasten til den mer komplekse, eldre prosessoren. Anta videre at den kan justere spenningen slik at spenningen reduseres 15 % sammenliknet med den gamle prosessoren, noe som gir 15 % lavere frekvens. Hva er virkningen på dynamisk effekt?</p></div>
+        <div class="o-text"><p>En ny prosessor har 85 % av den kapasitive lasten til den gamle, 15 % lavere spenning og 15 % lavere frekvens. Hva er virkningen på dynamisk effekt?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            \[ \frac{\text{Effekt}_{\text{ny}}}{\text{Effekt}_{\text{gammel}}} = \frac{(\text{Kapasitiv last} \times 0{,}85) \times (\text{Spenning} \times 0{,}85)^2 \times (\text{Svitsjefrekvens} \times 0{,}85)}{\text{Kapasitiv last} \times \text{Spenning}^2 \times \text{Svitsjefrekvens}} = 0{,}85^4 = 0{,}52 \]
-            <p>Den nye prosessoren bruker omtrent halvparten så mye effekt som den gamle.</p>
+            \[ \frac{\text{Effekt}_{\text{ny}}}{\text{Effekt}_{\text{gammel}}} = \frac{0{,}85 \cdot 0{,}85^2 \cdot 0{,}85}{1} = 0{,}85^4 = 0{,}52 \]
+            <p>Omtrent halvparten så mye effekt.</p>
           </div>
         </div>
       </div>
 
-      <div class="widget" id="w-effekt">
-        <div class="widget-label">Prøv selv · Dynamisk effekt etter (12)</div>
-        <p class="widget-intro">Skaler kapasitiv last, spenning og frekvens relativt til en gammel prosessor og se hva som skjer med dynamisk effekt. Spenningen teller kvadratisk. Forhåndsutfylt med bokas eksempel (0,85 på alle tre).</p>
-        <div class="w-row">
-          <div class="w-ctl"><label for="pw-c">kapasitiv last ×</label><input type="range" id="pw-c" min="0.5" max="1.5" step="0.01" value="0.85"><span class="w-val" id="pw-c-val">0.85</span></div>
-          <div class="w-ctl"><label for="pw-v">spenning ×</label><input type="range" id="pw-v" min="0.5" max="1.5" step="0.01" value="0.85"><span class="w-val" id="pw-v-val">0.85</span></div>
-          <div class="w-ctl"><label for="pw-f">frekvens ×</label><input type="range" id="pw-f" min="0.5" max="1.5" step="0.01" value="0.85"><span class="w-val" id="pw-f-val">0.85</span></div>
-        </div>
-        <div class="w-out" id="pw-out"></div>
-      </div>
-
-      <h3>Lekkasje og veien videre</h3>
-      <p>Problemet i dag er at videre senking av spenningen ser ut til å gjøre transistorene for lekk, som kraner som ikke kan stenges helt. Allerede nå skyldes rundt 40 % av effektforbruket i serverbrikker <span class="term" data-term="lekkasje">lekkasje</span>, statisk energi fra strøm som flyter selv når transistoren er av. Flere transistorer gir mer lekkasje selv om de aldri svitsjer. Designerne har satt på større kjøling og slår av deler av brikken som ikke brukes i en gitt syklus, men dyrere kjøling (til f.eks. 300 W) er for kostbart for PC-er og servere, for ikke å snakke om mobile enheter. Effekt er et problem av to grunner: den må inn og fordeles (hundrevis av pinner bare for strøm og jord), og den må ut som varme. Da designerne traff effektmuren, trengte de en ny vei, og valgte en helt annen enn de første 30 årene: flere kjerner (avsnitt 05).</p>
-
       <div class="oppgave" data-quiz id="oppg-1-9">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.9 · s. 61</span></div>
         <div class="o-text">
-          <p>Pentium 4 Prescott (2004) hadde klokkefrekvens 3,6 GHz og spenning 1,25 V. Anta at den i snitt brukte 10 W statisk effekt og 90 W dynamisk effekt. Core i5 Ivy Bridge (2012) har klokkefrekvens 3,4 GHz og spenning 0,9 V. Anta at den i snitt brukte 30 W statisk og 40 W dynamisk effekt.</p>
-          <p>1.9.1 Finn den gjennomsnittlige kapasitive lasten for hver prosessor. 1.9.2 Finn hvor stor prosentandel statisk effekt utgjør av total effekt, og forholdet mellom statisk og dynamisk effekt, for hver teknologi. 1.9.3 Hvis total effekt skal reduseres 10 %, hvor mye må spenningen reduseres for å holde lekkasjestrømmen uendret? Merk: effekt er definert som produktet av spenning og strøm.</p>
+          <p>Pentium 4 Prescott: 3,6 GHz, 1,25 V, 10 W statisk og 90 W dynamisk. Core i5 Ivy Bridge: 3,4 GHz, 0,9 V, 30 W statisk og 40 W dynamisk. 1.9.1 Finn gjennomsnittlig kapasitiv last for hver. 1.9.2 Finn statisk andel av total effekt og forholdet statisk/dynamisk. 1.9.3 Total effekt skal ned 10 % med uendret lekkasjestrøm: hvor mye må spenningen ned? (Effekt = spenning × strøm.)</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p><strong>1.9.1</strong> Fra (12) som likhet: \(P_{\text{dyn}} = \tfrac12 C V^2 f\), så \(C = 2 P_{\text{dyn}} / (V^2 f)\). Pentium 4: \(C = 2 \cdot 90 / (1{,}25^2 \cdot 3{,}6 \cdot 10^9) = 3{,}2 \cdot 10^{-8}\ \text{F} = 32\ \text{nF}\). Ivy Bridge: \(C = 2 \cdot 40 / (0{,}9^2 \cdot 3{,}4 \cdot 10^9) = 2{,}9 \cdot 10^{-8}\ \text{F} = 29\ \text{nF}\).</p>
-            <p><strong>1.9.2</strong> Pentium 4: statisk \(10/100 = 10\ \%\), forhold statisk/dynamisk \(10/90 = 0{,}11\). Ivy Bridge: statisk \(30/70 = 43\ \%\), forhold \(30/40 = 0{,}75\). Lekkasjen har gått fra en tiendedel til tre firedeler av den dynamiske effekten, akkurat som boka beskriver.</p>
-            <p><strong>1.9.3</strong> Statisk effekt = \(V \cdot I_{\text{lekk}}\) med \(I_{\text{lekk}}\) konstant, så statisk effekt skalerer med \(V\); dynamisk skalerer med \(V^2\) (frekvensen holdes). La \(x = V_{\text{ny}}/V\). Pentium 4: \(0{,}9 \cdot 100 = 10x + 90x^2 \Rightarrow x = 0{,}946\), altså spenningen ned 5,4 % til 1,18 V. Ivy Bridge: \(63 = 30x + 40x^2 \Rightarrow x = 0{,}935\), spenningen ned 6,5 % til 0,84 V. Jo større lekkasjeandel, jo mer må spenningen ned for samme effektreduksjon.</p>
+            <p><strong>1.9.1</strong> \(C = 2 P_{\text{dyn}} / (V^2 f)\). Pentium 4: \(2 \cdot 90 / (1{,}25^2 \cdot 3{,}6 \cdot 10^9) = 32\) nF. Ivy Bridge: \(2 \cdot 40 / (0{,}9^2 \cdot 3{,}4 \cdot 10^9) = 29\) nF.</p>
+            <p><strong>1.9.2</strong> Pentium 4: 10 % statisk, forhold 0,11. Ivy Bridge: 43 % statisk, forhold 0,75.</p>
+            <p><strong>1.9.3</strong> Statisk ∝ \(V\) (strømmen fast), dynamisk ∝ \(V^2\). Med \(x = V_{\text{ny}}/V\): Pentium 4: \(90 = 10x + 90x^2 \Rightarrow x = 0{,}946\), ned 5,4 %. Ivy Bridge: \(63 = 30x + 40x^2 \Rightarrow x = 0{,}935\), ned 6,5 %.</p>
           </div>
         </div>
       </div>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Middels</div>
-        <div class="q-text">Hva skjer med dynamisk effekt hvis klokkefrekvensen dobles uten at spenningen endres? Og hvis spenningen samtidig må økes 20 % for at kretsen skal klare den høyere klokken?</div>
+        <div class="q-text">Klokkefrekvensen dobles uten at spenningen endres. Hva skjer med dynamisk effekt? Og hvis spenningen samtidig må opp 20 %?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Dobbel frekvens alene: dobbel effekt (lineært i (12)). Med 20 % høyere spenning i tillegg: \(2 \times 1{,}2^2 = 2{,}88\), nesten tredobbel effekt. Det er nettopp derfor høyere klokke ble så dyrt i effekt: i praksis krever raskere svitsjing høyere spenning.</div>
+          <div class="answer">Dobbel frekvens alene: dobbel effekt. Med 20 % høyere spenning: \(2 \cdot 1{,}2^2 = 2{,}88\), nesten tredobbel.</div>
         </div>
       </div>
     </div>
@@ -588,44 +440,36 @@
         <li>Studenten vet hvorfor stort sett alle datamaskiner i dag har mer enn én prosessorkjerne.</li>
       </ul>
 
-      <p class="dropcap">Effektgrensen tvang fram en dramatisk endring i mikroprosessordesign. Figur 1.17 i boka viser hvordan responstiden for programmer på desktop-prosessorer har bedret seg over tid: fra midten av 1980-tallet vokste ytelsen 52 % per år takket være nye arkitekturideer, men siden 2002 har veksten falt til 3,5 % per år, altså en faktor 1,03 mot 1,5 tidligere. Grunnene er effektgrensen, at det er lite instruksjonsnivå-parallellitet igjen å hente, og lang forsinkelse mot minnet.</p>
-      <p>I stedet for å fortsette å korte ned responstiden for ett program på én prosessor, leverer alle desktop- og serverprodusenter siden 2006 mikroprosessorer med flere prosessorer per brikke, der gevinsten ofte er større i gjennomstrømning enn i responstid. For å unngå forvirring mellom «prosessor» og «mikroprosessor» kaller de prosessorene <em>kjerner</em>, og slike brikker <span class="term" data-term="flerkjerne">flerkjerneprosessorer</span>: en «quadcore» har fire kjerner. Kompendiet: de fleste datamaskiner har flere prosessorkjerner som lar dem utføre oppgaver parallelt, med betydelig ytelsesøkning for programmer som kan utnytte flere kjerner.</p>
+      <p class="dropcap">Ytelsen per prosessor vokste 52 % per år fram til 2002, siden bare 3,5 %. Tre grunner: effektmuren, lite instruksjonsnivå-parallellitet igjen å hente, og lang forsinkelse mot minnet. Siden 2006 gir produsentene derfor flere prosessorer, <em>kjerner</em>, per brikke: <span class="term" data-term="flerkjerne">flerkjerneprosessorer</span>. Gevinsten er ofte større i gjennomstrømning enn i responstid.</p>
 
       <div class="callout callout-warn">
         <span class="label">Regningen sendes til programmereren</span>
-        <p>Før kunne programmerere stole på at maskinvare, arkitektur og kompilatorer doblet ytelsen hver 18. måned uten at de endret en linje kode. I dag må de skrive om programmene sine for å utnytte flere prosessorer, og fortsette å forbedre dem etter hvert som antall kjerner øker. Å tvinge programmerere til å tenke parallelt hadde vært «den tredje skinnen» i datamaskinarkitektur: selskaper som satset på det tidligere, gikk under. Likevel satset hele IT-bransjen framtiden på at programmerere skulle klare overgangen.</p>
+        <p>Samlebånd (T5) er skjult parallellitet; flerkjerner er synlig. Programmet må skrives om for å bruke flere kjerner, og det er vanskelig fordi det er ytelsesprogrammering: <strong>oppdeling</strong> av arbeidet, <strong>lastbalanse</strong>, <strong>synkronisering</strong> og <strong>kommunikasjon</strong> må alle gå opp (bokas åtte journalister på én artikkel).</p>
       </div>
-
-      <h3>Skjult og synlig parallellitet</h3>
-      <p>Parallellitet har alltid vært avgjørende for ytelse, men den var ofte skjult. Samlebånd (kapittel 4 i boka, tema T5) kjører programmer raskere ved å overlappe utførelsen av instruksjoner, et eksempel på <em>instruksjonsnivå-parallellitet</em> der maskinvarens parallelle natur er abstrahert bort, så programmereren og kompilatoren kan late som instruksjonene utføres én etter én. Flerkjerner er det motsatte: parallelliteten er synlig og må håndteres.</p>
-
-      <h3>Hvorfor er parallell programmering vanskelig?</h3>
-      <p>Boka gir to grunner. For det første er parallell programmering per definisjon <em>ytelses</em>programmering: programmet må ikke bare være riktig og nyttig, men raskt, ellers kunne du skrevet det sekvensielt. For det andre betyr «raskt» på parallell maskinvare at programmereren må dele opp applikasjonen slik at hver prosessor har omtrent like mye å gjøre til samme tid, uten at planlegging og koordinering spiser opp gevinsten. Analogien er åtte journalister som skal skrive én avisartikkel: potensielt åtte ganger raskere, men bare hvis arbeidet deles opp (planlegging), ingen bruker mye lengre tid enn de andre (lastbalanse), de ikke må snakke for mye sammen (kommunikasjon), og konklusjonen ikke må vente på at alt annet er ferdig (synkronisering). Utfordringene vokser med antall journalister, og med antall prosessorer.</p>
-      <p>Boka følger opp med én seksjon om parallellitet i hvert kapittel: synkroniseringsinstruksjoner (2.11), subword-parallellitet i aritmetikk (3.6), instruksjonsnivå-parallellitet (4.11), hurtigbufferkoherens (5.10), RAID (5.11), og hele kapittel 6 om parallelle prosessorer (tema T7).</p>
 
       <div class="oppgave" data-quiz id="oppg-1-16">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.16 · s. 64</span></div>
         <div class="o-text">
-          <p>Når et program tilpasses til å kjøre på flere prosessorer i et multiprosessorsystem, består kjøretiden på hver prosessor av beregningstid og overhead for låste kritiske seksjoner og/eller for å sende data mellom prosessorer. Anta at et program trenger \(t = 100\) s kjøretid på én prosessor. Kjørt på \(p\) prosessorer trenger hver prosessor \(t/p\) s, pluss 4 s overhead uavhengig av antall prosessorer. Beregn kjøretiden per prosessor for 2, 4, 8, 16, 32, 64 og 128 prosessorer. List for hvert tilfelle speedup relativt til én prosessor, og forholdet mellom faktisk speedup og ideell speedup (speedup uten overhead).</p>
+          <p>Et program trenger \(t = 100\) s på én prosessor. På \(p\) prosessorer trenger hver \(t/p\) s pluss 4 s overhead. Beregn kjøretid, speedup og forholdet faktisk/ideell speedup for 2, 4, 8, 16, 32, 64 og 128 prosessorer.</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p>Tid = \(100/p + 4\), speedup = \(100/\text{tid}\), ideell speedup = \(p\).</p>
+            <p>Tid = \(100/p + 4\), speedup = \(100/\text{tid}\), ideell = \(p\).</p>
             <div class="table-wrap"><table>
-              <thead><tr><th>p</th><th>Tid (s)</th><th>Speedup</th><th>Ideell</th><th>Faktisk / ideell</th></tr></thead>
+              <thead><tr><th>p</th><th>Tid (s)</th><th>Speedup</th><th>Faktisk / ideell</th></tr></thead>
               <tbody>
-                <tr><td class="mono">2</td><td class="mono">54,0</td><td class="mono">1,85</td><td class="mono">2</td><td class="mono">0,93</td></tr>
-                <tr><td class="mono">4</td><td class="mono">29,0</td><td class="mono">3,45</td><td class="mono">4</td><td class="mono">0,86</td></tr>
-                <tr><td class="mono">8</td><td class="mono">16,5</td><td class="mono">6,06</td><td class="mono">8</td><td class="mono">0,76</td></tr>
-                <tr><td class="mono">16</td><td class="mono">10,25</td><td class="mono">9,76</td><td class="mono">16</td><td class="mono">0,61</td></tr>
-                <tr><td class="mono">32</td><td class="mono">7,125</td><td class="mono">14,0</td><td class="mono">32</td><td class="mono">0,44</td></tr>
-                <tr><td class="mono">64</td><td class="mono">5,56</td><td class="mono">18,0</td><td class="mono">64</td><td class="mono">0,28</td></tr>
-                <tr><td class="mono">128</td><td class="mono">4,78</td><td class="mono">20,9</td><td class="mono">128</td><td class="mono">0,16</td></tr>
+                <tr><td class="mono">2</td><td class="mono">54,0</td><td class="mono">1,85</td><td class="mono">0,93</td></tr>
+                <tr><td class="mono">4</td><td class="mono">29,0</td><td class="mono">3,45</td><td class="mono">0,86</td></tr>
+                <tr><td class="mono">8</td><td class="mono">16,5</td><td class="mono">6,06</td><td class="mono">0,76</td></tr>
+                <tr><td class="mono">16</td><td class="mono">10,25</td><td class="mono">9,76</td><td class="mono">0,61</td></tr>
+                <tr><td class="mono">32</td><td class="mono">7,125</td><td class="mono">14,0</td><td class="mono">0,44</td></tr>
+                <tr><td class="mono">64</td><td class="mono">5,56</td><td class="mono">18,0</td><td class="mono">0,28</td></tr>
+                <tr><td class="mono">128</td><td class="mono">4,78</td><td class="mono">20,9</td><td class="mono">0,16</td></tr>
               </tbody>
             </table></div>
-            <p>Overheaden på 4 s er «den delen som ikke forbedres»: speedup kan aldri overstige \(100/4 = 25\) uansett hvor mange prosessorer vi legger til. Det er Amdahls lov (neste avsnitt) med 4 s upåvirket tid.</p>
+            <p>Overheaden på 4 s er delen som ikke forbedres: speedup kan aldri overstige \(100/4 = 25\). Det er Amdahls lov.</p>
           </div>
         </div>
       </div>
@@ -633,26 +477,25 @@
       <div class="oppgave" data-quiz id="oppg-1-10">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.10 · s. 62</span></div>
         <div class="o-text">
-          <p>Anta at en prosessor har CPI 1, 12 og 5 for henholdsvis aritmetiske instruksjoner, load/store-instruksjoner og hoppinstruksjoner. Anta også at et program på én prosessor krever \(2{,}56 \cdot 10^9\) aritmetiske instruksjoner, \(1{,}28 \cdot 10^9\) load/store-instruksjoner og 256 millioner hoppinstruksjoner. Hver prosessor har 2 GHz klokke. Anta at når programmet parallelliseres over flere kjerner, deles antall aritmetiske og load/store-instruksjoner per prosessor på \(0{,}7 \cdot p\) (der \(p\) er antall prosessorer), mens antall hoppinstruksjoner per prosessor er uendret.</p>
-          <p>1.10.1 Finn total kjøretid for programmet på 1, 2, 4 og 8 prosessorer, og vis relativ speedup for 2, 4 og 8 prosessorer i forhold til én. 1.10.2 Hvis CPI for de aritmetiske instruksjonene ble doblet, hva ville virkningen være på kjøretiden på 1, 2, 4 eller 8 prosessorer? 1.10.3 Hva må CPI for load/store-instruksjoner reduseres til for at én prosessor skal matche ytelsen til fire prosessorer med de opprinnelige CPI-verdiene?</p>
+          <p>CPI 1, 12 og 5 for aritmetikk, load/store og hopp. Et program har \(2{,}56 \cdot 10^9\) aritmetiske, \(1{,}28 \cdot 10^9\) load/store og \(256 \cdot 10^6\) hoppinstruksjoner. Klokke 2 GHz. Parallellisert over \(p\) prosessorer deles aritmetikk og load/store per prosessor på \(0{,}7p\); hopp er uendret. 1.10.1 Kjøretid på 1, 2, 4 og 8 prosessorer, og speedup. 1.10.2 Virkning av doblet CPI for aritmetikk. 1.10.3 Hvilken load/store-CPI må én prosessor ha for å matche fire prosessorer med opprinnelige CPI?</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p><strong>1.10.1</strong> Sykler på én prosessor: aritmetikk \(2{,}56 \cdot 10^9 \times 1 = 2{,}56 \cdot 10^9\); load/store \(1{,}28 \cdot 10^9 \times 12 = 15{,}36 \cdot 10^9\); hopp \(0{,}256 \cdot 10^9 \times 5 = 1{,}28 \cdot 10^9\). Sum \(19{,}2 \cdot 10^9\) sykler / 2 GHz = <strong>9,6 s</strong>. Med \(p\) prosessorer deles de to første på \(0{,}7p\), hoppsyklene beholdes: \(p = 2\): \((2{,}56 + 15{,}36)/1{,}4 + 1{,}28 = 14{,}08 \cdot 10^9\) sykler = <strong>7,04 s</strong>, speedup 1,36. \(p = 4\): \(17{,}92/2{,}8 + 1{,}28 = 7{,}68 \cdot 10^9\) = <strong>3,84 s</strong>, speedup 2,5. \(p = 8\): \(17{,}92/5{,}6 + 1{,}28 = 4{,}48 \cdot 10^9\) = <strong>2,24 s</strong>, speedup 4,29.</p>
-            <p><strong>1.10.2</strong> Aritmetikk-sykler dobles til \(5{,}12 \cdot 10^9\). \(p = 1\): \(21{,}76 \cdot 10^9\) sykler = 10,88 s (+13 %). \(p = 2\): \(20{,}48/1{,}4 + 1{,}28 = 15{,}91 \cdot 10^9\) = 7,95 s. \(p = 4\): 4,30 s. \(p = 8\): 2,47 s. Virkningen er moderat fordi load/store dominerer syklene.</p>
-            <p><strong>1.10.3</strong> Fire prosessorer bruker \(7{,}68 \cdot 10^9\) sykler. Én prosessor: \(2{,}56 + 1{,}28 \cdot \text{CPI}_{LS} + 1{,}28 = 7{,}68\) (alt \(\cdot 10^9\)) gir \(\text{CPI}_{LS} = 3{,}84/1{,}28 = 3\). Load/store-CPI må ned fra 12 til <strong>3</strong>. Bedre minnesystem kan altså slå fire kjerner.</p>
+            <p><strong>1.10.1</strong> Sykler på én: \(2{,}56 + 15{,}36 + 1{,}28 = 19{,}2 \cdot 10^9\) → <strong>9,6 s</strong>. \(p\) prosessorer: \(17{,}92/(0{,}7p) + 1{,}28\). \(p = 2\): 7,04 s (1,36×). \(p = 4\): 3,84 s (2,5×). \(p = 8\): 2,24 s (4,29×).</p>
+            <p><strong>1.10.2</strong> Aritmetikk-sykler dobles til \(5{,}12 \cdot 10^9\): 10,88 s, 7,95 s, 4,30 s, 2,47 s. Moderat virkning, load/store dominerer.</p>
+            <p><strong>1.10.3</strong> Fire prosessorer: \(7{,}68 \cdot 10^9\) sykler. Én: \(2{,}56 + 1{,}28 \cdot \text{CPI}_{LS} + 1{,}28 = 7{,}68\) gir \(\text{CPI}_{LS} = 3\). Bedre minnesystem kan slå fire kjerner.</p>
           </div>
         </div>
       </div>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Lett</div>
-        <div class="q-text">Gi to grunner fra boka til at nesten alle prosessorer i dag har flere kjerner, og én grunn til at det ikke automatisk gir raskere programmer.</div>
+        <div class="q-text">Gi to grunner til at nesten alle prosessorer har flere kjerner, og én grunn til at det ikke automatisk gir raskere programmer.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Effektmuren gjorde det umulig å fortsette å øke klokken, og ytelsen per enkeltprosessor vokser bare 3,5 % i året fordi det er lite instruksjonsnivå-parallellitet igjen og minnet er tregt; flere kjerner gir mer gjennomstrømning innenfor samme effektbudsjett. Men et program må skrives om for å bruke flere kjerner, med oppdeling, lastbalanse, synkronisering og kommunikasjon, ellers kjører det på én kjerne som før.</div>
+          <div class="answer">Effektmuren stoppet klokken, og ytelsen per kjerne vokser sakte (lite ILP igjen, tregt minne); flere kjerner gir mer gjennomstrømning i samme effektbudsjett. Men programmet må skrives om for å bruke dem, ellers kjører det på én kjerne som før.</div>
         </div>
       </div>
     </div>
@@ -669,51 +512,42 @@
         <li>Studenten kan bruke Amdahl's lov til å analysere ytelsesforbedring i datamaskiner.</li>
       </ul>
 
-      <p class="dropcap">Den store ideen om å gjøre det vanlige tilfellet raskt har en demoraliserende konsekvens: muligheten for forbedring er begrenset av hvor mye tid hendelsen bruker. Boka kaller det en fallgruve å vente at forbedring av én del av datamaskinen skal øke total ytelse proporsjonalt med forbedringen. <span class="term" data-term="amdahls-lov">Amdahls lov</span> sier hvor mye du faktisk får:</p>
-
       <div class="def-box">
-        <span class="def-label">Amdahls lov · bokas form</span>
-        <div class="def-term">Kjøretid etter forbedring</div>
-        \[ \text{Kjøretid}_{\text{etter}} = \frac{\text{Kjøretid}_{\text{påvirket}}}{\text{Forbedringsfaktor}} + \text{Kjøretid}_{\text{upåvirket}} \tag{13} \]
-        <p>Ytelsesforbedringen du kan oppnå med en gitt forbedring er begrenset av hvor mye det forbedrede brukes. I dagliglivet kalles det loven om avtagende utbytte.</p>
+        <span class="def-label">Amdahls lov · to former</span>
+        <div class="def-term"><span class="term" data-term="amdahls-lov">Gevinsten begrenses av hvor mye det forbedrede brukes</span></div>
+        \[ \text{Kjøretid}_{\text{etter}} = \frac{\text{Kjøretid}_{\text{påvirket}}}{\text{Forbedringsfaktor}} + \text{Kjøretid}_{\text{upåvirket}} \tag{9} \]
+        \[ \text{Speedup} = \frac{1}{(1 - P) + \dfrac{P}{N}}, \qquad P = \text{parallell andel},\ N = \text{antall kjerner} \tag{10} \]
+        <p>(10) er (9) delt på opprinnelig tid, og gir <span class="term" data-term="speedup">speedup</span> direkte. Når \(N \to \infty\) går speedup mot \(1/(1-P)\): med \(P = 0{,}9\) får du aldri mer enn 10×. Bruk <em>tids</em>andelen i formelen, ikke andelen av instruksjonene.</p>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-eks-amdahl">
         <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">1.11 · s. 51</span></div>
-        <div class="o-text"><p>Anta at et program kjører på 100 sekunder på en datamaskin, og at multiplikasjoner står for 80 sekunder av tiden. Hvor mye må jeg forbedre hastigheten på multiplikasjon for at programmet skal kjøre fem ganger raskere?</p></div>
+        <div class="o-text"><p>Et program kjører på 100 s, og multiplikasjoner står for 80 s. Hvor mye må multiplikasjon forbedres for at programmet skal kjøre fem ganger raskere?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            \[ \text{Kjøretid}_{\text{etter}} = \frac{80\ \text{s}}{n} + (100 - 80)\ \text{s} \]
-            <p>Fem ganger raskere betyr ny kjøretid 20 sekunder:</p>
-            \[ 20\ \text{s} = \frac{80\ \text{s}}{n} + 20\ \text{s} \quad\Rightarrow\quad 0 = \frac{80\ \text{s}}{n} \]
-            <p>Det finnes <em>ingen</em> forbedring av multiplikasjon som gir fem ganger høyere ytelse når multiplikasjon bare er 80 % av arbeidet. De 20 sekundene som ikke forbedres setter et tak: uansett hvor rask multiplikasjonen blir, tar programmet minst 20 s, altså maks 5× i grensen, aldri nådd.</p>
+            \[ 20\ \text{s} = \frac{80\ \text{s}}{n} + 20\ \text{s} \quad\Rightarrow\quad \frac{80}{n} = 0 \]
+            <p>Umulig. De 20 sekundene som ikke forbedres setter et tak på 5×, som aldri nås.</p>
           </div>
         </div>
       </div>
 
-      <h3>Kompendiets form: parallell andel og antall kjerner</h3>
-      <p>Kompendiet skriver Amdahls lov for parallelle systemer: den maksimale ytelsesøkningen er begrenset av andelen av programmet som kan kjøres parallelt. Med \(P\) som den parallelle andelen og \(N\) antall prosessorkjerner er <span class="term" data-term="speedup">speedup</span></p>
-      \[ \text{Speedup} = \frac{1}{(1 - P) + \dfrac{P}{N}} \tag{14} \]
-      <p>Dette er (13) delt på opprinnelig kjøretid (satt til 1): den upåvirkede delen \(1 - P\) står som den er, den påvirkede \(P\) deles på \(N\). Når \(N \to \infty\) går speedup mot \(1/(1-P)\): med \(P = 0{,}9\) kan du aldri få mer enn 10× uansett antall kjerner. Boka bruker nettopp dette til å argumentere for praktiske grenser for antall parallelle prosessorer (kapittel 6, tema T7).</p>
-
       <div class="oppgave" data-quiz id="oppg-komp-amdahl">
         <div class="o-label"><span>Oppgave fra kompendiet</span><span class="o-ref">Kap. 1 · «Eksempel 2: Amdahl's lov»</span></div>
-        <div class="o-text"><p>Anta at 70 % av et program kan kjøres parallelt. Hvor mye raskere blir programmet hvis vi bruker 4 kjerner?</p></div>
+        <div class="o-text"><p>70 % av et program kan kjøres parallelt. Hvor mye raskere blir det med 4 kjerner?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra kompendiet</span>
-            \[ \text{Speedup} = \frac{1}{(1 - 0{,}7) + \dfrac{0{,}7}{4}} = \frac{1}{0{,}3 + 0{,}175} = \frac{1}{0{,}475} \approx 2{,}1 \]
-            <p>Med 4 kjerner blir programmet omtrent 2,1 ganger raskere.</p>
+            \[ \text{Speedup} = \frac{1}{0{,}3 + 0{,}7/4} = \frac{1}{0{,}475} \approx 2{,}1 \]
           </div>
         </div>
       </div>
 
       <div class="widget" id="w-amdahl">
         <div class="widget-label">Prøv selv · Amdahls lov</div>
-        <p class="widget-intro">Speedup som funksjon av antall kjerner \(N\) for den parallelle andelen \(P\) du velger. Den stiplede linjen er taket \(1/(1-P)\). Punktet markerer valgt \(N\). Forhåndsutfylt med kompendiets eksempel (\(P = 0{,}7\), \(N = 4\)).</p>
+        <p class="widget-intro">Speedup mot antall kjerner \(N\) for valgt \(P\). Stiplet linje er taket \(1/(1-P)\). Forhåndsutfylt med kompendiets eksempel.</p>
         <svg viewBox="0 0 560 240" data-w="560" data-h="240" aria-label="Speedup mot antall kjerner"></svg>
         <div class="legend-row"><span class="l-a">speedup(N)</span><span class="l-w">tak 1/(1−P)</span><span class="l-g">ideell (N)</span></div>
         <div class="w-row">
@@ -723,33 +557,12 @@
         <div class="w-out" id="am-out"></div>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-ss-amdahl">
-        <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">1.14 · s. 56–58</span></div>
-        <div class="o-text">
-          <p>Amdahls lov og brorskap. Amdahls lov er i bunn og grunn loven om avtagende utbytte, som gjelder investeringer like mye som datamaskinarkitektur. Broren din har begynt i en oppstartsbedrift og prøver å overtale deg til å investere sparepengene dine, siden han hevder «det er helt sikkert!».</p>
-          <ol type="a">
-            <li>Du bestemmer deg for å investere 10 % av sparepengene. Hva må avkastningen (multiplum av investeringen) i oppstartsbedriften være for å doble din samlede formue, hvis dette er din eneste investering?</li>
-            <li>Anta at investeringen gir avkastningen fra a, og at formuen er den samme som før beregningen i a. Hvor mye av sparepengene må du investere for å få en avkastning på hele formuen lik 90 % av oppstartsbedriftens økning? Og 95 %?</li>
-            <li>Hvordan henger resultatene sammen med Amdahls observasjon om datamaskiner? Hva sier det om brorskap?</li>
-          </ol>
-        </div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">
-            <span class="answer-src">Svar fra boka</span>
-            <p><strong>a.</strong> 11× avkastning for å doble sparepengene: \(90\ \% \cdot 1 + 10\ \% \cdot 11 = 2{,}0\).</p>
-            <p><strong>b.</strong> Du må investere 89 % av formuen for å få 90 % av full avkastning: 90 % av 11× er 9,9×, og \(11\ \% \cdot 1 + 89\ \% \cdot 11 = 9{,}9\). Du må investere 94,5 % for å få 95 % av avkastningen: 95 % av 11× er 10,45×, og \(5{,}5\ \% \cdot 1 + 94{,}5\ \% \cdot 11 = 10{,}45\).</p>
-            <p><strong>c.</strong> Akkurat som den delen du ikke investerer begrenser avkastningen selv ved høy avkastning i en vellykket oppstartsbedrift, begrenser den delen av datamaskinen du ikke gjør raskere gevinsten av forbedringen uansett hvor mye raskere du gjør den forbedrede delen. Hvor mye du investerer avhenger av tilliten til brorens dømmekraft, særlig siden 90 % av oppstartsbedrifter mislykkes!</p>
-          </div>
-        </div>
-      </div>
-
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Middels</div>
-        <div class="q-text">Et program bruker 60 % av tiden på flyttallsoperasjoner. Du kan velge mellom å gjøre flyttall 4× raskere eller å gjøre resten av programmet 2× raskere. Hvilket valg gir kortest kjøretid?</div>
+        <div class="q-text">Et program bruker 60 % av tiden på flyttall. Velg: flyttall 4× raskere, eller resten av programmet 2× raskere?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Sett opprinnelig tid til 1. Flyttall 4×: \(0{,}6/4 + 0{,}4 = 0{,}55\). Resten 2×: \(0{,}6 + 0{,}4/2 = 0{,}8\). Flyttall-forbedringen vinner (speedup 1,82 mot 1,25), fordi den treffer den største andelen av tiden. Amdahl belønner å forbedre det som brukes mest, ikke det som forbedres mest.</div>
+          <div class="answer">Flyttall 4×: \(0{,}6/4 + 0{,}4 = 0{,}55\) (1,82×). Resten 2×: \(0{,}6 + 0{,}4/2 = 0{,}8\) (1,25×). Flyttall vinner: forbedre det som brukes mest.</div>
         </div>
       </div>
     </div>
@@ -766,42 +579,17 @@
         <li>Studenten vet hva en testprogramsamling er og hvorfor de brukes.</li>
       </ul>
 
-      <p class="dropcap">En bruker som kjører de samme programmene dag ut og dag inn er den perfekte til å vurdere en ny datamaskin: programmene utgjør en <span class="term" data-term="arbeidslast">arbeidslast</span>, og brukeren kan ganske enkelt sammenlikne kjøretiden for arbeidslasten på de to maskinene. De fleste er ikke i den situasjonen. I stedet bruker vi <span class="term" data-term="benchmark">testprogrammer</span> (benchmarks), programmer valgt spesielt for å måle ytelse. De utgjør en arbeidslast som brukeren håper forutsier ytelsen på den virkelige arbeidslasten. Og som vi så: for å gjøre det vanlige tilfellet raskt må du først vite nøyaktig hva som er vanlig, så testprogrammer spiller en avgjørende rolle i datamaskinarkitektur.</p>
-
-      <h3>SPEC CPU</h3>
-      <p><span class="term" data-term="spec">SPEC</span> (System Performance Evaluation Cooperative) er et samarbeid finansiert av en rekke datamaskinprodusenter for å lage standard testprogramsamlinger. Fra SPEC89 er samlingen utviklet gjennom fem generasjoner til SPEC CPU2017, med 10 heltallsprogrammer (SPECspeed 2017 Integer) og 13 flyttallsprogrammer. Heltallsprogrammene spenner fra en C-kompilator til et sjakkprogram; flyttallsprogrammene er blant annet elementmetode, molekyldynamikk og glissen lineær algebra.</p>
-
-      <div class="table-wrap">
-        <table>
-          <caption>Utdrag fra figur 1.18: SPECspeed 2017 Integer på en 1,8 GHz Intel Xeon E5-2650L. Kjøretid = instruksjonsantall × CPI × klokkeperiode; SPECratio = referansetid / kjøretid. Merk at CPI varierer med mer enn en faktor 4.</caption>
-          <thead><tr><th>Program</th><th>Beskrivelse</th><th>Instr. (mrd)</th><th>CPI</th><th>Klokkeperiode (ns)</th><th>Kjøretid (s)</th><th>Ref.tid (s)</th><th>SPECratio</th></tr></thead>
-          <tbody>
-            <tr><td>perlbench</td><td>Perl-tolk</td><td class="mono">2684</td><td class="mono">0,42</td><td class="mono">0,556</td><td class="mono">627</td><td class="mono">1774</td><td class="mono">2,83</td></tr>
-            <tr><td>gcc</td><td>GNU C-kompilator</td><td class="mono">2322</td><td class="mono">0,67</td><td class="mono">0,556</td><td class="mono">863</td><td class="mono">3976</td><td class="mono">4,61</td></tr>
-            <tr><td>mcf</td><td>Ruteplanlegging</td><td class="mono">1786</td><td class="mono">1,22</td><td class="mono">0,556</td><td class="mono">1215</td><td class="mono">4721</td><td class="mono">3,89</td></tr>
-            <tr><td>x264</td><td>Videokomprimering</td><td class="mono">4488</td><td class="mono">0,32</td><td class="mono">0,556</td><td class="mono">813</td><td class="mono">1763</td><td class="mono">2,17</td></tr>
-            <tr><td>deepsjeng</td><td>Sjakk (alfa–beta-søk)</td><td class="mono">2216</td><td class="mono">0,57</td><td class="mono">0,556</td><td class="mono">698</td><td class="mono">1432</td><td class="mono">2,05</td></tr>
-            <tr><td>xz</td><td>Datakomprimering</td><td class="mono">8533</td><td class="mono">1,32</td><td class="mono">0,556</td><td class="mono">6290</td><td class="mono">6182</td><td class="mono">0,98</td></tr>
-            <tr><td colspan="7"><em>Geometrisk middel (alle 10)</em></td><td class="mono">2,36</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p>For å forenkle markedsføringen rapporterer SPEC ett tall for alle 10 heltallsprogrammene. Kjøretiden normaliseres ved å dele referansemaskinens kjøretid på den målte; det gir <em>SPECratio</em>, som har fordelen at større tall betyr raskere. Samlemålet er det <span class="term" data-term="geometrisk-middel">geometriske middelet</span> av SPECratio-ene:</p>
-      \[ \sqrt[n]{\prod_{i=1}^{n} \text{Kjøretidsforhold}_i} \tag{15} \]
-      <p class="eq-note">Geometrisk middel gir samme relative svar uansett hvilken maskin som brukes som referanse; aritmetisk middel av normaliserte tider ville avhenge av referansemaskinen.</p>
-
-      <h3>SPECpower</h3>
-      <p>Med energiens økende betydning la SPEC til en effektmåling: serverens effektforbruk ved ulike lastnivåer i trinn på 10 %, over tid. Ytelsen måles i gjennomstrømning (forretningsoperasjoner per sekund, ssj_ops), og samlemålet er «overall ssj_ops per watt»:</p>
-      \[ \text{overall ssj\_ops per watt} = \left(\sum_{i=0}^{10} \text{ssj\_ops}_i\right) \Big/ \left(\sum_{i=0}^{10} \text{effekt}_i\right) \tag{16} \]
-      <p>Bokas figur 1.19 (dobbel Xeon Platinum 8276L) gir 12 385 ssj_ops per watt, og viser samtidig at serveren bruker 48 W ved 0 % last og 115 W ved 10 %, mot 347 W ved 100 %.</p>
+      <p class="dropcap">Din egen <span class="term" data-term="arbeidslast">arbeidslast</span> er det beste målet, men de fleste har ikke maskinen. <span class="term" data-term="benchmark">Testprogrammer</span> (benchmarks) er programmer valgt for å forutsi ytelsen på den virkelige arbeidslasten. De trengs også for å vite hva «det vanlige tilfellet» er.</p>
+      <p><span class="term" data-term="spec">SPEC</span> CPU2017 er standardsamlingen (10 heltalls- og 13 flyttallsprogrammer). Hvert program gir SPECratio = referansetid / målt tid (større er bedre), og samlemålet er det <span class="term" data-term="geometrisk-middel">geometriske middelet</span>, som gir samme rangering uansett referansemaskin:</p>
+      \[ \text{Samlemål} = \sqrt[n]{\prod_{i=1}^{n} \text{SPECratio}_i} \tag{11} \]
+      <p class="eq-note">SPECpower måler i tillegg gjennomstrømning per watt ved 0–100 % last. Poeng: CPI varierer med mer enn faktor 4 mellom SPEC-programmene på samme maskin, så én maskin har ikke ett CPI.</p>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Middels</div>
-        <div class="q-text">Maskin A har SPECratio 2 og 8 på to programmer, maskin B har 4 og 4. Regn aritmetisk og geometrisk middel for begge. Hvilket mål er rettferdig, og hvorfor?</div>
+        <div class="q-text">Maskin A har SPECratio 2 og 8 på to programmer, B har 4 og 4. Aritmetisk og geometrisk middel? Hvilket er rettferdig?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Aritmetisk: A = 5, B = 4. Geometrisk: A = \(\sqrt{16} = 4\), B = \(\sqrt{16} = 4\). Geometrisk middel sier de er like gode, og det holder uansett referansemaskin: normaliserer du mot A i stedet, blir forholdene 1/1 mot 2/0,5, fortsatt likt geometrisk, mens det aritmetiske middelet nå ville sagt B er best (1,25 mot 1). Derfor bruker SPEC geometrisk middel.</div>
+          <div class="answer">Aritmetisk: A = 5, B = 4. Geometrisk: begge \(\sqrt{16} = 4\). Normaliserer du mot A i stedet, sier aritmetisk plutselig at B er best; geometrisk sier fortsatt likt. Derfor bruker SPEC geometrisk middel.</div>
         </div>
       </div>
     </div>
@@ -815,47 +603,27 @@
       <div class="source-note">Boka · kap. 1.11 · s. 50–53</div>
       <span class="lm-pill">Læringsmål T1.3 og T1.4</span>
 
-      <p class="dropcap">Hvert kapittel i boka avslutter med feilslutninger (fallacies, vanlige misforståelser, som boka gir moteksempler til) og fallgruver (pitfalls, lettgjorte feil, ofte generaliseringer av prinsipper som bare gjelder i en begrenset sammenheng). Amdahl-fallgruven har vi allerede sett. Her er resten fra kapittel 1.</p>
-
-      <h3>Feilslutning: datamaskiner med lav utnyttelse bruker lite effekt</h3>
-      <p>Servere kjører sjelden for fullt: Googles datasentre er stort sett på 10–50 % last, og på 100 % under 1 % av tiden. Selv den beste spesialkonfigurerte maskinen i SPECpower i 2020 bruker 33 % av toppeffekten ved 10 % last, og vanlige maskiner er verre. Barroso og Hölzle (2007) argumenterer derfor for <span class="term" data-term="energiproporsjonal">energiproporsjonal databehandling</span>: en server på 10 % last bør bruke 10 % av toppeffekten.</p>
-
-      <h3>Feilslutning: design for ytelse og design for energieffektivitet er urelaterte mål</h3>
-      <p>Energi er effekt over tid, så optimaliseringer som sparer <em>tid</em> sparer ofte energi totalt, selv om de bruker litt mer energi mens de er i bruk: resten av maskinen trekker strøm så lenge programmet kjører.</p>
-
-      <h3>Fallgruve: å bruke en delmengde av ytelseslikningen som ytelsesmål</h3>
-      <p>Vi har advart mot å spå ytelse fra bare én av klokkefrekvens, instruksjonsantall eller CPI. En annen vanlig feil er å bruke <em>to</em> av de tre. Nesten alle foreslåtte alternativer til tid som mål har ført til misvisende påstander. Ett alternativ er <span class="term" data-term="mips">MIPS</span>, millioner instruksjoner per sekund:</p>
-      \[ \text{MIPS} = \frac{\text{Instruksjonsantall}}{\text{Kjøretid} \times 10^6} = \frac{\text{Instruksjonsantall}}{\dfrac{\text{Instruksjonsantall} \times \text{CPI}}{\text{Klokkefrekvens}} \times 10^6} = \frac{\text{Klokkefrekvens}}{\text{CPI} \times 10^6} \tag{17} \]
-      <p>MIPS er lett å forstå, og raskere maskiner gir høyere MIPS, som stemmer med intuisjonen. Men det er tre problemer: (1) MIPS oppgir instruksjonsraten uten å ta hensyn til hva instruksjonene gjør, så maskiner med ulikt instruksjonssett kan ikke sammenliknes. (2) MIPS varierer mellom programmer på samme maskin (CPI varierte med en faktor 4 i figur 1.18), så en maskin har ikke <em>én</em> MIPS-verdi. (3) Viktigst: hvis et program utfører flere instruksjoner, men hver er raskere, kan MIPS gå opp mens ytelsen går ned.</p>
+      <p class="dropcap">Å bruke en delmengde av ytelseslikningen som ytelsesmål er bokas største fallgruve. Klassikeren er <span class="term" data-term="mips">MIPS</span>, millioner instruksjoner per sekund:</p>
+      \[ \text{MIPS} = \frac{\text{IC}}{\text{Kjøretid} \times 10^6} = \frac{\text{Klokkefrekvens}}{\text{CPI} \times 10^6} \tag{12} \]
+      <p>Tre problemer: (1) sier ikke hva instruksjonene gjør, så ulike ISA-er kan ikke sammenliknes; (2) varierer mellom programmer på samme maskin; (3) kan gå <em>opp</em> mens ytelsen går <em>ned</em>, hvis et program bruker flere, men raskere instruksjoner. To feilslutninger til fra boka: lavt utnyttede maskiner bruker <em>ikke</em> lite effekt (en server på 10 % last bruker gjerne 33 % av toppeffekten; idealet er <span class="term" data-term="energiproporsjonal">energiproporsjonal</span> databehandling), og ytelse og energieffektivitet er <em>ikke</em> urelaterte mål (spart tid er ofte spart energi).</p>
 
       <div class="oppgave" data-quiz id="oppg-cy-1-11-mips">
         <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§1.11 · s. 53</span></div>
         <div class="o-text">
-          <p>Se på følgende ytelsesmålinger for et program:</p>
-          <div class="table-wrap"><table><thead><tr><th>Måling</th><th>Datamaskin A</th><th>Datamaskin B</th></tr></thead><tbody><tr><td>Instruksjonsantall</td><td class="mono">10 milliarder</td><td class="mono">8 milliarder</td></tr><tr><td>Klokkefrekvens</td><td class="mono">4 GHz</td><td class="mono">4 GHz</td></tr><tr><td>CPI</td><td class="mono">1,0</td><td class="mono">1,1</td></tr></tbody></table></div>
-          <p>a. Hvilken datamaskin har høyest MIPS? b. Hvilken er raskest?</p>
+          <p>Datamaskin A: 10 milliarder instruksjoner, 4 GHz, CPI 1,0. Datamaskin B: 8 milliarder instruksjoner, 4 GHz, CPI 1,1. a. Hvilken har høyest MIPS? b. Hvilken er raskest?</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>a. Datamaskin A har høyest MIPS (\(4000/1{,}0 = 4000\) mot \(4000/1{,}1 = 3636\)). b. Datamaskin B er raskest: \(10 \cdot 10^9 \times 1{,}0 / 4 \cdot 10^9 = 2{,}5\) s mot \(8 \cdot 10^9 \times 1{,}1 / 4 \cdot 10^9 = 2{,}2\) s. Færre instruksjoner slår lavere CPI, og MIPS ser det ikke.</p>
+            <p>a. A (\(4000/1{,}0 = 4000\) mot \(4000/1{,}1 = 3636\)). b. B: \(8 \cdot 1{,}1 / 4 = 2{,}2\) s mot \(10 \cdot 1{,}0 / 4 = 2{,}5\) s. Færre instruksjoner slår lavere CPI, og MIPS ser det ikke.</p>
           </div>
         </div>
       </div>
 
       <div class="callout">
         <span class="label">Big Picture · boka s. 54</span>
-        <p>Kjøretid er det eneste gyldige og uangripelige målet på ytelse. Mange andre mål er foreslått og funnet mangelfulle: noen speiler ikke kjøretid fra starten av, andre er gode i en begrenset sammenheng og så strukket utenfor den.</p>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Sjekk forståelsen · Vanskelig</div>
-        <div class="q-text">En selger sier: «Vår maskin har 30 % høyere MIPS og 20 % høyere klokkefrekvens enn konkurrenten». Hva kan du slutte om kjøretiden for et gitt program?</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">Ingenting sikkert. MIPS = klokkefrekvens / (CPI · 10⁶), så 30 % høyere MIPS med 20 % høyere klokke betyr at CPI er \(1{,}2/1{,}3 = 0{,}92\) av konkurrentens, for det programmet MIPS ble målt på. Men er instruksjonssettet et annet, kan instruksjonsantallet for ditt program være høyere, og da vet du ikke om tiden blir kortere. Bare kjøretiden for programmet ditt (eller en representativ testprogramsamling) svarer.</div>
-        </div>
+        <p>Kjøretid er det eneste gyldige og uangripelige målet på ytelse.</p>
       </div>
     </div>
   </section>
@@ -869,20 +637,19 @@
       <div class="recap-grid">
         <div class="recap-pill"><strong>To mål</strong>Kjøretid (responstid) for én bruker; gjennomstrømning for datasentre. Ytelse = 1/kjøretid; «n ganger så rask» = forhold mellom kjøretider.</div>
         <div class="recap-pill"><strong>Tid</strong>Veggklokketid inkluderer alt; CPU-tid = bruker + system. Klokkefrekvens = 1/klokkeperiode.</div>
-        <div class="recap-pill"><strong>Iron Law</strong>CPU-tid = instruksjonsantall × CPI × klokkeperiode. Sykler = Σ CPIᵢ·Cᵢ. Bare produktet er pålitelig.</div>
-        <div class="recap-pill"><strong>Hvem påvirker hva</strong>Algoritme, språk, kompilator: antall og CPI. ISA: alle tre. Implementasjon: CPI og klokke.</div>
-        <div class="recap-pill"><strong>Effekt</strong>P ∝ ½·C·V²·f. Spenning ned 15 % per generasjon holdt effekten nede; lekkasje stopper videre senking. Effektmuren.</div>
-        <div class="recap-pill"><strong>Flere kjerner</strong>Fra 2006: flere prosessorer per brikke i stedet for høyere klokke. Programmereren må parallellisere: oppdeling, balanse, synkronisering, kommunikasjon.</div>
+        <div class="recap-pill"><strong>Iron Law</strong>CPU-tid = IC × CPI × klokkeperiode. Sykler = Σ CPIᵢ·Cᵢ. Bare produktet er pålitelig.</div>
+        <div class="recap-pill"><strong>Hvem påvirker hva</strong>Algoritme, språk, kompilator: IC og CPI. ISA: alle tre. Implementasjon: CPI og klokke.</div>
+        <div class="recap-pill"><strong>Effekt</strong>P ∝ ½·C·V²·f. Spenning ned 15 % per generasjon holdt effekten nede; lekkasje stopper videre senking.</div>
+        <div class="recap-pill"><strong>Flere kjerner</strong>Fra 2006: flere kjerner i stedet for høyere klokke. Programmereren må parallellisere: oppdeling, balanse, synkronisering, kommunikasjon.</div>
         <div class="recap-pill"><strong>Amdahl</strong>T_etter = T_påvirket / faktor + T_upåvirket; speedup = 1/((1−P) + P/N), tak 1/(1−P).</div>
-        <div class="recap-pill"><strong>Testprogrammer</strong>Arbeidslast, SPEC CPU2017, SPECratio = ref/målt, geometrisk middel, SPECpower.</div>
-        <div class="recap-pill"><strong>MIPS</strong>= klokke/(CPI·10⁶). Ikke sammenliknbart på tvers av ISA, varierer per program, kan øke mens ytelsen faller.</div>
+        <div class="recap-pill"><strong>Testprogrammer og MIPS</strong>SPEC, SPECratio = ref/målt, geometrisk middel. MIPS = klokke/(CPI·10⁶) er ikke et ytelsesmål.</div>
       </div>
 
       <h3>Test deg selv</h3>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Spørsmål 1 · Lett</div>
-        <div class="q-text">Et program utfører 5 milliarder instruksjoner med CPI 1,25 på en 2,5 GHz-maskin. Hva er CPU-tiden?</div>
+        <div class="q-text">Et program utfører 5 milliarder instruksjoner med CPI 1,25 på en 2,5 GHz-maskin. CPU-tid?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">\(5 \cdot 10^9 \times 1{,}25 / 2{,}5 \cdot 10^9 = 2{,}5\) sekunder.</div>
@@ -891,37 +658,19 @@
 
       <div class="quiz" data-quiz>
         <div class="q-label">Spørsmål 2 · Middels</div>
-        <div class="q-text">En ny kompilator reduserer instruksjonsantallet 20 %, men den nye koden bruker flere load/store og CPI øker 10 %. Samtidig gir en ny prosessor 15 % høyere klokke. Hvor mye raskere blir programmet totalt?</div>
+        <div class="q-text">Ny kompilator: 20 % færre instruksjoner, men CPI opp 10 %. Ny prosessor: 15 % høyere klokke. Hvor mye raskere totalt?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Tid × \(0{,}8 \times 1{,}1 / 1{,}15 = 0{,}765\). Programmet blir \(1/0{,}765 = 1{,}31\) ganger så raskt. Alle tre faktorene må med.</div>
+          <div class="answer">Tid × \(0{,}8 \times 1{,}1 / 1{,}15 = 0{,}765\), altså \(1{,}31\) ganger så raskt.</div>
         </div>
       </div>
 
       <div class="quiz" data-quiz>
-        <div class="q-label">Spørsmål 3 · Middels</div>
-        <div class="q-text">Hvorfor vil en 15 % senking av spenningen alene senke dynamisk effekt med omtrent 28 %, og hvorfor kan vi ikke bare fortsette å senke spenningen?</div>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">16 kjerner, 95 % parallell andel. Speedup? Hvor mange kjerner for 15×?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Effekten er proporsjonal med \(V^2\): \(0{,}85^2 = 0{,}72\), altså 28 % lavere. Lavere spenning gjør transistorene lekk, og lekkasjestrømmen (statisk effekt) er allerede rundt 40 % i servere; til slutt spiser lekkasjen opp gevinsten, og kretsen blir upålitelig.</div>
-        </div>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Spørsmål 4 · Vanskelig</div>
-        <div class="q-text">Du har 16 kjerner og et program med 95 % parallell andel. Hvor stor speedup får du, og hvor mange kjerner må du ha for å komme til 15×? Hva forteller det deg?</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">\(1/(0{,}05 + 0{,}95/16) = 1/0{,}1094 = 9{,}1\times\). For 15×: \(0{,}05 + 0{,}95/N = 1/15 = 0{,}0667 \Rightarrow 0{,}95/N = 0{,}0167 \Rightarrow N = 57\). Taket er \(1/0{,}05 = 20\times\). De siste 5 % sekvensiell kode bestemmer alt: fra 16 til 57 kjerner gir bare fra 9,1× til 15×. Bruk widgeten i avsnitt 06.</div>
-        </div>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Spørsmål 5 · Middels</div>
-        <div class="q-text">Forklar hvorfor selvstudiets P3 (høyest klokke) var tregest, og hva det har med testprogramsamlinger å gjøre.</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">Tid per instruksjon = CPI × klokkeperiode: P3 hadde 4 GHz men CPI 2,2, altså 0,55 ns per instruksjon, mot P2 med 2,5 GHz og CPI 1,0, 0,40 ns. Klokken er lett å reklamere med, CPI må måles på programmer. Er testprogrammene urepresentative, blir CPI-tallene og dermed rangeringen feil; derfor trenger vi gode testprogramsamlinger.</div>
+          <div class="answer">\(1/(0{,}05 + 0{,}95/16) = 9{,}1\times\). For 15×: \(0{,}95/N = 1/15 - 0{,}05 = 0{,}0167 \Rightarrow N = 57\). Taket er 20×. De 5 % sekvensielle bestemmer alt.</div>
         </div>
       </div>
 
@@ -975,44 +724,7 @@
     draw();
   })();
 
-  /* ─── Widget 2: instruksjonsmiks ─── */
-  (function () {
-    var root = document.getElementById('w-miks'); if (!root) return;
-    var rows = root.querySelectorAll('#mix-body tr'), fIn = document.getElementById('mix-f'), out = document.getElementById('mix-out');
-    function metric(name, val, formula) { return '<div class="metric"><div class="m-name">' + name + '</div><div class="m-val">' + val + '</div><div class="m-formula">' + formula + '</div></div>'; }
-    function draw() {
-      var totalN = 0, totalC = 0, parts = [];
-      rows.forEach(function (tr) {
-        var cpi = Math.max(0, +tr.querySelector('[data-k=cpi]').value || 0), n = Math.max(0, +tr.querySelector('[data-k=n]').value || 0);
-        var c = cpi * n; tr.querySelector('[data-k=cyc]').textContent = nb(c, 3);
-        totalN += n; totalC += c; parts.push(nb(cpi, 2) + '·' + nb(n, 2));
-      });
-      var f = Math.max(0, +fIn.value || 0), t = f > 0 ? totalC * 1e6 / (f * 1e9) : NaN;
-      out.innerHTML = metric('Instruksjoner', nb(totalN, 3) + ' mill.', 'Σ Cᵢ') +
-        metric('Klokkesykler', nb(totalC, 3) + ' mill.', parts.join(' + ')) +
-        metric('CPI', totalN > 0 ? nb(totalC / totalN, 3) : '–', 'sykler / instruksjoner') +
-        metric('CPU-tid', isFinite(t) ? nb(t * 1e3, 4) + ' ms' : '–', 'sykler / ' + nb(f, 2) + ' GHz');
-    }
-    root.querySelectorAll('input').forEach(function (el) { el.addEventListener('input', draw); });
-    draw();
-  })();
-
-  /* ─── Widget 3: dynamisk effekt ─── */
-  (function () {
-    var root = document.getElementById('w-effekt'); if (!root) return;
-    var c = document.getElementById('pw-c'), v = document.getElementById('pw-v'), f = document.getElementById('pw-f'), out = document.getElementById('pw-out');
-    function draw() {
-      var C = +c.value, V = +v.value, F = +f.value, r = C * V * V * F;
-      document.getElementById('pw-c-val').textContent = C.toFixed(2); document.getElementById('pw-v-val').textContent = V.toFixed(2); document.getElementById('pw-f-val').textContent = F.toFixed(2);
-      out.innerHTML = 'Effekt_ny / Effekt_gammel = ' + C.toFixed(2) + ' × ' + V.toFixed(2) + '² × ' + F.toFixed(2) + ' = ' + C.toFixed(2) + ' × ' + (V * V).toFixed(3) + ' × ' + F.toFixed(2) + ' = <span class="hl">' + f3(r) + '</span>\n' +
-        (r < 1 ? 'Den nye bruker ' + Math.round((1 - r) * 100) + ' % mindre dynamisk effekt.' : r > 1 ? 'Den nye bruker ' + Math.round((r - 1) * 100) + ' % mer dynamisk effekt.' : 'Uendret.') +
-        '\nSpenningen alene: ' + (V * V).toFixed(3) + ' (kvadratisk). Frekvens og last: lineært.';
-    }
-    [c, v, f].forEach(function (el) { el.addEventListener('input', draw); });
-    draw();
-  })();
-
-  /* ─── Widget 4: Amdahl ─── */
+  /* ─── Widget 2: Amdahl ─── */
   (function () {
     var root = document.getElementById('w-amdahl'); if (!root) return;
     var svg = root.querySelector('svg'), pIn = document.getElementById('am-p'), nIn = document.getElementById('am-n'), out = document.getElementById('am-out');

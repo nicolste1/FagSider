@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Instruksjoner og formater — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  /* Instruksjonsformat-visning */
+  .fmt { display: grid; gap: 3px; margin: 0.8rem 0; font-family: var(--mono); font-size: 0.8rem; }
+  .fmt .f { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 6px 4px; text-align: center; overflow: hidden; }
+  .fmt .f .fn { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); display: block; }
+  .fmt .f .fb { font-size: 0.66rem; color: var(--ink-ghost); display: block; }
+  .fmt .f.op { background: var(--accent-soft); }
+  .fmt .f.imm { background: var(--warm-soft); }
+  .fmt .f.reg { background: rgba(61,107,58,0.10); }
+  .fmt .f .fv { display: block; font-size: 0.85rem; color: var(--ink); margin-top: 2px; letter-spacing: 0.04em; }
+  .fmt-r { grid-template-columns: 7fr 5fr 5fr 3fr 5fr 7fr; }
+  .fmt-i { grid-template-columns: 12fr 5fr 3fr 5fr 7fr; }
+  .fmt-s { grid-template-columns: 7fr 5fr 5fr 3fr 5fr 7fr; }
+  .asm { font-family: var(--mono); font-size: 0.88rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+  .asm .lbl { color: var(--warm); }
+  .asm .cur { background: rgba(27,94,90,0.16); display: inline-block; width: 100%; }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .w-ctl input[type=text] { width: 120px; }
+  .regs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.8rem; }
+  .regs .r { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 4px 8px; }
+  .regs .r b { color: var(--accent); font-weight: 600; }
+  .mem { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.78rem; }
+  .mem .m { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 4px 7px; text-align: center; }
+  .mem .m .a { display: block; color: var(--ink-ghost); font-size: 0.66rem; }
+  .mem .m.on { border-color: var(--warm); background: var(--warm-soft); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Instruksjonssett">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2A · Læringsmål T2.1 · Boka kap. 2.1–2.3, 2.5, 2.7 · Kompendiet kap. 2 · ~55 min</div>
+      <h1>Instruksjoner, operander og <em>formater</em></h1>
+      <p class="lede">Datamaskinens språk, ord for ord: de tre designprinsippene som forklarer hvorfor RISC-V ser ut som det gjør, registre og minne som operander, hvordan hver instruksjon er 32 bit delt i felt, og hvordan betingede hopp gjør if-setninger og løkker til maskinkode. Med koder og dekoder du kan prøve selv.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#prinsipper"><span>01</span> Operasjoner og prinsipper</a>
+        <a href="#operander"><span>02</span> Operander</a>
+        <a href="#formater"><span>03</span> Formater og maskinkode</a>
+        <a href="#beslutninger"><span>04</span> Beslutninger og løkker</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Læringsutbyttebeskrivelsen T2.1 (26. aug. 2026) · nevnte eksamensoppgaver: oppgave 1 i Kont 26, Ord. 25, Kont 25, Ord. 24, Kont 24 · eksamensanalyse for faget er ikke laget ennå</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Assembly ↔ maskinkode:</strong> kod og dekod R-, I- og S-instruksjoner felt for felt (opcode, funct3, funct7, rd, rs1, rs2, immediate); hex ↔ binært (oppgave 2.12, 2.13; oppgave 1 på nesten hver eksamen).</li>
+          <li><span class="tag regn">Regn</span><strong>C ↔ assembly:</strong> tilordninger, tabellindeks × 4, if/else og while med bne/beq (oppgave 2.1–2.4).</li>
+          <li><span class="tag">Forklar</span>De tre designprinsippene med begrunnelse; hvorfor 32 registre; hvorfor S-immediaten er delt; byteadressering; hva x0 er til; hvordan hopp bruker at instruksjoner ligger på adresser.</li>
+          <li><span class="tag">Lavere</span>RV64, MIPS/ARM-sammenlikninger og hopptabeller er nevnt kort. Bokas «Check Yourself» om språk og registertall er tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 PRINSIPPER ─────────────────────────── -->
+  <section id="prinsipper">
+    <div class="container">
+      <div class="section-badge">01 · Operasjoner og designprinsipper</div>
+      <h2>Tre operander, <em>alltid</em></h2>
+      <div class="source-note">Boka · kap. 2.1–2.2 · s. 68–72 · Kompendiet · kap. 2 «Hva er et instruksjonssett?», «Designprinsipper»</div>
+      <span class="lm-pill">Læringsmål T2.1</span>
+      <ul class="lm-list">
+        <li>Studenten kjenner til de tre designprinsippene for instruksjonssettdesign og deres motivasjon.</li>
+        <li>Studenten kan oversette fra et høynivåspråk til assemblyinstruksjoner (og omvendt).</li>
+      </ul>
+
+      <p class="dropcap">For å kommandere maskinvaren må du snakke dens språk. Ordene er <em>instruksjoner</em>, vokabularet er <span class="term" data-term="instruksjonssett">instruksjonssettet</span>. Boka bruker <span class="term" data-term="risc-v">RISC-V</span> og innfører det ovenfra og ned: først en notasjon som likner et begrenset programmeringsspråk, så steg for steg ned til de faktiske bitene. Målet designerne deler, formulert av Burks, Goldstine og von Neumann allerede i 1946, er et språk som gjør det lett å bygge maskinvaren og kompilatoren, med høy ytelse og lav kostnad og energi: «enkelhet i utstyret».</p>
+
+      <p>Hver datamaskin må kunne regne. RISC-V-notasjonen <code>add a, b, c</code> ber maskinen legge sammen b og c og legge summen i a. Notasjonen er stiv: hver aritmetisk instruksjon gjør nøyaktig én operasjon og har alltid nøyaktig tre variabler. Skal summen av fire variabler i a, trengs tre instruksjoner:</p>
+<div class="asm">add a, a, c    <span class="c">// summen av b og c legges i a</span>
+add a, a, d    <span class="c">// summen av b, c og d er nå i a</span>
+add a, a, e    <span class="c">// summen av b, c, d og e er nå i a</span></div>
+      <p>Ordene etter <code>//</code> er kommentarer for mennesker; maskinen ignorerer dem. Hver linje kan inneholde høyst én instruksjon.</p>
+
+      <div class="def-box">
+        <span class="def-label">Designprinsipp 1</span>
+        <div class="def-term">Enkelhet favoriserer regularitet</div>
+        <p>Det naturlige antallet operander for addisjon er tre: to tall og et sted å legge summen. <span class="term" data-term="designprinsipp-1">Å kreve nøyaktig tre operander</span>, aldri flere eller færre, holder maskinvaren enkel: maskinvare for et variabelt antall operander er mer komplisert enn for et fast antall.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-to-tilordninger">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.2 · s. 71</span></div>
+        <div class="o-text"><p>Et C-program inneholder de fem variablene a, b, c, d og e:</p><pre><code>a = b + c;
+d = a − e;</code></pre><p>Vis RISC-V-koden en kompilator lager.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>En RISC-V-instruksjon opererer på to kildeoperander og legger resultatet i én destinasjonsoperand, så de to setningene kompileres direkte til to instruksjoner:</p>
+<pre><code>add a, b, c
+sub d, a, e</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-sammensatt">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.2 · s. 72</span></div>
+        <div class="o-text"><p>En litt mer sammensatt setning med variablene f, g, h, i og j: <code>f = (g + h) − (i + j);</code> Hva kan en C-kompilator produsere?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Setningen må brytes opp i flere instruksjoner, siden hver RISC-V-instruksjon gjør én operasjon. Kompilatoren lager temporære variabler for delsummene:</p>
+<pre><code>add t0, g, h   // temporær variabel t0 inneholder g + h
+add t1, i, j   // temporær variabel t1 inneholder i + j
+sub f, t0, t1  // f får t0 − t1, som er (g + h) − (i + j)</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-1">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.1 · s. 178</span></div>
+        <div class="o-text"><p>Skriv RISC-V-assemblykoden for C-setningen <code>f = g + (h − 5);</code>. Anta at f, g og h allerede ligger i registrene x5, x6 og x7. Bruk færrest mulig instruksjoner.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+<pre><code>addi x5, x7, -5   // x5 = h − 5   (addi med negativ konstant; det finnes ingen subi)
+add  x5, x6, x5   // f = g + (h − 5)</code></pre>
+            <p>To instruksjoner. Konstanten 5 ligger i instruksjonen (immediate, avsnitt 02), så vi slipper å laste den fra minnet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-2">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.2 · s. 178</span></div>
+        <div class="o-text"><p>Skriv én C-setning som tilsvarer de to RISC-V-instruksjonene:</p><pre><code>add f, g, h
+add f, i, f</code></pre></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p><code>f = g + h + i;</code> Første instruksjon legger g + h i f, den andre legger i til f. Rekkefølgen i C-uttrykket spiller ingen rolle for resultatet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hvorfor har ikke RISC-V en instruksjon som legger sammen fire tall på én gang, når det ville spart to instruksjoner?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Designprinsipp 1: maskinvare for et variabelt antall operander er mer komplisert, og komplisert maskinvare gir lengre klokkeperiode for <em>alle</em> instruksjoner. Tre operander er det naturlige for én operasjon, og regulariteten gjør både maskinvaren (kapittel 3–5) og kompilatoren enklere. Ytelseslikningen: flere instruksjoner, men kortere klokkeperiode.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 OPERANDER ─────────────────────────── -->
+  <section id="operander">
+    <div class="container">
+      <div class="section-badge">02 · Operander</div>
+      <h2>Registre, minne og <em>konstanter</em></h2>
+      <div class="source-note">Boka · kap. 2.3 · s. 73–79 · Kompendiet · kap. 2 «Minnetilgang og adressering», «Eksempel 1–2»</div>
+      <span class="lm-pill">Læringsmål T2.1</span>
+
+      <p class="dropcap">I motsetning til høynivåspråk er operandene til aritmetiske instruksjoner begrenset: de må komme fra et lite antall spesielle lagre bygget direkte i maskinvaren, <span class="term" data-term="register">registrene</span>. Et RISC-V-register er 32 bit, og grupper på 32 bit er så vanlige at de har fått navnet <span class="term" data-term="ord">ord</span> (word). Det er 32 registre, og grunnen ligger i det andre designprinsippet.</p>
+
+      <div class="def-box">
+        <span class="def-label">Designprinsipp 2</span>
+        <div class="def-term">Mindre er raskere</div>
+        <p><span class="term" data-term="designprinsipp-2">Svært mange registre</span> kan øke klokkeperioden, rett og slett fordi elektriske signaler bruker lengre tid når de må reise lenger. Slike retningslinjer er ikke absolutte (31 registre er ikke nødvendigvis raskere enn 32), men designeren må balansere programmenes ønske om flere registre mot ønsket om kort klokkesyklus. En annen grunn er antall bit et registerfelt tar i instruksjonsformatet (avsnitt 03).</p>
+      </div>
+      <p>Registrene heter x0 til x31. Det er kompilatorens jobb å knytte programvariabler til registre.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-registre">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.3 · s. 73–74</span></div>
+        <div class="o-text"><p>Variablene f, g, h, i og j i <code>f = (g + h) − (i + j);</code> er tilordnet registrene x19, x20, x21, x22 og x23. Hva er den kompilerte RISC-V-koden?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>add x5, x20, x21   // register x5 inneholder g + h
+add x6, x22, x23   // register x6 inneholder i + j
+sub x19, x5, x6    // f får x5 − x6, som er (g + h) − (i + j)</code></pre>
+            <p>De temporære variablene ble registrene x5 og x6.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Minneoperander: load og store</h3>
+      <p>Programmer har også tabeller og strukturer med langt flere elementer enn det finnes registre. Prosessoren kan holde lite i registre, men minnet inneholder milliarder av dataelementer, så datastrukturer ligger i minnet. Fordi RISC-V bare regner på registre, må det finnes <span class="term" data-term="dataoverforing">dataoverføringsinstruksjoner</span> som flytter data mellom minne og registre. Minnet er én stor endimensjonal tabell, og <span class="term" data-term="adresse">adressen</span> er indeksen, fra 0. Instruksjonen som kopierer fra minne til register heter <em>load</em>, i RISC-V <code>lw</code> (load word); den motsatte heter <em>store</em>, <code>sw</code> (store word). Formatet er operasjon, register, og så et register pluss en konstant som til sammen gir adressen:</p>
+<div class="asm">lw x9, 8(x22)     <span class="c">// x9 = Minne[x22 + 8]</span>
+sw x9, 48(x22)    <span class="c">// Minne[x22 + 48] = x9</span></div>
+      <p>Registeret som brukes til å danne adressen (x22) kalles <span class="term" data-term="basisregister">basisregisteret</span>, konstanten (8) forskyvningen (offset).</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-lw">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.3 · s. 75</span></div>
+        <div class="o-text"><p>A er en tabell med 100 ord, g og h ligger i x20 og x21, og startadressen (basisadressen) til A ligger i x22. Kompiler <code>g = h + A[8];</code></p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Én operand ligger i minnet, så A[8] må først overføres til et register. Adressen er basisen i x22 pluss tallet som velger element 8 (foreløpig forenklet):</p>
+<pre><code>lw x9, 8(x22)      // temporært register x9 får A[8]
+add x20, x21, x9   // g = h + A[8]</code></pre>
+            <p>Boka gjør «en liten justering» av denne instruksjonen straks: se byteadressering under.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="label">Byteadressering: gang indeksen med 4</span>
+        <p>Nesten alle arkitekturer adresserer enkeltbyte, siden 8-bits byte er nyttige i mange programmer. Adressen til et ord er adressen til én av dets fire byte, og adresser til påfølgende ord skiller derfor med <strong>4</strong>: det tredje ordet i minnet har byteadresse 8, ikke 2. For å treffe A[8] må forskyvningen være 8 × 4 = 32, ellers laster du A[2]. (<span class="term" data-term="byteadressering">Byteadressering</span> er også grunnen til at DRAM kommer i GiB, ikke GB.) RISC-V er <em>little-endian</em>: byten med lavest adresse er den «lille enden» av ordet. Det betyr bare noe hvis du leser samme data både som ord og som fire byte.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-lw-sw">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.3 · s. 77</span></div>
+        <div class="o-text"><p>h ligger i x21 og basisadressen til A i x22. Hva er RISC-V-koden for <code>A[12] = h + A[8];</code>?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>lw x9, 32(x22)     // temporært register x9 får A[8]   (32 = 8 × 4)
+add x9, x21, x9    // x9 får h + A[8]
+sw x9, 48(x22)     // lagrer h + A[8] tilbake i A[12]  (48 = 12 × 4)</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-rtype">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 2 · «Eksempel 1: Bruk av R-type instruksjoner»</span></div>
+        <div class="o-text"><p>Gitt instruksjonene <code>add x5, x1, x2</code> og <code>sub x6, x3, x4</code>. Beskriv hva de gjør.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+            <p>add legger sammen verdiene i x1 og x2 og lagrer resultatet i x5. sub trekker verdien i x4 fra x3, og resultatet legges i x6.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-itype">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 2 · «Eksempel 2: Minnetilgang med I-type instruksjoner»</span></div>
+        <div class="o-text"><p>Variabelen y ligger i minnet på adressen i x10. Hent den inn i et register og legg til konstanten 4.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+<pre><code>lw x5, 0(x10)     // laster verdien fra minneadressen i x10 inn i x5
+addi x5, x5, 4    // legger til 4 til verdien i x5</code></pre>
+            <p>lw laster y inn i x5, og addi legger 4 til. Kompendiet kaller RISC-V en <em>load/store-arkitektur</em>: all datamanipulering skjer i registre, verdier fra minnet må lastes først.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Maskinvare/programvare-grensesnitt · registre mot minne</span>
+        <p>Mange programmer har flere variabler enn maskinen har registre. Kompilatoren holder de mest brukte i registre og legger resten i minnet, med load og store for å flytte dem: <span class="term" data-term="spilling">registerspilling</span>. Data i registre er både raskere å nå (0,25 ns mot 50 ns for DRAM i 2020, 200 ganger) og mye billigere i energi (0,1 mot 1000 pJ, 10 000 ganger), og de er mer nyttige: en aritmetisk instruksjon leser to registre, regner og skriver resultatet, mens en dataoverføring bare leser eller skriver én operand uten å regne. Derfor må en ISA ha nok registre, og kompilatoren må bruke dem godt. Forskjellene er grunnen til hurtigbuffere (T6).</p>
+      </div>
+
+      <h3>Konstanter: immediate-operander</h3>
+      <p>Programmer bruker ofte en konstant, for eksempel for å øke en indeks. Med bare instruksjonene over måtte konstanten lastes fra minnet: <code>lw x9, AddrConstant4(x3)</code> og så <code>add x22, x22, x9</code>. Alternativet er versjoner av de aritmetiske instruksjonene der én operand er en konstant, en <span class="term" data-term="immediate">immediate</span>: <code>addi x22, x22, 4</code>. Mer enn halvparten av aritmetiske instruksjoner i SPEC CPU2006 har en konstant som operand, og addi er den mest populære instruksjonen i de fleste RISC-V-programmer. Konstanter inne i instruksjonen er raskere og bruker mindre energi: gjør det vanlige tilfellet raskt.</p>
+      <p>Konstanten null har en egen rolle: den forenkler instruksjonssettet ved å gi nyttige varianter. <span class="term" data-term="x0">Register x0</span> er hardkoblet til 0, så <code>sub x5, x0, x6</code> negerer x6, og <code>addi x9, x0, 123</code> laster en konstant.</p>
+
+      <div class="oppgave" data-quiz id="oppg-2-3">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.3 · s. 178</span></div>
+        <div class="o-text"><p>Skriv RISC-V-koden for <code>B[8] = A[i−j];</code>. Variablene f, g, h, i og j er tilordnet x5, x6, x7, x28 og x29, og basisadressene til tabellene A og B ligger i x10 og x11.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · 4-byte ord</span>
+<pre><code>sub  x30, x28, x29    // x30 = i − j
+slli x30, x30, 2      // x30 = (i − j) × 4   (byteforskyvning)
+add  x30, x10, x30    // x30 = &amp;A[i − j]
+lw   x30, 0(x30)      // x30 = A[i − j]
+sw   x30, 32(x11)     // B[8] = A[i − j]     (32 = 8 × 4)</code></pre>
+            <p>Fem instruksjoner. Indeksen er variabel, så den må ganges med 4 med et venstreskift (2B) og legges til basisen; B[8] har fast indeks og kan bruke forskyvningen direkte.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-4">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.4 · s. 178</span></div>
+        <div class="o-text"><p>Hva er C-setningen som tilsvarer RISC-V-koden under? Samme registertilordning som i 2.3.</p>
+<pre><code>slli x30, x5, 3     // x30 = f*8
+add  x30, x10, x30  // x30 = &amp;A[f]
+slli x31, x6, 3     // x31 = g*8
+add  x31, x11, x31  // x31 = &amp;B[g]
+lw   x5, 0(x30)     // f = A[f]
+addi x12, x30, 8
+lw   x30, 0(x12)
+add  x30, x30, x5
+lw   x30, 0(x31)</code></pre></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Oppgaven regner med 8-byte elementer (skift med 3, forskyvning 8). Kommentarene til de fire siste: <code>addi x12, x30, 8</code> gir x12 = &amp;A[f+1]; <code>lw x30, 0(x12)</code> gir x30 = A[f+1]; <code>add x30, x30, x5</code> gir x30 = A[f+1] + A[f] (der x5 nå er A[f]). Siste linje <code>lw x30, 0(x31)</code> laster B[g] inn i x30 og <em>overskriver</em> summen: slik koden står, blir bare f = A[f] og B[g] lest, og summen forkastes.</p>
+            <p>Mest sannsynlig er siste linje en trykkfeil for <code>sw x30, 0(x31)</code>; da er C-koden <code>f = A[f]; B[g] = A[f] + A[f+1];</code> (bokas selvstudium «The Anticompiler» nederst på siden er samme oppgave med sw og gir nettopp <code>B[g] = A[f] + A[f+1]</code>). Slik boka faktisk skriver den er svaret <code>f = A[f];</code> pluss en lesing av B[g] uten virkning.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva er galt med <code>lw x9, 8(x22)</code> for å hente A[8], og hva er riktig instruksjon når A er en tabell av ord?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Forskyvningen er i byte, og hvert ord er 4 byte, så 8(x22) henter A[2]. Riktig er <code>lw x9, 32(x22)</code>. Det er bokas fallgruve på s. 172: å glemme byteadresseringen.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 FORMATER ─────────────────────────── -->
+  <section id="formater">
+    <div class="container">
+      <div class="section-badge">03 · Formater og maskinkode</div>
+      <h2>32 bit delt i <em>felt</em></h2>
+      <div class="source-note">Boka · kap. 2.5 · s. 87–94 · Kompendiet · kap. 2 «RISC-V instruksjonsformat»</div>
+      <span class="lm-pill">Læringsmål T2.1</span>
+      <ul class="lm-list">
+        <li>Studenten kan oversette fra assemblyinstruksjoner til maskinkode (og omvendt).</li>
+        <li>Studenten kjenner til instruksjonsformatene i RISC-V og kan forklare hvorfor de er definert slik de er.</li>
+      </ul>
+
+      <p class="dropcap">Nå til forskjellen på hvordan mennesker instruerer datamaskiner og hvordan maskinen ser instruksjonene. Instruksjoner lagres som høye og lave signaler og kan skrives som tall. Hver del av en instruksjon er et eget tall, og tallene side om side utgjør instruksjonen. Registrene refereres bare med nummer, 0 til 31. <code>add x9, x20, x21</code> er, i desimal, feltene 0 · 21 · 20 · 0 · 9 · 51, og i binært:</p>
+
+      <div class="fmt fmt-r">
+        <div class="f op"><span class="fn">funct7</span><span class="fv">0000000</span><span class="fb">7 bit</span></div>
+        <div class="f reg"><span class="fn">rs2</span><span class="fv">10101</span><span class="fb">5 bit · x21</span></div>
+        <div class="f reg"><span class="fn">rs1</span><span class="fv">10100</span><span class="fb">5 bit · x20</span></div>
+        <div class="f op"><span class="fn">funct3</span><span class="fv">000</span><span class="fb">3 bit</span></div>
+        <div class="f reg"><span class="fn">rd</span><span class="fv">01001</span><span class="fb">5 bit · x9</span></div>
+        <div class="f op"><span class="fn">opcode</span><span class="fv">0110011</span><span class="fb">7 bit · 51</span></div>
+      </div>
+      <p>Denne inndelingen kalles <span class="term" data-term="instruksjonsformat">instruksjonsformatet</span>. Teller du bitene, blir det nøyaktig 32, ett ord: i tråd med prinsipp 1 er alle RISC-V-instruksjoner 32 bit lange. Den numeriske versjonen kalles maskinspråk, og en sekvens av slike <span class="term" data-term="maskinkode">maskinkode</span>. Feltene har navn: <span class="term" data-term="opcode">opcode</span> er grunnoperasjonen (og formatet), funct3 og funct7 er tilleggsopcoder, <span class="term" data-term="registerfelt">rd</span> er destinasjonsregisteret, rs1 og rs2 første og andre kilderegister. Feltene med 0, 0 og 51 sier til sammen «addisjon».</p>
+
+      <h3>Heksadesimalt</h3>
+      <p>Lange bitstrenger er slitsomme, så vi bruker et høyere grunntall som lett oversettes til binært. Siden nesten alle datastørrelser er multipler av 4, er <span class="term" data-term="heksadesimal">heksadesimale</span> tall (grunntall 16) populære: hvert heksadesimale siffer tilsvarer nøyaktig fire binære. C og Java skriver 0xnnnn. Figur 2.4 i boka er tabellen 0 = 0000, 1 = 0001, …, 9 = 1001, a = 1010, b = 1011, c = 1100, d = 1101, e = 1110, f = 1111. Mer om grunntall i 2B.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-hex">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.5 · s. 89</span></div>
+        <div class="o-text"><p>Konverter det 8-sifrede heksadesimale tallet eca8 6420<sub>hex</sub> og det 32-bits binære tallet 0001 0011 0101 0111 1001 1011 1101 1111<sub>to</sub> til det andre grunntallet.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Ren tabelloppslag: eca8 6420<sub>hex</sub> = 1110 1100 1010 1000 0110 0100 0010 0000<sub>to</sub>. Og motsatt: 0001 0011 0101 0111 1001 1011 1101 1111<sub>to</sub> = 1357 9bdf<sub>hex</sub>.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Når feltene er for små: I- og S-format</h3>
+      <p>Et problem oppstår når en instruksjon trenger lengre felt. Load må angi to registre og en konstant; med et 5-bits felt ville største konstant vært 31, altfor lite til å velge elementer i tabeller. Vi har en konflikt mellom ønsket om at alle instruksjoner skal være like lange og ønsket om ett eneste format.</p>
+
+      <div class="def-box">
+        <span class="def-label">Designprinsipp 3</span>
+        <div class="def-term">God design krever gode kompromisser</div>
+        <p>RISC-V-designernes kompromiss: alle instruksjoner er like lange, men det finnes <span class="term" data-term="designprinsipp-3">ulike formater</span> for ulike slags instruksjoner. Formatet over er R-type (register). I-type brukes av aritmetikk med én konstant (addi) og av load; S-type av store.</p>
+      </div>
+
+      <div class="fmt fmt-i">
+        <div class="f imm"><span class="fn">immediate</span><span class="fv">12 bit</span><span class="fb">tokomplement, −2048…2047</span></div>
+        <div class="f reg"><span class="fn">rs1</span><span class="fv">5 bit</span><span class="fb">basis</span></div>
+        <div class="f op"><span class="fn">funct3</span><span class="fv">3 bit</span><span class="fb"></span></div>
+        <div class="f reg"><span class="fn">rd</span><span class="fv">5 bit</span><span class="fb">mål</span></div>
+        <div class="f op"><span class="fn">opcode</span><span class="fv">7 bit</span><span class="fb">I-type</span></div>
+      </div>
+      <div class="fmt fmt-s">
+        <div class="f imm"><span class="fn">imm[11:5]</span><span class="fv">7 bit</span><span class="fb">øvre del</span></div>
+        <div class="f reg"><span class="fn">rs2</span><span class="fv">5 bit</span><span class="fb">data</span></div>
+        <div class="f reg"><span class="fn">rs1</span><span class="fv">5 bit</span><span class="fb">basis</span></div>
+        <div class="f op"><span class="fn">funct3</span><span class="fv">3 bit</span><span class="fb"></span></div>
+        <div class="f imm"><span class="fn">imm[4:0]</span><span class="fv">5 bit</span><span class="fb">nedre del</span></div>
+        <div class="f op"><span class="fn">opcode</span><span class="fv">7 bit</span><span class="fb">S-type</span></div>
+      </div>
+      <p>Den 12-bits immediaten i I-format tolkes som tokomplement, altså −2<sup>11</sup> til 2<sup>11</sup> − 1. For load er den en byteforskyvning, så lw når ±2048 byte (±512 ord) fra basisregisteret. Vi ser også at flere enn 32 registre ville vært vanskelig: rd og rs1 måtte hatt et bit til hver, og alt skulle fortsatt passe i ett ord. I S-format er immediaten <em>delt</em> i to felt, de nedre 5 og de øvre 7 bitene. Designerne valgte det for å holde rs1 og rs2 på samme plass i alle formater (figur 4.14.5 viser hvordan det forenkler maskinvaren). Opcode og funct3 er også alltid like store og på samme plass. Formatene skilles på opcode: hvert format har sitt sett av opcode-verdier, så maskinvaren vet hvordan resten skal tolkes.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Etter figur 2.5/2.18 i boka: koding av RISC-V-instruksjonene på denne siden. «reg» er et registernummer 0–31, «adresse» en 12-bits konstant. funct3 og funct7 er tilleggsopcoder.</caption>
+          <thead><tr><th>Instruksjon</th><th>Format</th><th>opcode</th><th>funct3</th><th>funct7</th><th>Felt</th></tr></thead>
+          <tbody>
+            <tr><td>add</td><td class="mono">R</td><td class="mono">51 · 0110011</td><td class="mono">0</td><td class="mono">0</td><td class="mono">rd, rs1, rs2</td></tr>
+            <tr><td>sub</td><td class="mono">R</td><td class="mono">51 · 0110011</td><td class="mono">0</td><td class="mono">32 · 0100000</td><td class="mono">rd, rs1, rs2</td></tr>
+            <tr><td>and · or · xor</td><td class="mono">R</td><td class="mono">51 · 0110011</td><td class="mono">7 · 6 · 4</td><td class="mono">0</td><td class="mono">rd, rs1, rs2</td></tr>
+            <tr><td>sll · srl · sra</td><td class="mono">R</td><td class="mono">51 · 0110011</td><td class="mono">1 · 5 · 5</td><td class="mono">0 · 0 · 32</td><td class="mono">rd, rs1, rs2</td></tr>
+            <tr><td>addi</td><td class="mono">I</td><td class="mono">19 · 0010011</td><td class="mono">0</td><td class="mono">–</td><td class="mono">rd, rs1, immediate</td></tr>
+            <tr><td>andi · ori · xori</td><td class="mono">I</td><td class="mono">19 · 0010011</td><td class="mono">7 · 6 · 4</td><td class="mono">–</td><td class="mono">rd, rs1, immediate</td></tr>
+            <tr><td>slli · srli · srai</td><td class="mono">I</td><td class="mono">19 · 0010011</td><td class="mono">1 · 5 · 5</td><td class="mono">0 · 0 · 32 (funct6/7)</td><td class="mono">rd, rs1, skift (5 bit)</td></tr>
+            <tr><td>lw · lh · lb · lhu · lbu</td><td class="mono">I</td><td class="mono">3 · 0000011</td><td class="mono">2 · 1 · 0 · 5 · 4</td><td class="mono">–</td><td class="mono">rd, rs1, adresse</td></tr>
+            <tr><td>jalr</td><td class="mono">I</td><td class="mono">103 · 1100111</td><td class="mono">0</td><td class="mono">–</td><td class="mono">rd, rs1, adresse</td></tr>
+            <tr><td>sw · sh · sb</td><td class="mono">S</td><td class="mono">35 · 0100011</td><td class="mono">2 · 1 · 0</td><td class="mono">–</td><td class="mono">rs1, rs2, adresse</td></tr>
+            <tr><td>beq · bne · blt · bge · bltu · bgeu</td><td class="mono">SB</td><td class="mono">99 · 1100011</td><td class="mono">0 · 1 · 4 · 5 · 6 · 7</td><td class="mono">–</td><td class="mono">rs1, rs2, adresse</td></tr>
+            <tr><td>lui</td><td class="mono">U</td><td class="mono">55 · 0110111</td><td class="mono">–</td><td class="mono">–</td><td class="mono">rd, 20-bits konstant</td></tr>
+            <tr><td>jal</td><td class="mono">UJ</td><td class="mono">111 · 1101111</td><td class="mono">–</td><td class="mono">–</td><td class="mono">rd, 20-bits adresse</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-maskinkode">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.5 · s. 91–92</span></div>
+        <div class="o-text"><p>x10 har basisen til tabellen A og x21 er h. Setningen <code>A[30] = h + A[30] + 1;</code> kompileres til</p>
+<pre><code>lw   x9, 120(x10)   // x9 får A[30]
+add  x9, x21, x9    // x9 får h + A[30]
+addi x9, x9, 1      // x9 får h + A[30] + 1
+sw   x9, 120(x10)   // lagrer h + A[30] + 1 tilbake i A[30]</code></pre><p>Hva er maskinkoden for disse instruksjonene?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Først i desimal, fra tabellen over. lw: opcode 3, funct3 2, rs1 = 10, rd = 9, immediate 120 (= 30 × 4). add: opcode 51, funct3 0, funct7 0, rd = 9, rs1 = 21, rs2 = 9. addi: opcode 19, funct3 0, rd = 9, rs1 = 9, immediate 1. sw: opcode 35, funct3 2, rs2 = 9, rs1 = 10, forskyvning 120 delt i to: 120 / 2<sup>5</sup> gir kvotient 3 (imm[11:5]) og rest 24 (imm[4:0]).</p>
+<pre><code>immediate    rs1   f3  rd    opcode
+000001111000 01010 010 01001 0000011     lw   x9, 120(x10)   = 0x07852483
+funct7  rs2   rs1   f3  rd    opcode
+0000000 01001 10101 000 01001 0110011    add  x9, x21, x9    = 0x009a84b3
+immediate    rs1   f3  rd    opcode
+000000000001 01001 000 01001 0010011     addi x9, x9, 1      = 0x00148493
+imm[11:5] rs2 rs1   f3  imm[4:0] opcode
+0000011 01001 01010 010 11000 0100011    sw   x9, 120(x10)   = 0x06952c23</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-enc">
+        <div class="widget-label">Prøv selv · Fra assembly til maskinkode (R-, I- og S-format)</div>
+        <p class="widget-intro">Velg instruksjon og fyll inn registre og konstant; widgeten setter feltene sammen til 32 bit og heksadesimalt. Forhåndsutfylt med <code>add x9, x20, x21</code> fra boka. Prøv <code>sw x5, 32(x30)</code> (oppgave 2.13).</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="en-op">instr.</label>
+            <select id="en-op">
+              <option value="add">add</option><option value="sub">sub</option><option value="and">and</option><option value="or">or</option><option value="xor">xor</option><option value="sll">sll</option><option value="srl">srl</option><option value="sra">sra</option>
+              <option value="addi">addi</option><option value="andi">andi</option><option value="ori">ori</option><option value="xori">xori</option><option value="slli">slli</option><option value="srli">srli</option><option value="srai">srai</option>
+              <option value="lw">lw</option><option value="lh">lh</option><option value="lb">lb</option><option value="lhu">lhu</option><option value="lbu">lbu</option><option value="jalr">jalr</option>
+              <option value="sw">sw</option><option value="sh">sh</option><option value="sb">sb</option>
+            </select>
+          </div>
+          <div class="w-ctl"><label for="en-a">rd / rs2 (x)</label><input type="number" id="en-a" min="0" max="31" value="9"></div>
+          <div class="w-ctl"><label for="en-b">rs1 (x)</label><input type="number" id="en-b" min="0" max="31" value="20"></div>
+          <div class="w-ctl"><label for="en-c">rs2 (x) / imm</label><input type="number" id="en-c" min="-2048" max="2047" value="21"></div>
+        </div>
+        <div class="fmt" id="en-fields"></div>
+        <div class="w-out" id="en-out"></div>
+      </div>
+
+      <div class="widget" id="w-dec">
+        <div class="widget-label">Prøv selv · Fra maskinkode til assembly</div>
+        <p class="widget-intro">Skriv inn 32 bit som heksadesimalt (0x…) eller binært, så finner widgeten opcode, format og felt. Forhåndsutfylt med bokas eksempel 0x00578833; prøv 0x025f2023 og binærtallet i oppgave 2.12.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="de-in">kode</label><input type="text" id="de-in" value="0x00578833" style="width:300px"></div>
+        </div>
+        <div class="fmt" id="de-fields"></div>
+        <div class="w-out" id="de-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-2-5">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§2.5 · s. 95</span></div>
+        <div class="o-text"><p>Hvilken RISC-V-instruksjon er dette? Feltene er funct7 = 32, rs2 = 9, rs1 = 10, funct3 = 000, rd = 11, opcode = 51. 1. <code>sub x9, x10, x11</code> 2. <code>add x11, x9, x10</code> 3. <code>sub x11, x10, x9</code> 4. <code>sub x11, x9, x10</code>. Og: hvis en person er 40 år, hva er alderen heksadesimalt?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>3) <code>sub x11, x10, x9</code> (opcode 51 med funct7 = 32 er sub; rd = 11, rs1 = 10, rs2 = 9). 40<sub>ti</sub> = 28<sub>hex</sub> (2 · 16 + 8).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-12">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.12 · s. 180</span></div>
+        <div class="o-text"><p>Oppgi instruksjonstype og assemblyinstruksjon for den binære verdien 0000 0000 0001 0000 1000 0000 1011 0011<sub>to</sub>.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>De 7 laveste bitene er opcode 0110011 = 51: R-type. Feltene: funct7 = 0000000, rs2 = 00001 (x1), rs1 = 00001 (x1), funct3 = 000, rd = 00001 (x1). funct3 = 0 og funct7 = 0 med opcode 51 er add: <code>add x1, x1, x1</code> (dobler x1). Heksadesimalt 0x001080b3.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-13">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.13 · s. 180</span></div>
+        <div class="o-text"><p>Oppgi instruksjonstype og heksadesimal representasjon av <code>sw x5, 32(x30)</code>.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>S-type. opcode = 0100011 (35), funct3 = 010 (sw), rs1 = 30 = 11110, rs2 = 5 = 00101. Forskyvningen 32 = 0000001 00000<sub>to</sub> deles: imm[11:5] = 0000001, imm[4:0] = 00000.</p>
+<pre><code>0000001 00101 11110 010 00000 0100011  =  0000 0010 0101 1111 0010 0000 0010 0011  =  0x025f2023</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Big Picture · boka s. 94</span>
+        <p>Dagens datamaskiner bygger på to nøkkelprinsipper: 1. Instruksjoner representeres som tall. 2. Programmer lagres i minnet og kan leses og skrives, akkurat som data. Sammen gir de prinsippet om lagrede program. Minnet kan inneholde kildekoden til et redigeringsprogram, den kompilerte maskinkoden, teksten programmet redigerer og kompilatoren som lagde koden. En følge: programmer sendes som filer av binære tall, og datamaskiner kan arve ferdig programvare bare de er kompatible med et eksisterende instruksjonssett. Slik binær kompatibilitet får bransjen til å samle seg om få ISA-er.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-ss-tall">
+        <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">2.25 · s. 175</span></div>
+        <div class="o-text"><p>Instruksjoner som tall. Gitt binærtallet 00000001010010110010100000100011<sub>to</sub>: hva er det heksadesimalt? Som usignert tall, hva er det desimalt? Endres verdien om det tolkes som signert? Hvilken assemblyinstruksjon representerer det?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Heksadesimalt 014B2823<sub>hex</sub>, desimalt 21 702 691. Siden første bit er 0, er verdien den samme signert og usignert. Assembly: <code>sw x20, 16(x22)</code>, med feltene imm[11:5] = 0000000, rs2 = 10100 (x20), rs1 = 10110 (x22), funct3 = 010, imm[4:0] = 10000 (16), opcode = 0100011.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor er immediate-feltet i S-format delt i to, når det bare gjør assemblerens jobb vanskeligere?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">For at rs1 og rs2 skal stå på nøyaktig samme plass som i R-format (og rs1 som i I-format). Da kan maskinvaren lese registerfeltene uten først å vite hvilket format instruksjonen har, noe som forenkler datastien (T3). Designprinsipp 3: et kompromiss som flytter litt arbeid fra maskinvaren til assembleren, som bare kjører én gang.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 BESLUTNINGER ─────────────────────────── -->
+  <section id="beslutninger">
+    <div class="container">
+      <div class="section-badge">04 · Beslutninger og løkker</div>
+      <h2>Betingede hopp gjør maskinen til <em>en datamaskin</em></h2>
+      <div class="source-note">Boka · kap. 2.7 · s. 98–103 · Kompendiet · kap. 2 «Kontrollflyt»</div>
+      <span class="lm-pill">Læringsmål T2.1</span>
+      <ul class="lm-list">
+        <li>Studenten forstår hvordan instruksjoner lagres i minnet og hvordan dette utnyttes til å implementere kontrollflyt.</li>
+      </ul>
+
+      <p class="dropcap">Det som skiller en datamaskin fra en kalkulator er evnen til å ta beslutninger: ulike instruksjoner utføres avhengig av inndata og verdier underveis. I programmeringsspråk er det if-setningen, noen ganger med goto og etiketter. RISC-V har to <span class="term" data-term="betinget-hopp">betingede hopp</span> som likner en if med goto:</p>
+<div class="asm">beq rs1, rs2, L1    <span class="c">// gå til setningen merket L1 hvis rs1 == rs2  (branch if equal)</span>
+bne rs1, rs2, L1    <span class="c">// gå til L1 hvis rs1 != rs2                  (branch if not equal)</span></div>
+      <p>Fordi instruksjonene ligger på adresser i minnet (lagret program), er et hopp bare «sett neste instruksjonsadresse til L1». Assembleren regner ut adressene til etikettene, akkurat som den regner dataadresser for load og store (2C).</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-if">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.7 · s. 99</span></div>
+        <div class="o-text"><p>f, g, h, i og j tilsvarer x19–x23. Hva er den kompilerte koden for <code>if (i == j) f = g + h; else f = g − h;</code>?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Det virker naturlig å hoppe hvis i og j er like (beq), men koden blir mer effektiv om vi tester den <em>motsatte</em> betingelsen for å hoppe over then-delen:</p>
+<pre><code>      bne x22, x23, Else    // gå til Else hvis i ≠ j
+      add x19, x20, x21     // f = g + h (hoppes over hvis i ≠ j)
+      beq x0, x0, Exit      // hvis 0 == 0, gå til Exit  (ubetinget hopp)
+Else: sub x19, x20, x21     // f = g − h (hoppes over hvis i = j)
+Exit:</code></pre>
+            <p>Eksempelet innfører det <span class="term" data-term="ubetinget-hopp">ubetingede hoppet</span>: prosessoren tar det alltid. Én måte å skrive det på er et betinget hopp som alltid er sant. Kompilatorer lager ofte hopp og etiketter som ikke finnes i kildekoden; å slippe å skrive dem er en av fordelene med høynivåspråk.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Løkker</h3>
+      <p>Beslutninger brukes både til å velge mellom alternativer (if) og til å gjenta en beregning (løkker). Samme instruksjoner bygger begge.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-while">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.7 · s. 100–101</span></div>
+        <div class="o-text"><p>En tradisjonell løkke i C: <code>while (save[i] == k) i += 1;</code> i og k ligger i x22 og x24, basisen til tabellen save i x25. Hva er RISC-V-koden?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Først må save[i] lastes inn i et temporært register, og før det må adressen dannes: i må ganges med 4 på grunn av byteadressering. Venstreskift med 2 bit ganger med 2<sup>2</sup> = 4:</p>
+<pre><code>Loop: slli x10, x22, 2      // temporært register x10 = i × 4
+      add  x10, x10, x25    // x10 = adressen til save[i]
+      lw   x9, 0(x10)       // temporært register x9 = save[i]
+      bne  x9, x24, Exit    // gå til Exit hvis save[i] ≠ k
+      addi x22, x22, 1      // i = i + 1
+      beq  x0, x0, Loop     // gå til Loop
+Exit:</code></pre>
+            <p>Sekvenser som ender i et hopp er så grunnleggende at de har et eget navn: en <span class="term" data-term="grunnblokk">grunnblokk</span> er instruksjoner uten hopp (unntatt eventuelt til slutt) og uten hoppmål (unntatt eventuelt først). Å dele programmet i grunnblokker er en av de første fasene i kompilering.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-loop">
+        <div class="widget-label">Prøv selv · Kjør while-løkka instruksjon for instruksjon</div>
+        <p class="widget-intro">Bokas løkke lagt på adresse 80000 (som i eksempelet i 2C). Sett innholdet i save[] og k, og klikk «Ett steg» for å se PC, registrene og minnet endre seg. Legg merke til at PC bare øker med 4, unntatt når et hopp tas.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="lp-save">save[]</label><input type="text" id="lp-save" value="7, 7, 7, 3, 7" style="width:160px"></div>
+          <div class="w-ctl"><label for="lp-k">k</label><input type="number" id="lp-k" value="7"></div>
+          <button class="w-btn" id="lp-step" type="button">Ett steg</button>
+          <button class="w-btn" id="lp-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="lp-reset" type="button">Nullstill</button>
+        </div>
+        <div class="asm" id="lp-code"></div>
+        <div class="regs" id="lp-regs"></div>
+        <div class="mem" id="lp-mem"></div>
+        <div class="w-out" id="lp-out"></div>
+      </div>
+
+      <h3>Flere sammenlikninger, og signert mot usignert</h3>
+      <p>Lik/ulik er den vanligste testen, men vi trenger også mindre enn, mindre eller lik, større enn, større eller lik. Sammenlikning av bitmønstre må dessuten skille signerte og usignerte tall: et mønster med 1 i mest signifikante bit er et negativt tall (mindre enn alle positive) som signert, men et stort tall som usignert. RISC-V har begge: <code>blt</code> (branch if less than) og <code>bge</code> (greater or equal) for tokomplement, <code>bltu</code> og <code>bgeu</code> for usignert. Alternativene i andre ISA-er: MIPS setter et register etter sammenlikningen og hopper på det med beq/bne (enklere datasti, flere instruksjoner); ARM holder <span class="term" data-term="tilstandskoder">tilstandskoder</span> (flagg) som sier om resultatet ble negativt, null eller overflyt, og hoppene tester flaggene. Ulempen med flagg er at instruksjoner som alltid setter dem, skaper avhengigheter som er vonde for samlebåndet (T5).</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-grenser">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.7 · s. 102</span></div>
+        <div class="o-text"><p>Snarvei for grensesjekk: bruk usignert sammenlikning til å redusere en indeks-utenfor-grensene-sjekk. Hopp til IndexOutOfBounds hvis x20 ≥ x11 eller hvis x20 er negativ.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>bgeu x20, x11, IndexOutOfBounds   // hvis x20 >= x11 eller x20 &lt; 0, gå til IndexOutOfBounds</code></pre>
+            <p>Negative tokomplementtall ser ut som store usignerte tall, så én usignert sammenlikning x &lt; y sjekker både at x ikke er negativ og at x er mindre enn y: 0 ≤ x &lt; y i én instruksjon.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Case/switch og hopptabeller</h3>
+      <p>En switch kan gjøres til en kjede av if-then-else. Noen ganger er det mer effektivt med en <span class="term" data-term="hopptabell">hopptabell</span>: en tabell av adresser til alternative instruksjonssekvenser; programmet indekserer tabellen, laster adressen inn i et register og hopper dit. For det trenger vi et <em>indirekte hopp</em>, et ubetinget hopp til adressen i et register: i RISC-V <span class="term" data-term="jalr">jalr</span>, som også brukes til retur fra prosedyrer (2C).</p>
+
+      <div class="callout">
+        <span class="label">Maskinvare/programvare-grensesnitt</span>
+        <p>C og Java har mange setninger for beslutninger og løkker, men grunnsteinen som implementerer dem på instruksjonsnivå er det betingede hoppet.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-2-7">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§2.7 · s. 103</span></div>
+        <div class="o-text">
+          <p>I. C har mange setninger for beslutninger og løkker, RISC-V få. Hvilke av disse forklarer ubalansen, og hvorfor? 1. Flere beslutningssetninger gjør koden lettere å lese og forstå. 2. Færre beslutningssetninger forenkler oppgaven til laget under som utfører dem. 3. Flere beslutningssetninger betyr færre kodelinjer, som vanligvis reduserer kodetiden. 4. Flere beslutningssetninger betyr færre kodelinjer, som vanligvis gir færre utførte operasjoner.</p>
+          <p>II. Hvorfor har C to sett operatorer for AND (&amp; og &amp;&amp;) og OR (| og ||), mens RISC-V ikke har det? 1. Logiske operasjoner AND og OR implementerer &amp; og |, mens betingede hopp implementerer &amp;&amp; og ||. 2. Motsatt. 3. De er redundante og arvet fra språket B.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>I. Alle fire er sanne. II. 1): &amp; og | er bitvise logiske operasjoner (and, or), mens &amp;&amp; og || er kortslutningslogikk som kompileres til betingede hopp.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-ss-raskere-while">
+        <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">2.25 · s. 176</span></div>
+        <div class="o-text"><p>Raskere while. Anta at løkka i eksempelet over typisk kjører 10 ganger. Gjør den raskere ved å utføre i snitt én hoppinstruksjon per runde i stedet for både ett ubetinget og ett betinget hopp.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Trikset er å invertere det betingede hoppet og la det hoppe til toppen av løkka, i stedet for å hoppe over det ubetingede hoppet nederst. For å bevare while-semantikken må koden først sjekke betingelsen før den øker i:</p>
+<pre><code>      slli x10, x22, 2      // x10 = i × 4
+      add  x10, x10, x25    // x10 = adressen til save[i]
+      lw   x9, 0(x10)       // x9 = save[i]
+      bne  x9, x24, Exit    // gå til Exit hvis save[i] ≠ k
+Loop: addi x22, x22, 1      // i = i + 1
+      slli x10, x22, 2      // x10 = i × 4
+      add  x10, x10, x25    // x10 = adressen til save[i]
+      lw   x9, 0(x10)       // x9 = save[i]
+      beq  x9, x24, Loop    // gå til Loop hvis save[i] = k
+Exit:</code></pre>
+            <p>Én hoppinstruksjon per runde: 5 instruksjoner per runde i stedet for 6, på bekostning av tre ekstra instruksjoner totalt (mer kode, færre utførte).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-ss-antikompilator">
+        <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">2.25 · s. 176</span></div>
+        <div class="o-text"><p>Antikompilatoren. En bit assembly med kommentarer på de fem første instruksjonene:</p>
+<pre><code>slli x5, x18, 2     # x5 = f * 4
+add  x5, x23, x5    # x5 = &amp;A[f]
+slli x6, x19, 2     # x6 = g * 4
+add  x6, x24, x6    # x6 = &amp;B[g]
+lw   x18, 0(x5)     # f = A[f]
+addi x7, x5, 4      #
+lw   x5, 0(x7)      #
+add  x5, x5, x18    #
+sw   x5, 0(x6)      #</code></pre><p>f, g, h, i, j ligger i x18–x22 (bokas $s0–$s4), basisadressene til A og B i x23 og x24. Fullfør kommentarene til de fire siste instruksjonene, og vis C-koden som kan ha blitt kompilert til dem.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>addi x7, x5, 4      # x7 = x5 + 4  =>  x7 peker på A[f+1]
+lw   x5, 0(x7)      # x5 = A[f+1]
+add  x5, x5, x18    # x5 = x5 + f  =>  x5 er nå A[f] + A[f+1]
+sw   x5, 0(x6)      # lagre resultatet i B[g]</code></pre>
+            <p>C-setningen: <code>B[g] = A[f] + A[f+1];</code> (med f = A[f] underveis).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Kompilatoren oversetter <code>if (a &lt; b)</code> til <code>bge x5, x6, Skip</code>. Hvorfor «ge» når testen er «less than»? Og når må den bruke bgeu i stedet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Kompilatoren hopper <em>over</em> then-delen når betingelsen er usann, altså på den motsatte testen: ikke (a &lt; b) er a ≥ b, derfor bge. Er a og b deklarert unsigned i C, må sammenlikningen være usignert (bgeu), ellers ville f.eks. 0x80000000 blitt tolket som negativt og mindre enn 1.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Tre prinsipper</strong>Enkelhet favoriserer regularitet · mindre er raskere · god design krever gode kompromisser.</div>
+        <div class="recap-pill"><strong>Operander</strong>32 registre à 32 bit; alt fra minnet må lastes (lw) og lagres (sw) med basis + forskyvning; konstanter i instruksjonen (addi); x0 = 0.</div>
+        <div class="recap-pill"><strong>Byteadressering</strong>Ord ligger 4 byte fra hverandre: A[i] er på basis + 4i. Little-endian.</div>
+        <div class="recap-pill"><strong>Formater</strong>R: funct7 rs2 rs1 funct3 rd opcode. I: imm12 rs1 funct3 rd opcode. S: imm[11:5] rs2 rs1 funct3 imm[4:0] opcode. Alltid 32 bit; opcode sier formatet.</div>
+        <div class="recap-pill"><strong>Hex</strong>Fire bit per siffer. 0x… i C. Oversett med tabellen.</div>
+        <div class="recap-pill"><strong>Hopp</strong>beq/bne/blt/bge (+u) sammenlikner registre og hopper til en etikett. Ubetinget: beq x0, x0 / jal x0. if → hopp på motsatt betingelse; løkke → hopp tilbake.</div>
+        <div class="recap-pill"><strong>Lagret program</strong>Instruksjoner er tall i minnet; kontrollflyt = å endre neste instruksjonsadresse.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Oversett <code>x = y − z + 7;</code> til RISC-V når x, y, z ligger i x5, x6, x7.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><code>sub x5, x6, x7</code> og <code>addi x5, x5, 7</code>. To instruksjoner; konstanten er en immediate.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Kod <code>addi x9, x0, 123</code> som 32 bit og heksadesimalt.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I-type: immediate 123 = 000001111011, rs1 = 00000, funct3 = 000, rd = 01001, opcode = 0010011. Sammen: 000001111011 00000 000 01001 0010011 = 0x07b00493. Sjekk i koderen.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hva gjør denne koden, og hva er C-ekvivalenten? <code>Loop: beq x6, x0, Done / addi x6, x6, -1 / addi x5, x5, 2 / beq x0, x0, Loop / Done:</code></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Teller x6 ned til 0 og legger 2 til x5 for hver runde: <code>while (i != 0) { i = i − 1; acc = acc + 2; }</code> med acc = x5, i = x6. Starter x6 på 10 og x5 på 0, ender x5 på 20. (Bokas oppgave 2.24.)</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Forklar med designprinsippene hvorfor RISC-V (a) har fast instruksjonslengde, (b) bare 32 registre og (c) likevel flere formater.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(a) Prinsipp 1: fast lengde og fast antall operander gir regulær, enkel maskinvare for henting og dekoding. (b) Prinsipp 2: flere registre gir lengre signalveier og lengre klokkeperiode, og flere bit per registerfelt i formatet. (c) Prinsipp 3: fast lengde og ett format lar seg ikke forene med 12-bits konstanter, så kompromisset er få formater som holder feltene på samme plass.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 2: oversikt</div></a>
+        <a href="tall.html" class="next"><div class="pn-label">Neste · 2B</div><div class="pn-title">Heltall og logiske operasjoner →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  /* Kodetabell (RV32I) */
+  var OPS = {
+    add: { t: 'R', op: 51, f3: 0, f7: 0 }, sub: { t: 'R', op: 51, f3: 0, f7: 32 }, and: { t: 'R', op: 51, f3: 7, f7: 0 }, or: { t: 'R', op: 51, f3: 6, f7: 0 }, xor: { t: 'R', op: 51, f3: 4, f7: 0 },
+    sll: { t: 'R', op: 51, f3: 1, f7: 0 }, srl: { t: 'R', op: 51, f3: 5, f7: 0 }, sra: { t: 'R', op: 51, f3: 5, f7: 32 },
+    addi: { t: 'I', op: 19, f3: 0 }, andi: { t: 'I', op: 19, f3: 7 }, ori: { t: 'I', op: 19, f3: 6 }, xori: { t: 'I', op: 19, f3: 4 },
+    slli: { t: 'I', op: 19, f3: 1, f7: 0, sh: 1 }, srli: { t: 'I', op: 19, f3: 5, f7: 0, sh: 1 }, srai: { t: 'I', op: 19, f3: 5, f7: 32, sh: 1 },
+    lw: { t: 'I', op: 3, f3: 2, ld: 1 }, lh: { t: 'I', op: 3, f3: 1, ld: 1 }, lb: { t: 'I', op: 3, f3: 0, ld: 1 }, lhu: { t: 'I', op: 3, f3: 5, ld: 1 }, lbu: { t: 'I', op: 3, f3: 4, ld: 1 }, jalr: { t: 'I', op: 103, f3: 0, ld: 1 },
+    sw: { t: 'S', op: 35, f3: 2 }, sh: { t: 'S', op: 35, f3: 1 }, sb: { t: 'S', op: 35, f3: 0 }
+  };
+  function bits(v, n) { v = v >>> 0; var s = v.toString(2); while (s.length < n) s = '0' + s; return s.slice(-n); }
+  function hex32(v) { var s = (v >>> 0).toString(16); while (s.length < 8) s = '0' + s; return '0x' + s; }
+  function field(cls, name, val, sub) { return '<div class="f ' + cls + '"><span class="fn">' + name + '</span><span class="fv">' + val + '</span><span class="fb">' + (sub || '') + '</span></div>'; }
+  function sext(v, n) { v = v & ((1 << n) - 1); return v >= (1 << (n - 1)) ? v - (1 << n) : v; }
+
+  /* ─── Widget 1: koder ─── */
+  (function () {
+    var root = document.getElementById('w-enc'); if (!root) return;
+    var opIn = document.getElementById('en-op'), aIn = document.getElementById('en-a'), bIn = document.getElementById('en-b'), cIn = document.getElementById('en-c');
+    var fields = document.getElementById('en-fields'), out = document.getElementById('en-out');
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, Math.round(+v || 0))); }
+    function draw() {
+      var name = opIn.value, o = OPS[name];
+      var a = clamp(aIn.value, 0, 31), b = clamp(bIn.value, 0, 31), c = +cIn.value || 0;
+      var word, asm, html;
+      if (o.t === 'R') {
+        c = clamp(c, 0, 31);
+        word = (o.f7 << 25) | (c << 20) | (b << 15) | (o.f3 << 12) | (a << 7) | o.op;
+        asm = name + ' x' + a + ', x' + b + ', x' + c;
+        fields.className = 'fmt fmt-r';
+        html = field('op', 'funct7', bits(o.f7, 7), o.f7) + field('reg', 'rs2', bits(c, 5), 'x' + c) + field('reg', 'rs1', bits(b, 5), 'x' + b) + field('op', 'funct3', bits(o.f3, 3), o.f3) + field('reg', 'rd', bits(a, 5), 'x' + a) + field('op', 'opcode', bits(o.op, 7), o.op);
+      } else if (o.t === 'I') {
+        var imm;
+        if (o.sh) { c = clamp(c, 0, 31); imm = (o.f7 << 5) | c; }
+        else { c = clamp(c, -2048, 2047); imm = c & 0xfff; }
+        word = (imm << 20) | (b << 15) | (o.f3 << 12) | (a << 7) | o.op;
+        asm = o.ld ? name + ' x' + a + ', ' + c + '(x' + b + ')' : name + ' x' + a + ', x' + b + ', ' + c;
+        fields.className = 'fmt fmt-i';
+        html = field('imm', o.sh ? 'funct7 + skift' : 'immediate', bits(imm, 12), o.sh ? bits(o.f7, 7) + ' ' + bits(c, 5) : c) + field('reg', 'rs1', bits(b, 5), 'x' + b) + field('op', 'funct3', bits(o.f3, 3), o.f3) + field('reg', 'rd', bits(a, 5), 'x' + a) + field('op', 'opcode', bits(o.op, 7), o.op);
+      } else {
+        c = clamp(c, -2048, 2047); var im = c & 0xfff, hi = im >> 5, lo = im & 31;
+        word = (hi << 25) | (a << 20) | (b << 15) | (o.f3 << 12) | (lo << 7) | o.op;
+        asm = name + ' x' + a + ', ' + c + '(x' + b + ')';
+        fields.className = 'fmt fmt-s';
+        html = field('imm', 'imm[11:5]', bits(hi, 7), hi) + field('reg', 'rs2', bits(a, 5), 'x' + a) + field('reg', 'rs1', bits(b, 5), 'x' + b) + field('op', 'funct3', bits(o.f3, 3), o.f3) + field('imm', 'imm[4:0]', bits(lo, 5), lo) + field('op', 'opcode', bits(o.op, 7), o.op);
+      }
+      fields.innerHTML = html;
+      out.innerHTML = '<span class="hl">' + asm + '</span>   (' + o.t + '-format)\nbinært:  ' + bits(word, 32).replace(/(.{4})/g, '$1 ').trim() + '\nhex:     <span class="hl">' + hex32(word) + '</span>   desimalt: ' + (word >>> 0);
+    }
+    [opIn, aIn, bIn, cIn].forEach(function (el) { el.addEventListener('input', draw); el.addEventListener('change', draw); });
+    draw();
+  })();
+
+  /* ─── Widget 2: dekoder ─── */
+  (function () {
+    var root = document.getElementById('w-dec'); if (!root) return;
+    var inp = document.getElementById('de-in'), fields = document.getElementById('de-fields'), out = document.getElementById('de-out');
+    var BR = { 0: 'beq', 1: 'bne', 4: 'blt', 5: 'bge', 6: 'bltu', 7: 'bgeu' };
+    function draw() {
+      var s = inp.value.trim().replace(/\s|_/g, ''), v;
+      if (/^0x[0-9a-f]{1,8}$/i.test(s)) v = parseInt(s.slice(2), 16);
+      else if (/^[01]{1,32}$/.test(s)) v = parseInt(s, 2);
+      else { out.innerHTML = '<span class="bad">Skriv 0x + 1–8 heksadesimale sifre, eller 1–32 binære sifre.</span>'; fields.innerHTML = ''; return; }
+      v = v >>> 0;
+      var op = v & 0x7f, rd = (v >> 7) & 31, f3 = (v >> 12) & 7, rs1 = (v >> 15) & 31, rs2 = (v >> 20) & 31, f7 = (v >>> 25) & 0x7f;
+      var name = null, t = null, asm = '', html = '';
+      var R = { '0,0': 'add', '0,32': 'sub', '1,0': 'sll', '2,0': 'slt', '3,0': 'sltu', '4,0': 'xor', '5,0': 'srl', '5,32': 'sra', '6,0': 'or', '7,0': 'and', '0,1': 'mul' };
+      var I = { 0: 'addi', 1: 'slli', 2: 'slti', 3: 'sltiu', 4: 'xori', 5: (f7 === 32 ? 'srai' : 'srli'), 6: 'ori', 7: 'andi' };
+      var L = { 0: 'lb', 1: 'lh', 2: 'lw', 4: 'lbu', 5: 'lhu' }, S = { 0: 'sb', 1: 'sh', 2: 'sw' };
+      if (op === 51) { t = 'R'; name = R[f3 + ',' + f7] || '(ukjent R)'; asm = name + ' x' + rd + ', x' + rs1 + ', x' + rs2;
+        html = field('op', 'funct7', bits(f7, 7), f7) + field('reg', 'rs2', bits(rs2, 5), 'x' + rs2) + field('reg', 'rs1', bits(rs1, 5), 'x' + rs1) + field('op', 'funct3', bits(f3, 3), f3) + field('reg', 'rd', bits(rd, 5), 'x' + rd) + field('op', 'opcode', bits(op, 7), op); fields.className = 'fmt fmt-r'; }
+      else if (op === 19 || op === 3 || op === 103) {
+        t = 'I'; var imm = sext(v >>> 20, 12);
+        if (op === 19) { name = I[f3]; if (f3 === 1 || f3 === 5) { asm = name + ' x' + rd + ', x' + rs1 + ', ' + rs2; } else asm = name + ' x' + rd + ', x' + rs1 + ', ' + imm; }
+        else if (op === 3) { name = L[f3] || '(ukjent load)'; asm = name + ' x' + rd + ', ' + imm + '(x' + rs1 + ')'; }
+        else { name = 'jalr'; asm = 'jalr x' + rd + ', ' + imm + '(x' + rs1 + ')'; }
+        html = field('imm', 'immediate', bits(v >>> 20, 12), imm) + field('reg', 'rs1', bits(rs1, 5), 'x' + rs1) + field('op', 'funct3', bits(f3, 3), f3) + field('reg', 'rd', bits(rd, 5), 'x' + rd) + field('op', 'opcode', bits(op, 7), op); fields.className = 'fmt fmt-i'; }
+      else if (op === 35) { t = 'S'; var im = sext((f7 << 5) | rd, 12); name = S[f3] || '(ukjent store)'; asm = name + ' x' + rs2 + ', ' + im + '(x' + rs1 + ')';
+        html = field('imm', 'imm[11:5]', bits(f7, 7), f7) + field('reg', 'rs2', bits(rs2, 5), 'x' + rs2) + field('reg', 'rs1', bits(rs1, 5), 'x' + rs1) + field('op', 'funct3', bits(f3, 3), f3) + field('imm', 'imm[4:0]', bits(rd, 5), rd) + field('op', 'opcode', bits(op, 7), op); fields.className = 'fmt fmt-s'; }
+      else if (op === 99) { t = 'SB'; name = BR[f3] || '(ukjent hopp)';
+        var b12 = (v >>> 31) & 1, b11 = (v >>> 7) & 1, b10_5 = (v >>> 25) & 0x3f, b4_1 = (v >>> 8) & 0xf;
+        var off = sext((b12 << 12) | (b11 << 11) | (b10_5 << 5) | (b4_1 << 1), 13);
+        asm = name + ' x' + rs1 + ', x' + rs2 + ', ' + off + '   (forskyvning i byte fra PC)';
+        html = field('imm', 'imm[12|10:5]', bits(f7, 7), '') + field('reg', 'rs2', bits(rs2, 5), 'x' + rs2) + field('reg', 'rs1', bits(rs1, 5), 'x' + rs1) + field('op', 'funct3', bits(f3, 3), f3) + field('imm', 'imm[4:1|11]', bits(rd, 5), '') + field('op', 'opcode', bits(op, 7), op); fields.className = 'fmt fmt-s'; }
+      else if (op === 55 || op === 23) { t = 'U'; name = op === 55 ? 'lui' : 'auipc'; asm = name + ' x' + rd + ', ' + (v >>> 12);
+        html = field('imm', 'immediate[31:12]', bits(v >>> 12, 20), v >>> 12) + field('reg', 'rd', bits(rd, 5), 'x' + rd) + field('op', 'opcode', bits(op, 7), op); fields.className = 'fmt'; fields.style.gridTemplateColumns = '20fr 5fr 7fr'; }
+      else if (op === 111) { t = 'UJ'; name = 'jal';
+        var j20 = (v >>> 31) & 1, j19_12 = (v >>> 12) & 0xff, j11 = (v >>> 20) & 1, j10_1 = (v >>> 21) & 0x3ff;
+        var joff = sext((j20 << 20) | (j19_12 << 12) | (j11 << 11) | (j10_1 << 1), 21);
+        asm = 'jal x' + rd + ', ' + joff + '   (forskyvning i byte fra PC)';
+        html = field('imm', 'immediate[20|10:1|11|19:12]', bits(v >>> 12, 20), '') + field('reg', 'rd', bits(rd, 5), 'x' + rd) + field('op', 'opcode', bits(op, 7), op); fields.className = 'fmt'; fields.style.gridTemplateColumns = '20fr 5fr 7fr'; }
+      else { fields.innerHTML = ''; out.innerHTML = 'opcode ' + bits(op, 7) + ' (' + op + ') er ikke en av instruksjonene på denne siden.'; return; }
+      if (t !== 'U' && t !== 'UJ') fields.style.gridTemplateColumns = '';
+      fields.innerHTML = html;
+      out.innerHTML = hex32(v) + ' = ' + bits(v, 32).replace(/(.{4})/g, '$1 ').trim() + '\nopcode ' + op + ' → ' + t + '-format\n<span class="hl">' + asm + '</span>';
+    }
+    inp.addEventListener('input', draw);
+    draw();
+  })();
+
+  /* ─── Widget 3: while-løkke steg for steg ─── */
+  (function () {
+    var root = document.getElementById('w-loop'); if (!root) return;
+    var saveIn = document.getElementById('lp-save'), kIn = document.getElementById('lp-k');
+    var codeEl = document.getElementById('lp-code'), regsEl = document.getElementById('lp-regs'), memEl = document.getElementById('lp-mem'), out = document.getElementById('lp-out');
+    var BASE = 4000; /* adresse til save[] */
+    var CODE = [
+      { a: 80000, s: 'Loop: slli x10, x22, 2', f: function (r) { r.x10 = r.x22 << 2; return 80004; } },
+      { a: 80004, s: '      add  x10, x10, x25', f: function (r) { r.x10 = r.x10 + r.x25; return 80008; } },
+      { a: 80008, s: '      lw   x9, 0(x10)', f: function (r, m) { r.x9 = m.hasOwnProperty(r.x10) ? m[r.x10] : 0; return 80012; } },
+      { a: 80012, s: '      bne  x9, x24, Exit', f: function (r) { return r.x9 !== r.x24 ? 80024 : 80016; } },
+      { a: 80016, s: '      addi x22, x22, 1', f: function (r) { r.x22 = r.x22 + 1; return 80020; } },
+      { a: 80020, s: '      beq  x0, x0, Loop', f: function () { return 80000; } },
+      { a: 80024, s: 'Exit:', f: null }
+    ];
+    var st;
+    function reset() {
+      var vals = saveIn.value.split(/[,\s]+/).filter(function (x) { return x !== ''; }).map(function (x) { return +x || 0; }).slice(0, 12);
+      if (!vals.length) vals = [7];
+      st = { pc: 80000, n: 0, regs: { x9: 0, x10: 0, x22: 0, x24: +kIn.value || 0, x25: BASE }, mem: {}, vals: vals, done: false };
+      vals.forEach(function (v, i) { st.mem[BASE + 4 * i] = v; });
+      render('Nullstilt. i = 0, k = ' + st.regs.x24 + ', save ligger fra adresse ' + BASE + '.');
+    }
+    function step() {
+      if (st.done) return;
+      var ins = CODE.filter(function (c) { return c.a === st.pc; })[0];
+      if (!ins || !ins.f) { st.done = true; render('Ferdig ved Exit etter ' + st.n + ' instruksjoner. i = ' + st.regs.x22 + '.'); return; }
+      var prev = st.pc; st.pc = ins.f(st.regs, st.mem); st.n++;
+      var jumped = st.pc !== prev + 4;
+      if (st.regs.x22 >= st.vals.length && st.pc === 80000) { /* utenfor tabellen: la lw returnere 0 */ }
+      render('Utførte ' + ins.s.trim() + ' på adresse ' + prev + '. ' + (jumped ? 'Hopp tatt: PC = ' + st.pc + '.' : 'PC = ' + prev + ' + 4 = ' + st.pc + '.') + (st.n > 400 ? ' (stoppet: uendelig løkke?)' : ''));
+      if (st.n > 400) st.done = true;
+    }
+    function render(msg) {
+      codeEl.innerHTML = CODE.map(function (c) { return '<span class="' + (c.a === st.pc ? 'cur' : '') + '">' + c.a + '  ' + c.s + '</span>'; }).join('\n');
+      var r = st.regs;
+      regsEl.innerHTML = ['<div class="r"><b>PC</b> ' + st.pc + '</div>', '<div class="r"><b>x22</b> (i) ' + r.x22 + '</div>', '<div class="r"><b>x24</b> (k) ' + r.x24 + '</div>', '<div class="r"><b>x25</b> (save) ' + r.x25 + '</div>', '<div class="r"><b>x10</b> ' + r.x10 + '</div>', '<div class="r"><b>x9</b> ' + r.x9 + '</div>'].join('');
+      memEl.innerHTML = st.vals.map(function (v, i) { var a = BASE + 4 * i; return '<div class="m' + (a === r.x10 && st.pc !== 80000 ? ' on' : '') + '"><span class="a">' + a + '</span>save[' + i + '] = ' + v + '</div>'; }).join('');
+      out.innerHTML = msg + (st.done ? '' : '\nInstruksjoner utført: ' + st.n);
+    }
+    document.getElementById('lp-step').addEventListener('click', step);
+    document.getElementById('lp-run').addEventListener('click', function () { var g = 0; while (!st.done && g++ < 500) step(); });
+    document.getElementById('lp-reset').addEventListener('click', reset);
+    saveIn.addEventListener('change', reset); kIn.addEventListener('change', reset);
+    reset();
+  })();
+})();
+</script>
+</body>
+</html>

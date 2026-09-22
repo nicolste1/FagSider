@@ -97,10 +97,92 @@ ikke bli 5× raskere uansett. Eksempel kompendiet: P = 0,7, N = 4 → 2,1×.
 
 ## 2 T2 Instruksjonssett
 
-Læringsutbytter: K1, K2, F1, G1. Boka kapittel 2, kompendiet kapittel 2 og 3 (tall). Deltemaer T2.1 Instruksjoner (boka
-2.1–2.7; oppgaver 2.1–2.4, 2.12, 2.13), T2.2 Heltall og logiske operasjoner (boka 2.4, 2.6; oppgaver 2.10, 2.11), T2.3
-Funksjonskall (boka 2.8; oppgaver 2.30–2.32), T2.4 Instruksjoner, diverse (boka 2.9, 2.10, 2.12; oppgaver 2.22, 2.34).
-Ikke dekket på siden ennå.
+Læringsutbytter: K1, K2, F1, G1. Undervisning: forelesning 2 og 3, praktiske øvinger (Ripes). Boka kapittel 2.
+Kompendiet kapittel 2 (instruksjoner) og 3 (tallrepresentasjon).
+
+## 2.1 T2.1 Instruksjoner
+
+Læringsutbytte:
+- Studenten kjenner til de tre designprinsippene for instruksjonssettdesign og deres motivasjon.
+- Studenten kan oversette fra et høynivåspråk til assemblyinstruksjoner (og omvendt).
+- Studenten kan oversette fra assemblyinstruksjoner til maskinkode (og omvendt).
+- Studenten kjenner til instruksjonsformatene i RISC-V og kan forklare hvorfor de er definert slik de er.
+- Studenten forstår hvordan instruksjoner lagres i minnet og hvordan dette utnyttes til å implementere kontrollflyt.
+
+Kilder: forelesning 2 og 3; boka 2.1–2.7 (s. 68–103); kompendiet kap. 2 «Hva er et instruksjonssett?», «Designprinsipper»,
+«RISC-V instruksjonsformat», «Operasjoner og operander», «Minnetilgang og adressering», «Eksempel 1–2». Bokoppgaver: 2.1,
+2.2, 2.3, 2.4, 2.12, 2.13. Boka: Example s. 71, 72, 73, 75, 77, 87, 89, 91, 99, 100, 102; Check Yourself §2.2, §2.3, §2.5,
+§2.7; Self-Study «Instructions as numbers», «While being faster», «The Anticompiler». Eksamen: Kont 26/Ord 25/Kont 25/Ord 24/
+Kont 24 oppgave 1, Ord 22 oppgave 11.
+
+Innhold: instruksjonssett = vokabular; RISC-V (UC Berkeley 2010, RV32). add a, b, c: tre operander (designprinsipp 1:
+enkelhet favoriserer regularitet). 32 registre à 32 bit (ord); designprinsipp 2: mindre er raskere. Dataoverføring lw/sw med
+basisregister + forskyvning; byteadressering (ordadresser skiller med 4), little-endian; spilling. Immediate: addi, x0 = 0.
+Formater (2.5): R (funct7 rs2 rs1 funct3 rd opcode, 7-5-5-3-5-7), I (imm12 rs1 funct3 rd opcode), S (imm[11:5] rs2 rs1
+funct3 imm[4:0] opcode); designprinsipp 3: god design krever gode kompromisser; hex; maskinkodeeksempel A[30] = h + A[30] + 1;
+Big Picture: instruksjoner er tall, programmer lagres i minnet. Beslutninger (2.7): beq, bne, blt, bge, bltu, bgeu; if-then-else
+med hopp på motsatt betingelse; while-løkke med slli/add/lw/bne/addi/beq; grunnblokk; grensesjekk med bgeu; hopptabell og jalr;
+tilstandskoder i ARM.
+
+## 2.2 T2.2 Heltall og logiske operasjoner
+
+Læringsutbytte:
+- Studenten skal kunne representere heltall som binære tall (grunntall 2) og heksadesimale tall (grunntall 16) samt kunne
+  oversette mellom disse og tall i det desimale systemet (grunntall 10).
+- Studenten skal kunne representere negative heltall på 2’s komplement form samt kunne oversette mellom dette formatet og
+  tall i det desimale systemet.
+- Studenten skal forstå hvorfor fortegnsutvidelse av et tall på 2’s komplement form beholder samme tallverdi.
+- Studenten vite hva overflyt er og forstå når det oppstår.
+- Studenten skal kunne utføre logiske operasjoner på binære tall, inkludert bitvis AND og OR samt logisk og aritmetisk
+  bitskifting.
+
+Kilder: forelesning 2, ekstraforelesning 1, praktiske øvinger; boka 2.4 (s. 80–87) og 2.6 (s. 95–98); kompendiet kap. 3
+«Binære tall og tallsystemer», «To-komplement og negative tall», «Eksempel 1». Bokoppgaver: 2.10, 2.11. Boka: Example s. 83,
+84, 85; Check Yourself §2.4, §2.6.
+
+Innhold: siffer i har verdi d·grunntall^i; bit 0 = LSB, bit 31 = MSB; usignert 0…2^32−1; hex-tabellen figur 2.4; desimalt →
+binært ved gjentatt divisjon (kompendiet). Fortegn og størrelse forkastet; tokomplement: ledende 0 positivt, ledende 1
+negativt, verdi −x31·2^31 + Σ; −2^31 … 2^31−1; fortegnsbit; negering = inverter + 1; fortegnsutvidelse = kopier fortegnsbiten;
+lb/lbu; overflyt = feil fortegnsbit. Logiske operasjoner figur 2.8: slli/srli/srai, sll/srl/sra, and/or/xor (+i), NOT = xor
+111…1; maske; skift venstre = ×2^i; aritmetisk skift fyller med fortegnsbit.
+
+## 2.3 T2.3 Funksjonskall
+
+Læringsutbytte:
+- Studenten vet hvilke oppgaver som skal utføres ved et funksjonskall og kan forklare konseptet kallkonvensjon.
+- Studenten kjenner RISC-V minnekartet (kan gjengi og forklare figur 2.13).
+- Studenten forstår forskjellen på statiske og dynamiske data.
+
+Kilder: forelesning 3, praktiske øvinger; boka 2.8 (s. 104–114). Bokoppgaver: 2.30, 2.31, 2.32. Boka: Example leaf_example
+s. 106, fact s. 108; Check Yourself §2.8.
+
+Innhold: seks steg ved kall; x10–x17 argumenter, x1 returadresse; jal (lagrer PC+4), jalr x0, 0(x1); PC. Stakk (sp = x2,
+vokser nedover, push/pop). Temporære x5–x7, x28–x31 (bevares ikke), lagrede x8–x9, x18–x27 (bevares); figur 2.11 og 2.14
+(registerkonvensjonen). Løvprosedyrer; nøstede og rekursive kall: kalleren pusher a/t-registre den trenger, den kalte pusher
+x1 og s-registre. Prosedyreramme, fp = x8. Figur 2.13 minnekart: reservert, tekst 0x0040 0000, statisk data 0x1000 0000,
+heap oppover, stakk fra 0x3fff fff0 nedover; automatiske vs statiske variabler, gp = x3; malloc/free, minnelekkasje, dinglende
+pekere; tail call.
+
+## 2.4 T2.4 Instruksjoner, diverse
+
+Læringsutbytte:
+- Studenten kjenner til hvordan tekst representeres i en datamaskin.
+- Studenten skal vite hvordan vi håndterer store konstanter og (unngår) lange hopp (PC-relativ adressering).
+- Studenten skal kunne forklare RISC-Vs fire adressemodi.
+- Studenten skal kunne forklare skrittene involvert i oversettelse og oppstart av programmer (kunne gjengi og forklare
+  figur 2.20).
+
+Kilder: forelesning 3, praktiske øvinger; boka 2.9 (s. 114–120), 2.10 (s. 120–128), 2.12 (s. 131–140). Bokoppgaver: 2.22,
+2.34. Boka: Example s. 115, 116, 120, 123, 124, 127, 135; Check Yourself §2.9, §2.10, §2.12; Self-Study «Instructions as
+numbers and Insecurity».
+
+Innhold: ASCII (figur 2.15), lbu/sb, lhu/sh, C-strenger null-terminert, Java Unicode/UTF-16 og lengde; strcpy; Big Picture:
+typen ligger i programmet. lui (U-type) + addi for 32-bits konstanter, bit 11-korreksjon. Hoppadressering: SB (12 bit) og
+UJ (20 bit), PC-relativ, i halvord: ±4 KiB og ±1 MiB; lange hopp lui + jalr eller bne + jal; while-løkka på adresse 80000.
+Fire adressemodi (figur 2.17): immediate, register, basis/forskyvning, PC-relativ. Dekoding av 00578833. Figur 2.20:
+kompilator → assembler (pseudoinstruksjoner li/mv/j/la, symboltabell, objektfil med seks deler) → lenker (tre steg,
+relokering, kjørbar fil; eksempel med prosedyre A og B) → laster (seks steg). DLL med lat lenking. Java: bytekode, JVM
+(tolk), JIT.
 
 ## 3 T3 Enkeltsykelprosessor (inkl. kombinatorisk logikk og ALU)
 

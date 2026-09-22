@@ -8,6 +8,10 @@ window.FAG = {
   sider: [
     'kap1/index.html',
     'kap1/intro.html',
-    'kap1/ytelse.html'
+    'kap1/ytelse.html',
+    'kap2/index.html',
+    'kap2/instruksjoner.html',
+    'kap2/tall.html',
+    'kap2/prosedyrer.html'
   ]
 };

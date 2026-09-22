@@ -11,6 +11,10 @@
   /* ─── Sidespesifikt ─── */
   .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
   .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
   .fig-svg text { font-family: var(--sans); font-size: 12px; fill: var(--ink); }
   .fig-svg .cap { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); }
   .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; rx: 6; }
@@ -19,16 +23,11 @@
   .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
   .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.4; fill: none; marker-end: url(#ah); }
   .fig-svg .arr2 { stroke: var(--ink-soft); stroke-width: 1.4; fill: none; marker-end: url(#ah); marker-start: url(#ah2); }
-  .fig-svg .ring { fill: none; stroke: var(--ink); stroke-width: 1.2; }
-  .fig-svg .ring-fill1 { fill: rgba(160,82,45,0.10); }
-  .fig-svg .ring-fill2 { fill: rgba(27,94,90,0.12); }
-  .fig-svg .ring-fill3 { fill: rgba(61,107,58,0.18); }
   .chain { display: grid; grid-template-columns: 1fr; gap: 0; margin: 1rem 0; }
   .chain .step { display: grid; grid-template-columns: 150px 1fr; gap: 1rem; align-items: start; padding: 0.7rem 0.9rem; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; margin-bottom: 6px; }
   .chain .step .k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); padding-top: 0.2rem; }
   .chain .step pre { margin: 0; font-size: 0.8rem; padding: 0.6rem 0.8rem; }
   .chain .via { font-family: var(--mono); font-size: 0.72rem; color: var(--warm); text-align: center; margin: -2px 0 6px; letter-spacing: 0.1em; text-transform: uppercase; }
-  .w-ctl select { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
   .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
   .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
   .legend-row .l-a::before { background: var(--accent); }
@@ -55,10 +54,11 @@
 <main data-chapter="Kapittel 1: Introduksjon og ytelse">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · 1A · Læringsmål T1.1 og T1.2 · Boka kap. 1.1–1.5 · Kompendiet kap. 1</div>
+      <div class="eyebrow">Kapittel 1 · 1A · Læringsmål T1.1 og T1.2 · Boka kap. 1.1–1.5 · Kompendiet kap. 1 · ~25 min</div>
       <h1>Datamaskinen fra <em>utsiden og innsiden</em></h1>
-      <p class="lede">Hvilke typer datamaskiner som finnes og hva som skiller dem, de syv store ideene som går igjen i hele faget, lagene av programvare under programmet ditt, de fem komponentene under panseret, hvorfor instruksjoner bare er tall, og hvordan en brikke blir til fra en stav av silisium.</p>
+      <p class="lede">Datamaskintyper, prefikser, de syv store ideene, programvarelagene, de fem komponentene, lagret program og hvordan en brikke lages. Forklaringsstoff: lær listene, og regn på brikkekostnad.</p>
       <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#typer"><span>01</span> Datamaskintyper</a>
         <a href="#prefikser"><span>02</span> GB og GiB</a>
         <a href="#ideer"><span>03</span> De syv store ideene</a>
@@ -71,40 +71,49 @@
     </div>
   </header>
 
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Læringsutbyttebeskrivelsen T1.1–T1.2 (26. aug. 2026) · eksamensanalyse for faget er ikke laget ennå</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Listene:</strong> datamaskintypene, de syv store ideene, de fem komponentene, produksjonsstegene. Typisk kortsvar: «nevn og forklar».</li>
+          <li><span class="tag">Forklar</span><strong>Prinsippene:</strong> lagret program, ISA som abstraksjon, kompilator mot assembler, operativsystemets tre oppgaver.</li>
+          <li><span class="tag regn">Regn</span><strong>Prefikser</strong> (GB mot GiB, \(2^{32}\) byte = 4 GiB) og <strong>brikkekostnad</strong> (utbytte, kostnad per die, oppgave 1.11).</li>
+          <li><span class="tag">Lavere</span>Historikk, prisutvikling, iPhone-eksempler og nettverk er tatt ut av siden. Boka har det om du vil.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <!-- ─────────────────────────── 01 DATAMASKINTYPER ─────────────────────────── -->
   <section id="typer">
     <div class="container">
       <div class="section-badge">01 · Datamaskintyper</div>
       <h2>Én teknologi, <em>mange slags maskiner</em></h2>
-      <div class="source-note">Boka · kap. 1.1 · s. 3–9 · Kompendiet · kap. 1 «Hva er datamaskinarkitektur?» og «Datamaskintyper og bruksområder»</div>
+      <div class="source-note">Boka · kap. 1.1 · s. 3–9 · Kompendiet · kap. 1 «Datamaskintyper og bruksområder»</div>
       <span class="lm-pill">Læringsmål T1.1</span>
       <ul class="lm-list">
         <li>Studenten kjenner til de 7 datamaskintypene og deres viktigste egenskaper.</li>
       </ul>
 
-      <p class="dropcap"><span class="term" data-term="datamaskinarkitektur">Datamaskinarkitektur</span> handler om hvordan datamaskiner er bygget og organisert for å kjøre programmer effektivt, og om hvordan maskinvare og programvare samhandler. Den samme grunnteknologien (integrerte kretser, DRAM, flash) brukes i alt fra smarte husholdningsapparater til de største superdatamaskinene, men de ulike bruksområdene stiller helt forskjellige krav. Boka deler datamaskiner inn i tre tradisjonelle klasser og legger til de nye fra «post-PC-æraen».</p>
+      <p class="dropcap"><span class="term" data-term="datamaskinarkitektur">Datamaskinarkitektur</span> er hvordan datamaskiner bygges og organiseres for å kjøre programmer effektivt. Samme grunnteknologi brukes overalt, men bruksområdene stiller ulike krav til ytelse, kostnad, effekt og pålitelighet. Det er disse forskjellene du skal kunne.</p>
 
       <div class="fact-grid">
-        <div class="fact-card"><div class="fc-key">Personlig datamaskin</div><div class="fc-val"><span class="term" data-term="pc">PC</span>: én bruker, god ytelse til lav kostnad, kjører programvare fra tredjeparter. Drev utviklingen i 40 år.</div></div>
-        <div class="fact-card"><div class="fc-key">Server</div><div class="fc-val"><span class="term" data-term="server">Servere</span>: store arbeidslaster for mange brukere, nås over nettverk, mer regnekraft, lagring, I/O og pålitelighet. Fra tusenlapper til …</div></div>
-        <div class="fact-card"><div class="fc-key">Superdatamaskin</div><div class="fc-val"><span class="term" data-term="superdatamaskin">Superdatamaskiner</span>: toppen av serverklassen. Hundretusener av prosessorer, terabyte minne, titalls–hundrevis av millioner dollar. Vær, olje, proteiner.</div></div>
-        <div class="fact-card"><div class="fc-key">Innebygd datamaskin</div><div class="fc-val"><span class="term" data-term="innebygd">Innebygde datamaskiner</span> (og IoT): den største klassen. Inne i biler, TV-er, fly. Kjører ett program; minimumsytelse med strenge grenser for kostnad og effekt.</div></div>
-        <div class="fact-card"><div class="fc-key">Personlig mobil enhet</div><div class="fc-val"><span class="term" data-term="pmd">PMD</span>: smarttelefon og nettbrett. Batteri, trådløst nett, berøringsskjerm, apper. Gikk forbi PC-en i 2011.</div></div>
-        <div class="fact-card"><div class="fc-key">Skytjenester</div><div class="fc-val"><span class="term" data-term="sky">Cloud / WSC</span>: datasentre med 50 000 servere som leies ut; programvare som tjeneste (SaaS) via nettleser.</div></div>
+        <div class="fact-card"><div class="fc-key">Personlig datamaskin</div><div class="fc-val"><span class="term" data-term="pc">PC</span>: én bruker, god ytelse til lav kostnad, kjører tredjeparts programvare.</div></div>
+        <div class="fact-card"><div class="fc-key">Server</div><div class="fc-val"><span class="term" data-term="server">Server</span>: mange brukere over nettverk, mer regnekraft, lagring og I/O, høyere krav til pålitelighet.</div></div>
+        <div class="fact-card"><div class="fc-key">Superdatamaskin</div><div class="fc-val"><span class="term" data-term="superdatamaskin">Superdatamaskin</span>: toppen av serverklassen, hundretusener av prosessorer, vitenskapelig regning.</div></div>
+        <div class="fact-card"><div class="fc-key">Innebygd datamaskin</div><div class="fc-val"><span class="term" data-term="innebygd">Innebygd</span> (og IoT): flest i antall. Ett program, minimumsytelse, strenge grenser for kostnad og effekt.</div></div>
+        <div class="fact-card"><div class="fc-key">Personlig mobil enhet</div><div class="fc-val"><span class="term" data-term="pmd">PMD</span>: telefon og nettbrett. Batteri, trådløst nett, berøringsskjerm.</div></div>
+        <div class="fact-card"><div class="fc-key">Skytjenester</div><div class="fc-val"><span class="term" data-term="sky">Sky / WSC</span>: datasentre med titusenvis av servere som leies ut; programvare som tjeneste (SaaS).</div></div>
       </div>
 
       <div class="callout callout-warm">
-        <span class="label">Merk · «de 7 datamaskintypene»</span>
-        <p>Læringsmålet snakker om <em>sju</em> typer. Boka beskriver de seks over (PC, server, superdatamaskin, innebygd, PMD og sky/WSC); kompendiet lister fire (PC, server, superdatamaskin, innebygd system). Den sjuende kommer fra forelesning 1, sannsynligvis IoT-enheter skilt ut som egen klasse eller SaaS. Bruk forelesningens liste som fasit; det viktige er å kunne si hva som skiller klassene i ytelse, kostnad, effekt og pålitelighet.</p>
-      </div>
-
-      <h3>Hva som skiller dem</h3>
-      <p>Innebygde datamaskiner viser tydeligst at «best» avhenger av bruken: en musikkspiller trenger bare å være rask nok til sin ene oppgave, og utover det er lav kostnad og lavt effektforbruk alt som teller. Samtidig tåler innebygde systemer ofte feil dårligere enn en PC, fordi konsekvensene spenner fra irriterende (TV-en henger) til katastrofale (datamaskinen i et fly stopper). I forbrukerelektronikk oppnås påliteligheten gjennom enkelhet, i store innebygde systemer gjennom redundans lånt fra serververdenen.</p>
-      <p>Kompendiets eksempel sier det samme i ett bilde: en superdatamaskin kan ha tusenvis av prosessorer som jobber parallelt, mens et innebygd system, som mikrokontrolleren i en vaskemaskin, bare trenger én prosessor til enkle oppgaver.</p>
-
-      <div class="callout">
-        <span class="label">Hvorfor dette faget?</span>
-        <p>Boka lover at du etter kurset kan svare på: Hvordan oversettes et program i C eller Java til maskinens språk, og hvordan utfører maskinvaren det? Hva er grensesnittet mellom programvare og maskinvare? Hva bestemmer ytelsen til et program, og hvordan kan programmereren forbedre den? Hvilke teknikker bruker maskinvaredesignere for ytelse og energieffektivitet? Hvorfor gikk vi fra sekvensiell til parallell prosessering? Uten svarene blir ytelsesarbeid prøving og feiling i stedet for analyse.</p>
+        <span class="label">«De 7 datamaskintypene»</span>
+        <p>Boka har de seks over; kompendiet fire (PC, server, superdatamaskin, innebygd). Den sjuende kommer fra forelesning 1, trolig IoT eller SaaS skilt ut. Bruk forelesningens liste, og kunne si hva som skiller klassene i ytelse, kostnad, effekt og pålitelighet.</p>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-1-1-typer">
@@ -114,33 +123,8 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p>Bokas tre tradisjonelle klasser: <strong>Personlige datamaskiner</strong> gir god ytelse til én bruker for lav kostnad og kjører tredjeparts programvare. <strong>Servere</strong> kjører større programmer for mange brukere, ofte samtidig, nås over nettverk, og har mer regnekraft, lagring og I/O og høyere krav til pålitelighet; superdatamaskiner er den dyreste enden av serverklassen. <strong>Innebygde datamaskiner</strong> sitter inne i andre produkter, kjører ett fast program, og designes for et minimum av ytelse med strenge grenser for kostnad og effekt. (PMD og skytjenester er også gyldige svar.)</p>
+            <p><strong>PC:</strong> én bruker, god ytelse for lav kostnad, kjører tredjeparts programvare. <strong>Server:</strong> store programmer for mange brukere over nettverk, mer regnekraft, lagring og I/O, høy pålitelighet. <strong>Innebygd:</strong> sitter inne i et annet produkt, kjører ett fast program, minimum ytelse med strenge krav til kostnad og effekt.</p>
           </div>
-        </div>
-      </div>
-
-      <div class="oppgave" data-quiz id="oppg-cy-1-1">
-        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§1.1 · s. 10</span></div>
-        <div class="o-text">
-          <p>1. Antallet innebygde prosessorer som selges hvert år er langt større enn antallet PC- og post-PC-prosessorer. Kan du bekrefte eller avkrefte det fra egen erfaring? Prøv å telle de innebygde prosessorene hjemme hos deg og sammenlikn med antallet vanlige datamaskiner.</p>
-          <p>2. Både programvaren og maskinvaren påvirker ytelsen til et program. Finn eksempler der hvert av følgende er riktig sted å lete etter flaskehalsen: algoritmen, programmeringsspråket eller kompilatoren, operativsystemet, prosessoren, I/O-systemet og enhetene.</p>
-        </div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer forslag">
-            <span class="answer-src">Forslag til svar · boka sier «diskusjonsspørsmål, mange svar er akseptable»</span>
-            <p><strong>1.</strong> Et vanlig hjem har kanskje 2–5 PC-er/nettbrett og noen telefoner, men titalls innebygde prosessorer: vaskemaskin, oppvaskmaskin, mikrobølgeovn, TV, ruter, termostat, bil (som alene kan ha 50–100 mikrokontrollere), lyspærer, høyttalere, elsykkel. Bokas påstand stemmer.</p>
-            <p><strong>2.</strong> <em>Algoritmen:</em> et program som sorterer med \(\mathcal{O}(n^2)\) der \(\mathcal{O}(n \log n)\) finnes. <em>Språk/kompilator:</em> samme matrisemultiplikasjon er 200 ganger raskere i C enn i ren Python (bokas kapittel 1.10). <em>Operativsystemet:</em> et program som gjør tusenvis av små filoperasjoner der hver koster et systemkall. <em>Prosessoren:</em> et regnetungt program der alt ligger i hurtigbufferet og tiden bestemmes av CPI og klokke. <em>I/O:</em> et program som leser en stor fil fra en treg disk eller venter på nettverket, der prosessoren står mest ledig.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Sjekk forståelsen · Lett</div>
-        <div class="q-text">Hvilken datamaskinklasse selges det flest av, og hvilken utgjør likevel bare en liten del av markedet målt i inntekt?</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">Innebygde datamaskiner er den største klassen i antall (de fleste brukere merker ikke at de bruker en datamaskin). Superdatamaskiner er toppen i ytelse og pris, men utgjør en liten andel av serverne og en «proporsjonalt liten» del av det totale markedet i inntekt.</div>
         </div>
       </div>
     </div>
@@ -157,49 +141,27 @@
         <li>Studenten kan beskrive størrelser med rett prefiks (for eksempel GB og GiB).</li>
       </ul>
 
-      <p class="dropcap">Tvetydigheten mellom \(2^X\) og \(10^Y\) byte ble løst ved å innføre egne binære prefikser. Et <em>kilobyte</em> (KB) er \(10^3\) byte, et <em>kibibyte</em> (KiB) er \(2^{10} = 1024\) byte. Forskjellen er 2 % for kilo, men den forsterkes nedover tabellen: et tebibyte er 10 % større enn et terabyte. <span class="term" data-term="prefiks">Prefiksene</span> gjelder også for bit: gigabit (Gb) er \(10^9\) bit, gibibit (Gib) er \(2^{30}\) bit.</p>
+      <p class="dropcap">Desimale <span class="term" data-term="prefiks">prefikser</span> er tierpotenser (KB = \(10^3\)), binære er toerpotenser (KiB = \(2^{10} = 1024\)). Avviket vokser med størrelsen. Minne oppgis binært (GiB), overføringshastighet desimalt (Gbit/s).</p>
 
       <div class="table-wrap">
         <table>
-          <caption>Figur 1.1 i boka: desimale og binære prefikser, og hvor mye større det binære er.</caption>
           <thead><tr><th>Desimalt</th><th>Verdi</th><th>Binært</th><th>Verdi</th><th>Binært større med</th></tr></thead>
           <tbody>
             <tr><td>kilobyte KB</td><td class="mono">10<sup>3</sup></td><td>kibibyte KiB</td><td class="mono">2<sup>10</sup></td><td class="mono">2 %</td></tr>
             <tr><td>megabyte MB</td><td class="mono">10<sup>6</sup></td><td>mebibyte MiB</td><td class="mono">2<sup>20</sup></td><td class="mono">5 %</td></tr>
             <tr><td>gigabyte GB</td><td class="mono">10<sup>9</sup></td><td>gibibyte GiB</td><td class="mono">2<sup>30</sup></td><td class="mono">7 %</td></tr>
             <tr><td>terabyte TB</td><td class="mono">10<sup>12</sup></td><td>tebibyte TiB</td><td class="mono">2<sup>40</sup></td><td class="mono">10 %</td></tr>
-            <tr><td>petabyte PB</td><td class="mono">10<sup>15</sup></td><td>pebibyte PiB</td><td class="mono">2<sup>50</sup></td><td class="mono">13 %</td></tr>
-            <tr><td>exabyte EB</td><td class="mono">10<sup>18</sup></td><td>exbibyte EiB</td><td class="mono">2<sup>60</sup></td><td class="mono">15 %</td></tr>
-            <tr><td>zettabyte ZB</td><td class="mono">10<sup>21</sup></td><td>zebibyte ZiB</td><td class="mono">2<sup>70</sup></td><td class="mono">18 %</td></tr>
-            <tr><td>yottabyte YB</td><td class="mono">10<sup>24</sup></td><td>yobibyte YiB</td><td class="mono">2<sup>80</sup></td><td class="mono">21 %</td></tr>
-            <tr class="dim"><td>ronnabyte RB</td><td class="mono">10<sup>27</sup></td><td>robibyte RiB</td><td class="mono">2<sup>90</sup></td><td class="mono">24 %</td></tr>
-            <tr class="dim"><td>queccabyte QB</td><td class="mono">10<sup>30</sup></td><td>quebibyte QiB</td><td class="mono">2<sup>100</sup></td><td class="mono">27 %</td></tr>
           </tbody>
         </table>
       </div>
-      <p>Boka bruker konsekvent de binære prefiksene om minne (iPhone XS Max har 2 GiB DRAM og 64 GiB flash) og de desimale om overføringshastigheter (Ethernet på 100 Gbit/s). Når du regner på minneadresser, er toerpotensene de naturlige: 32 adressebit gir \(2^{32}\) byte = 4 GiB, ikke 4 GB.</p>
-
-      <div class="widget" id="w-prefiks">
-        <div class="widget-label">Prøv selv · Desimalt mot binært prefiks</div>
-        <p class="widget-intro">Skriv inn en størrelse med et desimalt prefiks og se hvor mange byte det er, hva det tilsvarer med binært prefiks, og omvendt. Avviket er det som gjør at en «1 TB»-disk viser 931 GiB i operativsystemet.</p>
-        <div class="w-row">
-          <div class="w-ctl"><label for="pf-val">verdi</label><input type="number" id="pf-val" min="0" step="any" value="1"></div>
-          <div class="w-ctl"><label for="pf-unit">prefiks</label>
-            <select id="pf-unit">
-              <option value="KB">KB (10³)</option><option value="MB">MB (10⁶)</option><option value="GB">GB (10⁹)</option><option value="TB" selected>TB (10¹²)</option><option value="PB">PB (10¹⁵)</option>
-              <option value="KiB">KiB (2¹⁰)</option><option value="MiB">MiB (2²⁰)</option><option value="GiB">GiB (2³⁰)</option><option value="TiB">TiB (2⁴⁰)</option><option value="PiB">PiB (2⁵⁰)</option>
-            </select>
-          </div>
-        </div>
-        <div class="w-out" id="pf-out"></div>
-      </div>
+      <p>Regner du på adresser, er toerpotensene de naturlige: 32 adressebit gir \(2^{32}\) byte = 4 GiB. Det er derfor en «1 TB»-disk viser 931 GiB i operativsystemet.</p>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Lett</div>
-        <div class="q-text">En prosessor har 32-bits adresser. Hvor mye minne kan den adressere, uttrykt med riktig prefiks? Og hvor stort er det omtrent i GB?</div>
+        <div class="q-text">En prosessor har 32-bits adresser. Hvor mye minne kan den adressere, med riktig prefiks? Omtrent hvor mye er det i GB?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">\(2^{32}\) byte = \(4 \cdot 2^{30}\) byte = 4 GiB. Det er \(4{,}29 \cdot 10^9\) byte, altså omtrent 4,3 GB (7 % mer enn 4 GB, som tabellen sier for giga).</div>
+          <div class="answer">\(2^{32}\) byte = \(4 \cdot 2^{30}\) byte = 4 GiB. Det er \(4{,}29 \cdot 10^9\) byte, altså omtrent 4,3 GB (7 % mer enn 4 GB).</div>
         </div>
       </div>
     </div>
@@ -210,51 +172,48 @@
     <div class="container">
       <div class="section-badge">03 · De syv store ideene</div>
       <h2>Sju ideer som <em>går igjen i hele faget</em></h2>
-      <div class="source-note">Boka · kap. 1.2 · s. 10–12 · Kompendiet · kap. 1 «De syv store ideene i datamaskinarkitektur»</div>
+      <div class="source-note">Boka · kap. 1.2 · s. 10–12 · Kompendiet · kap. 1 «De syv store ideene»</div>
       <span class="lm-pill">Læringsmål T1.1</span>
       <ul class="lm-list">
         <li>Studenten kjenner til de 7 store ideene i datamaskinarkitektur.</li>
       </ul>
 
-      <p class="dropcap"><span class="term" data-term="syv-ideer">De syv store ideene</span> er prinsipper datamaskinarkitekter har funnet opp gjennom 60 år, og som har overlevd lenge etter den første maskinen som brukte dem. Boka bruker dem som røde tråder gjennom alle kapitlene og markerer nesten 100 steder der en av ideene er i bruk. Lær dem som en sjekkliste: hver gang du ser en ny teknikk i faget, spør hvilken idé den er et eksempel på.</p>
+      <p class="dropcap"><span class="term" data-term="syv-ideer">De syv store ideene</span> er designprinsipper som går igjen i alle kapitlene. Lær dem som sjekkliste: hver ny teknikk i faget er et eksempel på én av dem.</p>
 
       <ol class="steps">
-        <li><strong>Bruk <span class="term" data-term="abstraksjon">abstraksjon</span> for å forenkle design.</strong> Både arkitekter og programmerere beskriver designet på flere nivåer, der detaljene på lavere nivå skjules bak en enklere modell. Ellers ville designtiden vokst like fort som ressursene. Ikon i boka: et abstrakt maleri.</li>
-        <li><strong>Gjør det <span class="term" data-term="vanlig-tilfelle">vanlige tilfellet raskt</span>.</strong> Å forbedre det som skjer ofte gir mer enn å forbedre det sjeldne, og det vanlige er ofte enklere å forbedre. Forutsetter at du <em>vet</em> hva som er vanlig: måling og testprogrammer (avsnitt 1.6 i boka). Ikon: sportsbil, fordi den vanligste turen har én eller to passasjerer.</li>
-        <li><strong>Ytelse via <span class="term" data-term="parallellitet">parallellitet</span>.</strong> Flere operasjoner samtidig, siden datamaskinens fødsel. Ikon: et fly med flere jetmotorer.</li>
-        <li><strong>Ytelse via <span class="term" data-term="samlebaand">samlebånd</span> (pipelining).</strong> Et mønster av parallellitet så vanlig at det har eget navn: instruksjoner overlapper som bøtter i en bøttekjede. Ikon: en rekke rør.</li>
-        <li><strong>Ytelse via <span class="term" data-term="prediksjon">prediksjon</span>.</strong> Det kan være raskere å gjette og begynne enn å vente på å vite sikkert, hvis gjetningen er god og det er billig å rette opp. Ikon: krystallkule.</li>
-        <li><strong><span class="term" data-term="minnehierarki">Minnehierarki</span>.</strong> Programmerere vil ha minne som er raskt, stort og billig; det finnes ikke. Løsningen er lag: raskest, minst og dyrest per bit øverst, tregest, størst og billigst nederst. Hurtigbuffere gir illusjonen av at hovedminnet er nesten like raskt som toppen. Ikon: lagdelt trekant.</li>
-        <li><strong>Pålitelighet via <span class="term" data-term="redundans">redundans</span>.</strong> Enhver fysisk komponent kan svikte, så vi legger inn ekstra komponenter som tar over og oppdager feil. Ikon: lastebil med doble hjul.</li>
+        <li><strong><span class="term" data-term="abstraksjon">Abstraksjon</span> for å forenkle design.</strong> Beskriv designet i lag; lavere lag skjuler detaljer for laget over.</li>
+        <li><strong>Gjør det <span class="term" data-term="vanlig-tilfelle">vanlige tilfellet raskt</span>.</strong> Forbedre det som skjer ofte. Krever at du vet hva som er vanlig (testprogrammer).</li>
+        <li><strong>Ytelse via <span class="term" data-term="parallellitet">parallellitet</span>.</strong> Flere operasjoner samtidig.</li>
+        <li><strong>Ytelse via <span class="term" data-term="samlebaand">samlebånd</span> (pipelining).</strong> Instruksjoner overlapper som i en bøttekjede.</li>
+        <li><strong>Ytelse via <span class="term" data-term="prediksjon">prediksjon</span>.</strong> Gjett og start, hvis gjetningen er god og det er billig å rette.</li>
+        <li><strong><span class="term" data-term="minnehierarki">Minnehierarki</span>.</strong> Raskt, lite og dyrt øverst; tregt, stort og billig nederst. Hurtigbuffer gir illusjonen av raskt og stort.</li>
+        <li><strong>Pålitelighet via <span class="term" data-term="redundans">redundans</span>.</strong> Ekstra komponenter som tar over og oppdager feil.</li>
       </ol>
 
       <div class="callout callout-warn">
-        <span class="label">Kompendiets liste avviker fra bokas</span>
-        <p>Kompendiet lister abstraksjon, <em>den lagrede programmetoden</em>, vanlig tilfelle raskt, parallelisme, pipelining, redundans og hukommelseshierarki. Det mangler <em>prediksjon</em> og har med lagret program i stedet. Bokas liste (over) er den som gjelder som «de syv store ideene»; prinsippet om lagrede program er viktig nok til å ha sitt eget læringsmål (T1.2) og behandles i avsnitt 06 på denne siden.</p>
+        <span class="label">To avvik å vite om</span>
+        <p>Kompendiets liste har «den lagrede programmetoden» i stedet for prediksjon; bruk bokas liste over. Forrige utgave av boka hadde «design for <span class="term" data-term="moores-lov">Moores lov</span>» som åttende idé; den er tatt ut fordi Moores lov ikke lenger holder.</p>
       </div>
-
-      <h3>Den åttende ideen som ble tatt ut: Moores lov</h3>
-      <p>Forrige utgave av boka hadde «design for <span class="term" data-term="moores-lov">Moores lov</span>» som åttende idé. Gordon Moore, en av Intels grunnleggere, spådde i 1965 at ressursene på en integrert krets ville dobles hvert år, senere justert til hvert andre år. I 50 år stemte det, og fordi et datamaskindesign kan ta flere år, måtte arkitektene sikte på hvor teknologien ville være når designet var <em>ferdig</em>, ikke der den var da de begynte, som en leirdueskytter. Men ingen eksponentiell vekst varer evig: Moores lov gjelder ikke lenger. Det betyr ikke at halvledere har sluttet å bli bedre, bare at det går saktere, og kostnaden per transistor kan nå være flat eller stigende fra generasjon til generasjon.</p>
 
       <div class="oppgave" data-quiz id="oppg-ss-ideer">
         <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">1.14 · s. 55</span></div>
         <div class="o-text">
-          <p>Finn den beste matchen mellom de syv store ideene og disse eksemplene fra virkeligheten:</p>
+          <p>Finn den beste matchen mellom de syv store ideene og disse eksemplene:</p>
           <ol type="a">
-            <li>Spare tid på klesvask ved å vaske neste omgang mens den forrige tørker</li>
-            <li>Gjemme en reservenøkkel i tilfelle du mister nøkkelen til inngangsdøra</li>
-            <li>Sjekke værmeldingen for byene du skal kjøre gjennom når du velger rute for en lang vintertur</li>
-            <li>Hurtigkasse i butikken for 10 varer eller færre</li>
+            <li>Vaske neste omgang klesvask mens den forrige tørker</li>
+            <li>Gjemme en reservenøkkel</li>
+            <li>Sjekke værmeldingen for byene på ruta før en lang vintertur</li>
+            <li>Hurtigkasse for 10 varer eller færre</li>
             <li>Den lokale filialen til et stort bybibliotek</li>
-            <li>Bil drevet av en elektrisk motor på hvert av de fire hjulene</li>
-            <li>Valgfri selvkjørende modus som krever at du kjøper tilleggene selvparkering og navigasjon</li>
+            <li>Bil med elektrisk motor på hvert av de fire hjulene</li>
+            <li>Selvkjørende modus som krever at du kjøper tilleggene selvparkering og navigasjon</li>
           </ol>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p>a. Ytelse via samlebånd. b. Pålitelighet via redundans (kan også ses som parallellitet). c. Ytelse via prediksjon. d. Gjør det vanlige tilfellet raskt. e. Minnehierarki. f. Ytelse via parallellitet (kan også ses som redundans). g. Bruk abstraksjon for å forenkle design.</p>
+            <p>a. Samlebånd. b. Redundans (kan også ses som parallellitet). c. Prediksjon. d. Vanlig tilfelle raskt. e. Minnehierarki. f. Parallellitet (kan også ses som redundans). g. Abstraksjon.</p>
           </div>
         </div>
       </div>
@@ -262,32 +221,14 @@
       <div class="oppgave" data-quiz id="oppg-1-2-ideer">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.2 · s. 59</span></div>
         <div class="o-text">
-          <p>De syv store ideene likner ideer fra andre felt. Match de syv ideene til disse:</p>
-          <ol type="a">
-            <li>Samlebånd i bilproduksjon</li>
-            <li>Kablene i en hengebru</li>
-            <li>Navigasjonssystemer for fly og skip som tar hensyn til vindinformasjon</li>
-            <li>Ekspressheiser i høyhus</li>
-            <li>Reservasjonsskranken på et bibliotek</li>
-            <li>Å øke gate-arealet på en CMOS-transistor for å redusere svitsjetiden</li>
-            <li>Å bygge selvkjørende biler der kontrollsystemet delvis bygger på sensorsystemer som allerede finnes i bilen, som filskiftevarsling og adaptiv cruisekontroll</li>
-          </ol>
+          <p>Match de syv ideene til: a. samlebånd i bilproduksjon, b. kablene i en hengebru, c. navigasjonssystemer som tar hensyn til vind, d. ekspressheiser i høyhus, e. reservasjonsskranken på et bibliotek, f. større gate-areal på en CMOS-transistor for kortere svitsjetid, g. selvkjørende bil bygget på sensorsystemer som allerede finnes i bilen.</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p>a. Ytelse via samlebånd. b. Pålitelighet via redundans (mange kabler, én kan ryke). c. Ytelse via prediksjon (planlegg etter forventet vind). d. Gjør det vanlige tilfellet raskt (de fleste skal til de øverste etasjene uten stopp). e. Minnehierarki (de mest etterspurte bøkene nærmest brukeren). f. Denne passet til «design for Moores lov» i forrige utgave, som ikke lenger er på lista; nærmeste av de syv er «gjør det vanlige tilfellet raskt», siden en raskere transistor gjør den aller vanligste operasjonen raskere. g. Bruk abstraksjon for å forenkle design (bygg på eksisterende delsystemer uten å kjenne detaljene i dem).</p>
+            <p>a. Samlebånd. b. Redundans. c. Prediksjon. d. Vanlig tilfelle raskt. e. Minnehierarki. f. Passet «design for Moores lov» i forrige utgave; nærmest nå er vanlig tilfelle raskt. g. Abstraksjon.</p>
           </div>
-        </div>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Sjekk forståelsen · Middels</div>
-        <div class="q-text">Hvorfor forutsetter «gjør det vanlige tilfellet raskt» at man har testprogramsamlinger?</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">Fordi du må <em>vite</em> hva som er vanlig før du kan gjøre det raskt, og det kan du bare finne ut ved forsiktig eksperimentering og måling på representative programmer. Uten benchmarks optimaliserer du kanskje det sjeldne tilfellet. Amdahls lov (1B) er den kvantitative versjonen av samme poeng.</div>
         </div>
       </div>
     </div>
@@ -304,48 +245,20 @@
         <li>Studenten kjenner rollen til applikasjonsprogramvare og systemprogramvare, herunder operativsystemet og kompilatoren.</li>
       </ul>
 
-      <p class="dropcap">En typisk applikasjon, som en tekstbehandler eller et databasesystem, kan bestå av millioner av kodelinjer og bygge på store biblioteker. Maskinvaren kan derimot bare utføre ekstremt enkle instruksjoner på lavt nivå. Veien fra applikasjon til primitive instruksjoner går gjennom flere lag programvare som tolker eller oversetter høynivåoperasjoner til enkle maskininstruksjoner. Det er den store ideen om abstraksjon i praksis.</p>
-
-      <figure>
-        <svg class="fig-svg" viewBox="0 0 520 300" aria-label="Figur 1.3: lagene i programvare og maskinvare som lag utenpå hverandre">
-          <rect class="ring ring-fill1" x="30" y="16" width="460" height="270" rx="16"/>
-          <rect class="ring ring-fill2" x="80" y="76" width="360" height="190" rx="14"/>
-          <rect class="ring ring-fill3" x="150" y="136" width="220" height="110" rx="12"/>
-          <text x="260" y="196" text-anchor="middle" style="font-weight:600">Maskinvare</text>
-          <text class="cap" x="260" y="212" text-anchor="middle">prosessor · minne · I/O</text>
-          <text x="260" y="100" text-anchor="middle">Systemprogramvare</text>
-          <text class="cap" x="260" y="115" text-anchor="middle">operativsystem · kompilator · assembler · laster</text>
-          <text x="260" y="40" text-anchor="middle">Applikasjonsprogramvare</text>
-          <text class="cap" x="260" y="55" text-anchor="middle">tekstbehandler · database · nettleser</text>
-        </svg>
-        <figcaption>Etter figur 1.3 i boka (der lagene er tegnet som konsentriske sirkler): maskinvaren i midten, applikasjonene ytterst. Store applikasjoner kan ha flere lag selv, f.eks. et databasesystem som ligger under en applikasjon.</figcaption>
-      </figure>
+      <p class="dropcap">Maskinvaren utfører bare svært enkle instruksjoner. Veien fra applikasjon til instruksjon går gjennom lag av programvare, abstraksjon i praksis: <span class="term" data-term="applikasjonsprogramvare">applikasjonsprogramvare</span> → <span class="term" data-term="systemprogramvare">systemprogramvare</span> → maskinvare.</p>
 
       <div class="compare-grid">
-        <div class="compare-cell warm">
-          <h4>Applikasjonsprogramvare</h4>
-          <p><span class="term" data-term="applikasjonsprogramvare">Applikasjonsprogramvare</span> er programmene brukeren faktisk kjører. Den ser aldri maskinvaren direkte, bare tjenestene som systemprogramvaren tilbyr.</p>
-        </div>
         <div class="compare-cell accent">
-          <h4>Systemprogramvare</h4>
-          <p><span class="term" data-term="systemprogramvare">Systemprogramvare</span> gir tjenester som er nyttige for alle programmer: operativsystem, kompilatorer, lastere og assemblere. To typer er sentrale i alle datamaskiner i dag: operativsystemet og kompilatoren.</p>
+          <h4>Operativsystemet</h4>
+          <p>Ligger mellom programmet og maskinvaren. Tre oppgaver: (1) håndtere inn- og utdata, (2) tildele minne og lager, (3) beskyttet deling av maskinen mellom flere programmer. <span class="term" data-term="operativsystem">Eksempler</span>: Linux, Windows, iOS.</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4>Kompilator og assembler</h4>
+          <p><span class="term" data-term="kompilator">Kompilatoren</span> oversetter <span class="term" data-term="hoynivaaspraak">høynivåspråk</span> (C, Java) til <span class="term" data-term="assemblyspraak">assemblyspråk</span>. <span class="term" data-term="assembler">Assembleren</span> oversetter assembly til binært <span class="term" data-term="maskinspraak">maskinspråk</span>, i hovedsak én-til-én. Begge er systemprogramvare.</p>
         </div>
       </div>
 
-      <h3>Operativsystemet</h3>
-      <p>Et <span class="term" data-term="operativsystem">operativsystem</span> ligger mellom brukerens program og maskinvaren og tilbyr tjenester og overvåking. De viktigste oppgavene er å</p>
-      <ul>
-        <li>håndtere grunnleggende inn- og utdataoperasjoner,</li>
-        <li>tildele lager og minne,</li>
-        <li>sørge for beskyttet deling av datamaskinen mellom flere programmer som bruker den samtidig.</li>
-      </ul>
-      <p>Eksempler: Linux, iOS, Android og Windows.</p>
-
-      <h3>Kompilatoren, assembleren og datamaskinens alfabet</h3>
-      <p>For å snakke direkte til elektronisk maskinvare må du sende elektriske signaler, og de enkleste signalene er av og på. Datamaskinens alfabet har derfor bare to bokstaver, 0 og 1, hver kalt et binært siffer eller <span class="term" data-term="bit">bit</span>. Akkurat som 26 bokstaver ikke begrenser hva som kan skrives, begrenser ikke to bokstaver hva datamaskinen kan gjøre. Kommandoene vi gir den kalles <span class="term" data-term="instruksjon">instruksjoner</span>, og de er bare samlinger av biter, altså tall. Bitene</p>
-      <pre><code>1001010100101110</code></pre>
-      <p>ber én bestemt datamaskin om å legge sammen to tall. De første programmererne skrev slike binære tall for hånd, og fant fort på symbolske notasjoner nærmere måten mennesker tenker på. Programmet som oversetter symbolsk notasjon til binært het <span class="term" data-term="assembler">assembler</span>: programmereren skriver <code>add A, B</code>, og assembleren lager <code>1001010100101110</code>. Det symbolske språket heter <span class="term" data-term="assemblyspraak">assemblyspråk</span>, det binære <span class="term" data-term="maskinspraak">maskinspråk</span>. Assembly er likevel langt fra notasjonen en forsker eller regnskapsfører vil bruke: én linje per instruksjon maskinen skal utføre tvinger programmereren til å tenke som maskinen.</p>
-      <p>Gjennombruddet var å innse at et program kunne oversette et kraftigere språk til maskininstruksjoner. En <span class="term" data-term="kompilator">kompilator</span> oversetter et program i et <span class="term" data-term="hoynivaaspraak">høynivåspråk</span> som C, C++ eller Java til assemblyinstruksjoner. Figur 1.4 i boka viser hele kjeden for funksjonen <code>swap</code>:</p>
+      <p>Datamaskinens alfabet er 0 og 1, én <span class="term" data-term="bit">bit</span> hver. En <span class="term" data-term="instruksjon">instruksjon</span> er bare en samling biter, altså et tall. Figur 1.4 i boka viser kjeden for <code>swap</code>:</p>
 
       <div class="chain">
         <div class="step"><div class="k">Høynivåspråk (C)</div><pre><code>swap(size_t v[], size_t k)
@@ -367,15 +280,9 @@
         <div class="via">↓ assembler ↓</div>
         <div class="step"><div class="k">Maskinspråk (binært)</div><pre><code>00000000001101011001001100010011
 00000000011001010000001100110011
-00000000000000110011001010000011
-00000000100000110011001110000011
-00000000011100110011000000100011
-00000000010100110011010000100011
-00000000000000001000000001100111</code></pre></div>
+…</code></pre></div>
       </div>
-      <p class="eq-note">Noen kompilatorer hopper over mellomleddet og produserer maskinspråk direkte. Instruksjonene og formatene er tema T2.</p>
-
-      <p>Høynivåspråk har tre store fordeler: programmereren kan tenke i et mer naturlig språk med ord og algebraisk notasjon, og språk kan lages for et formål (Fortran for vitenskapelig regning, Cobol for forretningsdata, Lisp for symbolmanipulasjon); produktiviteten øker, fordi det tar kortere tid å skrive programmer i språk som trenger færre linjer per idé; og programmene blir uavhengige av maskinen, siden kompilatorer og assemblere kan oversette dem til hvilken som helst datamaskins binære instruksjoner. Derfor skrives nesten ingenting i assembly i dag. Kompendiet oppsummerer stegene som <em>kompilering</em> (høynivå → assembly), <em>assemblering</em> (assembly → maskinkode) og <em>lagring i minnet</em> før CPU-en kjører koden.</p>
+      <p class="eq-note">Høynivåspråk gir naturligere notasjon, høyere produktivitet og maskinuavhengige programmer. Derfor skrives nesten ingenting i assembly i dag.</p>
 
       <div class="oppgave" data-quiz id="oppg-1-3-steg">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.3 · s. 59</span></div>
@@ -384,7 +291,7 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
-            <p>1. <strong>Kompilering:</strong> kompilatoren oversetter C-programmet til assemblyspråk for målmaskinens instruksjonssett (f.eks. RISC-V), én symbolsk instruksjon per linje. 2. <strong>Assemblering:</strong> assembleren oversetter hver symbolsk instruksjon til den binære maskinspråkversjonen, 32 bit per RISC-V-instruksjon. 3. <strong>Lenking og lasting:</strong> maskinkoden kobles sammen med biblioteker og lastes av operativsystemet inn i minnet (boka går gjennom dette i kapittel 2.12, figur 2.20). 4. <strong>Utførelse:</strong> prosessoren henter instruksjonene fra minnet én etter én, dekoder dem og utfører dem. Noen kompilatorer slår sammen steg 1 og 2.</p>
+            <p>1. <strong>Kompilering:</strong> C → assembly for målmaskinens instruksjonssett. 2. <strong>Assemblering:</strong> assembly → binær maskinkode (32 bit per RISC-V-instruksjon). 3. <strong>Lenking og lasting:</strong> kobles med biblioteker og lastes inn i minnet av operativsystemet. 4. <strong>Utførelse:</strong> prosessoren henter, dekoder og utfører instruksjonene én etter én.</p>
           </div>
         </div>
       </div>
@@ -394,7 +301,7 @@
         <div class="q-text">Hva er forskjellen på en kompilator og en assembler?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Kompilatoren oversetter fra høynivåspråk (C, Java) til assemblyspråk, og må håndtere stor avstand mellom språkets uttrykkskraft og maskinens enkle instruksjoner. Assembleren oversetter fra den symbolske assemblyformen til binær maskinkode, i hovedsak én-til-én. Begge er systemprogramvare.</div>
+          <div class="answer">Kompilatoren oversetter høynivåspråk til assembly og må bygge bro over stor avstand i uttrykkskraft. Assembleren oversetter symbolsk assembly til binær maskinkode, nesten én-til-én.</div>
         </div>
       </div>
     </div>
@@ -411,7 +318,7 @@
         <li>Studenten kan beskrive de fem hovedkomponentene i en datamaskin.</li>
       </ul>
 
-      <p class="dropcap">All maskinvare utfører de samme fire grunnfunksjonene: ta inn data, gi ut data, behandle data og lagre data. Bokas første «Big Picture» er at enhver datamaskin, gammel som ny, kan deles i <span class="term" data-term="fem-komponenter">fem klassiske komponenter</span>: <span class="term" data-term="inndataenhet">inndata</span>, <span class="term" data-term="utdataenhet">utdata</span>, <span class="term" data-term="minne">minne</span>, <span class="term" data-term="datasti">datasti</span> og <span class="term" data-term="kontrollenhet">kontroll</span>. De to siste slås ofte sammen og kalles <span class="term" data-term="prosessor">prosessoren</span>. Inndelingen er uavhengig av teknologi, og boka viser den på første side av hvert kapittel med den aktuelle delen uthevet.</p>
+      <p class="dropcap">Enhver datamaskin kan deles i <span class="term" data-term="fem-komponenter">fem klassiske komponenter</span>: <span class="term" data-term="inndataenhet">inndata</span>, <span class="term" data-term="utdataenhet">utdata</span>, <span class="term" data-term="minne">minne</span>, <span class="term" data-term="datasti">datasti</span> og <span class="term" data-term="kontrollenhet">kontroll</span>. Datasti og kontroll utgjør <span class="term" data-term="prosessor">prosessoren</span>.</p>
 
       <figure>
         <svg class="fig-svg" viewBox="0 0 640 300" aria-label="Figur 1.5: de fem klassiske komponentene">
@@ -419,7 +326,6 @@
             <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker>
             <marker id="ah2" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 10 0 L 0 5 L 10 10 z" fill="#3d3832"/></marker>
           </defs>
-          <!-- prosessor -->
           <rect class="box box-a" x="40" y="40" width="250" height="220"/>
           <text class="cap" x="165" y="60" text-anchor="middle">PROSESSOR</text>
           <rect class="box box-g" x="60" y="80" width="210" height="60"/>
@@ -428,16 +334,13 @@
           <rect class="box box-g" x="60" y="170" width="210" height="60"/>
           <text x="165" y="195" text-anchor="middle" style="font-weight:600">Datasti</text>
           <text class="cap" x="165" y="212" text-anchor="middle">registre · ALU · aritmetikk</text>
-          <!-- minne -->
           <rect class="box box-w" x="360" y="100" width="120" height="100"/>
           <text x="420" y="145" text-anchor="middle" style="font-weight:600">Minne</text>
           <text class="cap" x="420" y="164" text-anchor="middle">instruksjoner + data</text>
-          <!-- inn/ut -->
           <rect class="box" x="530" y="40" width="90" height="60"/>
           <text x="575" y="75" text-anchor="middle">Inndata</text>
           <rect class="box" x="530" y="200" width="90" height="60"/>
           <text x="575" y="235" text-anchor="middle">Utdata</text>
-          <!-- piler -->
           <path class="arr2" d="M292 150 L358 150"/>
           <path class="arr" d="M530 70 L482 120"/>
           <path class="arr" d="M482 180 L530 230"/>
@@ -446,69 +349,50 @@
           <text class="cap" x="505" y="85" text-anchor="end">skriver</text>
           <text class="cap" x="505" y="222" text-anchor="end">leser</text>
         </svg>
-        <figcaption>Etter figur 1.5 i boka: prosessoren henter instruksjoner og data fra minnet. Inndata skriver data til minnet, utdata leser data fra minnet. Kontrollen sender signalene som bestemmer hva datastien, minnet, inndata og utdata gjør.</figcaption>
+        <figcaption>Etter figur 1.5 i boka. Prosessoren henter instruksjoner og data fra minnet; inndata skriver til minnet, utdata leser fra det. Kontrollen sender signalene som styrer datasti, minne og I/O.</figcaption>
       </figure>
-
-      <div class="callout callout-warm">
-        <span class="label">Kompendiets liste</span>
-        <p>Kompendiet lister fem «hovedkomponenter» som CPU, minne, I/O, buss og kontrollenhet, og sier at de samarbeider i en syklus av å hente, dekode og utføre instruksjoner. Det er en annen inndeling enn bokas (buss er en forbindelse, ikke en av de fem; kontroll er en <em>del</em> av CPU-en). Læringsmålet bygger på boka: inndata, utdata, minne, datasti, kontroll.</p>
-      </div>
-
-      <h3>Inn og ut</h3>
-      <p>Inndataenheter mater datamaskinen (tastatur, mikrofon, berøringsskjerm), utdataenheter formidler resultatet (skjerm, høyttaler). Noen, som trådløse nettverk, er begge deler. Boka bruker iPhone XS Max som eksempel: av de fem komponentene dominerer I/O helt, med berøringsskjerm, to kameraer, mikrofon, høyttalere, akselerometer, gyroskop, Wi-Fi og Bluetooth, mens datasti, kontroll og minne er en liten del av innmaten. Skjermen er en LCD (flytende krystaller som slipper gjennom eller blokkerer lys), styrt av et <em>rammebuffer</em> i minnet der hvert bildepunkt (piksel) har f.eks. 8 bit for hver av fargene rødt, grønt og blått, altså 24 bit per piksel. Berøringsskjermen bruker kapasitiv sensing: fingeren din forstyrrer det elektrostatiske feltet i glasset.</p>
-
-      <h3>Prosessoren: datasti og kontroll</h3>
-      <p>Prosessoren, eller CPU-en (central processor unit), er den aktive delen: den følger programmets instruksjoner til punkt og prikke, legger sammen tall, tester tall og signaliserer til I/O-enhetene. Den består logisk av to hoveddeler: <strong>datastien</strong>, musklene, som utfører de aritmetiske operasjonene, og <strong>kontrollen</strong>, hjernen, som forteller datastien, minnet og I/O-enhetene hva de skal gjøre etter instruksjonene i programmet. A12-brikken i iPhone XS Max inneholder to store og fire små ARM-prosessorer på 2,5 GHz, en grafikkprosessor og en akselerator for nevrale nett, pluss 2 GiB hovedminne i samme pakke. Hvordan datasti og kontroll bygges er tema T3, T4 og T5.</p>
-
-      <h3>Minnet: DRAM, SRAM og hurtigbuffer</h3>
-      <p>Minnet er der programmene ligger mens de kjører, sammen med dataene de trenger. Hovedminnet er <span class="term" data-term="dram">DRAM</span>, dynamisk random access memory: «random access» betyr at tilgangen tar omtrent like lang tid uansett hvilken del av minnet som leses, i motsetning til sekvensielle medier som magnetbånd. Inne i prosessoren ligger en annen type minne, <span class="term" data-term="hurtigbuffer">hurtigbufferet</span> (cache), et lite, raskt minne som fungerer som buffer for DRAM. Det er bygget med <span class="term" data-term="sram">SRAM</span>, som er raskere, men mindre tett og dermed dyrere enn DRAM. SRAM og DRAM er to lag i minnehierarkiet (tema T6).</p>
 
       <div class="table-wrap">
         <table>
-          <caption>Minneteknologier i kapittel 1 (tall fra boka, margdefinisjonene s. 21–24).</caption>
-          <thead><tr><th>Teknologi</th><th>Rolle</th><th>Flyktig?</th><th>Aksesstid</th><th>Pris per GB</th></tr></thead>
+          <thead><tr><th>Komponent</th><th>Rolle</th></tr></thead>
           <tbody>
-            <tr><td>SRAM</td><td>hurtigbuffer i prosessoren</td><td class="mono">ja</td><td class="mono">raskere enn DRAM</td><td class="mono">dyrere enn DRAM</td></tr>
-            <tr><td>DRAM</td><td>hovedminne</td><td class="mono">ja</td><td class="mono">≈ 50 ns</td><td class="mono">5–10 $ (2012)</td></tr>
-            <tr><td>Flash</td><td>sekundærminne i PMD-er</td><td class="mono">nei</td><td class="mono">5–50 µs</td><td class="mono">0,06–0,12 $ (2020)</td></tr>
-            <tr><td>Magnetisk disk</td><td>sekundærminne i servere</td><td class="mono">nei</td><td class="mono">5–20 ms</td><td class="mono">0,01–0,02 $ (2020)</td></tr>
+            <tr><td>Inndata / utdata</td><td>Tastatur, skjerm, nettverk (begge deler). Boka: I/O dominerer i en mobil.</td></tr>
+            <tr><td>Datasti</td><td>«Musklene»: registre og ALU som utfører aritmetikken.</td></tr>
+            <tr><td>Kontroll</td><td>«Hjernen»: forteller datasti, minne og I/O hva de skal gjøre etter instruksjonene.</td></tr>
+            <tr><td>Minne</td><td><span class="term" data-term="hovedminne">Hovedminne</span> = <span class="term" data-term="dram">DRAM</span>, <span class="term" data-term="flyktig-minne">flyktig</span>. <span class="term" data-term="hurtigbuffer">Hurtigbuffer</span> i prosessoren = <span class="term" data-term="sram">SRAM</span>, raskere og dyrere. <span class="term" data-term="sekundaerminne">Sekundærminne</span> = <span class="term" data-term="flashminne">flash</span> (mobil) og <span class="term" data-term="magnetisk-disk">disk</span> (server), ikke-flyktig.</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h3>Et trygt sted for data</h3>
-      <p>Minnet inne i datamaskinen er <span class="term" data-term="flyktig-minne">flyktig</span>: mister det strømmen, glemmer det alt. En DVD glemmer derimot ikke filmen når du slår av spilleren; den er ikke-flyktig. Det flyktige minnet som holder data og programmer mens de kjører kalles <span class="term" data-term="hovedminne">hovedminne</span> eller primærminne; det ikke-flyktige som lagrer dem mellom kjøringer kalles <span class="term" data-term="sekundaerminne">sekundærminne</span>, neste lag ned i hierarkiet. DRAM har dominert hovedminnet siden 1975, magnetiske disker sekundærminnet enda lenger. Mobile enheter bruker <span class="term" data-term="flashminne">flashminne</span>: tregere enn DRAM, men mye billigere og ikke-flyktig; dyrere per bit enn <span class="term" data-term="magnetisk-disk">disk</span>, men mindre, mer robust og mer strømgjerrig. Ulempen er at flash-biter slites ut etter 100 000 til 1 000 000 skrivinger, så filsystemet må holde regnskap og flytte populære data.</p>
-
-      <h3>Arkitektur mot implementasjon</h3>
-      <p>Den viktigste abstraksjonen i faget er grensesnittet mellom maskinvaren og den laveste programvaren. Programvaren snakker til maskinvaren gjennom et vokabular; ordene er instruksjonene, og vokabularet er <span class="term" data-term="isa">instruksjonssettarkitekturen</span> (ISA), eller bare <em>arkitekturen</em>. Den omfatter alt programmerere trenger å vite for å få et binært maskinspråkprogram til å virke: instruksjoner, registre, minnetilgang, I/O. Operativsystemet pakker vanligvis inn detaljene rundt I/O og minnetildeling, og kombinasjonen av det grunnleggende instruksjonssettet og operativsystemets grensesnitt kalles <span class="term" data-term="abi">ABI</span>, application binary interface.</p>
-      <p>Arkitekturen lar designere snakke om <em>funksjoner</em> uavhengig av maskinvaren som utfører dem, slik man kan snakke om hva et digitalt ur gjør (holde tiden, vise den, stille alarm) uavhengig av kvartskrystall og LED-skjerm. En <span class="term" data-term="implementasjon">implementasjon</span> er maskinvare som følger arkitekturabstraksjonen.</p>
-
-      <div class="callout">
-        <span class="label">Big Picture · boka s. 22</span>
-        <p>Både maskinvare og programvare består av hierarkiske lag bygget med abstraksjon, der hvert lavere lag skjuler detaljer for laget over. Ett nøkkelgrensesnitt er instruksjonssettarkitekturen, grensesnittet mellom maskinvaren og den laveste programvaren. Det abstrakte grensesnittet gjør at mange implementasjoner med ulik kostnad og ytelse kan kjøre identisk programvare.</p>
+      <div class="callout callout-warm">
+        <span class="label">Kompendiet lister annerledes</span>
+        <p>Kompendiet sier CPU, minne, I/O, buss og kontrollenhet. Læringsmålet bygger på boka: inndata, utdata, minne, datasti, kontroll. Buss er en forbindelse, ikke en komponent.</p>
       </div>
 
-      <h3>Nettverk</h3>
-      <p>Én ting mangler: nettverk. Akkurat som prosessoren er koblet til minne og I/O, kobler nettverk hele datamaskiner sammen, og en ny PMD eller server uten nettverksgrensesnitt ville blitt ledd av. Fordelene er kommunikasjon (informasjon utveksles raskt), ressursdeling (I/O-enheter kan deles) og ikke-lokal tilgang (du trenger ikke være nær maskinen). Ethernet, opptil en kilometer langt og 100 gigabit per sekund, er et lokalnett (LAN); optiske fibre over kontinenter er fjernnett (WAN) og ryggraden i internett. Trådløs teknologi (IEEE 802.11ac, 1–1300 Mbit/s) gjorde post-PC-æraen mulig, fordi radioen kunne lages i samme billige CMOS-teknologi som minne og prosessorer.</p>
+      <div class="def-box">
+        <span class="def-label">Den viktigste abstraksjonen</span>
+        <div class="def-term">ISA · ABI · implementasjon</div>
+        <p><span class="term" data-term="isa">Instruksjonssettarkitekturen</span> (ISA) er grensesnittet mellom maskinvaren og den laveste programvaren: instruksjoner, registre, minnetilgang. ISA pluss operativsystemets grensesnitt kalles <span class="term" data-term="abi">ABI</span>. En <span class="term" data-term="implementasjon">implementasjon</span> er maskinvare som følger arkitekturen. Én ISA, mange implementasjoner med ulik pris og ytelse, som kjører samme programvare.</p>
+      </div>
 
       <div class="oppgave" data-quiz id="oppg-cy-1-4-minne">
         <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§1.4 · s. 24</span></div>
-        <div class="o-text"><p>Halvleder-DRAM, flashminne og disklagring er svært forskjellige. List opp for hver teknologi om den er flyktig, omtrentlig relativ aksesstid og omtrentlig relativ kostnad sammenliknet med DRAM.</p></div>
+        <div class="o-text"><p>DRAM, flashminne og disk: si for hver om den er flyktig, omtrentlig relativ aksesstid og omtrentlig relativ kostnad sammenliknet med DRAM.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra boka</span>
-            <p><strong>DRAM:</strong> flyktig, kort aksesstid på 50–70 nanosekunder, kostnad 5–10 dollar per GB. <strong>Disk:</strong> ikke-flyktig, aksesstid 100 000 til 400 000 ganger tregere enn DRAM, kostnad per GB 100 ganger lavere enn DRAM. <strong>Flash:</strong> ikke-flyktig, aksesstid 100 til 1000 ganger tregere enn DRAM, kostnad per GB 7 til 10 ganger lavere enn DRAM.</p>
+            <p><strong>DRAM:</strong> flyktig, 50–70 ns, 5–10 dollar per GB. <strong>Disk:</strong> ikke-flyktig, 100 000–400 000 ganger tregere, 100 ganger billigere per GB. <strong>Flash:</strong> ikke-flyktig, 100–1000 ganger tregere, 7–10 ganger billigere per GB.</p>
           </div>
         </div>
       </div>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Middels</div>
-        <div class="q-text">To prosessorer med samme ISA, men bygget helt forskjellig, kjører samme binærfil. Hva er likt, og hva kan være forskjellig?</div>
+        <div class="q-text">To prosessorer med samme ISA, bygget helt forskjellig, kjører samme binærfil. Hva er likt, og hva kan være forskjellig?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Likt: instruksjonene, registrene, minnemodellen, altså alt programmet ser, og dermed resultatet. Forskjellig: implementasjonen, altså klokkefrekvens, CPI, hurtigbufferstørrelse, antall kjerner, pris og effekt. Derfor kjører samme Windows- eller Linux-binærfil på en billig og en dyr x86-maskin, bare med ulik ytelse. Det er poenget med ISA-en som abstraksjon.</div>
+          <div class="answer">Likt: instruksjoner, registre, minnemodell, og dermed resultatet. Forskjellig: klokkefrekvens, CPI, hurtigbuffer, antall kjerner, pris og effekt. Det er poenget med ISA som abstraksjon.</div>
         </div>
       </div>
     </div>
@@ -525,28 +409,23 @@
         <li>Studenten kan forklare prinsippet om lagrede program.</li>
       </ul>
 
-      <p class="dropcap"><span class="term" data-term="lagret-program">Prinsippet om lagrede program</span> følger av det vi så i avsnitt 04: instruksjoner er samlinger av biter, altså tall, akkurat som data. Da kan de ligge i det samme minnet, og boka kaller det å bruke tall for både instruksjoner og data «et fundament for databehandling». Kompendiet sier det slik: programmer og data lagres i samme minne, slik at datamaskiner kan endre programmer under kjøring.</p>
-
       <div class="def-box">
         <span class="def-label">Prinsipp</span>
-        <div class="def-term">Lagret program</div>
-        <p>Instruksjoner og data er begge tall og lagres i samme minne. Prosessoren henter instruksjoner fra minnet på samme måte som den henter data. Derfor kan samme maskinvare kjøre hvilket som helst program bare ved å laste nye tall inn i minnet, og et program kan leses, skrives og behandles som data av andre programmer.</p>
+        <div class="def-term"><span class="term" data-term="lagret-program">Lagret program</span></div>
+        <p>Instruksjoner og data er begge tall og lagres i samme minne. Prosessoren henter instruksjoner fra minnet på samme måte som data. Kompendiet: «programmer og data lagres i samme minne, slik at datamaskiner kan endre programmer under kjøring».</p>
       </div>
-
-      <h3>Hva prinsippet gir oss</h3>
       <ul>
-        <li><strong>Universell maskinvare.</strong> Én datamaskin trenger ikke bygges om for å løse en ny oppgave: last inn et annet program. Uten dette måtte ENIAC programmeres ved å plugge kabler og stille brytere, noe som tok fra en halv time til en hel dag (boka, historisk perspektiv 1.13).</li>
-        <li><strong>Programmer som behandler programmer.</strong> Kompilatoren og assembleren i avsnitt 04 er selv programmer som leser og skriver instruksjoner som data. Operativsystemet laster et program fra disk inn i minnet før det kjøres.</li>
-        <li><strong>Kontrollflyt.</strong> Fordi instruksjonene ligger på adresser i minnet, kan et hopp bare være «sett neste instruksjonsadresse til dette tallet». Det er slik løkker og if-setninger blir til maskinkode (tema T2.1).</li>
+        <li><strong>Universell maskinvare:</strong> nytt program = nye tall i minnet, ikke ny maskin.</li>
+        <li><strong>Programmer som behandler programmer:</strong> kompilator, assembler og operativsystem leser og skriver instruksjoner som data.</li>
+        <li><strong>Kontrollflyt:</strong> et hopp er bare «sett neste instruksjonsadresse til dette tallet».</li>
       </ul>
-      <p>Bokas kapittel 2.5 går dypere: der ser vi hvordan en RISC-V-instruksjon som <code>add x9, x20, x21</code> er tallet <code>00000001010110100000010010110011</code>, med felter for operasjon og registre, og at det er derfor instruksjonene i figur 1.4 kunne skrives som rader av 32 biter.</p>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Middels</div>
         <div class="q-text">Forklar prinsippet om lagrede program med to setninger, og gi ett eksempel på noe som ville vært umulig uten det.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Instruksjonene til et program er tall og lagres i samme minne som dataene programmet arbeider på; prosessoren henter dem derfra én etter én. Uten prinsippet måtte man koble om maskinvaren for hvert nytt program, og et program kunne ikke produsere et annet program: ingen kompilatorer, ingen nedlasting av apper, ingen operativsystemer som starter programmer.</div>
+          <div class="answer">Instruksjonene er tall og ligger i samme minne som dataene; prosessoren henter dem derfra én etter én. Uten det måtte maskinvaren kobles om for hvert program, og et program kunne ikke lage et annet: ingen kompilatorer, ingen nedlasting av apper.</div>
         </div>
       </div>
     </div>
@@ -563,47 +442,27 @@
         <li>Studenten kan gjengi produksjonsprosessen for integrerte kretser.</li>
       </ul>
 
-      <p class="dropcap">Prosessorer og minne har blitt bedre i et utrolig tempo fordi datamaskindesignere alltid har tatt i bruk det nyeste innen elektronikk. En <span class="term" data-term="transistor">transistor</span> er bare en av/på-bryter styrt av et elektrisk signal. Den <span class="term" data-term="integrert-krets">integrerte kretsen</span> (IC) samlet titalls til hundrevis av transistorer på én brikke, og da antallet vokste til millioner fikk vi betegnelsen VLSI, very large-scale integrated circuit. Da Moore spådde dobling av ressursene, var det antall transistorer per brikke han mente.</p>
+      <p class="dropcap">En <span class="term" data-term="transistor">transistor</span> er en av/på-bryter styrt av et elektrisk signal; en <span class="term" data-term="integrert-krets">integrert krets</span> samler milliarder av dem på én brikke. Råstoffet er <span class="term" data-term="silisium">silisium</span>, en halvleder som kan gjøres til leder, isolator eller bryter i små områder.</p>
 
-      <div class="table-wrap">
-        <table>
-          <caption>Figur 1.10 i boka: relativ ytelse per kostnadsenhet for teknologiene som er brukt i datamaskiner.</caption>
-          <thead><tr><th>År</th><th>Teknologi</th><th>Relativ ytelse/kostnad</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">1951</td><td>Radiorør</td><td class="mono">1</td></tr>
-            <tr><td class="mono">1965</td><td>Transistor</td><td class="mono">35</td></tr>
-            <tr><td class="mono">1975</td><td>Integrert krets</td><td class="mono">900</td></tr>
-            <tr><td class="mono">1995</td><td>VLSI</td><td class="mono">2 400 000</td></tr>
-            <tr><td class="mono">2020</td><td>Ultra large-scale integrated circuit</td><td class="mono">500 000 000 000</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>DRAM-kapasiteten per brikke (figur 1.11) firedoblet seg omtrent hvert tredje år i 35 år, en økning på over 16 000 ganger, fra 16 Kibit i 1977 til 16 Gibit. De siste årene har firedoblingen tatt seks år: Moores lov bremser.</p>
-
-      <h3>Silisium: leder, isolator eller bryter</h3>
-      <p>Produksjonen begynner med <span class="term" data-term="silisium">silisium</span>, et stoff som finnes i sand. Silisium leder strøm dårlig og kalles derfor en halvleder. Med en spesiell kjemisk prosess kan man tilsette stoffer som gjør små områder til én av tre ting: utmerkede <em>ledere</em> (mikroskopiske kobber- eller aluminiumtråder), utmerkede <em>isolatorer</em> (som plast eller glass), eller områder som leder eller isolerer under bestemte betingelser, altså <em>brytere</em>. Transistorene er den siste typen. En VLSI-krets er milliarder av slike ledere, isolatorer og brytere i én liten pakke.</p>
-
-      <h3>Prosessen (figur 1.12)</h3>
       <ol class="steps">
-        <li><strong>Silisiumstav.</strong> En krystallstav som ser ut som en gigantisk pølse, 8–12 tommer i diameter og 12–24 tommer lang.</li>
-        <li><strong>Skjæring til wafere.</strong> Staven skjæres i <span class="term" data-term="wafer">wafere</span> som er under 0,1 tomme tykke. Disse er «blanke».</li>
-        <li><strong>20–40 prosesseringssteg.</strong> Kjemiske mønstre legges på waferen og lager transistorene, lederne og isolatorene. Dagens kretser har ett lag transistorer, men to til åtte lag med metalledere adskilt av isolatorer. Resultatet er en mønstret wafer.</li>
-        <li><strong>Wafertest.</strong> Waferen testes, og det lages et kart over hvilke deler som er gode.</li>
-        <li><strong>Oppkutting (dicing).</strong> Waferen kuttes opp i <span class="term" data-term="die">dies</span>, uformelt brikker. En mikroskopisk <span class="term" data-term="defekt">defekt</span> i waferen eller i et av mønstringsstegene ødelegger området den ligger i, så en feilfri wafer er praktisk umulig. Ved å ha mange uavhengige dies kaster man bare de som var uheldige.</li>
-        <li><strong>Pakking (bonding).</strong> De gode diene kobles til inn- og utgangspinnene på en pakke.</li>
-        <li><strong>Sluttest og sending.</strong> Pakkede deler testes en siste gang, siden feil kan oppstå ved pakkingen, og sendes til kunden.</li>
+        <li><strong>Silisiumstav</strong> (krystall, 8–12 tommer i diameter).</li>
+        <li><strong>Skjæres til <span class="term" data-term="wafer">wafere</span></strong>, under 0,1 tomme tykke.</li>
+        <li><strong>20–40 prosesseringssteg</strong> legger på mønstrene som blir transistorer, ledere og isolatorer.</li>
+        <li><strong>Wafertest:</strong> kart over hvilke deler som er gode.</li>
+        <li><strong>Oppkutting (dicing)</strong> til <span class="term" data-term="die">dies</span>. En <span class="term" data-term="defekt">defekt</span> ødelegger bare dien den ligger i.</li>
+        <li><strong>Pakking (bonding):</strong> gode dies kobles til pinnene på en pakke.</li>
+        <li><strong>Sluttest og sending.</strong></li>
       </ol>
-      <p>I bokas eksempel gir én wafer 20 dies, 17 av dem passerer testen (<span class="term" data-term="utbytte">utbytte</span> 17/20 = 85 %), og én pakket del feiler sluttesten. Utbyttet er definert som andelen gode dies av totalt antall dies på waferen. Kostnaden for en integrert krets stiger raskt med diearealet, både fordi utbyttet faller og fordi færre dies får plass på waferen. Neste teknologigenerasjon krymper en stor die ved å bruke mindre transistorer og tråder; en 7 nm-prosess (2020) betyr at det minste elementet på dien er omtrent 7 nm.</p>
+      <p><span class="term" data-term="utbytte">Utbytte</span> (yield) = andel gode dies av alle dies på waferen. Kostnaden stiger raskt med diearealet: færre dies per wafer <em>og</em> lavere utbytte.</p>
 
-      <h3>Kostnaden i tre likninger</h3>
       \[ \text{Kostnad per die} = \frac{\text{Kostnad per wafer}}{\text{Dies per wafer} \times \text{Utbytte}} \tag{1} \]
       \[ \text{Dies per wafer} \approx \frac{\text{Waferareal}}{\text{Dieareal}} \tag{2} \]
       \[ \text{Utbytte} = \frac{1}{\left(1 + \text{Defekter per areal} \times \text{Dieareal}\right)^{N}} \tag{3} \]
-      <p class="eq-note">(2) er en tilnærming: den trekker ikke fra kanten av den runde waferen der rektangulære dies ikke får plass. (3) bygger på empiriske observasjoner fra fabrikkene; eksponenten \(N\) henger sammen med antall kritiske prosesseringssteg. Kostnaden er dermed <em>ikke</em> lineær i diearealet.</p>
+      <p class="eq-note">(2) ser bort fra kanten av den runde waferen. (3) er empirisk; \(N\) henger sammen med antall kritiske prosesseringssteg. Forrige utgave av boka brukte \(1/(1 + D \cdot A/2)^2\); si hvilken du bruker.</p>
 
       <div class="widget" id="w-die">
         <div class="widget-label">Prøv selv · Utbytte og kostnad per die</div>
-        <p class="widget-intro">Bokas tre likninger med tallene fra oppgave 1.11 forhåndsutfylt (wafer på 15 cm som koster 12, 84 dies, 0,020 defekter/cm²). Dra i defekttettheten eller diestørrelsen og se hvordan utbyttet og kostnaden per die reagerer. Kurven viser utbyttet som funksjon av dieareal for valgt defekttetthet.</p>
+        <p class="widget-intro">Likning (1)–(3) med tallene fra oppgave 1.11 (15 cm-wafer til 12, 84 dies, 0,020 defekter/cm²). Endre defekttetthet eller antall dies og se utbytte og kostnad.</p>
         <div class="w-row">
           <div class="w-ctl"><label for="dc-diam">waferdiameter (cm)</label><input type="number" id="dc-diam" min="5" max="45" step="1" value="15"></div>
           <div class="w-ctl"><label for="dc-cost">kostnad per wafer</label><input type="number" id="dc-cost" min="0" step="any" value="12"></div>
@@ -618,67 +477,21 @@
         <div class="metric-grid" id="dc-out"></div>
       </div>
 
-      <h3>Kostnad er ikke pris</h3>
-      <p>Selskaper tar så mye markedet tåler for å maksimere avkastningen, og prisen må dekke forskning og utvikling, markedsføring, salg, vedlikehold av produksjonsutstyr, husleie, finansiering, skatt og fortjeneste. Marginene kan være høyere på unike brikker som bare ett selskap lager (mikroprosessorer) enn på råvarebrikker som flere leverer (DRAM). Prisen svinger med forholdet mellom tilbud og etterspørsel.</p>
-
-      <div class="oppgave" data-quiz id="oppg-cy-1-5-volum">
-        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§1.5 · s. 28</span></div>
-        <div class="o-text">
-          <p>En nøkkelfaktor for kostnaden til en integrert krets er volum. Hvilke av disse er grunner til at en brikke laget i stort volum bør koste mindre?</p>
-          <ol>
-            <li>Med høyt volum kan produksjonsprosessen finjusteres for ett bestemt design, noe som øker utbyttet.</li>
-            <li>Det er mindre arbeid å designe en høyvolumdel enn en lavvolumdel.</li>
-            <li>Maskene som brukes til å lage brikken er dyre, så kostnaden per brikke er lavere ved høyere volum.</li>
-            <li>Utviklingskostnadene er høye og stort sett uavhengige av volum; dermed er utviklingskostnaden per die lavere for høyvolumdeler.</li>
-            <li>Høyvolumdeler har vanligvis mindre dies enn lavvolumdeler og har derfor høyere utbytte per wafer.</li>
-          </ol>
-        </div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">
-            <span class="answer-src">Svar fra boka</span>
-            <p>1, 3 og 4 er gyldige grunner. Svar 5 kan ofte være sant, fordi høyt volum kan gjøre det økonomisk å investere ekstra i å krympe dien med f.eks. 10 %, men det <em>må</em> ikke være sant. (2 er feil: designarbeidet er ikke mindre.)</p>
-          </div>
-        </div>
-      </div>
-
       <div class="oppgave" data-quiz id="oppg-1-11-wafer">
         <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">1.11 · s. 62</span></div>
         <div class="o-text">
-          <p>Anta at en wafer med 15 cm diameter koster 12, inneholder 84 dies og har 0,020 defekter/cm². Anta at en wafer med 20 cm diameter koster 15, inneholder 100 dies og har 0,031 defekter/cm².</p>
-          <p>1.11.1 Finn utbyttet for begge waferne. 1.11.2 Finn kostnaden per die for begge. 1.11.3 Hvis antall dies per wafer økes med 10 % og defekter per arealenhet øker med 15 %, finn dieareal og utbytte. 1.11.4 Anta at en produksjonsprosess forbedrer utbyttet fra 0,92 til 0,95. Finn defekter per arealenhet for hver versjon av teknologien, gitt et dieareal på 200 mm².</p>
+          <p>En wafer med 15 cm diameter koster 12, har 84 dies og 0,020 defekter/cm². En wafer med 20 cm diameter koster 15, har 100 dies og 0,031 defekter/cm².</p>
+          <p>1.11.1 Finn utbyttet for begge. 1.11.2 Finn kostnaden per die for begge. 1.11.3 Antall dies per wafer øker 10 % og defekter per areal øker 15 %: finn dieareal og utbytte. 1.11.4 En prosessforbedring hever utbyttet fra 0,92 til 0,95. Finn defekter per areal for hver versjon, gitt dieareal 200 mm².</p>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
-            <span class="answer-src">Forslag til svar · ikke fasit fra boka · bruker likning (3) med N = 2</span>
-            <p><strong>Dieareal:</strong> waferareal \(= \pi r^2\). 15 cm: \(\pi \cdot 7{,}5^2 = 176{,}7\ \text{cm}^2\), dieareal \(176{,}7 / 84 = 2{,}10\ \text{cm}^2\). 20 cm: \(314{,}2\ \text{cm}^2\), dieareal \(314{,}2 / 100 = 3{,}14\ \text{cm}^2\).</p>
-            <p><strong>1.11.1 Utbytte:</strong> 15 cm: \(1/(1 + 0{,}020 \cdot 2{,}10)^2 = 1/1{,}042^2 = 0{,}92\). 20 cm: \(1/(1 + 0{,}031 \cdot 3{,}14)^2 = 1/1{,}097^2 = 0{,}83\).</p>
-            <p><strong>1.11.2 Kostnad per die:</strong> 15 cm: \(12 / (84 \cdot 0{,}92) = 0{,}155\). 20 cm: \(15 / (100 \cdot 0{,}83) = 0{,}181\). Den store waferen gir dyrere dies her, fordi diene er større og defekttettheten høyere.</p>
-            <p><strong>1.11.3:</strong> 15 cm: 92,4 dies, dieareal \(176{,}7/92{,}4 = 1{,}91\ \text{cm}^2\), defekter \(0{,}023\), utbytte \(1/(1 + 0{,}023 \cdot 1{,}91)^2 = 0{,}92\). 20 cm: 110 dies, dieareal \(2{,}86\ \text{cm}^2\), defekter \(0{,}0357\), utbytte \(1/(1 + 0{,}0357 \cdot 2{,}86)^2 = 0{,}82\). Mindre dies veier nesten opp for flere defekter.</p>
-            <p><strong>1.11.4:</strong> Løs (3) for defekttettheten \(D\) med dieareal \(A = 2\ \text{cm}^2\): \(D = (1/\sqrt{\text{utbytte}} - 1)/A\). Utbytte 0,92: \(D = (1{,}0426 - 1)/2 = 0{,}021\) defekter/cm². Utbytte 0,95: \(D = (1{,}0260 - 1)/2 = 0{,}013\) defekter/cm².</p>
-            <p>Merk: forrige utgave av boka hadde \(\text{utbytte} = 1/(1 + D \cdot A/2)^2\); med den blir tallene litt høyere (0,96 og 0,91 i 1.11.1). Si hvilken formel du bruker.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="oppgave" data-quiz id="oppg-ss-dram-pris">
-        <div class="o-label"><span>Selvstudium · fra boka</span><span class="o-ref">1.14 · s. 57</span></div>
-        <div class="o-text">
-          <p>Figur 1.21 viser prisen på DRAM-brikker fra 1975 til 2020, mens figur 1.11 viser kapasiteten per brikke i samme periode: en millionfold økning i kapasitet (16 Kbit til 16 Gbit) og en 25-millionfold reduksjon i pris per gigabyte (100 millioner dollar til 4 dollar). Prisen per GiB svinger, mens kapasiteten vokser jevnt.</p>
-          <ol type="a">
-            <li>Kan du se tegn til at Moores lov bremser i figur 1.21?</li>
-            <li>Hvorfor kan prisen ha blitt 25 ganger bedre enn kapasiteten per brikke? Hvilke grunner finnes utover økt brikkekapasitet?</li>
-            <li>Hvorfor tror du prisen per gigabyte svinger i perioder på 3–5 år? Henger det sammen med kostnadsformlene på side 28 eller med andre krefter i markedet?</li>
-          </ol>
-        </div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">
-            <span class="answer-src">Svar fra boka</span>
-            <p><strong>a.</strong> Selv om prisene svinger, ser prisutviklingen flatere ut fra 2013, i tråd med at Moores lov bremser. DRAM kostet 4 dollar/GB både i 2013, 2016 og 2019; ingen tidligere periode var like flat like lenge.</p>
-            <p><strong>b.</strong> Ingen av figurene nevner <em>volumet</em> av DRAM-brikker, som kan forklare at prisen forbedres mer enn kapasiteten per brikke. Det finnes læringskurver i produksjon der hver tidobling av volumet kan gi f.eks. en halvering av kostnaden. Nyvinninger i pakking kan også senke kostnader og priser over lang tid.</p>
-            <p><strong>c.</strong> DRAM er en råvare som flere selskaper lager, og er dermed utsatt for markedskrefter og svingende priser. Prisen går opp når etterspørselen overstiger tilbudet, og omvendt. Bransjen har perioder der DRAM er svært lønnsomt, så det bygges flere produksjonslinjer til det blir overtilbud og prisene faller, og da kuttes nye linjer.</p>
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · likning (3) med N = 2</span>
+            <p><strong>Dieareal:</strong> 15 cm: \(\pi \cdot 7{,}5^2 / 84 = 176{,}7 / 84 = 2{,}10\ \text{cm}^2\). 20 cm: \(314{,}2 / 100 = 3{,}14\ \text{cm}^2\).</p>
+            <p><strong>1.11.1</strong> 15 cm: \(1/(1 + 0{,}020 \cdot 2{,}10)^2 = 0{,}92\). 20 cm: \(1/(1 + 0{,}031 \cdot 3{,}14)^2 = 0{,}83\).</p>
+            <p><strong>1.11.2</strong> 15 cm: \(12 / (84 \cdot 0{,}92) = 0{,}155\). 20 cm: \(15 / (100 \cdot 0{,}83) = 0{,}181\).</p>
+            <p><strong>1.11.3</strong> 15 cm: 92,4 dies, areal \(1{,}91\ \text{cm}^2\), defekter 0,023, utbytte \(1/(1 + 0{,}023 \cdot 1{,}91)^2 = 0{,}92\). 20 cm: 110 dies, areal \(2{,}86\ \text{cm}^2\), defekter 0,0357, utbytte 0,82.</p>
+            <p><strong>1.11.4</strong> Løs (3) for \(D\) med \(A = 2\ \text{cm}^2\): \(D = (1/\sqrt{\text{utbytte}} - 1)/A\). Utbytte 0,92: \(D = 0{,}021\). Utbytte 0,95: \(D = 0{,}013\) defekter/cm².</p>
           </div>
         </div>
       </div>
@@ -688,7 +501,7 @@
         <div class="q-text">En designer dobler diearealet for å få plass til dobbelt så mye hurtigbuffer. Blir kostnaden per die omtrent dobbelt så høy? Begrunn med likningene.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Nei, mer enn dobbelt. Etter (2) halveres antall dies per wafer, som alene dobler kostnaden per die. I tillegg faller utbyttet etter (3), siden en større die har større sjanse for å inneholde en defekt, og utbyttet står i nevneren i (1). Kostnaden vokser altså raskere enn arealet. Prøv å doble diearealet i widgeten (halver «dies per wafer») og se.</div>
+          <div class="answer">Nei, mer enn dobbelt. Etter (2) halveres dies per wafer, som alene dobler kostnaden. I tillegg faller utbyttet etter (3), og det står i nevneren i (1). Kostnaden vokser raskere enn arealet.</div>
         </div>
       </div>
     </div>
@@ -702,13 +515,13 @@
 
       <div class="recap-grid">
         <div class="recap-pill"><strong>Datamaskintyper</strong>PC, server, superdatamaskin, innebygd, PMD, sky/WSC. Ulike krav til ytelse, kostnad, effekt og pålitelighet.</div>
-        <div class="recap-pill"><strong>Prefikser</strong>KB = 10³, KiB = 2¹⁰. Avviket vokser fra 2 % (kilo) til 10 % (tera). Minne i GiB, båndbredde i Gbit/s.</div>
+        <div class="recap-pill"><strong>Prefikser</strong>KB = 10³, KiB = 2¹⁰. Avvik 2 % (kilo) til 10 % (tera). Minne i GiB, båndbredde i Gbit/s. 32 bit → 4 GiB.</div>
         <div class="recap-pill"><strong>Syv store ideer</strong>Abstraksjon · vanlig tilfelle raskt · parallellitet · samlebånd · prediksjon · minnehierarki · redundans.</div>
-        <div class="recap-pill"><strong>Under programmet</strong>Applikasjon → systemprogramvare (OS, kompilator, assembler) → maskinvare. C → assembly → binært.</div>
-        <div class="recap-pill"><strong>Fem komponenter</strong>Inndata, utdata, minne, datasti, kontroll. Datasti + kontroll = prosessor.</div>
+        <div class="recap-pill"><strong>Under programmet</strong>Applikasjon → systemprogramvare (OS: I/O, minne, deling; kompilator; assembler) → maskinvare. C → assembly → binært.</div>
+        <div class="recap-pill"><strong>Fem komponenter</strong>Inndata, utdata, minne, datasti, kontroll. Datasti + kontroll = prosessor. DRAM flyktig, flash/disk ikke.</div>
         <div class="recap-pill"><strong>ISA</strong>Grensesnittet mellom maskinvare og laveste programvare. Én arkitektur, mange implementasjoner.</div>
-        <div class="recap-pill"><strong>Lagret program</strong>Instruksjoner er tall i samme minne som data. Universell maskinvare, programmer som behandler programmer.</div>
-        <div class="recap-pill"><strong>Brikkeproduksjon</strong>Stav → wafer → 20–40 steg → test → dicing → pakking → test. Utbytte = gode dies / alle dies; kostnad per die = waferkostnad / (dies × utbytte).</div>
+        <div class="recap-pill"><strong>Lagret program</strong>Instruksjoner er tall i samme minne som data.</div>
+        <div class="recap-pill"><strong>Brikkeproduksjon</strong>Stav → wafer → 20–40 steg → test → dicing → pakking → test. Kostnad per die = waferkostnad / (dies × utbytte).</div>
       </div>
 
       <h3>Test deg selv</h3>
@@ -718,7 +531,7 @@
         <div class="q-text">Nevn de fem klassiske komponentene og si hvilke to som utgjør prosessoren.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Inndata, utdata, minne, datasti og kontroll. Datasti (utfører aritmetikken) og kontroll (styrer datasti, minne og I/O) utgjør til sammen prosessoren.</div>
+          <div class="answer">Inndata, utdata, minne, datasti og kontroll. Datasti og kontroll utgjør prosessoren.</div>
         </div>
       </div>
 
@@ -727,25 +540,16 @@
         <div class="q-text">En «256 GB» SSD viser 238 GiB i operativsystemet. Er noe borte? Regn.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Nei. \(256 \cdot 10^9\) byte \(/ 2^{30} = 256 \cdot 10^9 / 1{,}0737 \cdot 10^9 = 238{,}4\) GiB. Produsenten teller desimalt, operativsystemet binært, og for giga er avviket 7 %.</div>
+          <div class="answer">Nei. \(256 \cdot 10^9 / 2^{30} = 238{,}4\) GiB. Produsenten teller desimalt, operativsystemet binært; for giga er avviket 7 %.</div>
         </div>
       </div>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Spørsmål 3 · Middels</div>
-        <div class="q-text">Hvilke av de syv store ideene er hurtigbufferet et eksempel på? Og hoppprediksjon? Og en bøttekjede?</div>
+        <div class="q-text">Hvilken av de syv store ideene er hurtigbufferet et eksempel på? Hoppprediksjon? En bøttekjede?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Hurtigbufferet: minnehierarki (og «gjør det vanlige tilfellet raskt», siden det utnytter at de samme dataene brukes om igjen). Hoppprediksjon: ytelse via prediksjon. Bøttekjeden: ytelse via samlebånd, bokas eget bilde på pipelining.</div>
-        </div>
-      </div>
-
-      <div class="quiz" data-quiz>
-        <div class="q-label">Spørsmål 4 · Vanskelig</div>
-        <div class="q-text">Forklar med de tre kostnadslikningene hvorfor en ny, mindre prosessteknologi («krympe» dien) senker kostnaden per die på to måter.</div>
-        <div class="quiz-reveal">
-          <button class="reveal-btn">Se svar</button>
-          <div class="answer">Mindre transistorer og tråder gir mindre dieareal. Etter (2) får flere dies plass på samme wafer, og etter (3) øker utbyttet fordi hver die har mindre sjanse for å inneholde en defekt. Begge står i nevneren i (1), så kostnaden per die faller av begge grunner. Det var mekanismen bak Moores lov i 50 år; i dag kan kostnaden per transistor likevel være flat eller stigende fordi utstyret og prosessene for de minste dimensjonene er så dyre.</div>
+          <div class="answer">Hurtigbuffer: minnehierarki. Hoppprediksjon: prediksjon. Bøttekjede: samlebånd.</div>
         </div>
       </div>
 
@@ -780,28 +584,7 @@
   'use strict';
   function fmtInt(v) { return Math.round(v).toLocaleString('nb-NO'); }
 
-  /* ─── Widget 1: prefikser ─── */
-  (function () {
-    var root = document.getElementById('w-prefiks'); if (!root) return;
-    var valIn = document.getElementById('pf-val'), unitIn = document.getElementById('pf-unit'), out = document.getElementById('pf-out');
-    var DEC = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12, PB: 1e15 };
-    var BIN = { KiB: Math.pow(2, 10), MiB: Math.pow(2, 20), GiB: Math.pow(2, 30), TiB: Math.pow(2, 40), PiB: Math.pow(2, 50) };
-    var PAIR = { KB: 'KiB', MB: 'MiB', GB: 'GiB', TB: 'TiB', PB: 'PiB', KiB: 'KB', MiB: 'MB', GiB: 'GB', TiB: 'TB', PiB: 'PB' };
-    function draw() {
-      var v = Math.max(0, +valIn.value || 0), u = unitIn.value, isDec = DEC.hasOwnProperty(u);
-      var bytes = v * (isDec ? DEC[u] : BIN[u]);
-      var other = PAIR[u], otherVal = bytes / (isDec ? BIN[other] : DEC[other]);
-      var pct = (isDec ? BIN[other] / DEC[u] : DEC[other] / BIN[u]) * 100 - 100;
-      out.innerHTML = v + ' ' + u + ' = ' + fmtInt(bytes) + ' byte\n' +
-        '= <span class="hl">' + otherVal.toLocaleString('nb-NO', { maximumFractionDigits: 3 }) + ' ' + other + '</span>\n' +
-        (isDec ? other + ' er ' + Math.abs(pct).toFixed(1) + ' % større enn ' + u + ', så tallet blir mindre med binært prefiks.'
-               : u + ' er ' + Math.abs(pct).toFixed(1) + ' % større enn ' + other + ', så tallet blir større med desimalt prefiks.');
-    }
-    valIn.addEventListener('input', draw); unitIn.addEventListener('change', draw);
-    draw();
-  })();
-
-  /* ─── Widget 2: utbytte og kostnad per die ─── */
+  /* ─── Widget: utbytte og kostnad per die ─── */
   (function () {
     var root = document.getElementById('w-die'); if (!root) return;
     var ids = ['dc-diam', 'dc-cost', 'dc-dies', 'dc-def', 'dc-n'];

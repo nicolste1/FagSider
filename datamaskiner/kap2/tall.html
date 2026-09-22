@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Heltall og logiske operasjoner — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .bits { display: flex; flex-wrap: wrap; gap: 3px; margin: 0.6rem 0; font-family: var(--mono); }
+  .bits .b { width: 26px; height: 34px; display: grid; place-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 3px; font-size: 0.9rem; position: relative; }
+  .bits .b.one { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .bits .b.sign { border-color: var(--warm); box-shadow: inset 0 0 0 1px var(--warm); }
+  .bits .b .ix { position: absolute; top: -13px; font-size: 0.55rem; color: var(--ink-ghost); }
+  .bits .gap { width: 8px; }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .w-ctl input[type=text] { width: 150px; }
+  .asm { font-family: var(--mono); font-size: 0.88rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Instruksjonssett">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2B · Læringsmål T2.2 · Boka kap. 2.4 og 2.6 · Kompendiet kap. 3 · ~35 min</div>
+      <h1>Heltall og <em>logiske operasjoner</em></h1>
+      <p class="lede">Hvordan biter blir tall: grunntall 2, 10 og 16, usignerte tall, tokomplement for negative tall og hvorfor akkurat det, snarveiene negering og fortegnsutvidelse, når overflyt oppstår, og operasjonene som jobber på enkeltbit: AND, OR, XOR og skift.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#grunntall"><span>01</span> Grunntall</a>
+        <a href="#tokomplement"><span>02</span> Tokomplement</a>
+        <a href="#overflyt"><span>03</span> Overflyt</a>
+        <a href="#logikk"><span>04</span> Logiske operasjoner</a>
+        <a href="#skift"><span>05</span> Skift</a>
+        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Læringsutbyttebeskrivelsen T2.2 (26. aug. 2026) · nevnte eksamensoppgaver: Kont 26 oppg. 1, Ord. 25 oppg. 1 · eksamensanalyse for faget er ikke laget ennå</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Konvertering:</strong> desimalt ↔ binært ↔ hex, begge veier, også negative tall i tokomplement (inverter + 1) og fortegnsutvidelse.</li>
+          <li><span class="tag regn">Regn</span><strong>Overflyt:</strong> avgjør om en addisjon/subtraksjon i n bit flyter over, og hvilke operander som gir det (oppgave 2.10, 2.11).</li>
+          <li><span class="tag regn">Regn</span><strong>Bitoperasjoner:</strong> and/or/xor med masker, slli/srli/srai på konkrete bitmønstre; skift = ×/÷ 2ⁱ.</li>
+          <li><span class="tag">Forklar</span>Hvorfor tokomplement vant over fortegn-og-størrelse; hvorfor fortegnsutvidelse bevarer verdien; forskjellen på logisk og aritmetisk skift; lb mot lbu.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 GRUNNTALL ─────────────────────────── -->
+  <section id="grunntall">
+    <div class="container">
+      <div class="section-badge">01 · Grunntall</div>
+      <h2>Binært, desimalt og <em>heksadesimalt</em></h2>
+      <div class="source-note">Boka · kap. 2.4 · s. 80–81 og kap. 2.5 · s. 88–89 · Kompendiet · kap. 3 «Binære tall og tallsystemer»</div>
+      <span class="lm-pill">Læringsmål T2.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne representere heltall som binære tall (grunntall 2) og heksadesimale tall (grunntall 16) samt kunne oversette mellom disse og tall i det desimale systemet (grunntall 10).</li>
+      </ul>
+
+      <p class="dropcap">Fordi vi har ti fingre lærer vi å tenke i grunntall 10, men tall kan skrives i et hvilket som helst grunntall: 123<sub>ti</sub> = 1111011<sub>to</sub>. Maskinvaren holder tall som høye og lave signaler, så de er <span class="term" data-term="binaertall">binærtall</span>. Ett binært siffer, et bit, er «atomet» i databehandling: høyt eller lavt, på eller av, sant eller usant, 1 eller 0. I ethvert grunntall har siffer nummer \(i\) (fra høyre, fra 0) verdien</p>
+      \[ d \times \text{Grunntall}^{\,i} \tag{1} \]
+      <p>Så \(1011_{\text{to}} = 1 \cdot 2^3 + 0 \cdot 2^2 + 1 \cdot 2^1 + 1 \cdot 2^0 = 8 + 0 + 2 + 1 = 11_{\text{ti}}\). Vi nummererer bitene 0, 1, 2, … fra høyre. Bit 0 er det <span class="term" data-term="lsb-msb">minst signifikante</span>, bit 31 det mest signifikante i et RISC-V-ord. Et 32-bits ord kan representere \(2^{32}\) ulike mønstre, og det naturlige er å la dem være tallene 0 til \(2^{32} - 1 = 4\,294\,967\,295\): <span class="term" data-term="usignert">usignerte tall</span>.</p>
+      \[ (x_{31} \times 2^{31}) + (x_{30} \times 2^{30}) + \cdots + (x_1 \times 2^1) + (x_0 \times 2^0) \tag{2} \]
+
+      <h3>Fra desimalt til binært</h3>
+      <p>Kompendiet: del tallet på 2 gjentatte ganger og ta vare på restene. 13: 13/2 = 6 rest 1, 6/2 = 3 rest 0, 3/2 = 1 rest 1, 1/2 = 0 rest 1. Lest nedenfra og opp: \(1101_{\text{to}}\). Fra binært til desimalt: bruk (2).</p>
+
+      <h3>Heksadesimalt</h3>
+      <p>Siden nesten alle datastørrelser er multipler av 4, er <span class="term" data-term="heksadesimal">grunntall 16</span> praktisk: hvert heksadesimale siffer er nøyaktig fire bit, så oversettelsen er tabelloppslag (figur 2.4 i boka). Er antall bit ikke delelig med 4, går du fra høyre mot venstre. Boka merker desimale tall med <sub>ti</sub>, binære med <sub>to</sub> og heksadesimale med <sub>hex</sub>; C og Java skriver 0x1a2b. Assemblere godtar alle tre (og oktalt).</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Figur 2.4 i boka: heksadesimalt til binært.</caption>
+          <thead><tr><th>Hex</th><th>Bin</th><th>Hex</th><th>Bin</th><th>Hex</th><th>Bin</th><th>Hex</th><th>Bin</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0</td><td class="mono">0000</td><td class="mono">4</td><td class="mono">0100</td><td class="mono">8</td><td class="mono">1000</td><td class="mono">c</td><td class="mono">1100</td></tr>
+            <tr><td class="mono">1</td><td class="mono">0001</td><td class="mono">5</td><td class="mono">0101</td><td class="mono">9</td><td class="mono">1001</td><td class="mono">d</td><td class="mono">1101</td></tr>
+            <tr><td class="mono">2</td><td class="mono">0010</td><td class="mono">6</td><td class="mono">0110</td><td class="mono">a</td><td class="mono">1010</td><td class="mono">e</td><td class="mono">1110</td></tr>
+            <tr><td class="mono">3</td><td class="mono">0011</td><td class="mono">7</td><td class="mono">0111</td><td class="mono">b</td><td class="mono">1011</td><td class="mono">f</td><td class="mono">1111</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warm">
+        <span class="label">Hvorfor ikke desimalt i maskinen?</span>
+        <p>Den første kommersielle datamaskinen tilbød desimal aritmetikk. Men maskinen brukte fortsatt av/på-signaler, så et desimalt siffer ble representert med flere binære, og det viste seg så ineffektivt at senere maskiner gikk tilbake til rent binært og oversetter til grunntall 10 bare ved de relativt sjeldne inn- og utdataoperasjonene. Bokas eksempel i 2C: tallet én milliard tar 2,5 ganger mer plass som ASCII-sifre enn som 32-bits heltall.</p>
+      </div>
+
+      <div class="widget" id="w-konv">
+        <div class="widget-label">Prøv selv · Tallkonverterer</div>
+        <p class="widget-intro">Skriv et tall desimalt (også negativt), binært (0b…) eller heksadesimalt (0x…), og velg bitbredde. Widgeten viser bitmønsteret (fortegnsbiten rammet inn), verdien som usignert og som tokomplement, og hex. Forhåndsutfylt med bokas eksempel −4.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="kv-in">tall</label><input type="text" id="kv-in" value="-4"></div>
+          <div class="w-ctl"><label for="kv-n">bit</label>
+            <select id="kv-n"><option value="4">4</option><option value="8">8</option><option value="16">16</option><option value="32" selected>32</option></select>
+          </div>
+        </div>
+        <div class="bits" id="kv-bits"></div>
+        <div class="metric-grid" id="kv-out"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Skriv 200<sub>ti</sub> binært og heksadesimalt, og 0x2f desimalt.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">200 = 128 + 64 + 8 = 1100 1000<sub>to</sub> = c8<sub>hex</sub>. 0x2f = 2 · 16 + 15 = 47. (Divisjonsmetoden: 200/2 = 100 r0, 100/2 = 50 r0, 50/2 = 25 r0, 25/2 = 12 r1, 12/2 = 6 r0, 6/2 = 3 r0, 3/2 = 1 r1, 1/2 = 0 r1 → 11001000.)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 TOKOMPLEMENT ─────────────────────────── -->
+  <section id="tokomplement">
+    <div class="container">
+      <div class="section-badge">02 · Tokomplement</div>
+      <h2>Negative tall: ledende 1-ere <em>betyr minus</em></h2>
+      <div class="source-note">Boka · kap. 2.4 · s. 81–87 · Kompendiet · kap. 3 «To-komplement og negative tall»</div>
+      <span class="lm-pill">Læringsmål T2.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne representere negative heltall på 2’s komplement form samt kunne oversette mellom dette formatet og tall i det desimale systemet.</li>
+        <li>Studenten skal forstå hvorfor fortegnsutvidelse av et tall på 2’s komplement form beholder samme tallverdi.</li>
+      </ul>
+
+      <p class="dropcap">Programmer regner med både positive og negative tall, så vi trenger en representasjon som skiller dem. Den opplagte løsningen er et eget fortegn i én bit, <span class="term" data-term="fortegn-storrelse">fortegn og størrelse</span>. Den har flere svakheter: det er uklart hvor fortegnsbiten skal stå (tidlige maskiner prøvde begge sider), adderere kan trenge et ekstra steg for å sette fortegnet, og det finnes både +0 og −0. Den ble derfor fort forlatt.</p>
+      <p>Spørsmålet ble så: hva skjer med usignerte tall om vi trekker et stort tall fra et lite? Svaret er at man låner fra en rekke ledende 0-ere, så resultatet får en rekke ledende 1-ere. Uten et opplagt bedre alternativ valgte man representasjonen som gjorde maskinvaren enkel: ledende 0-ere betyr positivt, ledende 1-ere betyr negativt. Det er <span class="term" data-term="tokomplement">tokomplement</span>, og hver datamaskin i dag bruker den for signerte tall.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Tokomplement i 32 bit: den positive halvdelen som før, så det mest negative tallet, så negative tall stigende opp til −1.</caption>
+          <thead><tr><th>Bitmønster</th><th>Verdi</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0000 0000 … 0000 0000</td><td class="mono">0</td></tr>
+            <tr><td class="mono">0000 0000 … 0000 0001</td><td class="mono">1</td></tr>
+            <tr><td class="mono">0111 1111 … 1111 1111</td><td class="mono">2 147 483 647 (2³¹ − 1)</td></tr>
+            <tr><td class="mono">1000 0000 … 0000 0000</td><td class="mono">−2 147 483 648 (−2³¹)</td></tr>
+            <tr><td class="mono">1000 0000 … 0000 0001</td><td class="mono">−2 147 483 647</td></tr>
+            <tr><td class="mono">1111 1111 … 1111 1110</td><td class="mono">−2</td></tr>
+            <tr><td class="mono">1111 1111 … 1111 1111</td><td class="mono">−1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Tokomplement har ett negativt tall uten positiv motpart, −2 147 483 648, men fortegn-og-størrelse hadde problemer for både programmereren og maskinvaredesigneren. Fordelen er at alle negative tall har 1 i det mest signifikante bitet, så maskinvaren trenger bare teste det ene bitet: <span class="term" data-term="fortegnsbit">fortegnsbiten</span>. Verdien er fortegnsbiten ganget med \(-2^{31}\), resten med positive vekter:</p>
+      \[ (x_{31} \times -2^{31}) + (x_{30} \times 2^{30}) + \cdots + (x_1 \times 2^1) + (x_0 \times 2^0) \tag{3} \]
+
+      <div class="oppgave" data-quiz id="oppg-eks-bin-des">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.4 · s. 83</span></div>
+        <div class="o-text"><p>Hva er desimalverdien til dette 32-bits tokomplementtallet? 11111111 11111111 11111111 11111100<sub>to</sub></p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Sett inn i (3): \((1 \times -2^{31}) + (1 \times 2^{30}) + \cdots + (1 \times 2^2) + (0 \times 2^1) + (0 \times 2^0) = -2^{31} + 2^{30} + \cdots + 2^2 = -2\,147\,483\,648 + 2\,147\,483\,644 = -4\). Snarveien under gjør det raskere.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Snarvei 1: negering</h3>
+      <p><span class="term" data-term="negering">Inverter hvert bit og legg til 1.</span> Det virker fordi summen av et tall og dets inverterte er 111…111 = −1: \(x + \bar{x} = -1\), altså \(\bar{x} + 1 = -x\). Kompendiet viser −3 i 4 bit: +3 = 0011, inverter: 1100, legg til 1: 1101.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-negering">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.4 · s. 84–85</span></div>
+        <div class="o-text"><p>Neger 2<sub>ti</sub>, og sjekk resultatet ved å negere −2<sub>ti</sub>.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>2 = 00000000 00000000 00000000 00000010. Inverter: 11111111 11111111 11111111 11111101, legg til 1: 11111111 11111111 11111111 11111110 = −2. Motsatt vei: inverter −2 til 00000000 00000000 00000000 00000001, legg til 1: 00000000 00000000 00000000 00000010 = 2.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Snarvei 2: fortegnsutvidelse</h3>
+      <p>Å gjøre et tall på n bit om til flere bit: ta det mest signifikante bitet, fortegnsbiten, og kopier det inn i alle de nye bitene; de gamle bitene kopieres til høyre del. Det er <span class="term" data-term="fortegnsutvidelse">fortegnsutvidelse</span>. Trikset virker fordi positive tokomplementtall egentlig har uendelig mange 0-ere til venstre og negative uendelig mange 1-ere; bitmønsteret skjuler ledende bit for å passe maskinvarens bredde, og fortegnsutvidelse gjenoppretter noen av dem.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-fortegnsutvidelse">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.4 · s. 85–86</span></div>
+        <div class="o-text"><p>Konverter 16-bits binære versjoner av 2<sub>ti</sub> og −2<sub>ti</sub> til 32-bits binærtall.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>16-bits 2 er 00000000 00000010. Lag 16 kopier av det mest signifikante bitet (0) til venstre: 00000000 00000000 00000000 00000010 = 2. Neger 16-bits 2 med snarveien: 0000 0000 0000 0010 → 1111 1111 1111 1101 + 1 = 1111 1111 1111 1110. 32-bits versjonen får fortegnsbiten kopiert 16 ganger: 11111111 11111111 11111111 11111110 = −2.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Maskinvare/programvare-grensesnitt · signerte og usignerte laster</span>
+        <p>Signert mot usignert gjelder også for load. En signert load kopierer fortegnet gjentatte ganger for å fylle resten av registeret (fortegnsutvidelse); en usignert load fyller med 0-ere. For 32-bits ord i 32-bits registre er det uvesentlig, men RISC-V har to byte-laster: <span class="term" data-term="lb-lbu">lbu</span> (load byte unsigned) nullutvider, lb fortegnsutvider. C bruker byte nesten alltid til tegn, ikke korte signerte tall, så lbu brukes nesten utelukkende. Minneadresser starter på 0 og er aldri negative: C skiller <code>int</code> og <code>unsigned int</code>.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-2-4">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§2.4 · s. 86</span></div>
+        <div class="o-text"><p>Hva er desimalverdien til dette 64-bits tokomplementtallet? 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111000<sub>to</sub>. 1) −4, 2) −8, 3) −16, 4) 18 446 744 073 709 551 608. Og hva er verdien om det i stedet er et 64-bits usignert tall?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Signert: 2) −8 (inverter: 0…0111 = 7, pluss 1 = 8, så −8). Usignert: 4) 18 446 744 073 709 551 608, altså \(2^{64} - 8\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-tokomplement">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 3 · «Eksempel 1: To-komplement addisjon og subtraksjon»</span></div>
+        <div class="o-text"><p>Beregn 5 − 3 ved bruk av tokomplement i 4 bit.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+            <p>5 = 0101. −3: +3 = 0011, inverter til 1100, legg til 1: 1101. Addisjon: 0101 + 1101 = 1 0010; det femte bitet (menteutgangen) faller bort, og resultatet er 0010 = 2. Subtraksjon er addisjon med det negerte tallet, derfor trenger maskinvaren ingen egen subtraherer (T3.3).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor beholder fortegnsutvidelse verdien? Vis det for −3 fra 4 til 8 bit ved å regne med formel (3).</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">4 bit: 1101 = −8 + 4 + 1 = −3. 8 bit: 1111 1101 = −128 + 64 + 32 + 16 + 8 + 4 + 1 = −3. Generelt: å legge til en 1-bit i posisjon n endrer verdien med +2<sup>n</sup>, samtidig som den gamle fortegnsbitens vekt endres fra −2<sup>n−1</sup> til +2<sup>n−1</sup>, og de nye 1-erne fra n−1 til n bidrar med akkurat det som skal til: −2<sup>n</sup> + 2<sup>n−1</sup> + 2<sup>n−1</sup>… summen av de nye vektene er lik den gamle negative vekten. Kortversjonen: et negativt tall har uendelig mange 1-ere foran seg; vi viser bare flere av dem.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 OVERFLYT ─────────────────────────── -->
+  <section id="overflyt">
+    <div class="container">
+      <div class="section-badge">03 · Overflyt</div>
+      <h2>Når bitene <em>ikke strekker til</em></h2>
+      <div class="source-note">Boka · kap. 2.4 · s. 81 og 83</div>
+      <span class="lm-pill">Læringsmål T2.2</span>
+      <ul class="lm-list">
+        <li>Studenten vite hva overflyt er og forstå når det oppstår.</li>
+      </ul>
+
+      <p class="dropcap">Tall har egentlig uendelig mange sifre, nesten alle 0 unntatt noen til høyre; vi viser bare ikke ledende 0-ere. Maskinvaren kan legge sammen, trekke fra, gange og dele bitmønstre (T3.3), men hvis det riktige resultatet ikke kan representeres med bitene maskinvaren har, har vi <span class="term" data-term="overflyt">overflyt</span>. Det er opp til programmeringsspråket, operativsystemet og programmet å bestemme hva som skal skje da.</p>
+
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Overflyt i tokomplement</div>
+        <p>Overflyt oppstår når det venstre bitet som beholdes ikke er det samme som de uendelig mange bitene til venstre for det, altså når fortegnsbiten er feil: en 0 til venstre når tallet er negativt, eller en 1 når tallet er positivt. I praksis: summen av to positive tall blir negativ, summen av to negative blir positiv, eller x − y med ulikt fortegn gir et resultat med feil fortegn. Addisjon av tall med ulikt fortegn kan aldri gi overflyt.</p>
+      </div>
+
+      <div class="widget" id="w-add">
+        <div class="widget-label">Prøv selv · Addisjon og overflyt i n bit</div>
+        <p class="widget-intro">To tall, en bitbredde og en operasjon. Widgeten viser bitmønstrene, det maskinvaren produserer (de n laveste bitene av resultatet), og om det er overflyt både signert og usignert. Forhåndsutfylt med oppgave 2.10 i 32 bit.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ad-a">a</label><input type="text" id="ad-a" value="0x80000000"></div>
+          <div class="w-ctl"><label for="ad-op">op</label><select id="ad-op"><option value="+">+</option><option value="-">−</option></select></div>
+          <div class="w-ctl"><label for="ad-b">b</label><input type="text" id="ad-b" value="0xD0000000"></div>
+          <div class="w-ctl"><label for="ad-n">bit</label><select id="ad-n"><option value="4">4</option><option value="8">8</option><option value="16">16</option><option value="32" selected>32</option></select></div>
+        </div>
+        <div class="w-out" id="ad-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-10">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.10 · s. 179–180</span></div>
+        <div class="o-text">
+          <p>Anta at x5 og x6 inneholder 0x80000000 og 0xD0000000 (boka skriver 64-bits verdier; her i RV32-versjon med 32 bit).</p>
+          <p>2.10.1 Hva blir x30 etter <code>add x30, x5, x6</code>? 2.10.2 Er det ønsket resultat, eller har det oppstått overflyt? 2.10.3 Hva blir x30 etter <code>sub x30, x5, x6</code>? 2.10.4 Ønsket resultat eller overflyt? 2.10.5 Hva blir x30 etter <code>add x30, x5, x6</code> fulgt av <code>add x30, x30, x5</code>? 2.10.6 Ønsket resultat eller overflyt?</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Signert er x5 = −2<sup>31</sup> = −2 147 483 648 og x6 = 0xD0000000 = −805 306 368 (begge har fortegnsbit 1).</p>
+            <p><strong>2.10.1</strong> 0x80000000 + 0xD0000000 = 0x1 5000 0000; de 32 laveste bitene er <strong>0x50000000</strong> = 1 342 177 280. <strong>2.10.2</strong> Overflyt: to negative tall ga et positivt. Det riktige svaret, −2 952 790 016, er mindre enn −2<sup>31</sup>.</p>
+            <p><strong>2.10.3</strong> 0x80000000 − 0xD0000000 = <strong>0xB0000000</strong> = −1 342 177 280. <strong>2.10.4</strong> Ønsket resultat, ingen overflyt: −2 147 483 648 − (−805 306 368) = −1 342 177 280, som er representerbart. (Usignert ville det vært et lån, men signert er det riktig.)</p>
+            <p><strong>2.10.5</strong> Første add gir 0x50000000 (med overflyt); 0x50000000 + 0x80000000 = <strong>0xD0000000</strong>. <strong>2.10.6</strong> Overflyt: det riktige svaret er x5 + x6 + x5 = −5 100 273 664, langt utenfor. At sluttbitene tilfeldigvis ser rimelige ut hjelper ikke; mellomresultatet var allerede feil.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-11">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.11 · s. 180</span></div>
+        <div class="o-text"><p>Anta at x5 inneholder 128<sub>ti</sub>. 2.11.1 For <code>add x30, x5, x6</code>: hvilke verdier av x6 gir overflyt? 2.11.2 For <code>sub x30, x5, x6</code>? 2.11.3 For <code>sub x30, x6, x5</code>?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · 32-bits registre</span>
+            <p>Representerbart område: \(-2^{31} = -2\,147\,483\,648\) til \(2^{31} - 1 = 2\,147\,483\,647\).</p>
+            <p><strong>2.11.1</strong> 128 + x6 flyter over når 128 + x6 &gt; 2<sup>31</sup> − 1, altså x6 &gt; 2 147 483 519: x6 ∈ [2 147 483 520, 2 147 483 647]. (Negativ overflyt er umulig, x5 er positiv.)</p>
+            <p><strong>2.11.2</strong> 128 − x6 flyter over når 128 − x6 &gt; 2<sup>31</sup> − 1, altså x6 &lt; 128 − 2 147 483 647 = −2 147 483 519: x6 ∈ [−2 147 483 648, −2 147 483 520].</p>
+            <p><strong>2.11.3</strong> x6 − 128 flyter over når x6 − 128 &lt; −2<sup>31</sup>, altså x6 &lt; −2 147 483 520: x6 ∈ [−2 147 483 648, −2 147 483 521].</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">I 8 bit: gir 100 + 50 overflyt? Og 100 + (−50)? Og −100 − 50?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Området er −128…127. 100 + 50 = 150 &gt; 127: overflyt (bitene gir 1001 0110 = −106, to positive ble negativt). 100 + (−50) = 50: ulikt fortegn, aldri overflyt. −100 − 50 = −150 &lt; −128: overflyt (0110 1010 = 106, to negative ble positivt). Prøv i widgeten med 8 bit.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 LOGIKK ─────────────────────────── -->
+  <section id="logikk">
+    <div class="container">
+      <div class="section-badge">04 · Logiske operasjoner</div>
+      <h2>AND, OR og XOR: <em>bit for bit</em></h2>
+      <div class="source-note">Boka · kap. 2.6 · s. 95–98 · Kompendiet · kap. 2 «Bitvise operasjoner»</div>
+      <span class="lm-pill">Læringsmål T2.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne utføre logiske operasjoner på binære tall, inkludert bitvis AND og OR samt logisk og aritmetisk bitskifting.</li>
+      </ul>
+
+      <p class="dropcap">De første datamaskinene opererte på hele ord, men det ble fort nyttig å jobbe på felt av bit inne i et ord, eller på enkeltbit: for eksempel tegn lagret som 8 bit hver. Derfor fikk språk og instruksjonssett <span class="term" data-term="logiske-operasjoner">logiske operasjoner</span> som pakker og pakker ut bit. Figur 2.8 i boka:</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Figur 2.8 i boka: logiske operatorer i C og Java og RISC-V-instruksjonene.</caption>
+          <thead><tr><th>Operasjon</th><th>C</th><th>Java</th><th>RISC-V</th></tr></thead>
+          <tbody>
+            <tr><td>Skift venstre</td><td class="mono">&lt;&lt;</td><td class="mono">&lt;&lt;</td><td class="mono">slli, sll</td></tr>
+            <tr><td>Skift høyre (logisk)</td><td class="mono">&gt;&gt;</td><td class="mono">&gt;&gt;&gt;</td><td class="mono">srli, srl</td></tr>
+            <tr><td>Skift høyre (aritmetisk)</td><td class="mono">&gt;&gt;</td><td class="mono">&gt;&gt;</td><td class="mono">srai, sra</td></tr>
+            <tr><td>Bitvis AND</td><td class="mono">&amp;</td><td class="mono">&amp;</td><td class="mono">and, andi</td></tr>
+            <tr><td>Bitvis OR</td><td class="mono">|</td><td class="mono">|</td><td class="mono">or, ori</td></tr>
+            <tr><td>Bitvis XOR</td><td class="mono">^</td><td class="mono">^</td><td class="mono">xor, xori</td></tr>
+            <tr><td>Bitvis NOT</td><td class="mono">~</td><td class="mono">~</td><td class="mono">xori med −1 (111…111)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>AND og masker</h3>
+      <p>AND er en bit-for-bit-operasjon som gir 1 i resultatet bare der <em>begge</em> operandbitene er 1. Inneholder x11 0000…0000 1101 1100 0000 og x10 0000…0011 1100 0000 0000, gir <code>and x9, x10, x11</code> verdien 0000…0000 1100 0000 0000 i x9. AND kan altså bruke et bitmønster til å tvinge 0-ere der mønsteret har 0; slikt mønster kalles en <span class="term" data-term="maske">maske</span>, fordi den «skjuler» noen bit.</p>
+
+      <h3>OR og XOR</h3>
+      <p>OR er dualen: 1 i resultatet hvis <em>en av</em> operandbitene er 1, så det kan legge en verdi inn i et hav av 0-ere. Med samme x10 og x11 gir <code>or x9, x10, x11</code> 0000…0011 1101 1100 0000. NOT tar én operand og snur hvert bit; for å holde tre-operandformatet valgte RISC-V-designerne <em>XOR</em> i stedet: eksklusiv-eller gir 0 der bitene er like og 1 der de er ulike, så NOT er xor med 111…111. <code>xor x9, x10, x12</code> med x12 = 0 gir bare x10 igjen. Alle tre finnes også med konstant: andi, ori, xori. C-kompilatorer bruker andi, ori, slli og srli til å sette inn og hente ut bitfelt.</p>
+
+      <div class="oppgave" data-quiz id="oppg-cy-2-6">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§2.6 · s. 98</span></div>
+        <div class="o-text"><p>Hvilke operasjoner kan isolere et felt i et ord? 1. AND. 2. Et venstreskift fulgt av et høyreskift.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Begge. AND med en maske av 1-ere lar bare feltet stå igjen, med 0 overalt ellers. Et venstreskift med riktig antall fjerner bitene til venstre for feltet; et høyreskift med riktig antall legger feltet i de høyeste… nei, i de <em>laveste</em> bitene av ordet, med 0-ere ellers. Forskjellen: AND lar feltet stå der det var, skiftparet flytter det helt til høyre.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">x10 = 0x0000f0f0. Hva gir <code>andi x9, x10, 0xff</code>, <code>ori x9, x10, 0xf</code> og <code>xori x9, x10, -1</code>?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">andi 0xff: 0x000000f0 (bare de 8 laveste bitene slipper gjennom). ori 0xf: 0x0000f0ff. xori −1 (= 0xffffffff): 0xffff0f0f, altså NOT. Merk at immediaten i andi/ori/xori er 12 bit og fortegnsutvides: 0xff og 0xf går fint, mens 0xfff ville blitt −1.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 SKIFT ─────────────────────────── -->
+  <section id="skift">
+    <div class="container">
+      <div class="section-badge">05 · Skift</div>
+      <h2>Flytt bitene: <em>logisk og aritmetisk</em></h2>
+      <div class="source-note">Boka · kap. 2.6 · s. 96</div>
+      <span class="lm-pill">Læringsmål T2.2</span>
+
+      <p class="dropcap">Den første klassen av logiske operasjoner er <span class="term" data-term="skift">skift</span>: de flytter alle bitene i et ord til venstre eller høyre og fyller de tomme plassene med 0-ere. Inneholder x19 0000…0000 1001 = 9, gir skift venstre med 4 verdien 0000…1001 0000 = 144. Instruksjonene heter shift left logical immediate (slli) og shift right logical immediate (srli):</p>
+<div class="asm">slli x11, x19, 4     <span class="c">// reg x11 = reg x19 &lt;&lt; 4 bit</span></div>
+      <p>Skiftinstruksjonene bruker I-format. Siden det ikke er nyttig å skifte et 32-bits register mer enn 31 plasser, brukes bare de 5 laveste bitene av 12-bits immediaten, og resten er gjort om til et ekstra opcodefelt (funct6/funct7): slli er opcode 19, funct3 1, rd 11, rs1 19, immediate 4, funct7 0.</p>
+
+      <div class="callout">
+        <span class="label">Bonus: skift er multiplikasjon og divisjon med 2</span>
+        <p>Skift venstre med \(i\) bit gir samme resultat som å gange med \(2^i\), akkurat som å skifte et desimaltall \(i\) plasser er å gange med \(10^i\). Eksempelet skifter med 4 = ganger med 16: 9 × 16 = 144. Det er derfor kompilatoren bruker <code>slli x10, x22, 2</code> for i × 4 i løkkeeksempelet i 2A. Logisk høyreskift deler usignerte tall med \(2^i\).</p>
+      </div>
+
+      <h3>Aritmetisk høyreskift</h3>
+      <p>RISC-V har en tredje variant, shift right arithmetic (srai), som er lik srli bortsett fra at de frigjorte bitene til venstre fylles med kopier av den gamle <em>fortegnsbiten</em> i stedet for 0-ere. Da deler skiftet også negative tokomplementtall riktig med \(2^i\) (avrundet mot minus uendelig): −8 = 1111 1000 skiftet aritmetisk 1 til høyre er 1111 1100 = −4, mens et logisk skift hadde gitt 0111 1100 = 124. Alle tre skiftene finnes også med skiftlengden i et register: sll, srl, sra.</p>
+
+      <div class="widget" id="w-skift">
+        <div class="widget-label">Prøv selv · Skift og logiske operasjoner</div>
+        <p class="widget-intro">En verdi, en operasjon og en operand (skiftlengde eller maske). Widgeten viser bitmønstrene før og etter i 16 bit, og verdiene signert og usignert. Prøv srli mot srai på et negativt tall.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sh-a">x</label><input type="text" id="sh-a" value="9"></div>
+          <div class="w-ctl"><label for="sh-op">op</label>
+            <select id="sh-op"><option value="slli">slli</option><option value="srli">srli</option><option value="srai">srai</option><option value="andi">andi</option><option value="ori">ori</option><option value="xori">xori</option></select>
+          </div>
+          <div class="w-ctl"><label for="sh-b">skift / maske</label><input type="text" id="sh-b" value="4"></div>
+        </div>
+        <div class="bits" id="sh-bits-a"></div>
+        <div class="bits" id="sh-bits-b"></div>
+        <div class="bits" id="sh-bits-r"></div>
+        <div class="w-out" id="sh-out"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Skriv færrest mulig RISC-V-instruksjoner som henter bit 16 ned til 11 fra x5 og legger dem i de laveste bitene av x7, med 0-ere ellers.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">To skift: <code>slli x7, x5, 15</code> (kaster bit 31–17, feltet ligger nå i bit 31–26) og <code>srli x7, x7, 26</code> (feltet ned i bit 5–0, nuller ellers). Alternativ: <code>srli x7, x5, 11</code> og <code>andi x7, x7, 0x3f</code>. (Bokas oppgave 2.18 bygger videre på dette.)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">06 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Grunntall</strong>Siffer i har vekt d·grunntallⁱ. Binært ↔ hex: 4 bit per siffer. Desimalt → binært: del på 2, les restene nedenfra.</div>
+        <div class="recap-pill"><strong>Usignert</strong>0 til 2³² − 1. Adresser er usignerte.</div>
+        <div class="recap-pill"><strong>Tokomplement</strong>Fortegnsbit med vekt −2³¹. −2³¹ … 2³¹ − 1. Ledende 1 = negativt. Alle maskiner bruker det.</div>
+        <div class="recap-pill"><strong>Snarveier</strong>Neger: inverter + 1. Utvid: kopier fortegnsbiten. lb fortegnsutvider, lbu nullutvider.</div>
+        <div class="recap-pill"><strong>Overflyt</strong>Feil fortegnsbit: pos + pos = neg eller neg + neg = pos. Ulikt fortegn kan ikke flyte over.</div>
+        <div class="recap-pill"><strong>Logikk</strong>AND (maske), OR (sett inn), XOR (NOT med 111…1). and/or/xor + andi/ori/xori.</div>
+        <div class="recap-pill"><strong>Skift</strong>slli = ×2ⁱ, srli = ÷2ⁱ usignert (fyller 0), srai fyller med fortegnsbit. I-format med 5-bits skiftlengde.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Skriv −25 i 8-bits tokomplement og heksadesimalt.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">25 = 0001 1001. Inverter: 1110 0110, pluss 1: 1110 0111 = 0xe7. Sjekk: −128 + 64 + 32 + 4 + 2 + 1 = −25.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Bitmønsteret 0xfffffff0 lastes med lw. Hva er verdien som int og som unsigned int? Og hva om bare den laveste byten (0xf0) lastes med lb og med lbu?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">int: −16 (inverter 0x0000000f = 15, pluss 1 = 16). unsigned: 4 294 967 280. lb 0xf0: fortegnsutvides til 0xfffffff0 = −16. lbu 0xf0: nullutvides til 0x000000f0 = 240.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvorfor har addi ingen subi-motpart, og hvorfor er største positive immediate 2047 mens minste negative er −2048?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Immediaten er et 12-bits tokomplementtall, så addi med en negativ konstant <em>er</em> subtraksjon. Tokomplement i 12 bit spenner −2¹¹ = −2048 til 2¹¹ − 1 = 2047; det er ett negativt tall mer enn positive fordi 0 tar en av de «positive» plassene.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">x5 = −7. Hva gir <code>srai x6, x5, 1</code> og <code>srli x7, x5, 1</code> i 32 bit, og hvilken er «−7 delt på 2»?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">−7 = 0xfffffff9. srai fyller med 1: 0xfffffffc = −4 (heltallsdivisjon avrundet nedover, C ville gitt −3 ved avrunding mot null). srli fyller med 0: 0x7ffffffc = 2 147 483 644, meningsløst som signert tall. Aritmetisk skift er det som tilsvarer divisjon for signerte tall.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="instruksjoner.html" class="prev"><div class="pn-label">← Forrige · 2A</div><div class="pn-title">Instruksjoner, operander og formater</div></a>
+        <a href="prosedyrer.html" class="next"><div class="pn-label">Neste · 2C</div><div class="pn-title">Prosedyrer, tekst, adressering og oversettelse →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  /* Parse tall: desimalt (evt. negativt), 0x…, 0b… → BigInt */
+  function parseNum(s) {
+    s = String(s).trim().replace(/[\s_]/g, '');
+    if (s === '') return null;
+    var neg = s[0] === '-'; if (neg || s[0] === '+') s = s.slice(1);
+    var v;
+    try {
+      if (/^0x[0-9a-f]+$/i.test(s)) v = BigInt(s);
+      else if (/^0b[01]+$/i.test(s)) v = BigInt(s);
+      else if (/^[0-9]+$/.test(s)) v = BigInt(s);
+      else return null;
+    } catch (e) { return null; }
+    return neg ? -v : v;
+  }
+  function toBits(v, n) { var m = (1n << BigInt(n)) - 1n; var u = ((v % (m + 1n)) + (m + 1n)) % (m + 1n); var s = u.toString(2); while (s.length < n) s = '0' + s; return { s: s, u: u }; }
+  function signed(u, n) { return u >= (1n << BigInt(n - 1)) ? u - (1n << BigInt(n)) : u; }
+  function hexOf(u, n) { var s = u.toString(16); while (s.length < n / 4) s = '0' + s; return '0x' + s; }
+  function bitsHtml(s) {
+    var n = s.length, h = '';
+    for (var i = 0; i < n; i++) {
+      var ix = n - 1 - i;
+      h += '<div class="b' + (s[i] === '1' ? ' one' : '') + (i === 0 ? ' sign' : '') + '"><span class="ix">' + ix + '</span>' + s[i] + '</div>';
+      if (ix % 4 === 0 && ix !== 0) h += '<div class="gap"></div>';
+    }
+    return h;
+  }
+  function metric(name, val, formula) { return '<div class="metric"><div class="m-name">' + name + '</div><div class="m-val">' + val + '</div><div class="m-formula">' + (formula || '') + '</div></div>'; }
+  function grp(s) { return s.replace(/(.{4})(?=.)/g, '$1 '); }
+
+  /* ─── Widget 1: konverterer ─── */
+  (function () {
+    var root = document.getElementById('w-konv'); if (!root) return;
+    var inp = document.getElementById('kv-in'), nSel = document.getElementById('kv-n'), bitsEl = document.getElementById('kv-bits'), out = document.getElementById('kv-out');
+    function draw() {
+      var n = +nSel.value, v = parseNum(inp.value);
+      if (v === null) { out.innerHTML = metric('Feil', 'ugyldig tall', 'desimalt, 0x… eller 0b…'); bitsEl.innerHTML = ''; return; }
+      var lo = -(1n << BigInt(n - 1)), hi = (1n << BigInt(n)) - 1n;
+      var b = toBits(v, n), s = signed(b.u, n);
+      bitsEl.innerHTML = bitsHtml(b.s);
+      var note = (v < lo || v > hi) ? 'Tallet får ikke plass i ' + n + ' bit; viser de ' + n + ' laveste bitene.' : (v < 0 ? 'Negativt: inverter |x| og legg til 1.' : '');
+      out.innerHTML = metric('Binært', grp(b.s), n + ' bit') + metric('Hex', hexOf(b.u, n), '4 bit per siffer') + metric('Usignert', b.u.toString(), '0 … ' + hi.toString()) + metric('Tokomplement', s.toString(), lo.toString() + ' … ' + ((1n << BigInt(n - 1)) - 1n).toString()) + (note ? metric('Merk', '', note) : '');
+    }
+    inp.addEventListener('input', draw); nSel.addEventListener('change', draw);
+    draw();
+  })();
+
+  /* ─── Widget 2: addisjon og overflyt ─── */
+  (function () {
+    var root = document.getElementById('w-add'); if (!root) return;
+    var aIn = document.getElementById('ad-a'), bIn = document.getElementById('ad-b'), opSel = document.getElementById('ad-op'), nSel = document.getElementById('ad-n'), out = document.getElementById('ad-out');
+    function draw() {
+      var n = +nSel.value, a = parseNum(aIn.value), b = parseNum(bIn.value);
+      if (a === null || b === null) { out.innerHTML = '<span class="bad">Ugyldig tall.</span>'; return; }
+      var A = toBits(a, n), B = toBits(b, n), sa = signed(A.u, n), sb = signed(B.u, n);
+      var sub = opSel.value === '-';
+      var trueS = sub ? sa - sb : sa + sb, trueU = sub ? A.u - B.u : A.u + B.u;
+      var R = toBits(trueS, n), sr = signed(R.u, n);
+      var lo = -(1n << BigInt(n - 1)), hi = (1n << BigInt(n - 1)) - 1n, umax = (1n << BigInt(n)) - 1n;
+      var ovS = trueS < lo || trueS > hi, ovU = trueU < 0n || trueU > umax;
+      out.innerHTML = '  ' + grp(A.u === undefined ? '' : toBits(a, n).s) + '   a = ' + sa + ' signert, ' + A.u + ' usignert\n' + (sub ? '− ' : '+ ') + grp(B.u === undefined ? '' : toBits(b, n).s) + '   b = ' + sb + ' signert, ' + B.u + ' usignert\n= ' + grp(R.u === undefined ? '' : R.s) + '   maskinvaren gir ' + hexOf(R.u, n) + ' = <span class="hl">' + sr + '</span> signert, ' + R.u + ' usignert\n' +
+        'Riktig svar signert: ' + trueS + '  →  ' + (ovS ? '<span class="bad">OVERFLYT (signert)</span>: fortegnsbiten er feil' : '<span class="ok">ok</span>') + '\n' +
+        'Riktig svar usignert: ' + trueU + '  →  ' + (ovU ? '<span class="bad">overflyt (usignert)</span>: mente ut / lån inn' : '<span class="ok">ok</span>');
+    }
+    [aIn, bIn].forEach(function (el) { el.addEventListener('input', draw); }); opSel.addEventListener('change', draw); nSel.addEventListener('change', draw);
+    draw();
+  })();
+
+  /* ─── Widget 3: skift og logikk ─── */
+  (function () {
+    var root = document.getElementById('w-skift'); if (!root) return;
+    var aIn = document.getElementById('sh-a'), bIn = document.getElementById('sh-b'), opSel = document.getElementById('sh-op');
+    var ba = document.getElementById('sh-bits-a'), bb = document.getElementById('sh-bits-b'), br = document.getElementById('sh-bits-r'), out = document.getElementById('sh-out');
+    var N = 16;
+    function draw() {
+      var a = parseNum(aIn.value), b = parseNum(bIn.value), op = opSel.value;
+      if (a === null || b === null) { out.innerHTML = '<span class="bad">Ugyldig tall.</span>'; return; }
+      var A = toBits(a, N), r, desc;
+      var mask = (1n << BigInt(N)) - 1n;
+      if (op === 'slli' || op === 'srli' || op === 'srai') {
+        var k = Number(b < 0n ? 0n : (b > 15n ? 15n : b));
+        if (op === 'slli') { r = (A.u << BigInt(k)) & mask; desc = 'skift venstre ' + k + ': ganger med 2^' + k + ' = ' + (1 << k) + ' (bit som faller ut til venstre forsvinner)'; }
+        else if (op === 'srli') { r = A.u >> BigInt(k); desc = 'logisk høyreskift ' + k + ': fyller med 0, deler det usignerte tallet på ' + (1 << k); }
+        else { var s = signed(A.u, N); r = (s >> BigInt(k)) & mask; desc = 'aritmetisk høyreskift ' + k + ': fyller med fortegnsbiten, deler det signerte tallet på ' + (1 << k) + ' (avrundet ned)'; }
+        bb.innerHTML = '';
+      } else {
+        var B = toBits(b, N);
+        if (op === 'andi') { r = A.u & B.u; desc = 'AND: 1 bare der begge er 1 (masken skjuler bitene der den har 0)'; }
+        else if (op === 'ori') { r = A.u | B.u; desc = 'OR: 1 der minst én er 1'; }
+        else { r = A.u ^ B.u; desc = 'XOR: 1 der bitene er ulike (med 111…1 blir det NOT)'; }
+        bb.innerHTML = bitsHtml(B.s);
+      }
+      var R = toBits(r, N);
+      ba.innerHTML = bitsHtml(A.s); br.innerHTML = bitsHtml(R.s);
+      out.innerHTML = op + ': ' + desc + '\nx = ' + grp(A.s) + ' = ' + signed(A.u, N) + ' (usignert ' + A.u + ', ' + hexOf(A.u, N) + ')\nresultat = ' + grp(R.s) + ' = <span class="hl">' + signed(R.u, N) + '</span> (usignert ' + R.u + ', ' + hexOf(R.u, N) + ')';
+    }
+    [aIn, bIn].forEach(function (el) { el.addEventListener('input', draw); }); opSel.addEventListener('change', draw);
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

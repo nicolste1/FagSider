@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Prosedyrer, tekst, adressering og oversettelse — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .asm { font-family: var(--mono); font-size: 0.88rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+  .fig-svg text { font-family: var(--sans); font-size: 12px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); }
+  .fig-svg .seg { stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .s-res { fill: var(--paper-darker); }
+  .fig-svg .s-txt { fill: rgba(27,94,90,0.16); }
+  .fig-svg .s-dat { fill: rgba(61,107,58,0.16); }
+  .fig-svg .s-dyn { fill: rgba(198,138,31,0.16); }
+  .fig-svg .s-stk { fill: rgba(160,82,45,0.16); }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.4; fill: none; marker-end: url(#ah); }
+  /* Stakk-widget */
+  .stack { display: grid; grid-template-columns: 110px 1fr; gap: 3px; margin: 0.6rem 0; font-family: var(--mono); font-size: 0.8rem; max-width: 460px; }
+  .stack .sa { color: var(--ink-ghost); text-align: right; padding: 5px 8px; }
+  .stack .sv { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 3px; padding: 5px 9px; }
+  .stack .sv.f0 { background: rgba(27,94,90,0.14); } .stack .sv.f1 { background: rgba(160,82,45,0.14); } .stack .sv.f2 { background: rgba(61,107,58,0.16); } .stack .sv.f3 { background: rgba(198,138,31,0.16); } .stack .sv.f4 { background: rgba(179,38,30,0.10); }
+  .stack .sv.sp { box-shadow: inset 0 0 0 2px var(--accent); }
+  .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); width: 150px; }
+  .bytes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 0.5rem; font-family: var(--mono); font-size: 0.78rem; }
+  .bytes .by { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 4px 7px; text-align: center; min-width: 52px; }
+  .bytes .by .ch { display: block; font-size: 1rem; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Instruksjonssett">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2C · Læringsmål T2.3 og T2.4 · Boka kap. 2.8–2.10 og 2.12 · ~60 min</div>
+      <h1>Prosedyrer, tekst, adressering og <em>oversettelse</em></h1>
+      <p class="lede">Hvordan et funksjonskall faktisk foregår: jal og jalr, kallkonvensjonen for de 32 registrene, stakken og rammene, rekursjon og minnekartet. Så tegn og strenger, store konstanter og PC-relative hopp, de fire adressemodiene, og veien fra C-fil til kjørende program gjennom kompilator, assembler, lenker og laster.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#kall"><span>01</span> Prosedyrekall</a>
+        <a href="#stakk"><span>02</span> Stakk og konvensjon</a>
+        <a href="#nostede"><span>03</span> Nøstede kall og minnekart</a>
+        <a href="#tekst"><span>04</span> Tekst</a>
+        <a href="#adressering"><span>05</span> Konstanter og adressering</a>
+        <a href="#oversettelse"><span>06</span> Oversettelse og oppstart</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Læringsutbyttebeskrivelsen T2.3–T2.4 (26. aug. 2026) · eksamensanalyse for faget er ikke laget ennå</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Prosedyrer i assembly:</strong> skriv en funksjon med riktig bruk av a-, t- og s-registre, push/pop av x1 og s-registre, og retur med jalr (oppgave 2.31, 2.32, 2.34; øvingene i Ripes).</li>
+          <li><span class="tag regn">Regn</span><strong>Stakken:</strong> tegn innholdet og sp etter hvert kall i en rekursiv funksjon (oppgave 2.30; widgeten for fact).</li>
+          <li><span class="tag regn">Regn</span><strong>Adressering:</strong> lui + addi for en 32-bits konstant (bit 11!), PC-relativ forskyvning i byte/halvord, rekkevidde ±4 KiB og ±1 MiB (oppgave 2.22).</li>
+          <li><span class="tag">Forklar</span>De seks stegene i et kall og kallkonvensjonen (figur 2.14); minnekartet (figur 2.13) og statisk mot dynamisk data; de fire adressemodiene; oversettelseshierarkiet (figur 2.20) og hva kompilator, assembler, lenker og laster hver gjør; ASCII og null-terminerte strenger.</li>
+          <li><span class="tag">Lavere</span>Unicode, DLL-mekanikken, Java/JIT og bokas sikkerhetsselvstudium er kortet ned eller tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 KALL ─────────────────────────── -->
+  <section id="kall">
+    <div class="container">
+      <div class="section-badge">01 · Prosedyrekall</div>
+      <h2>En spion med <em>hemmelig plan</em></h2>
+      <div class="source-note">Boka · kap. 2.8 · s. 104–105</div>
+      <span class="lm-pill">Læringsmål T2.3</span>
+      <ul class="lm-list">
+        <li>Studenten vet hvilke oppgaver som skal utføres ved et funksjonskall og kan forklare konseptet kallkonvensjon.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="prosedyre">prosedyre</span> eller funksjon er et verktøy for å strukturere programmer, både for å gjøre dem lettere å forstå og for å gjenbruke kode. Parametrene er grensesnittet mot resten av programmet: de sender inn verdier og returnerer resultater. Prosedyrer er én måte å implementere abstraksjon i programvare på. Bokas bilde: en spion som drar av sted med en hemmelig plan, skaffer ressurser, utfører oppdraget, dekker sporene sine og vender tilbake til utgangspunktet med resultatet, uten at noe annet er forstyrret. Spionen opererer dessuten på «need to know»-basis og kan ikke anta noe om oppdragsgiveren.</p>
+
+      <ol class="steps">
+        <li>Legg parametrene et sted prosedyren kan nå dem.</li>
+        <li>Overfør kontrollen til prosedyren.</li>
+        <li>Skaff lagerplassen prosedyren trenger.</li>
+        <li>Utfør oppgaven.</li>
+        <li>Legg resultatet et sted det kallende programmet kan nå det.</li>
+        <li>Returner kontrollen til utgangspunktet, siden en prosedyre kan kalles fra flere steder.</li>
+      </ol>
+
+      <p>Registre er det raskeste stedet å holde data, så RISC-V-programvaren følger en konvensjon for hvordan de 32 registrene brukes ved kall: <strong>x10–x17</strong> er åtte parameterregistre for å sende parametre og returnere verdier, og <strong>x1</strong> er returadresseregisteret. I tillegg har RISC-V en instruksjon laget for prosedyrer: <span class="term" data-term="jal">jal</span> (jump-and-link) hopper til en adresse og lagrer samtidig adressen til instruksjonen etter i destinasjonsregisteret rd:</p>
+<div class="asm">jal x1, ProsedyreAdresse    <span class="c">// hopp til ProsedyreAdresse og skriv returadressen til x1</span></div>
+      <p>«Link» betyr at det dannes en lenke som peker tilbake til kallstedet: <span class="term" data-term="returadresse">returadressen</span> i x1. Returen bruker et indirekte hopp, <span class="term" data-term="jalr">jalr</span>, som hopper til adressen i et register:</p>
+<div class="asm">jalr x0, 0(x1)              <span class="c">// hopp til adressen i x1 (retur)</span></div>
+      <p><span class="term" data-term="kaller-kallet">Kalleren</span> legger altså parametrene i x10–x17 og bruker <code>jal x1, X</code> for å hoppe til prosedyren X (den kalte). Den kalte regner, legger resultatene i de samme parameterregistrene og returnerer med <code>jalr x0, 0(x1)</code>. Innebygd i ideen om lagrede program er behovet for et register som holder adressen til instruksjonen som utføres: <span class="term" data-term="pc">programtelleren</span>, PC (et bedre navn hadde vært instruksjonsadresseregister). jal lagrer PC + 4 i rd, byteadressen til neste instruksjon. Med x0 som destinasjon forkastes returadressen, og <code>jal x0, Label</code> er et ubetinget hopp inne i en prosedyre.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hvorfor holder det ikke med et vanlig hopp for å kalle en prosedyre? Hva må i tillegg skje?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Prosedyren kan kalles fra mange steder, så den må vite hvor den skal returnere. jal lagrer PC + 4 i x1 samtidig som den hopper (steg 2 og forberedelse til steg 6); et vanlig hopp mister denne informasjonen. Returen er så jalr til adressen i x1.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 STAKK ─────────────────────────── -->
+  <section id="stakk">
+    <div class="container">
+      <div class="section-badge">02 · Stakk og konvensjon</div>
+      <h2>Flere registre enn åtte: <em>stakken</em></h2>
+      <div class="source-note">Boka · kap. 2.8 · s. 105–108 og figur 2.14 · s. 113</div>
+      <span class="lm-pill">Læringsmål T2.3</span>
+
+      <p class="dropcap">Trenger kompilatoren flere registre i en prosedyre enn de åtte argumentregistrene, må vi dekke sporene våre: alle registre kalleren trenger må gjenopprettes til verdiene de hadde før kallet. Det er registerspilling, og den ideelle datastrukturen er en <span class="term" data-term="stakk">stakk</span>, en sist-inn-først-ut-kø. Stakken trenger en peker til den sist tildelte adressen: <span class="term" data-term="stakkpeker">stakkpekeren</span>, register x2, også kalt sp. Den justeres ett ord per register som lagres eller gjenopprettes. Å legge data på stakken heter <span class="term" data-term="push-pop">push</span>, å ta dem av heter pop. Av historiske grunner «vokser» stakker fra høye til lave adresser: push trekker fra sp, pop legger til.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-leaf">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.8 · s. 106–107</span></div>
+        <div class="o-text"><p>Gjør eksempelet fra 2A om til en C-prosedyre, og vis den kompilerte RISC-V-koden:</p>
+<pre><code>int leaf_example (int g, int h, int i, int j)
+{
+  int f;
+  f = (g + h) − (i + j);
+  return f;
+}</code></pre></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>g, h, i, j tilsvarer argumentregistrene x10–x13, f tilsvarer x20. Prosedyren begynner med etiketten, og lagrer så registrene den bruker: kroppen bruker x5, x6 og x20, så tre registre pushes ved å lage plass til tre ord (12 byte) og lagre dem:</p>
+<pre><code>leaf_example:
+  addi sp, sp, -12    // juster stakken for å få plass til 3 ord
+  sw   x5, 8(sp)      // lagre x5 til etterpå
+  sw   x6, 4(sp)      // lagre x6 til etterpå
+  sw   x20, 0(sp)     // lagre x20 til etterpå
+  add  x5, x10, x11   // x5 inneholder g + h
+  add  x6, x12, x13   // x6 inneholder i + j
+  sub  x20, x5, x6    // f = x5 − x6, som er (g + h) − (i + j)
+  addi x10, x20, 0    // returnerer f (x10 = x20 + 0)
+  lw   x20, 0(sp)     // gjenopprett x20 for kalleren
+  lw   x6, 4(sp)      // gjenopprett x6
+  lw   x5, 8(sp)      // gjenopprett x5
+  addi sp, sp, 12     // juster stakken for å fjerne 3 ord
+  jalr x0, 0(x1)      // hopp tilbake til kalleren</code></pre>
+            <p>Figur 2.10 i boka viser stakken før (sp høyt), under (tre ord under sp) og etter kallet (sp tilbake). Returverdien kopieres til parameterregisteret x10.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Temporære og lagrede registre</h3>
+      <p>I eksempelet antok vi at de temporære registrene måtte lagres. For å slippe å lagre et register hvis verdi aldri brukes igjen, deler RISC-V-programvaren 19 registre i to grupper: <span class="term" data-term="temporaere">temporære</span> registre x5–x7 og x28–x31 som <em>ikke</em> bevares av den kalte, og <span class="term" data-term="lagrede-registre">lagrede</span> registre x8–x9 og x18–x27 som må bevares (bruker den kalte dem, lagrer og gjenoppretter den dem). Konvensjonen reduserer spillingen: i eksempelet venter ikke kalleren at x5 og x6 bevares, så to store og to load kan strykes. x20 må fortsatt lagres. Hele avtalen er <span class="term" data-term="kallkonvensjon">kallkonvensjonen</span>, figur 2.14 i boka:</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Figur 2.14 i boka: RISC-V-registerkonvensjonen. «Bevares» = den kalte må gjenopprette verdien før retur.</caption>
+          <thead><tr><th>Navn</th><th>Register</th><th>Bruk</th><th>Bevares over kall?</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">x0 (zero)</td><td class="mono">x0</td><td>Konstanten 0</td><td class="mono">–</td></tr>
+            <tr><td class="mono">ra</td><td class="mono">x1</td><td>Returadresse (lenke)</td><td class="mono">nei</td></tr>
+            <tr><td class="mono">sp</td><td class="mono">x2</td><td>Stakkpeker</td><td class="mono">ja</td></tr>
+            <tr><td class="mono">gp</td><td class="mono">x3</td><td>Globalpeker</td><td class="mono">ja</td></tr>
+            <tr><td class="mono">tp</td><td class="mono">x4</td><td>Trådpeker</td><td class="mono">ja</td></tr>
+            <tr><td class="mono">t0–t2</td><td class="mono">x5–x7</td><td>Temporære</td><td class="mono">nei</td></tr>
+            <tr><td class="mono">s0/fp</td><td class="mono">x8</td><td>Lagret register / rammepeker</td><td class="mono">ja</td></tr>
+            <tr><td class="mono">s1</td><td class="mono">x9</td><td>Lagret register</td><td class="mono">ja</td></tr>
+            <tr><td class="mono">a0–a1</td><td class="mono">x10–x11</td><td>Argumenter / returverdier</td><td class="mono">nei</td></tr>
+            <tr><td class="mono">a2–a7</td><td class="mono">x12–x17</td><td>Argumenter</td><td class="mono">nei</td></tr>
+            <tr><td class="mono">s2–s11</td><td class="mono">x18–x27</td><td>Lagrede registre</td><td class="mono">ja</td></tr>
+            <tr><td class="mono">t3–t6</td><td class="mono">x28–x31</td><td>Temporære</td><td class="mono">nei</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Figur 2.11 i boka oppsummerer: lagrede registre, sp, fp og stakken over sp bevares; temporære registre, argumentregistrene, returadressen og stakken under sp bevares ikke. Stakken over sp bevares ved at den kalte ikke skriver over sp; sp bevares ved at den kalte legger til nøyaktig det den trakk fra. Konvensjonen er nok et eksempel på å gjøre det vanlige tilfellet raskt: de fleste prosedyrer klarer seg med opptil åtte argumentregistre, tolv lagrede og sju temporære uten å gå til minnet. Er det flere enn åtte parametre, legges resten på stakken rett over rammepekeren.</p>
+
+      <div class="callout callout-warm">
+        <span class="label">Øvingene i Ripes</span>
+        <p>Øvingsfilene i faget (<code>tdt4160-p1.S</code> og utover) bruker de samme navnene: «IKKE bruk registeret som heter x1 / ra. Dette er retur-adressen som hoppes til når funksjonen er ferdig (ret-instruksjonen).» <code>ret</code> er assemblerens navn for <code>jalr x0, 0(x1)</code>, argumentene kommer i a0/a1, og resultatet skal ligge i a0 når funksjonen returnerer.</p>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">En løvprosedyre trenger fire registre til mellomregning. Hvilke bør den velge, og hvorfor sparer det instruksjoner?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Temporære registre (t0–t2, t3–t6): kalleren venter ikke at de bevares, så prosedyren slipper push og pop. Velger den lagrede registre (s-registre), må hvert av dem lagres på stakken og gjenopprettes: to instruksjoner ekstra per register pluss sp-justeringene. Boka: en løvprosedyre bruker opp alle temporære før den rører registre den må lagre.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 NØSTEDE ─────────────────────────── -->
+  <section id="nostede">
+    <div class="container">
+      <div class="section-badge">03 · Nøstede kall og minnekart</div>
+      <h2>Prosedyrer som kaller <em>prosedyrer</em></h2>
+      <div class="source-note">Boka · kap. 2.8 · s. 108–114 · figur 2.12 og 2.13</div>
+      <span class="lm-pill">Læringsmål T2.3</span>
+      <ul class="lm-list">
+        <li>Studenten kjenner RISC-V minnekartet (kan gjengi og forklare figur 2.13).</li>
+        <li>Studenten forstår forskjellen på statiske og dynamiske data.</li>
+      </ul>
+
+      <p class="dropcap">Prosedyrer som ikke kaller andre kalles <span class="term" data-term="lovprosedyre">løvprosedyrer</span>. Livet hadde vært enkelt om alle var det, men akkurat som en spion kan bruke andre spioner, kaller prosedyrer andre prosedyrer, og <span class="term" data-term="rekursjon">rekursive</span> prosedyrer kaller kloner av seg selv. Anta at hovedprogrammet kaller A med argumentet 3 i x10 og <code>jal x1, A</code>, og at A så kaller B med argumentet 7, også i x10. A er ikke ferdig, så det er konflikt om x10, og om returadressen i x1, som nå holder returen fra B: A kan ikke lenger komme tilbake til hovedprogrammet. Løsningen er å legge de andre registrene som må bevares på stakken: <strong>kalleren</strong> pusher argumentregistre (x10–x17) og temporære registre (x5–x7, x28–x31) den trenger etter kallet; <strong>den kalte</strong> pusher returadressen x1 og de lagrede registrene (x8–x9, x18–x27) den bruker. sp justeres for antall registre, og ved retur gjenopprettes registrene og sp.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-fact">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.8 · s. 108–109</span></div>
+        <div class="o-text"><p>En rekursiv prosedyre som regner ut fakultet:</p>
+<pre><code>int fact (int n)
+{
+  if (n &lt; 1) return (1);
+  else return (n * fact(n − 1));
+}</code></pre><p>Hva er RISC-V-koden?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>fact:
+  addi sp, sp, -8     // juster stakken for 2 ord
+  sw   x1, 4(sp)      // lagre returadressen
+  sw   x10, 0(sp)     // lagre argumentet n
+  addi x5, x10, -1    // x5 = n − 1
+  bge  x5, x0, L1     // hvis (n − 1) >= 0, gå til L1
+  addi x10, x0, 1     // returner 1
+  addi sp, sp, 8      // pop 2 ord av stakken
+  jalr x0, 0(x1)      // returner til kalleren
+L1:
+  addi x10, x10, -1   // n >= 1: argumentet blir (n − 1)
+  jal  x1, fact       // kall fact med (n − 1)
+  addi x6, x10, 0     // tilbake fra jal: flytt resultatet av fact(n − 1) til x6
+  lw   x10, 0(sp)     // gjenopprett argumentet n
+  lw   x1, 4(sp)      // gjenopprett returadressen
+  addi sp, sp, 8      // juster stakkpekeren for å poppe 2 ord
+  mul  x10, x10, x6   // returner n * fact(n − 1)
+  jalr x0, 0(x1)      // returner til kalleren</code></pre>
+            <p>Første gang fact kalles, lagrer sw adressen i programmet som kalte fact. Når n &lt; 1 er x1 og x10 uendret, så prosedyren hopper over å laste dem. Etter det rekursive kallet ligger resultatet i x10; det flyttes til x6 før gammelt argument og returadresse hentes tilbake. mul kommer fra kapittel 3.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-stakk">
+        <div class="widget-label">Prøv selv · Stakken under fact(n)</div>
+        <p class="widget-intro">Velg n og trykk «Ett steg» for å følge kallene: hver gang fact kaller seg selv, pushes returadressen og argumentet, og sp synker med 8. Når n når 0, returneres 1 og rammene poppes mens produktet bygges opp. Stakkpekeren starter på 0x3ffffff0 som i bokas minnekart; returadressene er illustrerende.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="st-n">n</label><input type="number" id="st-n" min="0" max="6" value="3"></div>
+          <button class="w-btn" id="st-step" type="button">Ett steg</button>
+          <button class="w-btn" id="st-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="st-reset" type="button">Nullstill</button>
+        </div>
+        <div class="stack" id="st-stack"></div>
+        <div class="w-out" id="st-out"></div>
+      </div>
+
+      <h3>Rammer og rammepeker</h3>
+      <p>Stakken brukes også til lokale variabler som ikke får plass i registre, som lokale tabeller og strukturer. Segmentet av stakken som inneholder en prosedyres lagrede registre og lokale variabler kalles en <span class="term" data-term="aktiveringspost">prosedyreramme</span> eller aktiveringspost (figur 2.12 i boka: lagrede argumentregistre, lagret returadresse, lagrede s-registre, lokale tabeller). Noen kompilatorer bruker en rammepeker, fp (x8), som peker på første ord i rammen. Stakkpekeren kan endre seg underveis i en prosedyre, så referanser til lokale variabler ville fått ulik forskyvning; rammepekeren gir et stabilt basisregister. RISC-V-kompilatoren bruker fp bare i prosedyrer som endrer sp i kroppen.</p>
+
+      <h3>Minnekartet: tekst, statisk data, heap og stakk</h3>
+      <p>I tillegg til automatiske variabler (lokale for en prosedyre, forkastes ved retur) trenger C-programmer plass til statiske variabler og dynamiske datastrukturer. C har to lagringsklasser: <em>automatiske</em> og <em>statiske</em> (deklarert utenfor alle prosedyrer eller med <code>static</code>; lever over kall). For enkel tilgang til statiske data reserverer noen kompilatorer x3 som <em>globalpeker</em>, gp. Figur 2.13 viser konvensjonen for minnet under Linux:</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 560 300" aria-label="Figur 2.13: RISC-V-minnekartet">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <rect class="seg s-stk" x="200" y="20" width="200" height="60"/>
+          <text x="300" y="45" text-anchor="middle" style="font-weight:600">Stakk</text>
+          <text class="cap" x="300" y="62" text-anchor="middle">vokser nedover</text>
+          <rect class="seg s-dyn" x="200" y="80" width="200" height="60"/>
+          <text x="300" y="105" text-anchor="middle" style="font-weight:600">Dynamiske data (heap)</text>
+          <text class="cap" x="300" y="122" text-anchor="middle">malloc / new · vokser oppover</text>
+          <rect class="seg s-dat" x="200" y="140" width="200" height="45"/>
+          <text x="300" y="167" text-anchor="middle" style="font-weight:600">Statiske data</text>
+          <rect class="seg s-txt" x="200" y="185" width="200" height="55"/>
+          <text x="300" y="210" text-anchor="middle" style="font-weight:600">Tekst</text>
+          <text class="cap" x="300" y="227" text-anchor="middle">maskinkoden</text>
+          <rect class="seg s-res" x="200" y="240" width="200" height="40"/>
+          <text x="300" y="264" text-anchor="middle">Reservert</text>
+          <text class="cap" x="190" y="24" text-anchor="end">sp → 0000 003f ffff fff0hex</text>
+          <text class="cap" x="190" y="144" text-anchor="end">0000 0000 1000 0000hex</text>
+          <text class="cap" x="190" y="189" text-anchor="end">PC → 0000 0000 0040 0000hex</text>
+          <text class="cap" x="190" y="280" text-anchor="end">0</text>
+          <path class="arr" d="M420 70 L420 100"/>
+          <path class="arr" d="M450 110 L450 80"/>
+          <text class="cap" x="420" y="60" text-anchor="middle">stakk</text>
+          <text class="cap" x="452" y="125" text-anchor="middle">heap</text>
+          <text class="cap" x="450" y="150" text-anchor="middle">vokser mot hverandre</text>
+        </svg>
+        <figcaption>Etter figur 2.13 i boka: <span class="term" data-term="minnekart">minnekartet</span> for program og data. Adressene er en programvarekonvensjon, ikke en del av RISC-V-arkitekturen. (Boka skriver adressene med 64 bit, derav de ledende nullene.)</figcaption>
+      </figure>
+
+      <p>Stakken starter øverst i brukerens adresserom og vokser nedover. Nederst er et reservert område, så maskinkoden, tradisjonelt kalt <em>tekstsegmentet</em>. Over koden ligger det statiske datasegmentet med konstanter og statiske variabler. Tabeller har gjerne fast lengde og passer der, men datastrukturer som lenkede lister vokser og krymper; deres segment kalles <em>heapen</em> og ligger neste. Slik kan stakk og heap vokse mot hverandre og bruke minnet effektivt. C tildeler og frigir heap-plass eksplisitt: <code>malloc()</code> returnerer en peker til nytt område, <code>free()</code> frigir det. Det er kilden til mange vonde feil: glemmer du free, lekker minnet til operativsystemet kan krasje; frigir du for tidlig, får du «dinglende pekere». Java bruker automatisk tildeling og søppeltømming for å unngå slike feil. Se <span class="term" data-term="statisk-dynamisk">statiske og dynamiske data</span>.</p>
+
+      <div class="oppgave" data-quiz id="oppg-2-31">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.31 · s. 184</span></div>
+        <div class="o-text"><p>Oversett funksjonen f til RISC-V-assembly. Funksjonsdeklarasjonen for g er <code>int g(int a, int b)</code>.</p>
+<pre><code>int f(int a, int b, int c, int d){
+  return g(g(a,b), c+d);
+}</code></pre></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>f er ikke en løvprosedyre, så returadressen x1 må lagres. c + d trengs <em>etter</em> det første kallet til g, og g kan ødelegge alle temporære og argumentregistre, så summen legges i et lagret register (x18, s2), som da også må lagres. Stakken holdes justert til 16 byte:</p>
+<pre><code>f:
+  addi sp, sp, -16    // ramme på 16 byte (justering)
+  sw   x1, 12(sp)     // lagre returadressen
+  sw   x18, 8(sp)     // lagre s2, som vi skal bruke
+  add  x18, x12, x13  // s2 = c + d   (a2 + a3)
+  jal  x1, g          // g(a, b): a og b ligger allerede i x10, x11
+  addi x11, x18, 0    // andre argument = c + d
+  jal  x1, g          // g(g(a,b), c+d): resultatet fra første g ligger i x10
+  lw   x18, 8(sp)     // gjenopprett s2
+  lw   x1, 12(sp)     // gjenopprett returadressen
+  addi sp, sp, 16     // fjern rammen
+  jalr x0, 0(x1)      // returverdien ligger allerede i x10</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-32">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.32 · s. 184</span></div>
+        <div class="o-text"><p>Kan vi bruke halekall-optimalisering (tail-call) i denne funksjonen? Hvis nei, forklar hvorfor. Hvis ja, hva er forskjellen i antall utførte instruksjoner i f med og uten optimaliseringen?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Ja. Det siste f gjør er å returnere resultatet av det ytre g-kallet uendret, så f kan gjenopprette registrene <em>før</em> kallet og hoppe til g med <code>jal x0, g</code> (uten å lagre ny returadresse): g returnerer da direkte til fs kaller med resultatet i x10.</p>
+<pre><code>f:
+  addi sp, sp, -16
+  sw   x1, 12(sp)
+  sw   x18, 8(sp)
+  add  x18, x12, x13
+  jal  x1, g
+  addi x11, x18, 0
+  lw   x18, 8(sp)
+  lw   x1, 12(sp)
+  addi sp, sp, 16
+  jal  x0, g          // halekall: g returnerer rett til den som kalte f</code></pre>
+            <p>Uten optimalisering utfører f 11 instruksjoner (over), med optimalisering 10: én instruksjon spart (jalr-returen), og dessuten blir ikke stakken dypere under det ytre g-kallet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-30">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.30 · s. 184</span></div>
+        <div class="o-text"><p>Boka ber i 2.29 om en RISC-V-implementasjon av fib(n) (fib(0) = 0, fib(1) = 1, ellers fib(n−1) + fib(n−2)) og i 2.30: vis for hvert funksjonskall innholdet på stakken etter at kallet er gjort. Anta at stakkpekeren starter på 0x7ffffffc og følg registerkonvensjonene i figur 2.11 (stakken skal holdes justert til 16 byte).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>En mulig fib (ikke løv, kaller seg selv to ganger, må bevare n og det første delresultatet over kall, så x1, s0 = x8 og s1 = x9 lagres i en 16-bytes ramme):</p>
+<pre><code>fib:
+  addi sp, sp, -16
+  sw   x1, 12(sp)      // returadresse
+  sw   x8, 8(sp)       // s0
+  sw   x9, 4(sp)       // s1
+  addi x8, x10, 0      // s0 = n
+  bne  x10, x0, L1     // n == 0?
+  addi x10, x0, 0      //   returner 0
+  jal  x0, Ret
+L1:
+  addi x5, x0, 1
+  bne  x10, x5, L2     // n == 1?
+  addi x10, x0, 1      //   returner 1
+  jal  x0, Ret
+L2:
+  addi x10, x8, -1
+  jal  x1, fib         // fib(n − 1)
+  addi x9, x10, 0      // s1 = fib(n − 1)
+  addi x10, x8, -2
+  jal  x1, fib         // fib(n − 2)
+  add  x10, x10, x9    // fib(n − 1) + fib(n − 2)
+Ret:
+  lw   x9, 4(sp)
+  lw   x8, 8(sp)
+  lw   x1, 12(sp)
+  addi sp, sp, 16
+  jalr x0, 0(x1)</code></pre>
+            <p><strong>Stakken etter hvert kall</strong> (sp starter på 0x7ffffffc). Hvert kall til fib trekker 16 fra sp og lagrer x1 på sp + 12, x8 på sp + 8 og x9 på sp + 4 (sp + 0 er ubrukt fyll for justeringen). Etter det første kallet, fib(n): sp = 0x7fffffec, med 0x7ffffff8 = returadressen til main, 0x7ffffff4 = mains s0, 0x7ffffff0 = mains s1. Når fib(n) kaller fib(n−1): sp = 0x7fffffdc, med 0x7fffffe8 = adressen etter <code>jal x1, fib</code> i L2 (første kall), 0x7fffffe4 = s0 = n, 0x7fffffe0 = s1 (verdien main hadde). Neste nivå, fib(n−2) kalt fra fib(n−1): sp = 0x7fffffcc, med 0x7fffffd8 = returadresse, 0x7fffffd4 = n − 1, 0x7fffffd0 = s1 fra nivået over. Og så videre: hvert rekursjonsnivå legger til en ramme på 16 byte med returadresse, kallerens n og kallerens s1, og maksimal dybde er n rammer. Stakkwidgeten over viser samme mønster for fact.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvor havner (a) en lokal <code>int i</code> i en funksjon, (b) en global tabell <code>int tab[100]</code>, (c) en node laget med <code>malloc</code>, og (d) selve maskinkoden til funksjonen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(a) I et register, eller på stakken i funksjonens ramme hvis det ikke er plass (automatisk variabel). (b) I det statiske datasegmentet (statisk, hele programmets levetid). (c) På heapen (dynamiske data). (d) I tekstsegmentet, fra 0x0040 0000.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 TEKST ─────────────────────────── -->
+  <section id="tekst">
+    <div class="container">
+      <div class="section-badge">04 · Tekst</div>
+      <h2>Tegn og strenger: <em>ASCII</em></h2>
+      <div class="source-note">Boka · kap. 2.9 · s. 114–120</div>
+      <span class="lm-pill">Læringsmål T2.4</span>
+      <ul class="lm-list">
+        <li>Studenten kjenner til hvordan tekst representeres i en datamaskin.</li>
+      </ul>
+
+      <p class="dropcap">Datamaskiner ble laget for å knuse tall, men så snart de ble kommersielt levedyktige ble de brukt til tekst. De fleste datamaskiner bruker 8-bits byte for tegn, og <span class="term" data-term="ascii">ASCII</span> (American Standard Code for Information Interchange) er representasjonen nesten alle følger. Store og små bokstaver skiller med nøyaktig 32, noe som gir snarveier for å sjekke eller bytte størrelse. Verdier utenom de synlige: 8 er backspace, 9 tabulator, 13 linjeskift (carriage return), og 0 er <em>null</em>, som C bruker til å markere slutten på en streng.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Utdrag av figur 2.15 i boka: ASCII.</caption>
+          <thead><tr><th>Verdi</th><th>Tegn</th><th>Verdi</th><th>Tegn</th><th>Verdi</th><th>Tegn</th><th>Verdi</th><th>Tegn</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">32</td><td>mellomrom</td><td class="mono">48</td><td class="mono">0</td><td class="mono">65</td><td class="mono">A</td><td class="mono">97</td><td class="mono">a</td></tr>
+            <tr><td class="mono">33</td><td class="mono">!</td><td class="mono">49</td><td class="mono">1</td><td class="mono">66</td><td class="mono">B</td><td class="mono">98</td><td class="mono">b</td></tr>
+            <tr><td class="mono">43</td><td class="mono">+</td><td class="mono">57</td><td class="mono">9</td><td class="mono">90</td><td class="mono">Z</td><td class="mono">122</td><td class="mono">z</td></tr>
+            <tr><td class="mono">45</td><td class="mono">−</td><td class="mono">58</td><td class="mono">:</td><td class="mono">91</td><td class="mono">[</td><td class="mono">123</td><td class="mono">{</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-ascii-binaer">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.9 · s. 115</span></div>
+        <div class="o-text"><p>Vi kunne representert tall som strenger av ASCII-sifre i stedet for som heltall. Hvor mye øker lagringsplassen hvis tallet én milliard representeres i ASCII i stedet for som 32-bits heltall?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Én milliard er 1 000 000 000, ti ASCII-sifre på 8 bit hver: (10 × 8) / 32 = 2,5 ganger mer plass. I tillegg er maskinvare for å regne på slike desimaltall vanskelig og energikrevende. Derfor lærer datafolk at binært er naturlig og den sjeldne desimalmaskinen bisarr.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Byte og halvord</h3>
+      <p>En sekvens av instruksjoner kan hente ut en byte fra et ord, så lw og sw er nok, men fordi tekst er så vanlig har RISC-V byteinstruksjoner: <code>lbu</code> laster en byte fra minnet inn i de 8 laveste bitene av et register (nullutvidet; <code>lb</code> fortegnsutvider), og <code>sb</code> skriver de 8 laveste bitene til minnet. Tilsvarende <code>lhu</code>, <code>lh</code> og <code>sh</code> for 16-bits halvord, som Java bruker for Unicode-tegn (UTF-16). En <span class="term" data-term="streng">streng</span> har variabelt antall tegn, og det er tre måter å angi lengden på: første posisjon holder lengden, en egen variabel holder den (som i en struktur), eller siste posisjon markeres med et sluttegn. C bruker den tredje, med byten 0; «Cal» er 67, 97, 108, 0. Java bruker den første.</p>
+
+      <div class="widget" id="w-ascii">
+        <div class="widget-label">Prøv selv · Streng som byte</div>
+        <p class="widget-intro">Skriv en streng og se hvordan C lagrer den: én byte per tegn (ASCII-verdi desimalt og heksadesimalt) med 0 til slutt. Tegn utenfor ASCII (æ, ø, å) blir flere byte i UTF-8.</p>
+        <div class="w-row"><div class="w-ctl"><label for="as-in">streng</label><input type="text" id="as-in" value="Cal"></div></div>
+        <div class="bytes" id="as-out"></div>
+        <div class="w-out" id="as-note"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-strcpy">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.9 · s. 116–117</span></div>
+        <div class="o-text"><p>Prosedyren strcpy kopierer strengen y til strengen x med Cs null-terminering. Hva er RISC-V-koden? Basisadressene til x og y ligger i x10 og x11, i ligger i x19.</p>
+<pre><code>void strcpy (char x[], char y[])
+{
+  size_t i;
+  i = 0;
+  while ((x[i] = y[i]) != '\0')   /* kopier og test byte */
+    i += 1;
+}</code></pre></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>strcpy:
+  addi sp, sp, -4     // juster stakken for 1 ord
+  sw   x19, 0(sp)     // lagre x19
+  add  x19, x0, x0    // i = 0 + 0
+L1:
+  add  x5, x19, x11   // adressen til y[i] i x5   (ingen ×4: y er byte)
+  lbu  x6, 0(x5)      // x6 = y[i]
+  add  x7, x19, x10   // adressen til x[i] i x7
+  sb   x6, 0(x7)      // x[i] = y[i]
+  beq  x6, x0, L2     // hvis y[i] == 0, gå til L2 (siste tegn)
+  addi x19, x19, 1    // i = i + 1
+  jal  x0, L1         // gå til L1
+L2:
+  lw   x19, 0(sp)     // gjenopprett gammel x19
+  addi sp, sp, 4      // pop 1 ord av stakken
+  jalr x0, 0(x1)      // returner</code></pre>
+            <p>Siden strcpy er en løvprosedyre, kunne kompilatoren lagt i i et temporært register og sluppet å lagre x19. I C skrives strengkopiering vanligvis med pekere for å unngå regningen med i.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Big Picture · boka s. 119</span>
+        <p>Typen til data er ikke kodet inn i dataene, men i programmet som opererer på dem. Hva betyr ordet «won»? På engelsk fortid av win, på koreansk en myntenhet, på polsk velluktende, på russisk stinker. Bitmønsteret 01100010 01100001 01010000 00000000 kan være det usignerte tallet 1 650 544 640, det signerte +1 650 544 640, strengen «baP», en mørkeblå farge i et CMYK-system, eller en maskininstruksjon. Gir du et bilde til et tekstprogram, prøver det å tolke det som tekst. Derfor har filsystemer navnekonvensjoner (.jpg, .pdf, .txt).</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-2-9">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§2.9 · s. 119</span></div>
+        <div class="o-text"><p>I. Hvilke påstander om tegn og strenger i C og Java er sanne? 1. En streng i C tar omtrent halvparten så mye minne som samme streng i Java. 2. Strenger er bare et uformelt navn på endimensjonale tabeller av tegn i C og Java. 3. Strenger i C og Java bruker null (0) til å markere slutten. 4. Operasjoner på strenger, som lengde, er raskere i C enn i Java. II. Hvilken variabeltype som kan inneholde 1 000 000 000 tar mest plass? 1. int i C. 2. streng i C. 3. streng i Java.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>I. 1) og 2). (Java bruker 16 bit per tegn og lagrer lengden i stedet for null; lengde er raskere i Java fordi den er lagret.) II. 3) streng i Java: 10 tegn à 16 bit pluss lengden.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-34">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.34 · s. 184–185</span></div>
+        <div class="o-text"><p>Skriv et program i RISC-V-assembly som gjør om en ASCII-streng med et positivt eller negativt desimaltall til et heltall. x10 holder adressen til en null-terminert streng med valgfritt «+» eller «−» fulgt av sifre 0–9. Regn ut heltallsverdien og legg den i x10. Dukker et ikke-siffer opp, stopp med −1 i x10. Eksempel: bytene 50, 52, 0 («24») skal gi 24. mul tar to registre; det finnes ingen muli, så legg konstanten 10 i et register.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+<pre><code>atoi:
+  addi x5, x0, 0       // x5 = resultat = 0
+  addi x6, x0, 10      // x6 = 10 (mul har ingen immediate-variant)
+  addi x7, x0, 0       // x7 = fortegn: 0 = positivt, 1 = negativt
+  lbu  x28, 0(x10)     // første tegn
+  addi x29, x0, 43     // '+'
+  beq  x28, x29, Skip  // '+': hopp over tegnet
+  addi x29, x0, 45     // '−'
+  bne  x28, x29, Loop  // ikke '−': begynn på sifrene
+  addi x7, x0, 1       // '−': husk negativt fortegn
+Skip:
+  addi x10, x10, 1     // neste byte
+Loop:
+  lbu  x28, 0(x10)     // hent tegn
+  beq  x28, x0, Done   // 0: slutt på strengen
+  addi x28, x28, -48   // '0' er 48: gjør om til sifferverdi
+  blt  x28, x0, Err    // under '0': ikke et siffer
+  addi x29, x0, 10
+  bge  x28, x29, Err   // over '9': ikke et siffer
+  mul  x5, x5, x6      // resultat = resultat × 10
+  add  x5, x5, x28     // resultat = resultat + siffer
+  addi x10, x10, 1     // neste byte
+  jal  x0, Loop
+Done:
+  beq  x7, x0, Pos
+  sub  x5, x0, x5      // negativt: neger
+Pos:
+  addi x10, x5, 0      // resultatet i x10
+  jalr x0, 0(x1)
+Err:
+  addi x10, x0, -1     // feil: −1 i x10
+  jalr x0, 0(x1)</code></pre>
+            <p>Grensesjekken «0 ≤ siffer &lt; 10» kunne vært én <code>bgeu x28, x29, Err</code> med bokas snarvei fra 2A. Programmet er en løvprosedyre og bruker bare temporære registre, så ingenting lagres på stakken.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 ADRESSERING ─────────────────────────── -->
+  <section id="adressering">
+    <div class="container">
+      <div class="section-badge">05 · Konstanter og adressering</div>
+      <h2>Når 12 bit <em>ikke er nok</em></h2>
+      <div class="source-note">Boka · kap. 2.10 · s. 120–128</div>
+      <span class="lm-pill">Læringsmål T2.4</span>
+      <ul class="lm-list">
+        <li>Studenten skal vite hvordan vi håndterer store konstanter og (unngår) lange hopp (PC-relativ adressering).</li>
+        <li>Studenten skal kunne forklare RISC-Vs fire adressemodi.</li>
+      </ul>
+
+      <p class="dropcap">At alle instruksjoner er 32 bit forenkler maskinvaren, men noen ganger vil vi ha konstanter eller adresser på 32 bit. Konstanter er som regel korte og passer i 12-bits feltene, men ikke alltid. RISC-V har derfor <span class="term" data-term="lui">lui</span> (load upper immediate), som laster en 20-bits konstant inn i bit 12–31 av et register og fyller de 12 laveste med 0. Den bruker et nytt format, U-type, siden de andre ikke har plass til så stor konstant. En 32-bits konstant bygges da med to instruksjoner.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-lui">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.10 · s. 120–121</span></div>
+        <div class="o-text"><p>Hva er RISC-V-koden for å laste denne 32-bits konstanten inn i x19? 00000000 00111101 00000101 00000000</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Først lastes bit 12–31 med lui; det bitmønsteret er 976 desimalt:</p>
+<pre><code>lui x19, 976          // 976 = 0000 0000 0011 1101 0000</code></pre>
+            <p>x19 er nå 00000000 00111101 00000000 00000000. Så legges de 12 laveste bitene til, 1280 desimalt:</p>
+<pre><code>addi x19, x19, 1280   // 1280 = 00000101 00000000</code></pre>
+            <p>Sluttverdien er 00000000 00111101 00000101 00000000 (0x003d0500 = 3 998 976). Hadde bit 11 i konstanten vært 1, ville addi-immediaten (som fortegnsutvides) vært negativ og trukket fra 2<sup>12</sup>; det rettes ved å legge 1 til lui-konstanten, siden den er skalert med 2<sup>12</sup>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-lui">
+        <div class="widget-label">Prøv selv · 32-bits konstant med lui + addi</div>
+        <p class="widget-intro">Skriv en 32-bits konstant (hex eller desimalt). Widgeten deler den i de 20 øverste og 12 nederste bitene, og viser korreksjonen når bit 11 er 1. Prøv 0x12345678 (bit 11 = 0) og 0x12345abc (bit 11 = 1).</p>
+        <div class="w-row"><div class="w-ctl"><label for="lu-in">konstant</label><input type="text" id="lu-in" value="0x003d0500"></div></div>
+        <div class="w-out" id="lu-out"></div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Maskinvare/programvare-grensesnitt</span>
+        <p>Enten kompilatoren eller assembleren må dele store konstanter i biter og sette dem sammen igjen i et register. Feltstørrelsen er et problem for minneadresser i load og store like mye som for konstanter. Dermed er den symbolske representasjonen ikke lenger begrenset av maskinvaren, men av hva assemblerens skaper velger å ta med (avsnitt 06).</p>
+      </div>
+
+      <h3>Adressering i hopp</h3>
+      <p>Betingede hopp bruker et format med 12-bits immediate, SB-type: 7-bits opcode, 3-bits funct3, rs1, rs2 og 12-bits adresse. Det kan representere hoppadresser fra −4096 til 4094 i multipler av 2. jal bruker UJ-type med 20-bits adresse. Måtte programadresser passe i 20 bit, kunne ingen programmer være større enn 2<sup>20</sup>, altfor lite. Alternativet er å angi et register som alltid legges til forskyvningen:</p>
+      \[ \text{Programteller} = \text{Register} + \text{Hoppforskyvning} \tag{1} \]
+      <p>Da kan programmet være opptil 2<sup>32</sup> og fortsatt bruke betingede hopp. Men hvilket register? Svaret kommer av hvordan betingede hopp brukes: i løkker og if-setninger, som hopper til instruksjoner i nærheten. Omtrent halvparten av alle betingede hopp i SPEC går til under 16 instruksjoner unna. Bruker vi <em>PC</em> som registeret, kan vi hoppe innen ±2<sup>10</sup> ord og jal innen ±2<sup>18</sup> ord fra gjeldende instruksjon; nesten alle løkker er mindre enn det, så PC er det ideelle valget. Det er <span class="term" data-term="pc-relativ">PC-relativ adressering</span>, og RISC-V bruker den for både betingede hopp og jal. Prosedyrekall kan derimot trenge hopp lenger enn 2<sup>18</sup> ord unna, så svært lange hopp gjøres med to instruksjoner: lui skriver bit 12–31 av adressen til et temporært register, og jalr legger til de 12 laveste og hopper.</p>
+      <p>Fordi RISC-V-instruksjoner er 4 byte, kunne forskyvningen vært talt i ord. Men arkitektene ville støtte instruksjoner på 2 byte (den komprimerte utvidelsen), så hoppene teller <em>halvord</em>: 20-bits feltet i jal dekker ±2<sup>19</sup> halvord, ±1 MiB fra PC, og 12-bits feltet i betingede hopp er også en halvordsadresse, altså en 13-bits byteadresse (±4 KiB). Formatene <span class="term" data-term="sb-uj">SB og UJ</span> har immediatebitene «virvlet rundt» for å forenkle maskinvaren; kapittel 2 later som de er S og U.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-hoppforskyvning">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.10 · s. 123–124</span></div>
+        <div class="o-text"><p>while-løkka fra 2A er kompilert til seks instruksjoner (slli, add, lw, bne … Exit, addi, beq … Loop). Hvis løkka legges fra adresse 80000 i minnet, hva er maskinkoden?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>Adresse  Instruksjon
+80000    0000000 00010 10110 001 01010 0010011    slli x10, x22, 2
+80004    0000000 11001 01010 000 01010 0110011    add  x10, x10, x25
+80008    0000000 00000 01010 011 01001 0000011    lw   x9, 0(x10)      (boka skriver funct3 = 011)
+80012    0000000 11000 01001 001 01100 1100011    bne  x9, x24, Exit   → forskyvning +12
+80016    0000000 00001 10110 000 10110 0010011    addi x22, x22, 1
+80020    1111111 00000 00000 000 01101 1100011    beq  x0, x0, Loop    → forskyvning −20</code></pre>
+            <p>RISC-V har byteadresser, så påfølgende ord skiller med 4. bne på fjerde linje legger 3 ord = 12 byte til sin egen adresse (12 + 80012 = 80024, Exit) i stedet for å bruke hele måladressen. Hoppet på siste linje regner tilsvarende bakover: −20 + 80020 = 80000, Loop. Assembleren gjør regningen; i maskinkoden står bare forskyvningen. (Fordi hoppene teller halvord, er feltverdiene 12/2 = 6 og −20/2 = −10; boka viser feltene forenklet som S-format.)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-langt-hopp">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.10 · s. 124</span></div>
+        <div class="o-text"><p>Hoppe langt: gitt et hopp på at x10 er lik null, <code>beq x10, x0, L1</code>, erstatt det med et par instruksjoner som gir mye lengre rekkevidde.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+<pre><code>    bne x10, x0, L2    // motsatt betingelse: hopp OVER jal hvis x10 ≠ 0
+    jal x0, L1         // ubetinget hopp med ±1 MiB rekkevidde
+L2:</code></pre>
+            <p>Assembleren gjør dette selv når et betinget hopp går lenger enn 12-bits feltet rekker: setter inn et ubetinget hopp til målet og inverterer betingelsen, slik at det betingede hoppet avgjør om det ubetingede skal hoppes over.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>De fire adressemodiene</h3>
+      <p>Flere former for adressering kalles samlet <span class="term" data-term="adressemodus">adressemodi</span>. Figur 2.17 i boka viser hvordan operanden identifiseres i hver:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">1 · Immediate</div><div class="fc-val">Operanden er en konstant i selve instruksjonen. <code>addi x5, x6, 4</code></div></div>
+        <div class="fact-card"><div class="fc-key">2 · Register</div><div class="fc-val">Operanden er et register. <code>add x5, x6, x7</code></div></div>
+        <div class="fact-card"><div class="fc-key">3 · Basis (forskyvning)</div><div class="fc-val">Operanden ligger i minnet på adressen register + konstant. <code>lw x5, 8(x6)</code>; byte, halvord eller ord.</div></div>
+        <div class="fact-card"><div class="fc-key">4 · PC-relativ</div><div class="fc-val">Hoppadressen er PC + konstant i instruksjonen. <code>beq x5, x6, L</code>, <code>jal x1, f</code></div></div>
+      </div>
+      <p>Én operasjon kan bruke flere modi: add bruker både immediate (addi) og register (add). Boka viser også hvordan man dekoder maskinkode for hånd, for eksempel fra en «core dump»:</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-dekoding">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.10 · s. 127</span></div>
+        <div class="o-text"><p>Hvilken assemblysetning tilsvarer maskininstruksjonen 00578833<sub>hex</sub>?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Først hex til binært: 0000 0000 0101 0111 1000 1000 0011 0011. Opcode er de 7 laveste bitene, 0110011: R-type aritmetikk. Feltene: funct7 = 0000000, rs2 = 00101 (x5), rs1 = 01111 (x15), funct3 = 000, rd = 10000 (x16). funct7 og funct3 lik null betyr add: <code>add x16, x15, x5</code>. (Dekoderen i 2A gjør det samme.)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-2-10">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§2.10 · s. 128</span></div>
+        <div class="o-text"><p>I. Hva er rekkevidden i byteadresser for betingede hopp i RISC-V (K = 1024)? 1. 0 til 4K − 1. 2. 0 til 8K − 1. 3. Omtrent 2K før hoppet til 2K etter. 4. Omtrent 4K før til 4K etter. II. Hva er rekkevidden for jal (M = 1024K)? 1. 0 til 512K − 1. 2. 0 til 1M − 1. 3. Omtrent 512K før til 512K etter. 4. Omtrent 1M før til 1M etter.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>I. 4) ±4K. II. 4) ±1M. Begge er relative til PC, ikke absolutte, og teller halvord, så 12 bit gir ±4 KiB og 20 bit ±1 MiB.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-2-22">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">2.22 · s. 182</span></div>
+        <div class="o-text"><p>Anta at programtelleren er 0x20000000. 2.22.1 Hvilket adresseområde kan nås med jal (hvilke verdier kan PC ha etter hoppet)? 2.22.2 Hvilket område kan nås med beq?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p><strong>2.22.1</strong> jal har 20-bits forskyvning i halvord, altså −2<sup>19</sup> … 2<sup>19</sup> − 1 halvord = −1 048 576 … +1 048 574 byte fra PC: PC kan bli alt fra 0x1ff00000 til 0x200ffffe (partallsadresser).</p>
+            <p><strong>2.22.2</strong> beq har 12-bits forskyvning i halvord: −4096 … +4094 byte fra PC: 0x1ffff000 til 0x20000ffe (partallsadresser).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor er PC-relativ adressering et godt valg for beq og jal, men ikke for jalr?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">beq og jal brukes i løkker, if-setninger og kall til prosedyrer i nærheten, og målet ligger nesten alltid innen få tusen byte; da holder et lite felt relativt til PC, og koden blir uavhengig av hvor den lastes. jalr brukes til retur (adressen ligger i x1 og kan være hvor som helst), hopptabeller og lange kall via lui: målet er en vilkårlig 32-bits adresse i et register, ikke en avstand fra PC.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 OVERSETTELSE ─────────────────────────── -->
+  <section id="oversettelse">
+    <div class="container">
+      <div class="section-badge">06 · Oversettelse og oppstart</div>
+      <h2>Fra C-fil til <em>kjørende program</em></h2>
+      <div class="source-note">Boka · kap. 2.12 · s. 131–140 · figur 2.20</div>
+      <span class="lm-pill">Læringsmål T2.4</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare skrittene involvert i oversettelse og oppstart av programmer (kunne gjengi og forklare figur 2.20).</li>
+      </ul>
+
+      <p class="dropcap">Fire steg gjør et C-program i en fil på disk om til et program som kjører: kompilator, assembler, lenker og laster. Noen systemer slår sammen steg for å spare tid, men programmene går gjennom disse fire logiske fasene, oversettelseshierarkiet i figur 2.20.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 330" aria-label="Figur 2.20: oversettelseshierarkiet for C">
+          <rect class="seg s-txt" x="200" y="10" width="240" height="34" rx="6"/><text x="320" y="32" text-anchor="middle">C-program (x.c)</text>
+          <path class="arr" d="M320 44 L320 62"/>
+          <rect class="seg s-dat" x="245" y="62" width="150" height="30" rx="15"/><text x="320" y="82" text-anchor="middle" style="font-weight:600">Kompilator</text>
+          <path class="arr" d="M320 92 L320 110"/>
+          <rect class="seg s-txt" x="200" y="110" width="240" height="34" rx="6"/><text x="320" y="132" text-anchor="middle">Assemblyprogram (x.s)</text>
+          <path class="arr" d="M320 144 L320 162"/>
+          <rect class="seg s-dat" x="245" y="162" width="150" height="30" rx="15"/><text x="320" y="182" text-anchor="middle" style="font-weight:600">Assembler</text>
+          <path class="arr" d="M320 192 L320 210"/>
+          <rect class="seg s-txt" x="150" y="210" width="200" height="34" rx="6"/><text x="250" y="232" text-anchor="middle">Objekt: maskinspråkmodul (x.o)</text>
+          <rect class="seg s-txt" x="380" y="210" width="230" height="34" rx="6"/><text x="495" y="232" text-anchor="middle">Objekt: biblioteksrutine (x.a / x.so)</text>
+          <path class="arr" d="M250 244 L300 262"/><path class="arr" d="M495 244 L340 262"/>
+          <rect class="seg s-dat" x="245" y="262" width="150" height="30" rx="15"/><text x="320" y="282" text-anchor="middle" style="font-weight:600">Lenker</text>
+          <path class="arr" d="M320 292 L320 300"/>
+          <text class="cap" x="320" y="316" text-anchor="middle">Kjørbar fil: maskinspråkprogram (a.out) → Laster → Minne</text>
+        </svg>
+        <figcaption>Etter figur 2.20 i boka: oversettelseshierarkiet for C. Filendelsene er UNIX-konvensjonen (.c, .s, .o, .a, .so, a.out); MS-DOS bruker .C, .ASM, .OBJ, .LIB, .DLL, .EXE.</figcaption>
+      </figure>
+
+      <h3>Kompilator</h3>
+      <p>Kompilatoren gjør C-programmet om til et assemblyprogram, en symbolsk form av det maskinen forstår. I 1975 ble mange operativsystemer og assemblere skrevet i assembly fordi minnene var små og kompilatorene dårlige; millionfold økning i minnekapasitet og optimaliserende kompilatorer som er nesten like gode som en assemblyekspert, ofte bedre for store programmer, har endret det.</p>
+
+      <h3>Assembler og pseudoinstruksjoner</h3>
+      <p>Siden assembly er et grensesnitt mot høyere programvare, kan assembleren behandle vanlige varianter av maskininstruksjoner som om de var egne instruksjoner: <span class="term" data-term="pseudoinstruksjon">pseudoinstruksjoner</span>. Maskinvaren trenger ikke implementere dem. Register x0 gjør flere av dem mulige:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pseudoinstruksjon</th><th>Blir til</th><th>Betydning</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">li x9, 123</td><td class="mono">addi x9, x0, 123</td><td>load immediate (store konstanter: lui + addi)</td></tr>
+            <tr><td class="mono">mv x10, x11</td><td class="mono">addi x10, x11, 0</td><td>kopier register</td></tr>
+            <tr><td class="mono">j Label</td><td class="mono">jal x0, Label</td><td>ubetinget hopp</td></tr>
+            <tr><td class="mono">ret</td><td class="mono">jalr x0, 0(x1)</td><td>retur</td></tr>
+            <tr><td class="mono">la x5, sym</td><td class="mono">lui + addi</td><td>load address (symbolsk adresse)</td></tr>
+            <tr><td class="mono">and x9, x10, 15</td><td class="mono">andi x9, x10, 15</td><td>assembleren velger immediate-varianten selv</td></tr>
+            <tr><td class="mono">beq langt unna</td><td class="mono">bne + jal</td><td>hopp med lang rekkevidde</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Boka bruker bare ekte instruksjoner i kapittel 2 og 3 for å unngå forvirring, men anbefaler pseudoinstruksjoner når du skriver assembly selv (som i Ripes-øvingene). Assemblerens hovedoppgave er å gjøre assemblyprogrammet om til en <span class="term" data-term="objektfil">objektfil</span>: maskininstruksjoner, data og informasjon for å plassere instruksjonene riktig i minnet. For det må den finne adressene til alle etiketter, og den holder dem i en <span class="term" data-term="symboltabell">symboltabell</span>. Objektfilen i UNIX har seks deler: filhode (størrelse og plassering av de andre delene), tekstsegment (maskinkoden), statisk datasegment, relokeringsinformasjon (instruksjoner og data som avhenger av absolutte adresser), symboltabell (etiketter som ikke er definert, som eksterne referanser) og feilsøkingsinformasjon.</p>
+
+      <h3>Lenker</h3>
+      <p>Skulle én endring i én prosedyre kreve at hele programmet kompileres og assembleres på nytt, ville det være en fryktelig sløsing, særlig for biblioteksrutiner som nesten aldri endres. Alternativet er å kompilere og assemblere hver prosedyre for seg, og la et nytt systemprogram, <span class="term" data-term="lenker">lenkeren</span> (link editor), sy sammen de uavhengig assemblerte maskinspråkprogrammene. Det er mye raskere å lappe kode enn å rekompilere. Tre steg: 1) plasser kode- og datamoduler symbolsk i minnet, 2) bestem adressene til data- og instruksjonsetiketter, 3) lapp interne og eksterne referanser. Lenkeren bruker relokeringsinformasjonen og symboltabellen i hver modul til å løse opp alle udefinerte etiketter, og produserer en kjørbar fil uten uløste referanser.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-lenking">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">2.12 · s. 135–136</span></div>
+        <div class="o-text"><p>Lenk de to objektfilene. Prosedyre A: tekststørrelse 100<sub>hex</sub>, datastørrelse 20<sub>hex</sub>; tekst: adresse 0 <code>lw x10, 0(x3)</code>, adresse 4 <code>jal x1, 0</code>; data: 0 (X); relokering: 0 lw X, 4 jal B; symboltabell: X –, B –. Prosedyre B: tekst 200<sub>hex</sub>, data 30<sub>hex</sub>; tekst: 0 <code>sw x11, 0(x3)</code>, 4 <code>jal x1, 0</code>; data: 0 (Y); relokering: 0 sw Y, 4 jal A; symboltabell: Y –, A –. Vis de oppdaterte adressene til de første instruksjonene i den ferdige kjørbare fila.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Etter minnekartet starter teksten på 0040 0000<sub>hex</sub> og data på 1000 0000<sub>hex</sub>. As tekst legges først; den er 100<sub>hex</sub> byte, så Bs tekst starter på 40 0100<sub>hex</sub>. As data er 20<sub>hex</sub> byte, så Bs data starter på 1000 0020<sub>hex</sub>.</p>
+<pre><code>Kjørbar fil: tekst 300hex, data 50hex
+Adresse       Instruksjon
+0040 0000     lw  x10, 0(x3)        // X: x3 = 1000 0000, forskyvning 0
+0040 0004     jal x1, 252           // B: 40 0100 − 40 0004 = 252
+0040 0100     sw  x11, 32(x3)       // Y: 1000 0020 − 1000 0000 = 32
+0040 0104     jal x1, −260          // A: 40 0000 − 40 0104 = −260
+Data
+1000 0000     (X)
+1000 0020     (Y)</code></pre>
+            <p>Tre typer lapping: jal er PC-relativ, så feltet får avstanden fra jal til målet. Load er relativ til basisregisteret x3, som antas initialisert til 1000 0000<sub>hex</sub>, så X får forskyvning 0. Store håndteres som load, men S-formatet lagrer immediaten annerledes; Y får forskyvning 32<sub>ti</sub>.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Laster</h3>
+      <p>Når den kjørbare fila ligger på disk, leser operativsystemet den inn i minnet og starter den. <span class="term" data-term="laster">Lasteren</span> i UNIX: 1) leser filhodet for å finne størrelsen på tekst- og datasegmentene, 2) lager et adresserom stort nok, 3) kopierer instruksjoner og data fra fila til minnet, 4) kopierer eventuelle parametre til hovedprogrammet til stakken, 5) initialiserer registrene og setter stakkpekeren til første ledige plass, 6) hopper til en oppstartsrutine som kopierer parametrene til argumentregistrene og kaller main; når main returnerer, avslutter oppstartsrutinen programmet med et exit-systemkall.</p>
+
+      <h3>Dynamisk lenkede biblioteker</h3>
+      <p>Statisk lenking før kjøring er raskest, men har ulemper: biblioteksrutinene blir en del av den kjørbare koden, så en ny biblioteksversjon som retter feil eller støtter ny maskinvare når ikke programmet; og alle rutiner som kalles noe sted lastes, selv om kallene aldri utføres (C-biblioteket er 1,5 MiB). <span class="term" data-term="dll">Dynamisk lenkede biblioteker</span> (DLL) lenkes og lastes ikke før programmet kjører. Den «late» varianten lenker hver rutine først når den kalles: første kall går til en dummy-rutine med et indirekte hopp, som legger et nummer i et register og hopper til den dynamiske lenkeren/lasteren; den finner rutinen, kobler den inn og endrer adressen i det indirekte hoppet, så senere kall bare koster ett indirekte hopp. «Nesten alle problemer i informatikk kan løses med nok et lag indireksjon» (David Wheeler). Windows og dagens UNIX bruker DLL-er som standard.</p>
+
+      <h3>Java: bytekode, JVM og JIT</h3>
+      <p>Java ble laget for å kjøre trygt på hvilken som helst maskin: det kompileres til <span class="term" data-term="jit">Java-bytekode</span>, som tolkes av Java Virtual Machine (en tolk er et program som simulerer en ISA, som RISC-V-simulatoren i faget). Fordelen er maskinuavhengighet, ulempen ytelse (faktor 10); derfor kompilerer en Just In Time-kompilator de «varme» metodene til maskinens eget instruksjonssett under kjøring.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvem regner ut forskyvningen i <code>jal x1, 252</code>, og når: kompilatoren, assembleren, lenkeren eller lasteren?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Lenkeren, når B er en prosedyre i en annen modul: assembleren kjenner ikke adressen til B, legger 0 i feltet og noterer «jal B» i relokeringsinformasjonen. Lenkeren plasserer modulene, finner adressen til B og lapper feltet med den PC-relative avstanden. Er målet en etikett i samme fil, gjør assembleren det direkte fra symboltabellen. Lasteren rører ikke PC-relative felt, men må relokere absolutte adresser.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Kall</strong>Seks steg. jal x1, f lagrer PC + 4 i x1; jalr x0, 0(x1) returnerer. Argumenter og returverdi i x10–x17.</div>
+        <div class="recap-pill"><strong>Konvensjon</strong>t0–t6 og a0–a7 bevares ikke; s0–s11, sp, gp bevares (den kalte lagrer dem). Løvprosedyrer bruker temporære først.</div>
+        <div class="recap-pill"><strong>Stakk</strong>Vokser nedover fra 0x3ffffff0. push: addi sp, −n + sw. pop: lw + addi sp, +n. Rammer med returadresse, lagrede registre, lokale variabler; fp = x8.</div>
+        <div class="recap-pill"><strong>Minnekart</strong>Reservert · tekst (0x0040 0000) · statisk data (0x1000 0000) · heap ↑ · stakk ↓. Automatisk vs statisk vs dynamisk (malloc/free).</div>
+        <div class="recap-pill"><strong>Tekst</strong>ASCII 8 bit; C-strenger slutter med 0; lbu/sb, lhu/sh. Typen ligger i programmet, ikke i bitene.</div>
+        <div class="recap-pill"><strong>Store konstanter</strong>lui (20 bit øverst) + addi (12 bit); korriger lui med +1 når bit 11 er 1.</div>
+        <div class="recap-pill"><strong>PC-relativ</strong>beq/bne: ±4 KiB, jal: ±1 MiB, i halvord. Lange hopp: lui + jalr, eller bne + jal.</div>
+        <div class="recap-pill"><strong>Fire modi</strong>Immediate · register · basis + forskyvning · PC-relativ.</div>
+        <div class="recap-pill"><strong>Oversettelse</strong>Kompilator → assembler (pseudoinstruksjoner, symboltabell, objektfil) → lenker (relokering, kjørbar fil) → laster (minne, sp, main). DLL: lat lenking. Java: bytekode, JVM, JIT.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er galt med denne prosedyren, som kaller en annen prosedyre? <code>f: jal x1, g / addi x10, x10, 1 / jalr x0, 0(x1)</code></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">jal x1, g overskriver x1 med returadressen fra g, så jalr til slutt returnerer til instruksjonen etter kallet inne i f, ikke til fs kaller: uendelig løkke. f er ikke løv og må pushe x1 på stakken før kallet og poppe den etterpå.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Lag konstanten 0x12345abc i x5 med lui og addi.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Øvre 20 bit: 0x12345, nedre 12: 0xabc. Bit 11 er 1 (0xabc ≥ 0x800), så addi-immediaten tolkes som 0xabc − 0x1000 = −1348. Korriger lui med +1: <code>lui x5, 0x12346</code> og <code>addi x5, x5, -1348</code>. Sjekk: 0x12346000 − 1348 = 0x12345abc. Prøv i widgeten.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">En streng «Hei» ligger fra adresse 0x1000 0000. Hvilke byte ligger på 0x1000 0000–0x1000 0003, og hva gir <code>lw x5, 0(x3)</code> med x3 = 0x1000 0000 på en little-endian-maskin?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">72 (H), 101 (e), 105 (i), 0. Little-endian legger byten med lavest adresse i de laveste bitene av ordet: x5 = 0x00696548 (0 · 2²⁴ + 105 · 2¹⁶ + 101 · 2⁸ + 72).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Forklar hvorfor en objektfil trenger både relokeringsinformasjon og en symboltabell, og hva som er borte i den kjørbare fila.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Relokeringsinformasjonen sier hvilke instruksjoner og dataord som avhenger av absolutte adresser (må lappes når modulen får sin plass i minnet). Symboltabellen sier hvilke etiketter modulen definerer og hvilke den refererer til uten å definere (eksterne, som prosedyrer i andre moduler). Lenkeren bruker begge til å plassere modulene, bestemme adresser og lappe referansene. I den kjørbare fila er alle referanser løst; symboler og feilsøkingsinformasjon kan beholdes eller «strippes», og relokeringsinformasjon kan beholdes for lasteren.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="tall.html" class="prev"><div class="pn-label">← Forrige · 2B</div><div class="pn-title">Heltall og logiske operasjoner</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 2: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  function hex(v, w) { var s = (v >>> 0).toString(16); while (s.length < (w || 8)) s = '0' + s; return '0x' + s; }
+
+  /* ─── Widget 1: stakken under fact(n) ─── */
+  (function () {
+    var root = document.getElementById('w-stakk'); if (!root) return;
+    var nIn = document.getElementById('st-n'), stackEl = document.getElementById('st-stack'), out = document.getElementById('st-out');
+    var SP0 = 0x3ffffff0, RET_MAIN = 0x00400104, RET_REC = 0x0040021c; /* illustrerende returadresser */
+    var st;
+    function reset() {
+      var n = Math.max(0, Math.min(6, Math.round(+nIn.value || 0)));
+      st = { n0: n, frames: [], phase: 'call', cur: n, result: null, log: 'main kaller fact(' + n + ') med x10 = ' + n + ' og jal x1, fact. sp = ' + hex(SP0) + '.', done: false, steps: 0 };
+      render();
+    }
+    function step() {
+      if (st.done) return; st.steps++;
+      if (st.phase === 'call') {
+        var ret = st.frames.length === 0 ? RET_MAIN : RET_REC;
+        st.frames.push({ ret: ret, n: st.cur });
+        if (st.cur < 1) {
+          st.log = 'fact(' + st.cur + '): pusher x1 = ' + hex(ret) + ' og n = ' + st.cur + ' (sp − 8). n < 1, så x10 = 1 og rammen poppes igjen; jalr til ' + hex(ret) + '.';
+          st.frames.pop(); st.result = 1; st.phase = 'ret';
+        } else {
+          st.log = 'fact(' + st.cur + '): pusher x1 = ' + hex(ret) + ' og n = ' + st.cur + ' (addi sp, sp, −8; sw x1, 4(sp); sw x10, 0(sp)). n ≥ 1: x10 = ' + (st.cur - 1) + ', jal x1, fact.';
+          st.cur -= 1;
+        }
+      } else {
+        if (st.frames.length === 0) { st.done = true; st.log = 'Tilbake i main med x10 = ' + st.result + ' = fact(' + st.n0 + '). Stakken er som før: sp = ' + hex(SP0) + '.'; }
+        else {
+          var f = st.frames.pop(), prod = f.n * st.result;
+          st.log = 'Retur til ' + hex(f.ret) + ' med x10 = ' + st.result + '. Gjenoppretter n = ' + f.n + ' og x1 fra stakken, popper 8 byte, mul: x10 = ' + f.n + ' × ' + st.result + ' = ' + prod + '. jalr til ' + hex(f.ret) + '.';
+          st.result = prod;
+        }
+      }
+      render();
+    }
+    function render() {
+      var sp = SP0 - 8 * st.frames.length, rows = '';
+      for (var i = 0; i < st.frames.length; i++) {
+        var f = st.frames[i], base = SP0 - 8 * (i + 1), cls = 'f' + (i % 5);
+        rows += '<div class="sa">' + hex(base + 4) + '</div><div class="sv ' + cls + '">x1 = ' + hex(f.ret) + ' (returadresse)</div>';
+        rows += '<div class="sa">' + hex(base) + '</div><div class="sv ' + cls + (i === st.frames.length - 1 ? ' sp' : '') + '">x10 = n = ' + f.n + '</div>';
+      }
+      stackEl.innerHTML = '<div class="sa">' + hex(SP0) + '</div><div class="sv">(mains stakk) ↑ høye adresser</div>' + rows + (st.frames.length ? '' : '<div class="sa"></div><div class="sv" style="color:var(--ink-ghost)">tom: ingen rammer</div>');
+      out.innerHTML = st.log + '\nsp = <span class="hl">' + hex(sp) + '</span>   dybde: ' + st.frames.length + ' rammer à 8 byte' + (st.done ? '   ·   ferdig' : '');
+    }
+    document.getElementById('st-step').addEventListener('click', step);
+    document.getElementById('st-run').addEventListener('click', function () { var g = 0; while (!st.done && g++ < 40) step(); });
+    document.getElementById('st-reset').addEventListener('click', reset);
+    nIn.addEventListener('change', reset);
+    reset();
+  })();
+
+  /* ─── Widget 2: streng som byte ─── */
+  (function () {
+    var root = document.getElementById('w-ascii'); if (!root) return;
+    var inp = document.getElementById('as-in'), out = document.getElementById('as-out'), note = document.getElementById('as-note');
+    function draw() {
+      var s = inp.value.slice(0, 24), bytes = [], nonAscii = false;
+      for (var i = 0; i < s.length; i++) {
+        var c = s.charCodeAt(i);
+        if (c < 128) bytes.push({ ch: s[i] === ' ' ? '␠' : s[i], v: c });
+        else { nonAscii = true; var enc = unescape(encodeURIComponent(s[i])); for (var j = 0; j < enc.length; j++) bytes.push({ ch: j === 0 ? s[i] : '·', v: enc.charCodeAt(j) }); }
+      }
+      bytes.push({ ch: '\\0', v: 0 });
+      out.innerHTML = bytes.map(function (b, k) { return '<div class="by"><span class="ch">' + b.ch + '</span>' + b.v + ' · 0x' + (b.v < 16 ? '0' : '') + b.v.toString(16) + '<br><span style="color:var(--ink-ghost)">+' + k + '</span></div>'; }).join('');
+      note.innerHTML = bytes.length + ' byte i minnet (inkludert null-tegnet). ' + (nonAscii ? 'Tegn utenfor ASCII er kodet som UTF-8 og tar 2–3 byte hver.' : 'Alle tegn er ASCII: én byte hver.') + (/[a-z]/i.test(s) ? ' Store og små bokstaver skiller med 32: A = 65, a = 97.' : '');
+    }
+    inp.addEventListener('input', draw); draw();
+  })();
+
+  /* ─── Widget 3: lui + addi ─── */
+  (function () {
+    var root = document.getElementById('w-lui'); if (!root) return;
+    var inp = document.getElementById('lu-in'), out = document.getElementById('lu-out');
+    function draw() {
+      var s = inp.value.trim(), v;
+      if (/^0x[0-9a-f]{1,8}$/i.test(s)) v = parseInt(s.slice(2), 16);
+      else if (/^-?[0-9]+$/.test(s)) v = parseInt(s, 10);
+      else { out.innerHTML = '<span class="bad">Skriv 0x… eller et desimaltall.</span>'; return; }
+      v = v >>> 0;
+      var hi = v >>> 12, lo = v & 0xfff, bit11 = (lo >> 11) & 1;
+      var addi = bit11 ? lo - 4096 : lo, luiv = bit11 ? (hi + 1) & 0xfffff : hi;
+      var check = ((luiv << 12) + addi) >>> 0;
+      out.innerHTML = 'konstant = ' + hex(v) + ' = ' + v + '\nøvre 20 bit: ' + hex(hi, 5) + ' (' + hi + ')   nedre 12 bit: ' + hex(lo, 3) + ' (' + lo + ')   bit 11 = ' + bit11 + '\n' +
+        (bit11 ? 'Bit 11 er 1: addi fortegnsutvider ' + hex(lo, 3) + ' til ' + addi + ', så lui-konstanten økes med 1.\n' : 'Bit 11 er 0: ingen korreksjon.\n') +
+        '<span class="hl">lui  xN, ' + luiv + '</span>        // ' + hex(luiv, 5) + ' &lt;&lt; 12 = ' + hex((luiv << 12) >>> 0) + '\n<span class="hl">addi xN, xN, ' + addi + '</span>' + (addi < 0 ? '' : ' ') + '   // + (' + addi + ')\nresultat: ' + hex(check) + (check === v ? ' <span class="ok">✓</span>' : ' <span class="bad">✗</span>');
+    }
+    inp.addEventListener('input', draw); draw();
+  })();
+})();
+</script>
+</body>
+</html>

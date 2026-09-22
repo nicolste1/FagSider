@@ -8,5 +8,5 @@ window.NOTATER_VERSJON = {
   "dato_norsk": "26. august 2026",
   "sider": 0,
   "ekstrahert": "2026-09-22",
-  "antall_oppgaver": 29
+  "antall_oppgaver": 71
 };

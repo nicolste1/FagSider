@@ -4,13 +4,48 @@
   "dato_norsk": "26. august 2026",
   "sider": 0,
   "ekstrahert": "2026-09-22",
-  "antall_oppgaver": 29,
+  "antall_oppgaver": 71,
   "_kommentar": "Skrevet for hånd. seksjoner lister bare temaene som er dekket på siden, slik at tools/valider.py sjekker dekning.json mot dem. Legg til 2, 2.1, … når kap 2 lages.",
   "seksjoner": [
-    { "nummer": "1",   "tittel": "T1 Introduksjon og ytelse" },
-    { "nummer": "1.1", "tittel": "T1.1 Datamaskintyper og de 7 store ideene" },
-    { "nummer": "1.2", "tittel": "T1.2 Under overflaten" },
-    { "nummer": "1.3", "tittel": "T1.3 Ytelse" },
-    { "nummer": "1.4", "tittel": "T1.4 Parallelle datamaskiner" }
+    {
+      "nummer": "1",
+      "tittel": "T1 Introduksjon og ytelse"
+    },
+    {
+      "nummer": "1.1",
+      "tittel": "T1.1 Datamaskintyper og de 7 store ideene"
+    },
+    {
+      "nummer": "1.2",
+      "tittel": "T1.2 Under overflaten"
+    },
+    {
+      "nummer": "1.3",
+      "tittel": "T1.3 Ytelse"
+    },
+    {
+      "nummer": "1.4",
+      "tittel": "T1.4 Parallelle datamaskiner"
+    },
+    {
+      "nummer": "2",
+      "tittel": "T2 Instruksjonssett"
+    },
+    {
+      "nummer": "2.1",
+      "tittel": "T2.1 Instruksjoner"
+    },
+    {
+      "nummer": "2.2",
+      "tittel": "T2.2 Heltall og logiske operasjoner"
+    },
+    {
+      "nummer": "2.3",
+      "tittel": "T2.3 Funksjonskall"
+    },
+    {
+      "nummer": "2.4",
+      "tittel": "T2.4 Instruksjoner, diverse"
+    }
   ]
 }

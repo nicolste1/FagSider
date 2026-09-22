@@ -17,6 +17,9 @@
 
   var A = 'kap1/intro.html';
   var B = 'kap1/ytelse.html';
+  var C = 'kap2/instruksjoner.html';
+  var D = 'kap2/tall.html';
+  var E = 'kap2/prosedyrer.html';
 
   window.GLOSSARY = {
     /* ── T1.1 Datamaskintyper og de 7 store ideene ── */
@@ -470,6 +473,409 @@
       alias: 'energy-proportional computing',
       def: '<p>Idealet (Barroso og Hölzle, 2007) om at en server ved 10 % last bør bruke 10 % av maksimal effekt. Dagens servere bruker gjerne 33 % av toppeffekten ved 10 % last, og datasentre kjører for det meste på 10–50 % last.</p>',
       more: B + '#fallgruver'
+    },
+
+    /* ── T2.1 Instruksjoner ── */
+    'instruksjonssett': {
+      term: 'Instruksjonssett',
+      alias: 'instruction set',
+      def: '<p>Vokabularet av kommandoer en gitt arkitektur forstår. Ordene er instruksjonene. Datamaskinspråk likner hverandre mer enn menneskespråk, mer som dialekter, så har du lært ett, er de andre lette å plukke opp.</p>',
+      more: C + '#prinsipper'
+    },
+    'risc-v': {
+      term: 'RISC-V',
+      def: '<p>Instruksjonssettet boka og faget bruker, utviklet ved UC Berkeley fra 2010. Åpen arkitektur styrt av RISC-V International, ikke eid av ett selskap. Faget bruker 32-bitsvarianten RV32; RV64 har 64-bits registre.</p>',
+      more: C + '#prinsipper'
+    },
+    'designprinsipp-1': {
+      term: 'Designprinsipp 1: Enkelhet favoriserer regularitet',
+      alias: 'simplicity favors regularity',
+      def: '<p>Maskinvare for et fast antall operander er enklere enn for et variabelt antall. Derfor har alle aritmetiske RISC-V-instruksjoner nøyaktig tre operander, og alle instruksjoner er 32 bit lange.</p>',
+      more: C + '#prinsipper'
+    },
+    'designprinsipp-2': {
+      term: 'Designprinsipp 2: Mindre er raskere',
+      alias: 'smaller is faster',
+      def: '<p>Svært mange registre kan øke klokkeperioden fordi signaler må reise lenger. Derfor har RISC-V 32 registre, ikke flere; det ville også kostet bit i instruksjonsformatet.</p>',
+      more: C + '#operander'
+    },
+    'designprinsipp-3': {
+      term: 'Designprinsipp 3: God design krever gode kompromisser',
+      alias: 'good design demands good compromises',
+      def: '<p>Ønsket om at alle instruksjoner skal være like lange kolliderer med ønsket om ett format. Kompromisset: alle instruksjoner er 32 bit, men det finnes flere formater (R, I, S, SB, U, UJ) som holder feltene på samme plass så langt det går.</p>',
+      more: C + '#formater'
+    },
+    'register': {
+      term: 'Register',
+      def: '<p>Et av 32 spesielle lagre bygget direkte i maskinvaren, 32 bit hver i RV32, som aritmetiske instruksjoner må hente operandene fra. «Mursteinene» i datamaskinkonstruksjon. Navngis x0–x31, med ABI-navn som sp, ra, a0 og t0.</p>',
+      more: C + '#operander'
+    },
+    'ord': {
+      term: 'Ord (word)',
+      alias: 'word, doubleword, halvord',
+      def: '<p>En naturlig enhet for tilgang i datamaskinen; i RISC-V en gruppe på 32 bit, samme størrelse som et register. Et dobbeltord er 64 bit, et halvord 16 bit, en byte 8 bit.</p>',
+      more: C + '#operander'
+    },
+    'dataoverforing': {
+      term: 'Dataoverføringsinstruksjon',
+      alias: 'data transfer instruction, load, store',
+      def: '<p>Instruksjon som flytter data mellom minne og registre. Load (lw) kopierer fra minne til register, store (sw) fra register til minne. RISC-V regner bare på registre, så alt fra minnet må lastes først.</p>',
+      more: C + '#operander'
+    },
+    'adresse': {
+      term: 'Adresse',
+      def: '<p>Verdien som angir plassen til et bestemt dataelement i minnet. Minnet er én stor endimensjonal tabell, og adressen er indeksen, fra 0. RISC-V adresserer hver byte, så ord ligger på adresser som er multipler av 4.</p>',
+      more: C + '#operander'
+    },
+    'byteadressering': {
+      term: 'Byteadressering',
+      alias: 'byte addressing, little-endian',
+      def: '<p>Nesten alle arkitekturer adresserer enkeltbyte. Adressen til et ord er adressen til en av dets 4 byte, og ordadresser skiller med 4. Derfor må en tabellindeks ganges med 4 for å bli en byteforskyvning. RISC-V er little-endian: byten med lavest adresse er den «minste enden» av ordet.</p>',
+      more: C + '#operander'
+    },
+    'basisregister': {
+      term: 'Basisregister og forskyvning',
+      alias: 'base register, offset',
+      def: '<p>I <code>lw x9, 32(x22)</code> er x22 basisregisteret og 32 forskyvningen (offset). Minneadressen er summen. Passer både tabeller (basis = start, offset = element) og strukturer.</p>',
+      more: C + '#operander'
+    },
+    'immediate': {
+      term: 'Immediate (konstant i instruksjonen)',
+      alias: 'umiddelbar operand',
+      def: '<p>En konstant som ligger inne i selve instruksjonen, som 4 i <code>addi x22, x22, 4</code>. Over halvparten av aritmetiske instruksjoner bruker en konstant, så addi er den mest populære RISC-V-instruksjonen. Raskere og mer energieffektivt enn å laste konstanten fra minnet.</p>',
+      more: C + '#operander'
+    },
+    'x0': {
+      term: 'Register x0 (zero)',
+      def: '<p>Registeret som er hardkoblet til verdien 0. Skriving til det forkastes. Brukes til å lage nyttige varianter: <code>sub x5, x0, x6</code> negerer, <code>addi x9, x0, 123</code> laster en konstant, <code>beq x0, x0, L</code> er et ubetinget hopp.</p>',
+      more: C + '#operander'
+    },
+    'spilling': {
+      term: 'Registerspilling',
+      alias: 'spilling registers',
+      def: '<p>Å legge mindre brukte variabler (eller verdier som trengs senere) i minnet fordi det finnes flere variabler enn registre. Kompilatoren holder de mest brukte i registre og flytter resten med load og store. Stakken er den ideelle datastrukturen for spilling.</p>',
+      more: C + '#operander'
+    },
+    'instruksjonsformat': {
+      term: 'Instruksjonsformat',
+      alias: 'instruction format',
+      def: '<p>Måten en instruksjon er delt opp i felt av binære tall. Alle RISC-V-instruksjoner er 32 bit. R-type: funct7, rs2, rs1, funct3, rd, opcode (7-5-5-3-5-7 bit). I-type: 12-bits immediate, rs1, funct3, rd, opcode. S-type deler immediate i to felt for å holde rs1 og rs2 på plass.</p>',
+      more: C + '#formater'
+    },
+    'opcode': {
+      term: 'Opcode',
+      def: '<p>Feltet (de 7 laveste bitene) som angir grunnoperasjonen og formatet til en instruksjon. funct3 og funct7 er tilleggsopcoder: 51 (0110011) med funct3 = 0 og funct7 = 0 er add, med funct7 = 32 er sub.</p>',
+      more: C + '#formater'
+    },
+    'registerfelt': {
+      term: 'rd, rs1, rs2',
+      alias: 'register destination, register source',
+      def: '<p>Registerfeltene i formatene: rd er destinasjonsregisteret som får resultatet, rs1 og rs2 er første og andre kilderegister. 5 bit hver, siden 2<sup>5</sup> = 32 registre. Flere registre ville krevd flere bit i hvert felt.</p>',
+      more: C + '#formater'
+    },
+    'heksadesimal': {
+      term: 'Heksadesimalt (grunntall 16)',
+      alias: 'hexadecimal, hex',
+      def: '<p>Tallsystem med sifrene 0–9 og a–f. Siden 16 = 2<sup>4</sup> tilsvarer hvert heksadesimale siffer nøyaktig fire binære, så omregning er ren tabelloppslag. C skriver 0x1234. Brukes fordi bitstrenger på 32 bit er uleselige.</p>',
+      more: D + '#grunntall'
+    },
+    'maskinkode': {
+      term: 'Maskinkode',
+      alias: 'machine code',
+      def: '<p>En sekvens av instruksjoner i den numeriske (binære) formen, maskinspråk, i motsetning til den symbolske assemblyformen. add x9, x20, x21 er 0000000 10101 10100 000 01001 0110011.</p>',
+      more: C + '#formater'
+    },
+    'betinget-hopp': {
+      term: 'Betinget hopp',
+      alias: 'conditional branch, beq, bne, blt, bge, bltu, bgeu',
+      def: '<p>Instruksjon som tester en verdi og overfører kontrollen til en ny adresse hvis testen slår til. beq (branch if equal) og bne (not equal) sammenlikner to registre; blt/bge er signed mindre enn / større eller lik, bltu/bgeu usignert. Grunnsteinen for if og løkker.</p>',
+      more: C + '#beslutninger'
+    },
+    'ubetinget-hopp': {
+      term: 'Ubetinget hopp',
+      alias: 'unconditional branch, jump, j',
+      def: '<p>Et hopp prosessoren alltid tar. Kan skrives som <code>beq x0, x0, L</code> eller <code>jal x0, L</code> (assembleren godtar <code>j L</code>). Brukes til å hoppe over else-grenen og tilbake til toppen av en løkke.</p>',
+      more: C + '#beslutninger'
+    },
+    'grunnblokk': {
+      term: 'Grunnblokk',
+      alias: 'basic block',
+      def: '<p>En sekvens av instruksjoner uten hopp (unntatt eventuelt på slutten) og uten hoppmål eller etiketter (unntatt eventuelt i starten). Kompilatorer deler programmet i grunnblokker tidlig i oversettelsen.</p>',
+      more: C + '#beslutninger'
+    },
+    'tilstandskoder': {
+      term: 'Tilstandskoder (flagg)',
+      alias: 'condition codes, flags',
+      def: '<p>Ekstra bit som registrerer hva som skjedde i en instruksjon (negativt resultat, null, overflyt), brukt av ARM til betingede hopp. RISC-V har dem ikke: hoppene sammenlikner registre direkte. Ulempen med flagg er avhengigheter som vanskeliggjør samlebånd.</p>',
+      more: C + '#beslutninger'
+    },
+    'hopptabell': {
+      term: 'Hopptabell',
+      alias: 'branch address table, jump table',
+      def: '<p>En tabell av adresser til alternative instruksjonssekvenser, brukt til case/switch: programmet indekserer tabellen og hopper til adressen i et register med det indirekte hoppet jalr.</p>',
+      more: C + '#beslutninger'
+    },
+    'jalr': {
+      term: 'jalr (jump-and-link register)',
+      alias: 'indirekte hopp, indirect jump',
+      def: '<p>Ubetinget hopp til adressen i et register pluss en 12-bits konstant, med retur­adressen lagret i rd. <code>jalr x0, 0(x1)</code> er returen fra en prosedyre; med lui foran når den hvilken som helst 32-bits adresse; brukes også til hopptabeller.</p>',
+      more: E + '#kall'
+    },
+
+    /* ── T2.2 Heltall og logiske operasjoner ── */
+    'binaertall': {
+      term: 'Binærtall (grunntall 2)',
+      alias: 'binary number',
+      def: '<p>Tall skrevet med sifrene 0 og 1, der siffer nummer <em>i</em> (fra høyre, fra 0) har verdien d · 2<sup>i</sup>. 1011<sub>to</sub> = 8 + 0 + 2 + 1 = 11. Maskinvaren lagrer tall som høye og lave signaler, derfor grunntall 2.</p>',
+      more: D + '#grunntall'
+    },
+    'lsb-msb': {
+      term: 'Minst og mest signifikante bit',
+      alias: 'least significant bit, most significant bit, LSB, MSB',
+      def: '<p>Bit 0, helt til høyre, er det minst signifikante; bit 31, helt til venstre i et RISC-V-ord, er det mest signifikante. I tokomplement er bit 31 fortegnsbiten.</p>',
+      more: D + '#grunntall'
+    },
+    'usignert': {
+      term: 'Usignerte tall',
+      alias: 'unsigned',
+      def: '<p>De 2<sup>32</sup> bitmønstrene tolket som tallene 0 til 2<sup>32</sup> − 1 = 4 294 967 295. Minneadresser er usignerte: negative adresser gir ikke mening. C skiller int og unsigned int.</p>',
+      more: D + '#grunntall'
+    },
+    'fortegn-storrelse': {
+      term: 'Fortegn og størrelse',
+      alias: 'sign and magnitude',
+      def: '<p>Den opplagte, forkastede representasjonen: én bit for fortegnet, resten for størrelsen. Uklart hvor fortegnsbiten skal stå, adderere trenger et ekstra steg, og det finnes både +0 og −0.</p>',
+      more: D + '#tokomplement'
+    },
+    'tokomplement': {
+      term: 'Tokomplement',
+      alias: "two's complement, 2’s komplement",
+      def: '<p>Representasjonen alle datamaskiner bruker for signerte heltall: ledende 0 betyr positivt, ledende 1 negativt. Verdien er −x<sub>31</sub>·2<sup>31</sup> + Σ x<sub>i</sub>·2<sup>i</sup>. Spenner −2<sup>31</sup> til 2<sup>31</sup> − 1; ett negativt tall uten positiv motpart. Navnet: usignert sum av et tall og dets negative er 2<sup>n</sup>.</p>',
+      more: D + '#tokomplement'
+    },
+    'fortegnsbit': {
+      term: 'Fortegnsbit',
+      alias: 'sign bit',
+      def: '<p>Det mest signifikante bitet i et tokomplementtall. Alle negative tall har 1 der, så maskinvaren trenger bare teste det ene bitet for å se om et tall er negativt (0 regnes som positivt). Vekten er −2<sup>31</sup>.</p>',
+      more: D + '#tokomplement'
+    },
+    'negering': {
+      term: 'Negering (snarvei)',
+      alias: 'negation shortcut, inverter og legg til 1',
+      def: '<p>Inverter hvert bit og legg til 1. Virker fordi x + x̄ = 111…111 = −1, så x̄ + 1 = −x. 2 = 0…0010 → 1…1101 + 1 = 1…1110 = −2.</p>',
+      more: D + '#tokomplement'
+    },
+    'fortegnsutvidelse': {
+      term: 'Fortegnsutvidelse',
+      alias: 'sign extension',
+      def: '<p>Å gjøre et n-bits tall til et bredere tall ved å kopiere fortegnsbiten inn i alle de nye bitene. Beholder verdien fordi positive tokomplementtall egentlig har uendelig mange 0-ere foran, negative uendelig mange 1-ere. Brukes av lb og lh og på 12-bits immediates.</p>',
+      more: D + '#tokomplement'
+    },
+    'lb-lbu': {
+      term: 'lb, lbu, lh, lhu',
+      alias: 'load byte, load byte unsigned, load half',
+      def: '<p>Lastinstruksjoner for byte og halvord. lb og lh fortegnsutvider til 32 bit (signert tall), lbu og lhu fyller med nuller (usignert). Tegn i C er byte, så lbu brukes nesten alltid til tekst. sb og sh lagrer de laveste 8 og 16 bitene.</p>',
+      more: D + '#tokomplement'
+    },
+    'overflyt': {
+      term: 'Overflyt',
+      alias: 'overflow',
+      def: '<p>Når resultatet av en operasjon ikke kan representeres med bitene maskinvaren har. For tokomplement: fortegnsbiten blir feil, en 0 der tallet skulle vært negativt eller en 1 der det skulle vært positivt. Summen av to positive tall blir negativ, eller to negative blir positivt. Programmeringsspråket og operativsystemet avgjør hva som skjer.</p>',
+      more: D + '#overflyt'
+    },
+    'logiske-operasjoner': {
+      term: 'Logiske operasjoner',
+      alias: 'logical operations, and, or, xor, andi, ori, xori',
+      def: '<p>Bitvise operasjoner på felt av bit i et ord: AND gir 1 bare der begge er 1, OR der minst én er 1, XOR der de er ulike. RISC-V har and/or/xor med registre og andi/ori/xori med konstant. NOT finnes ikke; bruk xor med 111…111.</p>',
+      more: D + '#logikk'
+    },
+    'maske': {
+      term: 'Maske',
+      alias: 'mask',
+      def: '<p>Et bitmønster som med AND «skjuler» bitene der mønsteret har 0 og slipper gjennom bitene der det har 1. Brukes til å isolere et felt i et ord. Alternativet er et venstreskift fulgt av et høyreskift.</p>',
+      more: D + '#logikk'
+    },
+    'skift': {
+      term: 'Skift',
+      alias: 'shift, slli, srli, srai, sll, srl, sra',
+      def: '<p>Flytter alle bitene i et ord til venstre eller høyre. Logisk skift fyller de tomme bitene med 0; aritmetisk høyreskift (srai) fyller med kopier av fortegnsbiten. Venstreskift med i bit er det samme som å gange med 2<sup>i</sup>: 9 &lt;&lt; 4 = 144. Immediatevariantene bruker I-format med funct6/funct7.</p>',
+      more: D + '#skift'
+    },
+
+    /* ── T2.3 Funksjonskall ── */
+    'prosedyre': {
+      term: 'Prosedyre (funksjon)',
+      alias: 'procedure, function, subroutine',
+      def: '<p>Lagret subrutine som utfører en bestemt oppgave ut fra parametrene den får. Som en spion: drar av sted med en hemmelig plan, skaffer ressurser, gjør jobben, dekker sporene og vender tilbake med resultatet uten å ha forstyrret noe annet. Abstraksjon i programvare.</p>',
+      more: E + '#kall'
+    },
+    'jal': {
+      term: 'jal (jump-and-link)',
+      def: '<p>Instruksjonen for prosedyrekall: hopper til en adresse og lagrer samtidig adressen til neste instruksjon (PC + 4) i rd, vanligvis x1. <code>jal x1, ProsedyreAdresse</code>. Med rd = x0 forkastes returadressen og jal blir et ubetinget hopp.</p>',
+      more: E + '#kall'
+    },
+    'returadresse': {
+      term: 'Returadresse',
+      alias: 'return address, ra, x1',
+      def: '<p>Lenken til kallstedet som lar prosedyren returnere til riktig adresse; i RISC-V lagret i x1 (ra). Nødvendig fordi samme prosedyre kan kalles fra mange steder. Returen er <code>jalr x0, 0(x1)</code>.</p>',
+      more: E + '#kall'
+    },
+    'kaller-kallet': {
+      term: 'Kaller og kallet (caller, callee)',
+      alias: 'caller, callee',
+      def: '<p>Kalleren er programmet som setter i gang prosedyren og leverer parameterverdiene (i x10–x17) og bruker jal. Den kalte utfører beregningene, legger resultatet i samme registre og returnerer med jalr.</p>',
+      more: E + '#kall'
+    },
+    'pc': {
+      term: 'Programteller (PC)',
+      alias: 'program counter',
+      def: '<p>Registeret som holder adressen til instruksjonen som utføres. Et bedre navn hadde vært instruksjonsadresseregister. jal lagrer PC + 4 som returadresse; hopp regnes relativt til PC.</p>',
+      more: E + '#kall'
+    },
+    'stakk': {
+      term: 'Stakk',
+      alias: 'stack, LIFO',
+      def: '<p>Datastruktur for spilling av registre, organisert sist-inn-først-ut. Vokser fra høye til lave adresser: push trekker fra stakkpekeren, pop legger til. Holder lagrede registre og lokale variabler som ikke får plass i registre.</p>',
+      more: E + '#stakk'
+    },
+    'stakkpeker': {
+      term: 'Stakkpeker (sp, x2)',
+      alias: 'stack pointer',
+      def: '<p>Registeret som peker på den sist tildelte adressen på stakken, altså hvor neste prosedyre skal legge registre den spiller, eller hvor gamle verdier finnes. Justeres ett ord (4 byte) per register som lagres. Programvaren skal holde sp justert til 16 byte.</p>',
+      more: E + '#stakk'
+    },
+    'push-pop': {
+      term: 'Push og pop',
+      def: '<p>Push legger et element på stakken (<code>addi sp, sp, -4</code> og <code>sw</code>), pop tar det av (<code>lw</code> og <code>addi sp, sp, 4</code>). Kompilatoren gjør gjerne én justering av sp for alle registrene på en gang.</p>',
+      more: E + '#stakk'
+    },
+    'temporaere': {
+      term: 'Temporære registre (t0–t6)',
+      alias: 'temporary registers, x5–x7, x28–x31',
+      def: '<p>Sju registre som den kalte <em>ikke</em> trenger å bevare. Kalleren må selv lagre dem hvis den trenger verdiene etter kallet. En løvprosedyre bør bruke opp de temporære før den rører lagrede registre.</p>',
+      more: E + '#stakk'
+    },
+    'lagrede-registre': {
+      term: 'Lagrede registre (s0–s11)',
+      alias: 'saved registers, x8–x9, x18–x27',
+      def: '<p>Tolv registre som må bevares over et prosedyrekall: bruker den kalte dem, må den lagre dem på stakken først og gjenopprette dem før retur. Konvensjonen reduserer spilling: gjør det vanlige tilfellet raskt.</p>',
+      more: E + '#stakk'
+    },
+    'kallkonvensjon': {
+      term: 'Kallkonvensjon',
+      alias: 'calling convention, registerkonvensjon, figur 2.14',
+      def: '<p>Avtalen om hvordan registrene brukes ved kall: x10–x17 (a0–a7) argumenter og returverdier, x1 (ra) returadresse, x2 (sp) stakkpeker, x5–x7 og x28–x31 (t0–t6) temporære som ikke bevares, x8–x9 og x18–x27 (s0–s11) bevares av den kalte, x3 (gp) globalpeker, x8 også rammepeker (fp).</p>',
+      more: E + '#stakk'
+    },
+    'lovprosedyre': {
+      term: 'Løvprosedyre',
+      alias: 'leaf procedure',
+      def: '<p>Prosedyre som ikke kaller andre prosedyrer. Slipper å lagre returadressen og argumentregistrene, og kan bruke temporære registre fritt. Prosedyrer som kaller andre (ikke-løv) må legge x1 og eventuelle argumenter på stakken før kallet.</p>',
+      more: E + '#nostede'
+    },
+    'rekursjon': {
+      term: 'Rekursiv prosedyre',
+      alias: 'recursion, fact, tail call',
+      def: '<p>Prosedyre som kaller en «klone» av seg selv, som fact(n) = n · fact(n − 1). Hvert kall får sin egen ramme på stakken med returadresse og argument. Et halekall (tail call) kan skrives om til en løkke uten stakk.</p>',
+      more: E + '#nostede'
+    },
+    'aktiveringspost': {
+      term: 'Prosedyreramme (aktiveringspost)',
+      alias: 'procedure frame, activation record, stack frame',
+      def: '<p>Segmentet av stakken som inneholder en prosedyres lagrede registre og lokale variabler (tabeller og strukturer som ikke får plass i registre). Rammepekeren fp (x8) peker på første ord i rammen og gir et stabilt basisregister selv om sp endres.</p>',
+      more: E + '#nostede'
+    },
+    'minnekart': {
+      term: 'RISC-V-minnekartet (figur 2.13)',
+      alias: 'memory allocation, tekstsegment, statisk data, heap, stakk',
+      def: '<p>Programvarekonvensjonen for minnet: reservert område nederst, så tekstsegmentet med maskinkoden fra 0x0040 0000, statisk data fra 0x1000 0000, dynamisk data (heap, malloc/new) som vokser oppover, og stakken fra 0x3fff fff0 som vokser nedover. Heap og stakk vokser mot hverandre.</p>',
+      more: E + '#nostede'
+    },
+    'statisk-dynamisk': {
+      term: 'Statiske og dynamiske data',
+      alias: 'static, automatic, heap, malloc',
+      def: '<p>Automatiske variabler er lokale for en prosedyre og forsvinner når den avslutter (ligger i registre eller på stakken). Statiske variabler lever gjennom hele programmet (globale og <code>static</code>) i det statiske datasegmentet, som gp (x3) peker på. Dynamiske data (lenkede lister) vokser og krymper og ligger på heapen, tildelt med malloc() og frigitt med free().</p>',
+      more: E + '#nostede'
+    },
+
+    /* ── T2.4 Instruksjoner, diverse ── */
+    'ascii': {
+      term: 'ASCII',
+      alias: 'American Standard Code for Information Interchange, tegn, Unicode',
+      def: '<p>Standarden nesten alle bruker for tegn i 8-bits byte: «A» er 65, «a» er 97, store og små bokstaver skiller med nøyaktig 32, «0»–«9» er 48–57, 0 er null (slutt på streng i C). Java bruker Unicode med 16 bit per tegn (UTF-16); nettet bruker mest UTF-8.</p>',
+      more: E + '#tekst'
+    },
+    'streng': {
+      term: 'Streng',
+      alias: 'string, null-terminert',
+      def: '<p>Variabelt antall tegn. Tre måter å angi lengden på: første posisjon holder lengden, en egen variabel holder den, eller et sluttegn. C bruker sluttegnet 0: «Cal» er 67, 97, 108, 0. Java lagrer lengden i et eget ord.</p>',
+      more: E + '#tekst'
+    },
+    'lui': {
+      term: 'lui (load upper immediate)',
+      alias: 'U-type, 32-bits konstant',
+      def: '<p>Laster en 20-bits konstant inn i bit 12–31 av et register og fyller de 12 laveste med 0. Sammen med addi bygger den en vilkårlig 32-bits konstant på to instruksjoner. Er bit 11 i konstanten 1, fortegnsutvides addi-delen negativt, og lui-konstanten må økes med 1.</p>',
+      more: E + '#adressering'
+    },
+    'pc-relativ': {
+      term: 'PC-relativ adressering',
+      alias: 'PC-relative addressing',
+      def: '<p>Hoppadressen er PC pluss en konstant i instruksjonen, regnet i halvord. Betingede hopp når ±4 KiB (12-bits felt, 13-bits byteadresse), jal når ±1 MiB (20-bits felt). Valgt fordi løkker og if-setninger hopper til instruksjoner i nærheten: halvparten av alle betingede hopp går under 16 instruksjoner av gårde.</p>',
+      more: E + '#adressering'
+    },
+    'adressemodus': {
+      term: 'Adressemodi i RISC-V',
+      alias: 'addressing modes, immediate, register, base, PC-relative',
+      def: '<p>De fire måtene en operand identifiseres på: 1) immediate, konstanten ligger i instruksjonen; 2) register, operanden er et register; 3) basis- eller forskyvningsadressering, operanden ligger i minnet på adressen register + konstant; 4) PC-relativ, hoppadressen er PC + konstant.</p>',
+      more: E + '#adressering'
+    },
+    'sb-uj': {
+      term: 'SB- og UJ-formatene',
+      alias: 'branch format, jump format',
+      def: '<p>Formatene for betingede hopp (SB, 12-bits immediate delt i to felt som S-type) og jal (UJ, 20-bits immediate som U-type), men med bitene i immediate-feltet «virvlet rundt» for å forenkle maskinvaren. Kapittel 2 later som de er S og U; kapittel 4 viser de ekte.</p>',
+      more: E + '#adressering'
+    },
+    'pseudoinstruksjon': {
+      term: 'Pseudoinstruksjon',
+      alias: 'pseudoinstruction, li, mv, j, la, not',
+      def: '<p>Vanlig variant av en maskininstruksjon som assembleren godtar som om den var en ekte instruksjon: <code>li x9, 123</code> blir <code>addi x9, x0, 123</code>, <code>mv x10, x11</code> blir <code>addi x10, x11, 0</code>, <code>j L</code> blir <code>jal x0, L</code>. Gir rikere assembly uten mer maskinvare.</p>',
+      more: E + '#oversettelse'
+    },
+    'symboltabell': {
+      term: 'Symboltabell',
+      alias: 'symbol table',
+      def: '<p>Tabell som kobler navn på etiketter til adressene til minneordene instruksjonene opptar. Assembleren bygger den for å oversette hopp og dataadresser; etiketter som ikke er definert i modulen (eksterne referanser) blir igjen til lenkeren.</p>',
+      more: E + '#oversettelse'
+    },
+    'objektfil': {
+      term: 'Objektfil',
+      alias: 'object file, .o',
+      def: '<p>Assemblerens resultat: maskininstruksjoner, data og informasjon for å plassere dem i minnet. Seks deler i UNIX: filhode, tekstsegment, statisk datasegment, relokeringsinformasjon, symboltabell og feilsøkingsinformasjon.</p>',
+      more: E + '#oversettelse'
+    },
+    'lenker': {
+      term: 'Lenker',
+      alias: 'linker, link editor',
+      def: '<p>Systemprogram som syr sammen uavhengig assemblerte maskinspråkprogrammer og løser opp alle udefinerte etiketter til en kjørbar fil. Tre steg: plasser kode og data symbolsk i minnet, bestem adressene til etikettene, lapp interne og eksterne referanser. Mye raskere enn å rekompilere alt.</p>',
+      more: E + '#oversettelse'
+    },
+    'laster': {
+      term: 'Laster',
+      alias: 'loader',
+      def: '<p>Systemprogram som legger et objektprogram i hovedminnet klart til kjøring: leser filhodet, lager adresserom, kopierer instruksjoner og data, legger parametre på stakken, initialiserer registre og sp, og hopper til en oppstartsrutine som kaller main.</p>',
+      more: E + '#oversettelse'
+    },
+    'dll': {
+      term: 'Dynamisk lenkede biblioteker (DLL)',
+      alias: 'dynamically linked libraries, lazy procedure linkage',
+      def: '<p>Biblioteksrutiner som lenkes til programmet først under kjøring, ikke før. Unngår at hele biblioteket (1,5 MiB for C-biblioteket) kopieres inn, og at gamle versjoner sitter fast. «Lat» lenking: første kall går via en dummy-rutine og den dynamiske lenkeren, senere kall via ett indirekte hopp.</p>',
+      more: E + '#oversettelse'
+    },
+    'jit': {
+      term: 'Java bytekode, JVM og JIT',
+      alias: 'Java Virtual Machine, Just In Time compiler, tolk',
+      def: '<p>Java kompileres til bytekode, et instruksjonssett laget for å tolkes. JVM er tolken (en tolk er et program som simulerer en ISA, som RISC-V-simulatoren i faget). For ytelse kompilerer en JIT-kompilator de «varme» metodene til maskinens eget instruksjonssett under kjøring. Fordelen med tolking er maskinuavhengighet.</p>',
+      more: E + '#oversettelse'
     }
   };
 })();
