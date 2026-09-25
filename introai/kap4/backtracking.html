@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Backtracking med MRV og LCV — Kap 4</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .cg { display: block; max-width: 560px; margin: 1rem auto; }
+  .cg .e { stroke: var(--ink-faded); stroke-width: 1.5; fill: none; }
+  .cg .n { fill: var(--paper-dark); stroke: var(--ink); stroke-width: 1.4; }
+  .cg .n.cur { stroke: var(--warm); stroke-width: 4; }
+  .cg text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; dominant-baseline: middle; }
+  .cg .dom { font-size: 11px; fill: var(--ink-faded); }
+  .cg .fix { fill: #fff; font-weight: 600; }
+  .w-ctl select { font-family: var(--sans); font-size: 0.88rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .bt-tab td, .bt-tab th { font-family: var(--mono); font-size: 0.82rem; padding: 3px 6px; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 4</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Constraint satisfaction problems">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · 4B · Slides forelesning 4 · 12, 31–43 · Assignment-forelesning 2 · Boka kap. 5.3–5.4 · ~40 min</div>
+      <h1>Backtracking med <em>MRV og LCV</em></h1>
+      <p class="lede">Backtracking search tildeler én variabel om gangen og går tilbake ved blindvei. Rekkefølgen styres av MRV (variabel) og LCV (verdi), og inferens som forward checking oppdager blindveier tidlig. Eksamen ber deg vise hvert steg med domener.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#backtracking"><span>01</span> Backtracking</a>
+        <a href="#mrv"><span>02</span> MRV og degree</a>
+        <a href="#lcv"><span>03</span> LCV</a>
+        <a href="#inferens"><span>04</span> Med inferens</a>
+        <a href="#o22-42"><span>05</span> Eksamen 2022</a>
+        <a href="#o23-43"><span>06</span> Eksamen 2023</a>
+        <a href="#mrv-tilfeldig"><span>07</span> MRV+LCV mot tilfeldig</a>
+        <a href="#egen-oppgave"><span>08</span> Øv: kartfarging</a>
+        <a href="#lokalt-sok"><span>09</span> Min-conflicts</a>
+        <a href="#oppsummering"><span>10</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne</em> fra denne siden</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md, deltema 4.3–4.4)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>4.3 Backtracking med MRV og LCV (prio 1):</strong> vis hver tildeling med domenene, bruk tie-break-regelen oppgaven gir (numerisk / alfanumerisk). Tidligere: <a href="#oppg-o22-42">Ord. 2022 oppg. 4.2</a>, <a href="#oppg-o23-43">Ord. 2023 oppg. 4.3</a> (7 p).</li>
+          <li><span class="tag">Forklar</span>Hva MRV, degree og LCV velger, og hvorfor (fail-first for variabel, fail-last for verdi). Assignment-forelesningen: «MRV+LCV mot tilfeldige valg».</li>
+          <li><span class="tag">Lavere</span>4.4 (prio 3): min-conflicts i én linje. Tre-strukturerte CSP og topologisk sortering (boka 5.5) er ute av pensum 2026. Backjumping og constraint learning (5.3.3–5.3.4) er ute.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="backtracking">
+    <div class="container">
+      <div class="section-badge">01 · Algoritmen</div>
+      <h2>Backtracking <em>search</em></h2>
+      <div class="source-note">Slides forelesning 4 · 12, 33 · Boka kap. 5.3</div>
+      <span class="lm-pill">Deltema 4.3 · prio 1</span>
+      <p><span class="term" data-term="backtracking-sok">Backtracking search</span> er dybde-først-søk der hvert nivå tildeler én variabel. Fordi CSP er <span class="term" data-term="kommutativitet">kommutative</span> (rekkefølgen tildelingene gjøres i, påvirker ikke resultatet), holder det å se på én variabel per nivå. Hvis ingen verdi er konsistent, returneres failure og forrige variabel prøver neste verdi.</p>
+<pre><code>function BACKTRACKING-SEARCH(csp) returns a solution or failure
+  return BACKTRACK(csp, { })
+
+function BACKTRACK(csp, assignment) returns a solution or failure
+  if assignment is complete then return assignment
+  var ← SELECT-UNASSIGNED-VARIABLE(csp, assignment)
+  for each value in ORDER-DOMAIN-VALUES(csp, var, assignment) do
+    if value is consistent with assignment then
+      add {var = value} to assignment
+      inferences ← INFERENCE(csp, var, assignment)
+      if inferences ≠ failure then
+        add inferences to csp
+        result ← BACKTRACK(csp, assignment)
+        if result ≠ failure then return result
+        remove inferences from csp
+      remove {var = value} from assignment
+  return failure</code></pre>
+      <p>Tre steder å gjøre søket smartere: SELECT-UNASSIGNED-VARIABLE (MRV, degree), ORDER-DOMAIN-VALUES (LCV) og INFERENCE (forward checking eller AC-3/MAC). Uten dem velges variabler og verdier i fast rekkefølge.</p>
+    </div>
+  </section>
+
+  <section id="mrv">
+    <div class="container">
+      <div class="section-badge">02 · Variabelvalg</div>
+      <h2>MRV og <em>degree</em></h2>
+      <div class="source-note">Slides forelesning 4 · 34–35 · Degree: Boka kap. 5.3.1 (ikke i slidene)</div>
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Minimum remaining values (MRV)</div>
+        <p>Velg den utildelte variabelen med <strong>færrest gjenværende lovlige verdier</strong> (minste gjenværende domene). Kalles også «most constrained variable» eller «fail-first»: variabelen som mest sannsynlig feiler, tas først, så blindveier oppdages høyt i treet.</p>
+      </div>
+      <p><span class="term" data-term="mrv">MRV</span> hjelper ikke i starten når alle domener er like store. Da brukes <span class="term" data-term="degree-heuristikk">degree-heuristikken</span> som tie-breaker: velg variabelen som inngår i <strong>flest constraints med andre utildelte variabler</strong>. I Australia har SA grad 5 og velges først. Står det fortsatt likt, brukes tie-break-regelen i oppgaven (alfabetisk/numerisk).</p>
+      <div class="oppgave" data-quiz id="oppg-slide-mrv">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 34–35</span></div>
+        <div class="o-text"><p>Kartfarging med \(X_1 = \text{red}\), \(X_2 = \text{green}\), \(D_3 = \{\text{blue}\}\), \(D_4 = \{\text{red}, \text{blue}\}\). Velger MRV \(X_3\) eller \(X_4\)?</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene</span><p>\(X_3\): én gjenværende verdi mot to for \(X_4\).</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lcv">
+    <div class="container">
+      <div class="section-badge">03 · Verdivalg</div>
+      <h2>Least constraining <em>value</em></h2>
+      <div class="source-note">Slides forelesning 4 · 36–37 · Boka kap. 5.3.1</div>
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Least constraining value (LCV)</div>
+        <p>Når variabelen er valgt: prøv først verdien som <strong>utelukker færrest verdier hos naboene</strong> i constraint graph, altså minst reduksjon i de utildelte domenene ved forward checking. «Fail-last»: vi trenger bare én løsning, så vi prøver den verdien som lar flest muligheter stå åpne.</p>
+      </div>
+      <p>Regn <span class="term" data-term="lcv">LCV</span> slik: for hver verdi \(x\), tell hvor mange verdier som forsvinner fra domenene til utildelte naboer om \(X = x\). Minst tall først. Har variabelen ingen utildelte naboer, blir det uavgjort, og tie-break-regelen avgjør.</p>
+      <div class="callout callout-warn">
+        <span class="label">Ikke bland</span>
+        <p>MRV velger den <em>mest</em> begrensede variabelen, LCV den <em>minst</em> begrensende verdien. Løsningsforslaget for 2022 kaller dem «Max-conflicts» og «Min-conflicts». Det er ikke det samme som den lokale søkealgoritmen <a href="#lokalt-sok">MIN-CONFLICTS</a>.</p>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-slide-lcv">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 36–37</span></div>
+        <div class="o-text"><p>Samme tilstand som over, men \(X_4\) er valgt. Velger LCV red eller blue?</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene · begrunnelse lagt til</span><p>Red. Eneste utildelte nabo er \(X_3\) med \(D_3 = \{\text{blue}\}\). \(X_4 = \text{blue}\) fjerner blue og tømmer \(D_3\) (1 verdi utelukket); \(X_4 = \text{red}\) fjerner ingenting (0).</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="inferens">
+    <div class="container">
+      <div class="section-badge">04 · Søk og inferens</div>
+      <h2>Forward checking i <em>søket</em></h2>
+      <div class="source-note">Slides forelesning 4 · 16, 25–28, 40 (boka fig. 5.6) · Boka kap. 5.3.2</div>
+      <p>INFERENCE kjøres etter hver tildeling. Med <span class="term" data-term="forward-checking">forward checking</span> fjernes verdier fra de utildelte naboene; blir et domene tomt, er tildelingen en blindvei, og vi prøver neste verdi uten å gå dypere. <span class="term" data-term="mac">MAC</span> (maintaining arc consistency) kjører i stedet AC-3 med buene \((X_j, X_i)\) inn mot den tildelte variabelen og fanger mer (se <a href="csp-formulering.html#forward-checking">4A</a>). MRV og forward checking passer godt sammen: forward checking holder domenene oppdatert, og MRV leser dem.</p>
+      <div class="oppgave" data-quiz id="oppg-fc-australia">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 40 · boka fig. 5.6</span></div>
+        <div class="o-text"><p>Australia (7 regioner, domene {R, G, B}) med forward checking. Tildel WA = red, så Q = green, så V = blue. Vis domenene etter hver tildeling.</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene (figurteksten) · tabell lagt til</span>
+            <div class="table-wrap"><table class="bt-tab">
+              <thead><tr><th></th><th>WA</th><th>NT</th><th>Q</th><th>NSW</th><th>V</th><th>SA</th><th>T</th></tr></thead>
+              <tbody>
+                <tr><td>Start</td><td>RGB</td><td>RGB</td><td>RGB</td><td>RGB</td><td>RGB</td><td>RGB</td><td>RGB</td></tr>
+                <tr><td>WA = R</td><td>R</td><td>GB</td><td>RGB</td><td>RGB</td><td>RGB</td><td>GB</td><td>RGB</td></tr>
+                <tr><td>Q = G</td><td>R</td><td>B</td><td>G</td><td>RB</td><td>RGB</td><td>B</td><td>RGB</td></tr>
+                <tr><td>V = B</td><td>R</td><td>B</td><td>G</td><td>R</td><td>B</td><td><strong>tom</strong></td><td>RGB</td></tr>
+              </tbody></table></div>
+            <p>Etter V = blue har SA ingen lovlige verdier, og søket må gå tilbake. Merk at allerede etter Q = green har NT og SA bare blue igjen og er naboer: forward checking ser det ikke, AC-3 ville sett det.</p></div></div>
+      </div>
+
+      <div class="widget" id="w-bt">
+        <div class="widget-label">Prøv selv · Backtracking stegvis</div>
+        <p class="widget-intro">Uten heuristikk velges variabler alfabetisk og verdier i rekkefølgen rød, grønn, blå. MRV velger færrest lovlige verdier (likt ⇒ alfabetisk). MRV + LCV sorterer i tillegg verdiene etter hvor mange verdier de utelukker hos naboene. Prikkene er domenene: med forward checking av krymper de ikke, og en blindvei oppdages først når variabelen selv er tom. Graf G er laget for å vise forskjellen; Australia går uten backtracking uansett innstilling, men se hvordan forward checking krymper domenene.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="bt-prob">Problem</label><select id="bt-prob"><option value="g">Graf G (8 noder)</option><option value="aus">Australia (7 regioner)</option></select></div>
+          <div class="w-ctl"><label for="bt-heur">Heuristikk</label><select id="bt-heur"><option value="ingen">Ingen</option><option value="mrv">MRV</option><option value="mrvlcv">MRV + LCV</option></select></div>
+          <div class="w-ctl"><label for="bt-fc">Forward checking</label><input type="checkbox" id="bt-fc"></div>
+        </div>
+        <svg class="cg" id="bt-svg" viewBox="0 0 480 300" aria-label="Backtracking på constraint graph"></svg>
+        <div class="w-row">
+          <button class="w-btn" id="bt-step" type="button">Ett steg</button>
+          <button class="w-btn" id="bt-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="bt-reset" type="button">Nullstill</button>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><div class="m-name">Tildelinger</div><div class="m-val" id="bt-n">0</div><div class="m-formula">verdier prøvd</div></div>
+          <div class="metric"><div class="m-name">Backtracks</div><div class="m-val" id="bt-b">0</div><div class="m-formula">variabel uten verdier igjen</div></div>
+          <div class="metric"><div class="m-name">Steg</div><div class="m-val" id="bt-k">0</div><div class="m-formula">av totalt</div></div>
+        </div>
+        <div class="w-out" id="bt-out"></div>
+        <div class="w-log" id="bt-log"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="o22-42">
+    <div class="container">
+      <div class="section-badge">05 · Eksamen</div>
+      <h2>Firesifret tall med <em>MRV og LCV</em></h2>
+      <div class="source-note">Eksamen Ord. 2022 oppg. 4.2</div>
+      <div class="oppgave" data-quiz id="oppg-o22-42">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 4.2</span><span class="o-ref">Firesifret tall</span></div>
+        <div class="o-text"><p>Løs CSP-en fra <a href="csp-formulering.html#oppg-o22-41">4.1</a> (\(x_1 \lt x_2 \lt x_3 \lt x_4\), sifre 1–5, tallet odde) med backtracking. Bruk minimum remaining values for variabelvalg og least constraining value for verdivalg. Vis hvert steg med oppdaterte domener.</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra løsningsforslaget · steg skrevet ut, med én rettelse</span>
+            <p>Start etter unær constraint: \(D_1 = D_2 = D_3 = \{1,\dots,5\}\), \(D_4 = \{1, 3, 5\}\). Domenene oppdateres med forward checking (sensor godtok AC-3 eller forward checking). Tie-break numerisk.</p>
+            <ol>
+              <li><strong>MRV:</strong> \(x_4\) (3 verdier mot 5). <strong>LCV</strong> på eneste nabo \(x_3\) (\(x_3 \lt x_4\)): \(x_4 = 1\) fjerner 5 verdier, \(x_4 = 3\) fjerner 3, \(x_4 = 5\) fjerner 1 ⇒ \(x_4 = 5\). FC: \(D_3 = \{1,2,3,4\}\).</li>
+              <li><strong>MRV:</strong> \(x_3\) (4 mot 5 og 5). <strong>LCV</strong> på nabo \(x_2\): \(x_3 = 4\) fjerner {4, 5} (2), 3 fjerner 3, 2 fjerner 4, 1 fjerner 5 ⇒ \(x_3 = 4\). FC: \(D_2 = \{1,2,3\}\). Sjekk: \(5 \gt 4\).</li>
+              <li><strong>MRV:</strong> \(x_2\) (3 mot 5). <strong>LCV</strong> på nabo \(x_1\): \(x_2 = 3\) fjerner {3, 4, 5} (3), 2 fjerner 4, 1 fjerner 5 ⇒ \(x_2 = 3\). FC: \(D_1 = \{1, 2\}\).</li>
+              <li><strong>MRV:</strong> \(x_1\), eneste igjen. Ingen utildelte naboer ⇒ uavgjort ⇒ numerisk: \(x_1 = 1\).</li>
+              <li>Odde-sjekk: \(1345 \bmod 2 = 1\). Ingen backtracking.</li>
+            </ol>
+            <p>Løsning: \(x_1 = 1, x_2 = 3, x_3 = 4, x_4 = 5\), tallet <strong>1345</strong>.</p>
+            <p><strong>Om løsningsforslaget:</strong> det legger først til de implisitte constraintene \(x_4 \gt x_1, x_4 \gt x_2, \dots\) (strengt ordnet), så alle domener krymper etter \(x_4 = 5\), og ender på <strong>1245</strong>. I steg 3 sier det at \(x_2 = 2\) og \(x_2 = 3\) utelukker like mange verdier og velger 2 numerisk. Etter LCV-definisjonen fjerner \(x_2 = 3\) færre verdier fra \(D_1\) (\(\{1, 2\}\) blir igjen, mot \(\{1\}\)), så 3 er riktig LCV-valg. Begge tallene oppfyller alle constraints; på eksamen er det stegene med domener som gir poeng.</p>
+          </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="o23-43">
+    <div class="container">
+      <div class="section-badge">06 · Eksamen</div>
+      <h2>Gartnerne med <em>backtracking</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 oppg. 4.3 · 7 poeng</div>
+      <div class="oppgave" data-quiz id="oppg-o23-43">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 4.3</span><span class="o-ref">7 p</span></div>
+        <div class="o-text"><p>Løs det reduserte gartnerproblemet (etter AC-3 i <a href="csp-formulering.html#oppg-o23-42">4.2</a>: \(D_1 = \{B1\}\), \(D_2 = \{A2, B2, C2\}\), \(D_3 = \{A1\}\), \(D_4 = \{C1, C2\}\), \(D_5 = \{B2, C2\}\)) med backtracking <em>uten</em> forward checking. Bruk MRV for variabelrekkefølge (tie-break numerisk) og LCV for verdirekkefølge (tie-break alfanumerisk). Skriv løsningen i den rekkefølgen variablene ble tildelt.</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra løsningsforslaget · mellomregning lagt til</span>
+            <p>Uten forward checking endres ikke domenene, så «lovlige verdier» betyr verdier i domenet som er konsistente med tildelingene så langt. Constraints: ulike verdier for alle par, \(t(X_1) \lt t(X_2)\), \(t(X_3) \lt t(X_5)\).</p>
+            <div class="table-wrap"><table class="bt-tab">
+              <thead><tr><th>Steg</th><th>Lovlige verdier (utildelte)</th><th>MRV</th><th>LCV (verdier utelukket hos naboer)</th><th>Tildeling</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>X1:{B1} X2:{A2,B2,C2} X3:{A1} X4:{C1,C2} X5:{B2,C2}</td><td>X1, X3 (1) ⇒ X1</td><td>bare B1</td><td>X1 = B1</td></tr>
+                <tr><td>2</td><td>X2:{A2,B2,C2} X3:{A1} X4:{C1,C2} X5:{B2,C2}</td><td>X3 (1)</td><td>bare A1</td><td>X3 = A1</td></tr>
+                <tr><td>3</td><td>X2:{A2,B2,C2} X4:{C1,C2} X5:{B2,C2}</td><td>X4, X5 (2) ⇒ X4</td><td>C1: 0; C2: 2 (fra X2 og X5)</td><td>X4 = C1</td></tr>
+                <tr><td>4</td><td>X2:{A2,B2,C2} X5:{B2,C2}</td><td>X5 (2)</td><td>B2: 1; C2: 1 ⇒ likt ⇒ B2</td><td>X5 = B2</td></tr>
+                <tr><td>5</td><td>X2:{A2,C2}</td><td>X2</td><td>ingen naboer igjen ⇒ A2</td><td>X2 = A2</td></tr>
+              </tbody></table></div>
+            <p>Løsning i tildelingsrekkefølge: \(X_1 = B1,\; X_3 = A1,\; X_4 = C1,\; X_5 = B2,\; X_2 = A2\). Alle verdier er ulike, \(X_1\) (luke 1) før \(X_2\) (luke 2) og \(X_3\) (luke 1) før \(X_5\) (luke 2). Ingen backtracking.</p>
+          </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="mrv-tilfeldig">
+    <div class="container">
+      <div class="section-badge">07 · Assignment-forelesningen</div>
+      <h2>MRV + LCV mot <em>tilfeldige</em> valg</h2>
+      <div class="source-note">Assignment-forelesning 2 · slides 14–15 og 23</div>
+      <p>Kjeden A – B – C med domene {B, G, R} for alle og ulik farge på naboer. «Feil» betyr å prøve en verdi som bryter en constraint med det som alt er tildelt. Slidene regner uten inferens, så domenene krymper ikke.</p>
+      <div class="oppgave" data-quiz id="oppg-kjede-mrv">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Assignment-forelesning 2 · slide 14–15</span></div>
+        <div class="o-text"><p>Anta MRV for variabler og LCV for verdier, med alfabetisk tie-break. Er MRV + LCV bedre enn tilfeldige valg i snitt for grafen A – B – C?</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene · MRV+LCV-stegene er vår rekonstruksjon</span>
+            <p><strong>MRV + LCV: nøyaktig 1 feil.</strong> Alle domener har 3 verdier ⇒ alfabetisk A. LCV: hver farge fjerner én verdi fra B ⇒ likt ⇒ A = B(lå). Så B (alfabetisk), LCV likt igjen ⇒ B(lå) først: bryter med A, <em>1 feil</em>; deretter G. C: B(lå) er lov. </p>
+            <p><strong>Tilfeldig: ≈ 0,704 feil i snitt.</strong> 6 like sannsynlige variabelrekkefølger.</p>
+            <ul>
+              <li>B først eller i midten (4 av 6): hver av de to variablene etter den første nabotildelingen treffer den forbudte fargen med sannsynlighet 1/3 ⇒ \(1/3 + 1/3 = 2/3\).</li>
+              <li>B sist (2 av 6): A og C har samme farge med sannsynlighet 1/3, og da er én farge forbudt for B ⇒ 1/3 forventet feil. Ulik farge (2/3): to forbudte, forventet \(2/3 + 2/3 \cdot 1/2 = 1\) feil. Til sammen \(1/3 \cdot 1/3 + 2/3 \cdot 1 = 7/9\).</li>
+            </ul>
+            \[ E[\text{feil}] = \frac{4 \cdot \tfrac{2}{3} + 2 \cdot \tfrac{7}{9}}{6} = \frac{38/9}{6} \approx 0{,}704 \]
+            <p>Så nei: MRV + LCV (1 feil) er her <em>dårligere</em> enn tilfeldig (0,704). Uten inferens har heuristikkene bare uavgjorte valg, og den alfabetiske tie-breaken er uheldig.</p>
+          </div></div>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-kjede-mrv-lcv">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Assignment-forelesning 2 · slide 23</span></div>
+        <div class="o-text"><p>Nå gjør vi A blå og kjører AC-3, som gir \(D_B = \{G, R\}\) (se <a href="csp-formulering.html#oppg-kjede-ac3">4A</a>). Er MRV + LCV bedre enn tilfeldige valg nå? Alfabetisk tie-break.</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p><strong>MRV + LCV: 0 feil.</strong> MRV: B (2 verdier) før C (3). LCV for B: G fjerner G fra C, R fjerner R ⇒ likt ⇒ G. C: ingen utildelte naboer ⇒ alfabetisk B(lå), som er lov fordi B = G.</p>
+            <p><strong>Tilfeldig: 1/3 feil i snitt.</strong> B trekker fra {G, R} og kan ikke feile mot A. Tildeles B først, treffer C Bs farge med sannsynlighet 1/3. Tildeles C først, har C ingen tildelte naboer; deretter feiler B bare om C fikk G eller R (2/3) og B trekker den (1/2): \(2/3 \cdot 1/2 = 1/3\).</p>
+            <p>Ja, nå er MRV + LCV bedre (0 mot 1/3): inferensen gjorde domenene ulike, og da har heuristikkene noe å gå etter.</p>
+          </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="egen-oppgave">
+    <div class="container">
+      <div class="section-badge">08 · Øv selv</div>
+      <h2>Kartfarging med <em>alle heuristikkene</em></h2>
+      <div class="source-note">Egen oppgave av eksamenstypen · kart fra slides forelesning 4 · 6</div>
+      <div class="oppgave" data-quiz id="oppg-egen-australia">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">Australia, 7 regioner</span></div>
+        <div class="o-text"><p>Farg Australia (WA, NT, SA, Q, NSW, V, T; domene {R, G, B}) med backtracking og forward checking. Variabelvalg: MRV, degree som første tie-break, deretter alfabetisk. Verdivalg: LCV, tie-break i rekkefølgen R, G, B. Vis hvert steg med domenene.</p></div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <ol>
+              <li>Alle har 3 verdier. Degree: SA 5, NT/Q/NSW 3, WA/V 2, T 0 ⇒ <strong>SA</strong>. LCV: hver farge fjerner 1 verdi hos 5 naboer (5) ⇒ likt ⇒ <strong>SA = R</strong>. FC: WA, NT, Q, NSW, V = {G, B}; T = {R, G, B}.</li>
+              <li>MRV: WA, NT, Q, NSW, V har 2. Degree mot utildelte: WA 1 (NT), NT 2, Q 2, NSW 2, V 1 (NSW) ⇒ NT, NSW, Q likt ⇒ alfabetisk <strong>NSW</strong>. LCV: G fjerner G fra Q og V (2), B fjerner B fra Q og V (2) ⇒ <strong>NSW = G</strong>. FC: Q = {B}, V = {B}.</li>
+              <li>MRV: Q og V har 1. Degree: Q 1 (NT), V 0 ⇒ <strong>Q = B</strong>. FC: NT = {G}.</li>
+              <li>MRV: NT og V har 1. Degree: NT 1 (WA), V 0 ⇒ <strong>NT = G</strong>. FC: WA = {B}.</li>
+              <li>MRV: V og WA har 1, degree 0 begge ⇒ alfabetisk <strong>V = B</strong>.</li>
+              <li><strong>WA = B</strong>. 7. T: {R, G, B}, ingen naboer ⇒ <strong>T = R</strong>.</li>
+            </ol>
+            <p>Løsning: SA = R, NSW = G, Q = B, NT = G, V = B, WA = B, T = R. Ingen backtracking: MRV + degree fant de «vanskelige» regionene først.</p>
+          </div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor brukes degree-heuristikken bare som tie-breaker, ikke alene?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Degree ser bare på grafstrukturen, ikke på hvor mange verdier som er igjen. MRV fanger direkte hvem som er nærmest å feile (en variabel med 0 verdier velges straks). Degree er nyttig når MRV er uavgjort, typisk i starten når alle domener er like.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lokalt-sok">
+    <div class="container">
+      <div class="section-badge">09 · Lavere prioritet</div>
+      <h2>Min-conflicts og <em>tre-CSP</em></h2>
+      <div class="source-note">Slides forelesning 4 · 40–43 · Boka kap. 5.4 (5.5 er ute av pensum 2026)</div>
+      <span class="lm-pill">Deltema 4.4 · prio 3</span>
+      <p><span class="term" data-term="min-conflicts">MIN-CONFLICTS</span> er lokalt søk: start med en komplett (ofte ugyldig) tildeling, velg tilfeldig en variabel i konflikt, og gi den verdien som gir færrest brudd; gjenta til løsning eller <code>max_steps</code>. Løser millioner-dronningproblemet på rundt 50 steg i snitt (slide 42). <span class="term" data-term="tre-csp">Tre-strukturerte CSP</span> (topologisk sortering, lineær tid) er ute av pensum 2026.</p>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">10 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Backtracking</strong>DFS, én variabel per nivå, gå tilbake når ingen verdi er konsistent.</div>
+        <div class="recap-pill"><strong>MRV</strong>Færrest gjenværende lovlige verdier. Fail-first.</div>
+        <div class="recap-pill"><strong>Degree</strong>Flest constraints mot utildelte variabler. Tie-breaker for MRV.</div>
+        <div class="recap-pill"><strong>LCV</strong>Verdien som utelukker færrest verdier hos naboene. Fail-last.</div>
+        <div class="recap-pill"><strong>Tie-break</strong>Bruk oppgavens regel (numerisk / alfanumerisk) og skriv det.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvorfor velger MRV den mest begrensede variabelen, mens LCV velger den minst begrensende verdien?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Alle variabler må tildeles uansett, så det lønner seg å feile tidlig (mindre tre under blindveien). Men vi trenger bare én verdi som fungerer, så vi prøver den som mest sannsynlig lar resten gå opp.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Backtracking uten forward checking: \(D_A = \{1,2\}\), \(D_B = \{1,2,3\}\), \(D_C = \{1\}\), constraints \(A \ne B\), \(B \ne C\), \(A \lt B\). Hvilken variabel og verdi velger MRV + LCV først (numerisk tie-break)?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">MRV: C (1 verdi) ⇒ C = 1. Lovlige nå: A {1, 2}, B {2, 3} ⇒ likt ⇒ numerisk/alfabetisk A. LCV for A mot B: A = 1 utelukker ingen av Bs lovlige verdier, A = 2 utelukker 2 ⇒ A = 1. Til slutt B: {2, 3}, ingen utildelte naboer ⇒ B = 2.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">I widgeten gir Graf G mange backtracks uten heuristikk og uten forward checking, færre med forward checking, og ingen med MRV + LCV. Forklar hvorfor forward checking alene hjelper.</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Uten forward checking oppdages en blindvei først når søket kommer til variabelen som ikke har lovlige verdier, kanskje flere nivåer lenger ned. Forward checking tømmer domenet med en gang den tildelingen som ødela det gjøres, så søket prøver neste verdi høyere opp og slipper å utforske hele undertreet.</div></div>
+      </div>
+      <nav class="page-nav">
+        <a href="csp-formulering.html" class="prev"><div class="pn-label">← Forrige · 4A</div><div class="pn-title">CSP og AC-3</div></a>
+        <a href="./" class="next"><div class="pn-label">Neste</div><div class="pn-title">Kapittel 4: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Widget: backtracking stegvis ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-bt'); if (!root) return;
+  var FARGE = { R: '#b83a2e', G: '#3d7a3a', B: '#2d5da8' }, RGB = ['R', 'G', 'B'];
+  var PROB = {
+    g: { pos: { A: [140, 150], B: [400, 250], C: [60, 60], D: [440, 90], E: [60, 230], F: [270, 60], G: [220, 250], H: [340, 160] },
+      E: [['A','C'],['A','E'],['A','F'],['A','G'],['B','D'],['B','G'],['B','H'],['C','E'],['C','F'],['D','F'],['D','H'],['E','G'],['F','H']] },
+    aus: { pos: { NSW: [340, 185], NT: [190, 70], Q: [320, 80], SA: [210, 175], T: [420, 270], V: [300, 255], WA: [70, 140] },
+      E: [['WA','NT'],['WA','SA'],['NT','SA'],['NT','Q'],['SA','Q'],['SA','NSW'],['SA','V'],['Q','NSW'],['NSW','V']] }
+  };
+  var svg = document.getElementById('bt-svg'), out = document.getElementById('bt-out'), logEl = document.getElementById('bt-log');
+  var selP = document.getElementById('bt-prob'), selH = document.getElementById('bt-heur'), cbFC = document.getElementById('bt-fc');
+  var P, ev, k;
+
+  function kopi(D) { var c = {}; for (var v in D) c[v] = D[v].slice(); return c; }
+  function sok(P, heur, fc) {
+    var V = Object.keys(P.pos).sort(), nb = {}, D = {}, A = {}, st = { n: 0, bt: 0 }, ev = [];
+    V.forEach(function (v) { nb[v] = []; D[v] = RGB.slice(); });
+    P.E.forEach(function (e) { nb[e[0]].push(e[1]); nb[e[1]].push(e[0]); });
+    function lovlige(v) { return D[v].filter(function (x) { return nb[v].every(function (w) { return A[w] !== x; }); }); }
+    function snap(msg, cls, cur) { var a = {}; for (var v in A) a[v] = A[v]; ev.push({ A: a, D: kopi(D), msg: msg, cls: cls || '', cur: cur, n: st.n, bt: st.bt }); }
+    function rec() {
+      var un = V.filter(function (v) { return !(v in A); });
+      if (!un.length) return true;
+      var v = un[0];
+      if (heur !== 'ingen') un.forEach(function (u) { if (lovlige(u).length < lovlige(v).length) v = u; });
+      var vals = lovlige(v), info = '', nLov = vals.length;
+      if (heur === 'mrvlcv') {
+        var kost = {};
+        vals.forEach(function (x) { kost[x] = nb[v].filter(function (w) { return !(w in A) && lovlige(w).indexOf(x) >= 0; }).length; });
+        vals = vals.map(function (x, i) { return [kost[x], i, x]; }).sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; }).map(function (t) { return t[2]; });
+        info = ' LCV-rekkefølge ' + vals.map(function (x) { return x + '(' + kost[x] + ')'; }).join(' ') + '.';
+      }
+      for (var i = 0; i < vals.length; i++) {
+        var x = vals[i], lagret = kopi(D), tom = null;
+        A[v] = x; st.n++;
+        if (fc) { D[v] = [x]; nb[v].forEach(function (w) { if (!(w in A)) { D[w] = D[w].filter(function (y) { return y !== x; }); if (!D[w].length && !tom) tom = w; } }); }
+        snap(v + ' = ' + x + (i === 0 ? ' (lovlige: ' + nLov + ').' + info : ' (neste verdi).') + (tom ? ' <span class="bad">FC tømmer D(' + tom + ')</span>' : ''), tom ? 'bad' : '', v);
+        if (!tom && rec()) return true;
+        D = lagret; delete A[v];
+      }
+      st.bt++;
+      snap('<span class="bad">Ingen lovlig verdi igjen for ' + v + ': backtrack.</span>', 'bad', v);
+      return false;
+    }
+    snap('Start: ingen tildelinger.', '', null);
+    if (rec()) snap('<span class="ok">Løsning funnet.</span>', 'ok', null);
+    return ev;
+  }
+  function el(tag, attrs, txt) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (var a in attrs) e.setAttribute(a, attrs[a]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; }
+  function tegn() {
+    var s = ev[k], pos = P.pos;
+    svg.innerHTML = '';
+    P.E.forEach(function (e) { el('line', { 'class': 'e', x1: pos[e[0]][0], y1: pos[e[0]][1], x2: pos[e[1]][0], y2: pos[e[1]][1] }); });
+    Object.keys(pos).forEach(function (v) {
+      var p = pos[v], a = s.A[v];
+      var c = el('circle', { 'class': 'n' + (s.cur === v ? ' cur' : ''), cx: p[0], cy: p[1], r: 21 });
+      if (a) c.style.fill = FARGE[a];
+      el('text', { x: p[0], y: p[1], 'class': a ? 'fix' : '' }, v);
+      RGB.forEach(function (col, n) {
+        var d = el('circle', { cx: p[0] - 14 + n * 14, cy: p[1] - 33, r: 6 });
+        d.style.fill = s.D[v].indexOf(col) >= 0 ? FARGE[col] : '#d6d0c4'; d.style.stroke = '#3d3832'; d.style.strokeWidth = 0.8;
+      });
+    });
+    document.getElementById('bt-n').textContent = s.n;
+    document.getElementById('bt-b').textContent = s.bt;
+    document.getElementById('bt-k').textContent = k + ' / ' + (ev.length - 1);
+    out.innerHTML = s.msg;
+    logEl.innerHTML = ev.slice(1, k + 1).map(function (t, n) { return '<span class="entry ' + t.cls + '">' + (n + 1) + '. ' + t.msg.replace(/<[^>]+>/g, '') + '</span>'; }).join('');
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function reset() { P = PROB[selP.value]; ev = sok(P, selH.value, cbFC.checked); k = 0; tegn(); }
+  document.getElementById('bt-step').addEventListener('click', function () { if (k < ev.length - 1) { k++; tegn(); } });
+  document.getElementById('bt-run').addEventListener('click', function () { k = ev.length - 1; tegn(); });
+  document.getElementById('bt-reset').addEventListener('click', reset);
+  [selP, selH, cbFC].forEach(function (e) { e.addEventListener('change', reset); });
+  reset();
+})();
+</script>
+</body>
+</html>

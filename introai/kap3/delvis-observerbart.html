@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Belief states — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  /* Støvsugerverden */
+  .vac-svg .vs-cell { fill: var(--paper); stroke: var(--ink-faded); stroke-width: 1.2; }
+  .vac-svg .vs-dirt { fill: var(--warm); }
+  .vac-svg .vs-bot { fill: var(--accent); }
+  .vac-svg .vs-n { font-family: var(--mono); font-size: 13px; fill: var(--ink); font-weight: 600; }
+  .vac-svg .vs-lbl { font-family: var(--sans); font-size: 11px; fill: var(--ink-faded); }
+  /* AND-OR-tre */
+  .ao-svg .ao-s { fill: var(--paper); stroke: var(--ink-soft); stroke-width: 1.2; }
+  .ao-svg .ao-goal { fill: rgba(61,107,58,0.18); stroke: var(--green); stroke-width: 1.4; }
+  .ao-svg .ao-a { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; }
+  .ao-svg .ao-e { stroke: var(--ink); stroke-width: 1.8; fill: none; }
+  .ao-svg .ao-f { stroke: var(--ink-ghost); stroke-width: 1.1; fill: none; stroke-dasharray: 4 3; }
+  .ao-svg .ao-f-box { fill: none; stroke: var(--ink-ghost); stroke-dasharray: 4 3; }
+  .ao-svg text { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  .ao-svg .ao-lbl { font-family: var(--sans); font-style: italic; font-size: 11px; fill: var(--ink-soft); }
+  /* Labyrint */
+  .maze-svg .mz-free { fill: var(--paper); stroke: var(--line); stroke-width: 1; }
+  .maze-svg .mz-wall { fill: #a0784f; stroke: #7a5a38; stroke-width: 1; }
+  .maze-svg .mz-bel { fill: var(--accent); fill-opacity: 0.45; stroke: var(--accent); stroke-width: 1.5; }
+  .maze-svg .mz-border { fill: none; stroke: #7a5a38; stroke-width: 4; }
+  .maze-svg .mz-lbl { font-family: var(--mono); font-size: 11px; fill: var(--ink-faded); }
+  .maze-svg .mz-robot { fill: var(--warm); }
+  .maze-svg .mz-rtxt { font-family: var(--mono); font-size: 12px; fill: var(--paper); font-weight: 600; }
+  .maze-svg .mz-click { cursor: pointer; }
+  .maze-svg .mz-click:hover { stroke: var(--warm); stroke-width: 2; }
+  .w-ctl input[type=checkbox] { accent-color: var(--accent); }
+  .tbl-small td, .tbl-small th { padding: 0.35rem 0.5rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Søk i komplekse miljøer">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3B · Slides forelesning 3 · 91–117 · Boka kap. 4.3–4.5 · ca. 30 min</div>
+      <h1>Ikke-determinisme og <em>belief states</em></h1>
+      <p class="lede">Hva agenten gjør når handlinger kan ha flere utfall (AND-OR-søk), og når den ikke vet hvilken tilstand den er i (belief states). Eksamen gir en labyrint og ber deg regne ut belief state etter persept og handling.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#ikke-deterministisk"><span>01</span> AND-OR-søk</a>
+        <a href="#belief-state"><span>02</span> Belief states</a>
+        <a href="#sensorless"><span>03</span> Sensorless</a>
+        <a href="#persepsjon"><span>04</span> Predict og update</a>
+        <a href="#labyrint"><span>05</span> Labyrinten</a>
+        <a href="#online"><span>06</span> Online søk</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md) · deltema 3.2 (prio 3) og 3.3 (prio 2)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Belief state i labyrint:</strong> finn alle ruter som passer med perseptet, flytt hele mengden med handlingen, filtrer med neste persept. <a href="#oppg-o23-7">Ord. 2023 · oppg. 7</a> (5 p).</li>
+          <li><span class="tag regn">Regn</span><strong>Sensorless:</strong> regn \(\text{RESULT}(b, a)\) for en mengde tilstander, som i støvsugerverdenen \(\{1,\dots,8\} \to \{7\}\).</li>
+          <li><span class="tag">Forklar</span>Hva en belief state er, og hvorfor en agent i et delvis observerbart miljø trenger den (knytter an til kapittel 1).</li>
+          <li><span class="tag lav">Lavere</span>AND-OR-søketrær og betingede planer (prio 3, ikke sett på eksamen), online søk og LRTA* (én linje).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 IKKE-DETERMINISME ─────────────────────────── -->
+  <section id="ikke-deterministisk">
+    <div class="container">
+      <div class="section-badge">01 · AND-OR-søk</div>
+      <h2>Når handlinger har <em>flere utfall</em></h2>
+      <div class="source-note">Slides forelesning 3 · 92–102 · Boka kap. 4.3</div>
+      <span class="lm-pill">Deltema 3.2 · prio 3</span>
+
+      <p class="dropcap">Til nå har handlinger vært deterministiske: vi får alltid resultatet vi forventer. I et <span class="term" data-term="ikke-deterministisk">ikke-deterministisk</span> miljø gir en handling en <em>mengde</em> mulige utfall, så løsningen kan ikke være én sekvens. Vi trenger en <span class="term" data-term="betinget-plan">betinget plan</span> (contingency plan) som sier hva vi gjør i hvert utfall.</p>
+      <p>Slidenes eksempel er <span class="term" data-term="erratic-vacuum">erratic vacuum world</span>: to ruter A og B, åtte tilstander. <em>Suck</em> på en skitten rute renser den, og noen ganger også naborute. <em>Suck</em> på en ren rute kan legge igjen skitt.</p>
+
+      <figure>
+        <svg class="vac-svg" viewBox="0 0 560 136" aria-label="De åtte tilstandene i støvsugerverdenen">
+<g class="vs" id="vs-1"><text class="vs-n" x="22" y="32" text-anchor="end">1</text>
+<rect class="vs-cell" x="30" y="10" width="44" height="34"/>
+<circle class="vs-dirt" cx="64" cy="36" r="4"/><circle class="vs-dirt" cx="56" cy="38" r="3"/>
+<rect class="vs-cell" x="74" y="10" width="44" height="34"/>
+<circle class="vs-dirt" cx="108" cy="36" r="4"/><circle class="vs-dirt" cx="100" cy="38" r="3"/>
+<circle class="vs-bot" cx="44" cy="24" r="8"/></g>
+<g class="vs" id="vs-2"><text class="vs-n" x="22" y="88" text-anchor="end">2</text>
+<rect class="vs-cell" x="30" y="66" width="44" height="34"/>
+<circle class="vs-dirt" cx="64" cy="92" r="4"/><circle class="vs-dirt" cx="56" cy="94" r="3"/>
+<rect class="vs-cell" x="74" y="66" width="44" height="34"/>
+<circle class="vs-dirt" cx="108" cy="92" r="4"/><circle class="vs-dirt" cx="100" cy="94" r="3"/>
+<circle class="vs-bot" cx="88" cy="80" r="8"/></g>
+<g class="vs" id="vs-3"><text class="vs-n" x="162" y="32" text-anchor="end">3</text>
+<rect class="vs-cell" x="170" y="10" width="44" height="34"/>
+<circle class="vs-dirt" cx="204" cy="36" r="4"/><circle class="vs-dirt" cx="196" cy="38" r="3"/>
+<rect class="vs-cell" x="214" y="10" width="44" height="34"/>
+<circle class="vs-bot" cx="184" cy="24" r="8"/></g>
+<g class="vs" id="vs-4"><text class="vs-n" x="162" y="88" text-anchor="end">4</text>
+<rect class="vs-cell" x="170" y="66" width="44" height="34"/>
+<circle class="vs-dirt" cx="204" cy="92" r="4"/><circle class="vs-dirt" cx="196" cy="94" r="3"/>
+<rect class="vs-cell" x="214" y="66" width="44" height="34"/>
+<circle class="vs-bot" cx="228" cy="80" r="8"/></g>
+<g class="vs" id="vs-5"><text class="vs-n" x="302" y="32" text-anchor="end">5</text>
+<rect class="vs-cell" x="310" y="10" width="44" height="34"/>
+<rect class="vs-cell" x="354" y="10" width="44" height="34"/>
+<circle class="vs-dirt" cx="388" cy="36" r="4"/><circle class="vs-dirt" cx="380" cy="38" r="3"/>
+<circle class="vs-bot" cx="324" cy="24" r="8"/></g>
+<g class="vs" id="vs-6"><text class="vs-n" x="302" y="88" text-anchor="end">6</text>
+<rect class="vs-cell" x="310" y="66" width="44" height="34"/>
+<rect class="vs-cell" x="354" y="66" width="44" height="34"/>
+<circle class="vs-dirt" cx="388" cy="92" r="4"/><circle class="vs-dirt" cx="380" cy="94" r="3"/>
+<circle class="vs-bot" cx="368" cy="80" r="8"/></g>
+<g class="vs" id="vs-7"><text class="vs-n" x="442" y="32" text-anchor="end">7</text>
+<rect class="vs-cell" x="450" y="10" width="44" height="34"/>
+<rect class="vs-cell" x="494" y="10" width="44" height="34"/>
+<circle class="vs-bot" cx="464" cy="24" r="8"/></g>
+<g class="vs" id="vs-8"><text class="vs-n" x="442" y="88" text-anchor="end">8</text>
+<rect class="vs-cell" x="450" y="66" width="44" height="34"/>
+<rect class="vs-cell" x="494" y="66" width="44" height="34"/>
+<circle class="vs-bot" cx="508" cy="80" r="8"/></g>
+<text class="vs-lbl" x="30" y="128">A = venstre rute, B = høyre rute · sirkel = roboten · prikker = skitt</text>
+        </svg>
+        <figcaption>De åtte tilstandene, nummerert som i boka og slidene.</figcaption>
+      </figure>
+
+      <div class="oppgave" data-quiz id="oppg-erratic-suck">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 96–101</span></div>
+        <div class="o-text"><p>I erratic vacuum world: hva er \(\text{Suck}(s_1)\) og \(\text{Suck}(s_7)\)? Forklar hvert utfall.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>\(\text{Suck}(s_1) = \{s_5, s_7\}\). I \(s_1\) står roboten i A og begge er skitne. Renser den bare A, får vi \(s_5\) (A ren, B skitten). Renser den begge, får vi \(s_7\).</p>
+            <p>\(\text{Suck}(s_7) = \{s_3, s_7\}\). I \(s_7\) er alt rent. Enten skjer ingenting (\(s_7\)), eller den legger skitt i A (\(s_3\)).</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Et <span class="term" data-term="and-or-tre">AND-OR-søketre</span> har to slags noder. I <span class="term" data-term="or-node">OR-noder</span> (rektangler, tilstander) velger agenten <em>én</em> handling. I <span class="term" data-term="and-node">AND-noder</span> (sirkler, utfallene av en handling) må planen håndtere <em>alle</em> utfall. En løsning er et deltre der hver løvnode er et mål. Søket er rekursivt, med basistilfelle feil (løkke) eller tom plan (mål nådd).</p>
+
+      <figure>
+        <svg class="ao-svg" viewBox="0 0 520 335" style="max-width:520px" aria-label="AND-OR-tre for erratic vacuum world">
+          <path class="ao-e" d="M280 36 L186 81"/><text class="ao-lbl" x="222" y="52">Suck</text>
+          <path class="ao-f" d="M280 36 L374 81"/><text class="ao-lbl" x="336" y="52">Right</text>
+          <circle class="ao-a" cx="180" cy="88" r="9"/><circle class="ao-a" cx="380" cy="88" r="9" style="opacity:0.4"/>
+          <path class="ao-f" d="M380 97 L380 122"/><rect class="ao-f-box" x="350" y="122" width="60" height="28" rx="3"/><text x="380" y="141" text-anchor="middle" style="opacity:0.5">2 …</text>
+          <path class="ao-e" d="M176 96 L112 130"/><path class="ao-e" d="M184 96 L248 130"/>
+          <path class="ao-e" d="M160 107 Q180 118 200 107"/>
+          <rect class="ao-goal" x="80" y="130" width="64" height="28" rx="3"/><text x="112" y="149" text-anchor="middle">7 · mål</text>
+          <rect class="ao-s" x="218" y="130" width="60" height="28" rx="3"/><text x="248" y="149" text-anchor="middle">5</text>
+          <path class="ao-e" d="M248 158 L248 187"/><text class="ao-lbl" x="256" y="176">Right</text>
+          <circle class="ao-a" cx="248" cy="196" r="9"/>
+          <path class="ao-e" d="M248 205 L248 222"/>
+          <rect class="ao-s" x="218" y="222" width="60" height="28" rx="3"/><text x="248" y="241" text-anchor="middle">6</text>
+          <path class="ao-e" d="M248 250 L248 279"/><text class="ao-lbl" x="256" y="268">Suck</text>
+          <circle class="ao-a" cx="248" cy="288" r="9"/>
+          <path class="ao-e" d="M248 297 L248 302"/>
+          <rect class="ao-goal" x="216" y="302" width="64" height="28" rx="3"/><text x="248" y="321" text-anchor="middle">8 · mål</text>
+          <rect class="ao-s" x="250" y="8" width="60" height="28" rx="3"/><text x="280" y="27" text-anchor="middle">1</text>
+        </svg>
+        <figcaption>Utsnitt av slide 102 (Boka figur 4.10): løsningsdeltreet i fete streker. Buen under Suck betyr AND: både 7 og 5 må håndteres. Planen er <code>[Suck, if State = 5 then [Right, Suck] else []]</code>.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 BELIEF STATES ─────────────────────────── -->
+  <section id="belief-state">
+    <div class="container">
+      <div class="section-badge">02 · Belief states</div>
+      <h2>Mengden av tilstander agenten <em>kan</em> være i</h2>
+      <div class="source-note">Slides forelesning 3 · 103, 110–112 · Boka kap. 4.4</div>
+      <span class="lm-pill">Deltema 3.3 · prio 2</span>
+
+      <p class="dropcap">I et <span class="term" data-term="delvis-observerbar">delvis observerbart</span> miljø vet ikke agenten nøyaktig hvilken tilstand den er i. Den får delvise (og kanskje støyete) observasjoner, så tilstanden kan bare anslås gjennom en <span class="term" data-term="belief-state">belief state</span>: mengden av fysiske tilstander agenten kan være i, gitt handlingene og perseptene så langt.</p>
+
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Belief state</div>
+        <p>En mengde \(b \subseteq S\) av fysiske tilstander. Søket skjer i <span class="term" data-term="belief-space">belief-state-rommet</span>: nodene er belief states, ikke enkelttilstander. Med \(N\) fysiske tilstander finnes opptil \(2^N\) belief states. Et mål er nådd når <em>alle</em> tilstandene i \(b\) er måltilstander.</p>
+      </div>
+
+      <p>Ny belief state etter handling \(a\) er alle tilstander vi kan havne i fra en tilstand i \(b\):</p>
+      \[ b' = \text{RESULT}(b, a) = \{\, s' : s' = \text{RESULT}_P(s, a) \text{ og } s \in b \,\} \]
+      \[ b' = \bigcup_{s \in b} \text{RESULTS}_P(s, a) \quad \text{(ikke-deterministisk)} \]
+      <p>I et deterministisk miljø kan vi bruke et vanlig søk (BFS, A* …) over belief states (slide 112). Er miljøet både ikke-deterministisk og delvis observerbart, blir nodene belief states i et AND-OR-tre, og løsningen er en betinget plan (slide 110, 114–116).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 SENSORLESS ─────────────────────────── -->
+  <section id="sensorless">
+    <div class="container">
+      <div class="section-badge">03 · Sensorless</div>
+      <h2>Løs problemet <em>uten å se</em></h2>
+      <div class="source-note">Slides forelesning 3 · 104–109 · Boka kap. 4.4.1</div>
+
+      <p class="dropcap">Et <span class="term" data-term="sensorless">sensorless</span> (conformant) problem: agenten har ingen sensorer. Den starter med belief state lik alle tilstander og må finne en handlingssekvens som virker <em>uansett</em> hvor den startet. Slidene: «Think of 5D-chess: you solve the problem on multiple paths at the same time!» Handlinger som ikke har effekt (Left når roboten står i A) lar tilstanden være uendret.</p>
+
+      <div class="oppgave" data-quiz id="oppg-sensorless-vakuum">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 104–109</span></div>
+        <div class="o-text"><p>Deterministisk støvsugerverden uten sensorer. Agenten vet ingenting, \(b_0 = \{1,2,3,4,5,6,7,8\}\). Vis at sekvensen [Right, Suck, Left, Suck] garantert gir et rent rom, ved å regne belief state etter hver handling.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>\(\text{RESULT}(\{1,\dots,8\}, \text{Right}) = \{2,4,6,8\}\): roboten står i B uansett, skitten er uendret.</p>
+            <p>\(\text{RESULT}(\{2,4,6,8\}, \text{Suck}) = \{4,8\}\): 2→4 og 4→4 (A skitten, B ren), 6→8 og 8→8 (alt rent).</p>
+            <p>\(\text{RESULT}(\{4,8\}, \text{Left}) = \{3,7\}\): roboten flyttes til A.</p>
+            <p>\(\text{RESULT}(\{3,7\}, \text{Suck}) = \{7\}\): A renses. Belief state er én tilstand, og den er et mål (roboten i A, alt rent).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 PREDICT / UPDATE ─────────────────────────── -->
+  <section id="persepsjon">
+    <div class="container">
+      <div class="section-badge">04 · Predict og update</div>
+      <h2>Handling <em>utvider</em>, persept <em>snevrer inn</em></h2>
+      <div class="source-note">Slides forelesning 3 · 113–116 · Boka kap. 4.4.2 og 4.4.4</div>
+
+      <p class="dropcap">Med sensorer skjer hvert steg i tre deler. <span class="term" data-term="prediksjon">Prediksjon</span>: flytt hver tilstand i \(b\) med handlingen \(a\). Mulige <span class="term" data-term="persept">persepter</span>: hvilke observasjoner kan komme fra den nye mengden. <span class="term" data-term="oppdatering">Oppdatering</span>: behold bare tilstandene som passer med perseptet \(o\) vi faktisk fikk.</p>
+      \[ \hat b = \text{PREDICT}(b, a), \qquad b_o = \text{UPDATE}(\hat b, o) = \{\, s : s \in \hat b \text{ og } \text{PERCEPT}(s) = o \,\} \]
+      \[ b \leftarrow \text{UPDATE}(\text{PREDICT}(b, a), o) \]
+
+      <div class="callout">
+        <span class="label">Oppskrift for eksamen</span>
+        <p>1. Start: alle tilstander som passer med første persept. 2. Flytt <em>hver</em> tilstand i mengden med handlingen (står stille mot vegg). 3. Stryk dem som ikke gir det nye perseptet. Svaret er en mengde, skrevet i formatet oppgaven ber om.</p>
+      </div>
+      <p>I en deterministisk verden kan oppdateringen bare gjøre mengden mindre eller like stor. Er handlingene ikke-deterministiske, kan prediksjonen gjøre den større.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 LABYRINT ─────────────────────────── -->
+  <section id="labyrint">
+    <div class="container">
+      <div class="section-badge">05 · Labyrinten</div>
+      <h2>Lokalisering i en <em>labyrint</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 · oppg. 7 (figur 4) · Boka kap. 4.4.4 (lokalisering)</div>
+
+      <p class="dropcap">Roboten ser bare veggene rundt ruta den står i (nord, sør, vest, øst), ikke posisjonen. Kanten av labyrinten teller som vegg. Ruter oppgis som \((r, c)\) med rad \(r_0\) nederst og kolonne \(c_0\) til venstre, slik som i eksamensfiguren.</p>
+
+      <figure>
+        <svg class="maze-svg" viewBox="0 0 530 196" aria-label="Labyrinten fra eksamen 2023, robot i (r2, c3)">
+<rect class="mz-free" x="40" y="132" width="40" height="40"/>
+<rect class="mz-free" x="80" y="132" width="40" height="40"/>
+<rect class="mz-wall" x="120" y="132" width="40" height="40"/>
+<rect class="mz-free" x="160" y="132" width="40" height="40"/>
+<rect class="mz-free" x="200" y="132" width="40" height="40"/>
+<rect class="mz-free" x="240" y="132" width="40" height="40"/>
+<rect class="mz-wall" x="280" y="132" width="40" height="40"/>
+<rect class="mz-free" x="320" y="132" width="40" height="40"/>
+<rect class="mz-free" x="360" y="132" width="40" height="40"/>
+<rect class="mz-free" x="400" y="132" width="40" height="40"/>
+<rect class="mz-free" x="440" y="132" width="40" height="40"/>
+<rect class="mz-wall" x="480" y="132" width="40" height="40"/>
+<rect class="mz-wall" x="40" y="92" width="40" height="40"/>
+<rect class="mz-free" x="80" y="92" width="40" height="40"/>
+<rect class="mz-free" x="120" y="92" width="40" height="40"/>
+<rect class="mz-free" x="160" y="92" width="40" height="40"/>
+<rect class="mz-wall" x="200" y="92" width="40" height="40"/>
+<rect class="mz-free" x="240" y="92" width="40" height="40"/>
+<rect class="mz-wall" x="280" y="92" width="40" height="40"/>
+<rect class="mz-wall" x="320" y="92" width="40" height="40"/>
+<rect class="mz-free" x="360" y="92" width="40" height="40"/>
+<rect class="mz-free" x="400" y="92" width="40" height="40"/>
+<rect class="mz-free" x="440" y="92" width="40" height="40"/>
+<rect class="mz-free" x="480" y="92" width="40" height="40"/>
+<rect class="mz-wall" x="40" y="52" width="40" height="40"/>
+<rect class="mz-wall" x="80" y="52" width="40" height="40"/>
+<rect class="mz-free" x="120" y="52" width="40" height="40"/>
+<rect class="mz-free" x="160" y="52" width="40" height="40"/>
+<rect class="mz-wall" x="200" y="52" width="40" height="40"/>
+<rect class="mz-free" x="240" y="52" width="40" height="40"/>
+<rect class="mz-wall" x="280" y="52" width="40" height="40"/>
+<rect class="mz-wall" x="320" y="52" width="40" height="40"/>
+<rect class="mz-free" x="360" y="52" width="40" height="40"/>
+<rect class="mz-wall" x="400" y="52" width="40" height="40"/>
+<rect class="mz-free" x="440" y="52" width="40" height="40"/>
+<rect class="mz-wall" x="480" y="52" width="40" height="40"/>
+<rect class="mz-free" x="40" y="12" width="40" height="40"/>
+<rect class="mz-free" x="80" y="12" width="40" height="40"/>
+<rect class="mz-free" x="120" y="12" width="40" height="40"/>
+<rect class="mz-free" x="160" y="12" width="40" height="40"/>
+<rect class="mz-wall" x="200" y="12" width="40" height="40"/>
+<rect class="mz-free" x="240" y="12" width="40" height="40"/>
+<rect class="mz-free" x="280" y="12" width="40" height="40"/>
+<rect class="mz-free" x="320" y="12" width="40" height="40"/>
+<rect class="mz-free" x="360" y="12" width="40" height="40"/>
+<rect class="mz-free" x="400" y="12" width="40" height="40"/>
+<rect class="mz-wall" x="440" y="12" width="40" height="40"/>
+<rect class="mz-free" x="480" y="12" width="40" height="40"/>
+<rect class="mz-border" x="40" y="12" width="480" height="160"/>
+<text class="mz-lbl" x="32" y="157" text-anchor="end">r0</text>
+<text class="mz-lbl" x="32" y="117" text-anchor="end">r1</text>
+<text class="mz-lbl" x="32" y="77" text-anchor="end">r2</text>
+<text class="mz-lbl" x="32" y="37" text-anchor="end">r3</text>
+<text class="mz-lbl" x="60" y="188" text-anchor="middle">c0</text>
+<text class="mz-lbl" x="100" y="188" text-anchor="middle">c1</text>
+<text class="mz-lbl" x="140" y="188" text-anchor="middle">c2</text>
+<text class="mz-lbl" x="180" y="188" text-anchor="middle">c3</text>
+<text class="mz-lbl" x="220" y="188" text-anchor="middle">c4</text>
+<text class="mz-lbl" x="260" y="188" text-anchor="middle">c5</text>
+<text class="mz-lbl" x="300" y="188" text-anchor="middle">c6</text>
+<text class="mz-lbl" x="340" y="188" text-anchor="middle">c7</text>
+<text class="mz-lbl" x="380" y="188" text-anchor="middle">c8</text>
+<text class="mz-lbl" x="420" y="188" text-anchor="middle">c9</text>
+<text class="mz-lbl" x="460" y="188" text-anchor="middle">c10</text>
+<text class="mz-lbl" x="500" y="188" text-anchor="middle">c11</text>
+<circle class="mz-robot" cx="180" cy="72" r="12"/><text class="mz-rtxt" x="180" y="76" text-anchor="middle">R</text>
+        </svg>
+        <figcaption>Gjenskapt figur 4 fra Ord. 2023. Brune ruter er vegg. Roboten R står i \((r2, c3)\).</figcaption>
+      </figure>
+
+      <div class="oppgave" data-quiz id="oppg-o23-7">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 7</span><span class="o-ref">5 p · figur over</span></div>
+        <div class="o-text">
+          <p>A percept includes data about the existence of walls on the north, south, west and east of the square the robot is in. Possible actions: Right, Left, Up, Down.</p>
+          <ol>
+            <li>If the robot's perception at time step 1 is P1 = {North, South, West, NoEast}, what will be the belief state of the robot for its location? Use the format \(S = \{(r\text{-}x, c\text{-}y), \dots\}\).</li>
+            <li>If the robot takes action «Right» and perceives P2 = {North, South, NoWest, NoEast}, what will its belief state S2 be?</li>
+            <li>Assume that action «Right» makes a move to left, and «Left» a move to right. What will be the agent's belief state when it takes a «Right» action from its initial location?</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p><strong>1.</strong> Vi leter etter ruter med vegg i nord, sør og vest og åpning mot øst. Gå gjennom de frie rutene: \((r0, c0)\): nord \((r1,c0)\) vegg, sør og vest kant, øst \((r0,c1)\) fri. Passer. \((r3, c0)\): nord og vest kant, sør \((r2,c0)\) vegg, øst \((r3,c1)\) fri. Passer. \((r0, c7)\): nord \((r1,c7)\) vegg, sør kant, vest \((r0,c6)\) vegg, øst \((r0,c8)\) fri. Passer. Ingen andre ruter har tre vegger med åpning mot øst.</p>
+            <p>\(S_1 = \{(r0,c0), (r3,c0), (r0,c7)\}\)</p>
+            <p><strong>2.</strong> Prediksjon med Right: \(\{(r0,c1), (r3,c1), (r0,c8)\}\). Persepter: \((r0,c1)\) har ingen vegg i nord (\((r1,c1)\) er fri), stryk. \((r3,c1)\): nord kant, sør \((r2,c1)\) vegg, vest og øst fri. Passer. \((r0,c8)\): nord \((r1,c8)\) fri, stryk.</p>
+            <p>\(S_2 = \{(r3,c1)\}\). Roboten er lokalisert.</p>
+            <p><strong>3.</strong> Fra initial belief state \(S_1\): «Right» flytter nå mot vest, men alle tre rutene har vegg i vest. Roboten flytter seg ikke, får samme persept, og belief state er uendret: \(S = \{(r0,c0), (r3,c0), (r0,c7)\}\).</p>
+            <p>Løsningsforslaget godtok også å starte i figurens posisjon \((r2,c3)\): da flytter roboten til \((r2,c2)\), sanser {NoNorth, NoSouth, West, NoEast}, og belief state blir \(S = \{(r1,c8), (r2,c2)\}\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-maze">
+        <div class="widget-label">Prøv selv · Belief state i labyrinten</div>
+        <p class="widget-intro">Start med «Vet ingenting» (alle frie ruter). Kryss av veggene i perseptet og trykk «Observer». Velg så en handling, og observer igjen. Klikk på en rute for å fylle inn perseptet roboten ville fått der. Kryss av «byttet» for del 3 av eksamensoppgaven.</p>
+        <svg class="maze-svg" id="mz-svg" viewBox="0 0 530 196" aria-label="Interaktiv labyrint"></svg>
+        <div class="w-row">
+          <span class="w-ctl"><label>Persept, vegg i:</label></span>
+          <label class="w-ctl"><input type="checkbox" id="mz-n"> Nord</label>
+          <label class="w-ctl"><input type="checkbox" id="mz-s"> Sør</label>
+          <label class="w-ctl"><input type="checkbox" id="mz-w"> Vest</label>
+          <label class="w-ctl"><input type="checkbox" id="mz-e"> Øst</label>
+          <button class="w-btn" id="mz-obs" type="button">Observer (update)</button>
+        </div>
+        <div class="w-row">
+          <button class="w-btn secondary" data-act="U" type="button">Up</button>
+          <button class="w-btn secondary" data-act="D" type="button">Down</button>
+          <button class="w-btn secondary" data-act="L" type="button">Left</button>
+          <button class="w-btn secondary" data-act="R" type="button">Right</button>
+          <label class="w-ctl"><input type="checkbox" id="mz-swap"> Right/Left byttet</label>
+          <button class="w-btn secondary" id="mz-reset" type="button">Vet ingenting</button>
+        </div>
+        <div class="w-out" id="mz-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-belief-egen">
+        <div class="o-label"><span>Oppgave av eksamenstype</span><span class="o-ref">egen oppgave · samme labyrint</span></div>
+        <div class="o-text">
+          <p>Roboten vet ingenting om posisjonen sin.</p>
+          <ol>
+            <li>Den sanser P1 = {North, South, NoWest, NoEast}. Hva er \(S_1\)?</li>
+            <li>Den tar Right og sanser P2 = {North, NoSouth, NoWest, NoEast}. Hva er \(S_2\)?</li>
+            <li>Den tar Down og sanser P3 = {NoNorth, NoSouth, West, East}. Hva er \(S_3\)?</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra løsningsforslaget</span>
+            <p><strong>1.</strong> Vegg nord og sør, åpent vest og øst: \((r0,c4)\) (nord \((r1,c4)\) vegg, sør kant), \((r3,c1)\), \((r3,c6)\) og \((r3,c7)\) (nord kant, sør vegg). \(S_1 = \{(r0,c4), (r3,c1), (r3,c6), (r3,c7)\}\).</p>
+            <p><strong>2.</strong> Prediksjon: \(\{(r0,c5), (r3,c2), (r3,c7), (r3,c8)\}\). \((r0,c5)\): nord \((r1,c5)\) fri, stryk. \((r3,c2)\): nord kant, sør \((r2,c2)\) fri, vest og øst fri. Passer. \((r3,c7)\): sør \((r2,c7)\) vegg, stryk. \((r3,c8)\): sør \((r2,c8)\) fri, passer. \(S_2 = \{(r3,c2), (r3,c8)\}\).</p>
+            <p><strong>3.</strong> Prediksjon: \(\{(r2,c2), (r2,c8)\}\). \((r2,c2)\): øst \((r2,c3)\) fri, stryk. \((r2,c8)\): vest \((r2,c7)\) og øst \((r2,c9)\) vegg, nord og sør fri. Passer. \(S_3 = \{(r2,c8)\}\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 ONLINE ─────────────────────────── -->
+  <section id="online">
+    <div class="container">
+      <div class="section-badge">06 · Online søk</div>
+      <h2>Utforsk mens du <em>går</em></h2>
+      <div class="source-note">Slides forelesning 3 · 117 · Boka kap. 4.5</div>
+      <p class="dropcap">Alle algoritmene så langt er <em>offline</em>: de regner ut løsningen fra en kjent graf før første trekk. <span class="term" data-term="online-sok">Online søk</span> må faktisk bevege seg for å oppdage grafen, og veksler mellom å handle og å observere. Eksempel fra slidene: <span class="term" data-term="lrta">LRTA*</span> (learning real-time A*), som oppdaterer heuristikkestimatet for tilstanden den forlater underveis.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Ikke-determinisme</strong>RESULTS gir en mengde utfall; løsningen er en betinget plan.</div>
+        <div class="recap-pill"><strong>AND-OR</strong>OR: velg én handling. AND: håndter alle utfall.</div>
+        <div class="recap-pill"><strong>Belief state</strong>Mengden tilstander agenten kan være i. Mål når alle er mål.</div>
+        <div class="recap-pill"><strong>Sensorless</strong>\(\{1..8\} \xrightarrow{R} \{2,4,6,8\} \xrightarrow{S} \{4,8\} \xrightarrow{L} \{3,7\} \xrightarrow{S} \{7\}\)</div>
+        <div class="recap-pill"><strong>Predict → update</strong>Flytt hele mengden, stryk tilstander som ikke gir perseptet.</div>
+        <div class="recap-pill"><strong>Online</strong>Må handle for å oppdage miljøet (LRTA*).</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvor mange belief states finnes i støvsugerverdenen med åtte fysiske tilstander?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(2^8 = 256\) delmengder (255 uten den tomme). Boka påpeker at bare 12 av dem er nåbare fra \(\{1,\dots,8\}\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvorfor kan belief state bli <em>større</em> etter en handling i et ikke-deterministisk miljø, men ikke i et deterministisk?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Deterministisk gir hver tilstand ett resultat, så \(|b'| \le |b|\). Ikke-deterministisk gir hver tilstand en mengde utfall, og unionen kan være større enn \(b\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">I labyrinten: roboten sanser {North, South, West, East}. Hva er belief state?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\{(r3,c11)\}\). Ruta øverst til høyre har kant i nord og øst, vegg i sør \((r2,c11)\) og vest \((r3,c10)\). Den er den eneste lukkede ruta, så roboten er lokalisert med én gang (men kan aldri flytte seg).</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="lokalt-sok.html" class="prev"><div class="pn-label">← Forrige · 3A</div><div class="pn-title">Lokalt søk</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 3: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Widget: belief state i labyrinten fra Ord. 2023 ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-maze'); if (!root) return;
+  var G = { 3: '....#.....#.', 2: '##..#.##.#.#', 1: '#...#.##....', 0: '..#...#....#' };
+  var S = 40, X0 = 40, Y0 = 12, NS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('mz-svg'), out = document.getElementById('mz-out');
+  var cb = { n: document.getElementById('mz-n'), s: document.getElementById('mz-s'), w: document.getElementById('mz-w'), e: document.getElementById('mz-e') };
+  var swap = document.getElementById('mz-swap');
+  function free(r, c) { return r >= 0 && r < 4 && c >= 0 && c < 12 && G[r][c] === '.'; }
+  function percept(r, c) { return { n: !free(r + 1, c), s: !free(r - 1, c), w: !free(r, c - 1), e: !free(r, c + 1) }; }
+  function key(r, c) { return r + ',' + c; }
+  function mk(tag, a) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; }
+  var rects = {}, all = [];
+  for (var r = 3; r >= 0; r--) for (var c = 0; c < 12; c++) {
+    var el = mk('rect', { x: X0 + c * S, y: Y0 + (3 - r) * S, width: S, height: S, 'class': free(r, c) ? 'mz-free mz-click' : 'mz-wall' });
+    if (free(r, c)) { rects[key(r, c)] = el; all.push([r, c]); (function (rr, cc) { el.addEventListener('click', function () { var p = percept(rr, cc); for (var k in cb) cb[k].checked = p[k]; out.innerHTML = 'Perseptet i (r' + rr + ',c' + cc + ') er ' + ptxt(p) + '. Trykk «Observer» for å filtrere.'; }); })(r, c); }
+  }
+  mk('rect', { x: X0, y: Y0, width: 12 * S, height: 4 * S, 'class': 'mz-border' });
+  for (r = 0; r < 4; r++) mk('text', { x: X0 - 8, y: Y0 + (3 - r) * S + 25, 'text-anchor': 'end', 'class': 'mz-lbl' }).textContent = 'r' + r;
+  for (c = 0; c < 12; c++) mk('text', { x: X0 + c * S + 20, y: Y0 + 4 * S + 16, 'text-anchor': 'middle', 'class': 'mz-lbl' }).textContent = 'c' + c;
+
+  var bel = [], log = [];
+  function ptxt(p) { return '{' + [p.n ? 'North' : 'NoNorth', p.s ? 'South' : 'NoSouth', p.w ? 'West' : 'NoWest', p.e ? 'East' : 'NoEast'].join(', ') + '}'; }
+  function stxt(b) { return 'S = {' + b.map(function (x) { return '(r' + x[0] + ',c' + x[1] + ')'; }).join(', ') + '}'; }
+  function render() {
+    all.forEach(function (x) { rects[key(x[0], x[1])].setAttribute('class', 'mz-free mz-click'); });
+    bel.forEach(function (x) { rects[key(x[0], x[1])].setAttribute('class', 'mz-bel mz-click'); });
+    out.innerHTML = log.slice(-3).join('<br>') + '<br><span class="hl">' + (bel.length > 12 ? bel.length + ' mulige ruter' : stxt(bel) + ' · ' + bel.length + (bel.length === 1 ? ' rute' : ' ruter')) + '</span>';
+  }
+  function reset() { bel = all.slice(); log = ['Vet ingenting: alle ' + all.length + ' frie ruter er mulige.']; render(); }
+  document.getElementById('mz-obs').addEventListener('click', function () {
+    var o = { n: cb.n.checked, s: cb.s.checked, w: cb.w.checked, e: cb.e.checked };
+    bel = bel.filter(function (x) { var p = percept(x[0], x[1]); return p.n === o.n && p.s === o.s && p.w === o.w && p.e === o.e; });
+    log.push('Update med ' + ptxt(o) + ': behold rutene som gir dette perseptet.');
+    render();
+  });
+  var D = { U: [1, 0], D: [-1, 0], L: [0, -1], R: [0, 1] };
+  root.querySelectorAll('[data-act]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var a = b.getAttribute('data-act'), eff = a;
+      if (swap.checked && (a === 'L' || a === 'R')) eff = a === 'L' ? 'R' : 'L';
+      var d = D[eff], seen = {}, nb = [];
+      bel.forEach(function (x) { var nr = x[0] + d[0], nc = x[1] + d[1]; if (!free(nr, nc)) { nr = x[0]; nc = x[1]; } var k = key(nr, nc); if (!seen[k]) { seen[k] = 1; nb.push([nr, nc]); } });
+      bel = nb;
+      log.push('Predict med ' + ({ U: 'Up', D: 'Down', L: 'Left', R: 'Right' })[a] + (eff !== a ? ' (flytter faktisk mot ' + (eff === 'L' ? 'vest' : 'øst') + ')' : '') + ': flytt hver rute, stå stille mot vegg.');
+      render();
+    });
+  });
+  document.getElementById('mz-reset').addEventListener('click', reset);
+  reset();
+})();
+</script>
+</body>
+</html>

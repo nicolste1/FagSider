@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Assignment 2: CSP — Øvinger</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .cg { display: block; max-width: 460px; margin: 0 auto; }
+  .cg text { font-family: var(--mono); font-size: 14px; fill: var(--ink); }
+  .cg .dom { font-size: 12px; fill: var(--accent); }
+  .cg circle { fill: var(--paper); stroke: var(--ink); stroke-width: 1.8; }
+  .cg line { stroke: var(--ink-soft); stroke-width: 2; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Øvinger: Assignment 2">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Øvinger · Assignment 2 · Assignment-forelesning 2 · slides 1–23 · ~12 min</div>
+      <h1>Assignment 2: <em>CSP på Sudoku</em></h1>
+      <p class="lede">Du skal programmere AC-3 og backtracking og kjøre dem på fire Sudoku-brett. Siden forklarer hva algoritmene skal gjøre og hvordan Sudoku blir en CSP, og går gjennom de små regneeksemplene fra assignment-forelesningen, siden det er dem eksamen likner på.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#oppgaven"><span>01</span> Hva du skal gjøre</a>
+        <a href="#eksempel"><span>02</span> Gjennomgåtte eksempler</a>
+        <a href="#feil"><span>03</span> Vanlige feil</a>
+        <a href="#videre"><span>04</span> Videre</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hvorfor denne øvingen <em>teller</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 · deltema 4.1, 4.2, 4.3</div>
+      <p>Læringsassistenten (slide 3): «Historically, there has usually been a problem covering this in exams.» Det pleier å komme en CSP-oppgave, men øvingen er ren programmering, og det er ikke eksamen. På eksamen kjører du AC-3 og backtracking <em>for hånd</em>. Derfor vekter siden regneeksemplene tyngst.</p>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>AC-3:</strong> er utgangspunktet arc-consistent, kjør AC-3, oppgi domenene (Ord. 2023 oppg. 4.2, 6 p).</li>
+          <li><span class="tag regn">Regn</span><strong>Backtracking med MRV og LCV:</strong> vis hvert steg med domener og tie-break (Ord. 2022 oppg. 4.2; Ord. 2023 oppg. 4.3, 7 p).</li>
+          <li><span class="tag">Forklar</span>Formuler et problem som CSP: variabler, domener, constraints og constraint graph (Ord. 2022 oppg. 4.1; Ord. 2023 oppg. 4.1).</li>
+          <li><span class="tag">Lavere</span>Python-koden selv, kjøretidsmålinger. Topologisk sortering / tre-CSP (kap. 5.5) kom i 2025, men er ute av pensum i 2026.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppgaven">
+    <div class="container">
+      <div class="section-badge">01 · Hva du skal gjøre</div>
+      <h2>Oppgaven og <em>formuleringen</em></h2>
+      <div class="source-note">Assignment-forelesning 2 · slides 2–13, 16–22 · bygger på forelesning 4 og boka kap. 5</div>
+
+      <p>Du får <code>csp.py</code> (CSP-klassen), <code>map_coloring.py</code> (Australia-kartet, til testing) og <code>sudoku.py</code>. To metoder mangler: <code>ac_3()</code> etter pseudokoden på s. 171 i boka og <code>backtracking_search()</code> etter s. 176. Kjør først <span class="term" data-term="ac-3">AC-3</span> på hvert brett, så <span class="term" data-term="backtracking-sok">backtracking</span>. At AC-3 løser de enkle brettene alene er helt greit (slide 7).</p>
+      <p>Leveransen (slide 22): kode, og én PDF med løsningen for hvert av de fire brettene, domenene etter AC-3, hvor mange ganger <code>backtrack()</code> ble kalt og returnerte failure, kjøretider, og en kort diskusjon, f.eks. hvorfor AC-3 kutter kjøretiden kraftig på noen brett.</p>
+
+      <div class="def-box">
+        <span class="def-label">Sudoku som CSP (slides 16–17)</span>
+        <div class="def-term">81 variabler, domener 1–9, ≠ mellom naboer</div>
+        <p><strong>Variabler:</strong> én per celle, \(X_{11}, \dots, X_{99}\) (rad, kolonne). <strong><span class="term" data-term="domene">Domener</span>:</strong> \(\{1, \dots, 9\}\) for tomme celler, \(\{v\}\) for celler med gitt tall \(v\). <strong><span class="term" data-term="constraint">Constraints</span>:</strong> Alldiff for hver rad, kolonne og 3×3-boks. Koden gjør hver Alldiff over 9 celler om til alle \(\binom{9}{2} = 36\) binære kanter \(X_i \ne X_j\). Hver celle får da 20 naboer (8 i raden, 8 i kolonnen, 4 til i boksen), altså \(81 \cdot 20 / 2 = 810\) ulike kanter (egen regning).</p>
+      </div>
+
+      <p>Valgene i backtracking er fri (slide 13): SELECT-UNASSIGNED-VARIABLE kan være hva som helst, men <span class="term" data-term="mrv">MRV</span> er et godt valg. ORDER-DOMAIN-VALUES kan være hva som helst, gjerne <span class="term" data-term="lcv">LCV</span>. INFERENCE er der <span class="term" data-term="forward-checking">forward checking</span> ville vært; den kan hoppes over.</p>
+
+<pre><code>function AC-3(csp) returns false if an inconsistency is found and true otherwise
+  queue ← a queue of arcs, initially all the arcs in csp
+  while queue is not empty do
+    (Xi, Xj) ← POP(queue)
+    if REVISE(csp, Xi, Xj) then
+      if size of Di = 0 then return false
+      for each Xk in Xi.NEIGHBORS - {Xj} do
+        add (Xk, Xi) to queue
+  return true
+
+function REVISE(csp, Xi, Xj) returns true iff we revise the domain of Xi
+  revised ← false
+  for each x in Di do
+    if no value y in Dj allows (x,y) to satisfy the constraint between Xi and Xj then
+      delete x from Di
+      revised ← true
+  return revised
+
+function BACKTRACKING-SEARCH(csp) returns a solution or failure
+  return BACKTRACK(csp, { })
+
+function BACKTRACK(csp, assignment) returns a solution or failure
+  if assignment is complete then return assignment
+  var ← SELECT-UNASSIGNED-VARIABLE(csp, assignment)
+  for each value in ORDER-DOMAIN-VALUES(csp, var, assignment) do
+    if value is consistent with assignment then
+      add {var = value} to assignment
+      inferences ← INFERENCE(csp, var, assignment)
+      if inferences ≠ failure then
+        add inferences to csp
+        result ← BACKTRACK(csp, assignment)
+        if result ≠ failure then return result
+        remove inferences from csp
+      remove {var = value} from assignment
+  return failure</code></pre>
+    </div>
+  </section>
+
+  <section id="eksempel">
+    <div class="container">
+      <div class="section-badge">02 · Gjennomgåtte eksempler</div>
+      <h2>Regneeksemplene fra <em>forelesningen</em></h2>
+      <div class="source-note">Assignment-forelesning 2 · slides 5–6, 9–12, 14–15, 23</div>
+
+      <div class="oppgave" data-quiz id="oppg-a2-kart">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slides 9–12</span></div>
+        <div class="o-text"><p>Formuler Australia-kartfargingen som <span class="term" data-term="csp">CSP</span> (variabler, domener, constraints). Hva er én løsning backtracking kan returnere?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>\(X\) = {WA, NT, Q, NSW, V, SA, T}. Domene {red, green, blue} for alle. Kanter (naboer må ha ulik farge): SA–WA, SA–NT, SA–Q, SA–NSW, SA–V, WA–NT, NT–Q, Q–NSW, NSW–V. T har ingen naboer.</p>
+            <p>Eksempelutskrift: {'WA': 'red', 'NT': 'green', 'Q': 'red', 'NSW': 'green', 'V': 'red', 'SA': 'blue', 'T': 'red'}. Bruk dette til å teste koden før Sudoku.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>De tre neste oppgavene bruker samme lille graf: tre variabler i en kjede, alle med domene {B, G, R} (blå, grønn, rød), og ≠ langs kantene. «Feil» betyr her at backtracking prøver en verdi som bryter med en variabel som allerede har verdi (egen tolkning av slidene, uten forward checking).</p>
+
+      <figure>
+        <svg class="cg" viewBox="0 0 420 110" aria-label="Constraint graph A–B–C">
+          <line x1="90" y1="65" x2="190" y2="65"/><line x1="230" y1="65" x2="330" y2="65"/>
+          <circle cx="70" cy="65" r="22"/><text x="70" y="70" text-anchor="middle">A</text>
+          <circle cx="210" cy="65" r="22"/><text x="210" y="70" text-anchor="middle">B</text>
+          <circle cx="350" cy="65" r="22"/><text x="350" y="70" text-anchor="middle">C</text>
+          <text class="dom" x="70" y="28" text-anchor="middle">{B, G, R}</text>
+          <text class="dom" x="210" y="28" text-anchor="middle">{B, G, R}</text>
+          <text class="dom" x="350" y="28" text-anchor="middle">{B, G, R}</text>
+        </svg>
+        <figcaption>Gjenskapt fra slide 14. Slidene tegner pilene A → B → C; constrainten er A ≠ B og B ≠ C.</figcaption>
+      </figure>
+
+      <div class="oppgave" data-quiz id="oppg-a2-mrvlcv">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slides 14–15</span></div>
+        <div class="o-text"><p>Bruk MRV for variabler og LCV for verdier, alfabetisk tie-break. Er MRV + LCV bedre enn tilfeldige valg i snitt for grafen over?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p><strong>Nei.</strong> Med heuristikkene får du garantert 1 feil; tilfeldig gir ca. 0,704 i snitt.</p>
+            <p><strong>Med heuristikkene</strong> (mellomregning): alle har 3 verdier, så MRV velger alfabetisk A. For A utelukker hver farge én verdi hos B, så LCV velger alfabetisk B (blå). Nå har B 2 lovlige verdier og C 3, så MRV velger B. LCV: hver farge utelukker én verdi hos C, alfabetisk B (blå) først. Den bryter A ≠ B: <strong>1 feil</strong>. Så G, deretter C = B. Ferdig.</p>
+            <p><strong>Tilfeldig:</strong> i 4 av 6 variabelrekkefølger kommer B først eller nest først. Da har B og den siste variabelen hver én forbudt farge, og sjansen for å prøve den først er 1/3: \(1/3 + 1/3 = 2/3\) forventede feil. I de 2 rekkefølgene der B er sist (A, C, B eller C, A, B): med sannsynlighet 1/3 har A og C samme farge, og B har én forbudt verdi (1/3 feil). Med sannsynlighet 2/3 har de ulik farge, og B har to forbudte verdier (i snitt 1 feil). Det gir \(1/9 + 2/3 = 7/9\).</p>
+            \[ \frac{4 \cdot \frac{2}{3} + 2 \cdot \frac{7}{9}}{6} \approx 0{,}704 \lt 1 \]
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a2-ac3">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 23</span></div>
+        <div class="o-text"><p>Anta at A settes til blå. Hvordan ser domenene ut etter AC-3?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>B sitt domene blir {G, R}.</p>
+            <p>Mellomregning: køen starter med alle buer i begge retninger: (A,B), (B,A), (B,C), (C,B). REVISE(B, A): verdien B hos B har ingen støtte i \(D_A = \{B\}\), slettes, og (C, B) legges i køen igjen. REVISE(C, B): hver farge hos C har en ulik farge i {G, R}, ingenting slettes. Resultat: A = {B}, B = {G, R}, C = {B, G, R}.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a2-mrvlcv-etter">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 23</span></div>
+        <div class="o-text"><p>Etter AC-3 med A = blå: er MRV + LCV bedre enn tilfeldige valg nå? Alfabetisk tie-break.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra assignment-forelesningen</span>
+            <p><strong>Ja.</strong> MRV velger B (2 verdier mot 3 hos C). LCV: G og R utelukker hver én verdi hos C, alfabetisk G. G er lovlig siden AC-3 har fjernet blå. Så C: B (blå) er lovlig ved siden av G. <strong>0 feil.</strong></p>
+            <p>Tilfeldig: tar du B først, er begge verdiene lovlige, og C har én forbudt farge: 1/3 feil. Tar du C først, er alt lovlig for C; med sannsynlighet 2/3 får C grønn eller rød, og da har B én av to verdier forbudt: \(2/3 \cdot 1/2 = 1/3\). Snitt 1/3 feil mot 0. Poenget: AC-3 fjerner nettopp de verdiene heuristikkene ellers snublet i.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a2-hvorfor-ac3">
+        <div class="o-label"><span>Tenk over · fra assignment-forelesningen</span><span class="o-ref">slide 22 (f)</span></div>
+        <div class="o-text"><p>Hvorfor kan AC-3 kutte kjøretiden drastisk på noen Sudoku-brett?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra assignment-forelesningen</span>
+            <p>Hvert gitt tall fjernes fra domenet til sine 20 naboer. Når et domene krymper til én verdi, fjernes den verdien fra <em>dens</em> naboer, og slik forplanter det seg. På enkle brett ender alle domener med én verdi, så backtracking bare leser av løsningen uten å gå tilbake. På vanskelige brett står noen domener igjen med flere verdier, men søketreet er likevel mye mindre enn med domener på 9.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a2-8queens">
+        <div class="o-label"><span>Tenk over · fra assignment-forelesningen</span><span class="o-ref">slide 6</span></div>
+        <div class="o-text"><p>8-dronningproblemet ble brukt som eksempel for genetiske algoritmer. Er en <span class="term" data-term="genetisk-algoritme">genetisk algoritme</span> eller en CSP-løser mest effektiv? Hvorfor?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra assignment-forelesningen</span>
+            <p><strong>CSP-løseren.</strong> Problemet har en ren constraint-struktur: én variabel per kolonne (raden til dronningen), domene 1–8, og binære constraints «ikke samme rad, ikke samme diagonal». Backtracking med propagering (forward checking/AC-3) og MRV kutter bort ulovlige delløsninger tidlig, finner en løsning som garantert er gyldig, og kan bevise at ingen finnes. Lokalt søk med min-conflicts løser n-dronninger svært raskt selv for stor n (boka kap. 5.4).</p>
+            <p>GA er stokastisk og bruker constraints bare indirekte via fitness (antall angrepspar). Crossover kan bryte gode delløsninger, den trenger mange evalueringer, og gir ingen garanti for å finne en løsning eller vite at den er optimal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="feil">
+    <div class="container">
+      <div class="section-badge">03 · Vanlige feil</div>
+      <h2>Hvor poengene <em>forsvinner</em></h2>
+      <div class="source-note">Assignment-forelesning 2 · slides 3, 13–15, 21, 23 · pluss egne erfaringspunkter</div>
+      <div class="callout callout-warn">
+        <span class="label">Vanlige feil</span>
+        <ul>
+          <li><strong>Buer bare én vei.</strong> Hver kant gir to buer, \((X_i, X_j)\) og \((X_j, X_i)\). <span class="term" data-term="buekonsistens">Arc-consistent</span> betyr at <em>alle</em> buer er konsistente.</li>
+          <li><strong>REVISE endrer feil domene.</strong> REVISE\((X_i, X_j)\) sletter bare fra \(D_i\). Etter en endring legges \((X_k, X_i)\) inn for alle andre naboer \(X_k\), ikke \((X_i, X_k)\).</li>
+          <li><strong>Glemmer tom-domene-sjekken.</strong> Blir et domene tomt, returnerer AC-3 false: ingen løsning.</li>
+          <li><strong>MRV og LCV byttet om.</strong> MRV velger <em>variabel</em> (færrest lovlige verdier igjen), LCV ordner <em>verdier</em> (den som utelukker færrest verdier hos naboene først).</li>
+          <li><strong>MRV teller opprinnelig domene.</strong> Det er antall <em>lovlige</em> verdier gitt nåværende tilordning som teller.</li>
+          <li><strong>Glemmer tie-break.</strong> Eksamen gir en regel (alfabetisk e.l.); vis den i hvert steg.</li>
+          <li><strong>Angrer ikke ved backtracking.</strong> Fjern både {var = value} og inferensene før neste verdi prøves.</li>
+          <li><strong>Leser ikke boka.</strong> Assistenten advarer: i 2025 kom et tema som bare sto i boka (topologisk sortering, nå ute av pensum).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="videre">
+    <div class="container">
+      <div class="section-badge">04 · Videre</div>
+      <h2>Teorien bak <em>øvingen</em></h2>
+      <div class="subpage-list">
+        <a href="../kap4/csp-formulering.html" class="subpage-card"><span class="sp-icon">4A</span><div class="sp-info"><div class="sp-title">CSP-formulering</div><div class="sp-desc">Variabler, domener, constraints, constraint graph, AC-3.</div></div><span class="sp-arrow">&rarr;</span></a>
+        <a href="../kap4/backtracking.html" class="subpage-card"><span class="sp-icon">4B</span><div class="sp-info"><div class="sp-title">Backtracking</div><div class="sp-desc">MRV, LCV, forward checking, med Ord. 2022 og 2023.</div></div><span class="sp-arrow">&rarr;</span></a>
+      </div>
+      <nav class="page-nav">
+        <a href="assignment1.html" class="prev"><div class="pn-label">← Forrige · Assignment 1</div><div class="pn-title">Søk for hånd</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Øvinger: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

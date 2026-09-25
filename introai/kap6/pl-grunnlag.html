@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>PL: modeller, entailment og inferens — Kap 6</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  table.tt { font-family: var(--mono); font-size: 0.86rem; text-align: center; }
+  table.tt th, table.tt td { padding: 4px 8px; }
+  table.tt th { text-transform: none; letter-spacing: 0; }
+  table.tt tr.kb td { background: var(--accent-soft); }
+  table.tt tr.bad td { background: rgba(160,40,40,0.14); }
+  table.tt td.hl { font-weight: 700; color: var(--accent); }
+  .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin: 1rem 0; }
+  .rule-box { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.6rem 0.9rem; }
+  .rule-box .rn { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .rule-box p { margin: 0.3rem 0 0; font-size: 0.9rem; }
+  .proof { font-family: var(--mono); font-size: 0.88rem; line-height: 1.7; }
+  #tt-sel { font-family: var(--sans); font-size: 0.9rem; padding: 4px 6px; max-width: 100%; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 6</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 6: Proposisjonell logikk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 6 · 6A · Slides forelesning 5 · 10–42 · Boka kap. 7.1–7.5 · ~40 min</div>
+      <h1>Modeller, entailment og <em>inferens</em></h1>
+      <p class="lede">Hva en setning i proposisjonell logikk betyr, hva det vil si at en kunnskapsbase medfører en setning (KB ⊨ α), og to måter å vise det på: sannhetstabell (modellsjekking) og inferensregler med navn. Til slutt Horn-klausuler og forward/backward chaining.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#syntaks"><span>01</span> Syntaks</a>
+        <a href="#entailment"><span>02</span> Entailment</a>
+        <a href="#gullkasser"><span>03</span> Gullkassene</a>
+        <a href="#ekvivalenser"><span>04</span> Ekvivalenser</a>
+        <a href="#inferensregler"><span>05</span> Inferensregler</a>
+        <a href="#horn"><span>06</span> Horn</a>
+        <a href="#chaining"><span>07</span> Chaining</a>
+        <a href="#oppsummering"><span>08</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne</em> fra denne siden</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 · deltema 6.1 og 6.2 (begge prio 1)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Formaliser en gåte og lag sannhetstabell</strong> (6.1): velg symboler, skriv utsagnene som setninger, forenkle med ekvivalenser, finn modellene der KB er sann. Ord. 2022 oppg. <a href="#oppg-o22-51">5.1</a> og <a href="#oppg-o22-52">5.2</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Utled med navngitte inferensregler</strong> (6.2): nummerer hvert steg, oppgi premisser og regel (Modus Ponens, Modus Tollens, Disjunctive Syllogism, And-Elimination). Ord. 2023 oppg. <a href="#oppg-o23-31">3.1</a> (10 p).</li>
+          <li><span class="tag">Forklar</span>Hva entailment er, og hvilken regel resolusjon og chaining bruker (Ord. 2022 <a href="#oppg-o22-19">1.9</a>). Horn-klausuler + Modus Ponens (Ord. 2023, <a href="#oppg-o23-kort-horn">kort spørsmål</a>).</li>
+          <li><span class="tag">Lavere</span>Sunnhet/fullstendighet som begreper, ask/tell, backward chaining i detalj. Kuttet: BusTUC, Lean, Z3, Prolog (merket «not curriculum»), og kap. 7.7 (ute av pensum).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="syntaks">
+    <div class="container">
+      <div class="section-badge">01 · Syntaks</div>
+      <h2>Symboler, setninger og <em>konnektiver</em></h2>
+      <div class="source-note">Slides forelesning 5 · 10–12</div>
+      <span class="lm-pill">Deltema 6.1 · prio 1</span>
+      <p class="dropcap">Et <span class="term" data-term="proposisjonssymbol">proposisjonssymbol</span> er sant eller usant, for eksempel \(Rain\). En <span class="term" data-term="setning">setning</span> bygges av symboler med <span class="term" data-term="konnektiv">konnektiver</span>, for eksempel \(Rain \land Wind\). En <span class="term" data-term="modell">modell</span> er en tilordning av sannhetsverdier til alle symbolene, for eksempel \(\{Rain = true,\ Wind = false\}\). Med \(n\) symboler finnes \(2^n\) modeller.</p>
+      <div class="table-wrap">
+        <table class="tt">
+          <caption>Sannhetstabellen for konnektivene (slide 10)</caption>
+          <tr><th>\(P\)</th><th>\(Q\)</th><th>\(\lnot P\)</th><th>\(P \land Q\)</th><th>\(P \lor Q\)</th><th>\(P \Rightarrow Q\)</th><th>\(P \Leftrightarrow Q\)</th></tr>
+          <tr><td>F</td><td>F</td><td>T</td><td>F</td><td>F</td><td class="hl">T</td><td>T</td></tr>
+          <tr><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td class="hl">T</td><td>F</td></tr>
+          <tr><td>T</td><td>F</td><td>F</td><td>F</td><td>T</td><td>F</td><td>F</td></tr>
+          <tr><td>T</td><td>T</td><td>F</td><td>T</td><td>T</td><td>T</td><td>T</td></tr>
+        </table>
+      </div>
+      <div class="callout callout-warn">
+        <span class="label">Vanlig feil</span>
+        <p>\(P \Rightarrow Q\) er <strong>sann når \(P\) er usann</strong>, uansett \(Q\). Den er bare usann i raden \(P = T,\ Q = F\). Og \(P \Leftrightarrow Q\) er det samme som \((P \Rightarrow Q) \land (Q \Rightarrow P)\).</p>
+      </div>
+      <p>Presedens, fra sterkest til svakest: \(\lnot,\ \land,\ \lor,\ \Rightarrow,\ \Leftrightarrow\). Så \(\lnot A \land B \Rightarrow C\) leses \(((\lnot A) \land B) \Rightarrow C\).</p>
+      <p>En <span class="term" data-term="kunnskapsbase">kunnskapsbase</span> (KB) er en mengde setninger vi antar er sanne, for eksempel \(KB = \{Rain,\ Rain \Rightarrow Wet\}\). Brukt som én setning er KB konjunksjonen av alle setningene: \(Rain \land (Rain \Rightarrow Wet)\).</p>
+    </div>
+  </section>
+
+  <section id="entailment">
+    <div class="container">
+      <div class="section-badge">02 · Entailment</div>
+      <h2>Modeller og <em>entailment</em></h2>
+      <div class="source-note">Slides forelesning 5 · 13–22 · gyldighet/tilfredsstillbarhet: Boka kap. 7.5.1</div>
+      <span class="lm-pill">Deltema 6.1 · prio 1</span>
+      <p class="dropcap">En modell \(m\) <span class="term" data-term="tilfredsstille">tilfredsstiller</span> \(\alpha\) hvis \(\alpha\) er sann i \(m\). \(M(\alpha)\) er mengden av alle modeller som tilfredsstiller \(\alpha\). <span class="term" data-term="entailment">Entailment</span> (logisk konsekvens) defineres med disse mengdene:</p>
+      \[ \alpha \models \beta \quad\Longleftrightarrow\quad M(\alpha) \subseteq M(\beta) \quad\Longleftrightarrow\quad \alpha \Rightarrow \beta \text{ er sann i alle modeller.} \]
+      <p>Eksempel fra slidene: \(Rain \models Rain \lor Wind\), fordi begge modellene med \(Rain = true\) også gjør \(Rain \lor Wind\) sann. <span class="term" data-term="modellsjekking">Modellsjekking</span> betyr å gå gjennom alle \(2^n\) modellene og sjekke dette, altså å lage sannhetstabellen. Det er korrekt, men eksponentielt («infeasible in practice»).</p>
+
+      <div class="def-box">
+        <span class="def-label">Definisjoner (boka 7.5.1)</span>
+        <p>\(\alpha\) er <span class="term" data-term="gyldig">gyldig</span> (tautologi) hvis den er sann i alle modeller, f.eks. \(\alpha \lor \lnot\alpha\). \(\alpha\) er <span class="term" data-term="tilfredsstillbar">tilfredsstillbar</span> hvis den er sann i minst én modell. \(\alpha \land \lnot\alpha\) er utilfredsstillbar (en selvmotsigelse).</p>
+      </div>
+      <p>Den viktigste omskrivingen er <span class="term" data-term="reductio">bevis ved selvmotsigelse</span> (reductio ad absurdum). Den er grunnlaget for resolusjon i <a href="resolusjon.html">6B</a>:</p>
+      \[ \alpha \models \beta \quad\Longleftrightarrow\quad M(\alpha \land \lnot\beta) = \varnothing \quad\Longleftrightarrow\quad \alpha \land \lnot\beta \text{ er utilfredsstillbar.} \]
+      <details>
+        <summary>Utdypning · lavere prioritet: ask og tell (slide 22)</summary>
+        <p>En kunnskapsbasert agent svarer \(ask(KB, \alpha)\) = «yes» hvis \(KB \models \alpha\), «no» hvis \(KB \models \lnot\alpha\), ellers «I don't know». Med \(KB = \{Rain\}\): \(ask(KB, Rain \lor Wind)\) = yes, \(ask(KB, \lnot Rain)\) = no, \(ask(KB, Wind)\) = I don't know. \(tell\) svarer tilsvarende «I already know», «that can't be» eller legger setningen til.</p>
+      </details>
+
+      <div class="widget" id="w-tt">
+        <div class="widget-label">Prøv selv · Modellsjekking med sannhetstabell</div>
+        <p class="widget-intro">Velg en KB og en spørring α. Tabellen viser alle modellene. Rader der KB er sann er farget; en rød rad er en modell der KB er sann men α usann, altså et moteksempel. KB ⊨ α hvis det ikke finnes noen røde rader.</p>
+        <select id="tt-sel" aria-label="Velg problem"></select>
+        <div class="table-wrap"><table class="tt" id="tt-table"></table></div>
+        <div class="w-out" id="tt-out"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Gjelder \(Rain \lor Wind \models Rain\)? Begrunn med modeller.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei. Modellen \(\{Rain = false,\ Wind = true\}\) er i \(M(Rain \lor Wind)\), men ikke i \(M(Rain)\). Da er \(M(Rain \lor Wind) \not\subseteq M(Rain)\). Velg «Rain ∨ Wind ⊨ Rain?» i widgeten og se den røde raden.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gullkasser">
+    <div class="container">
+      <div class="section-badge">03 · Eksamensoppgave</div>
+      <h2>Gullkassene: formaliser og lag <em>sannhetstabell</em></h2>
+      <div class="source-note">Eksamen Ord. 2022 · oppg. 5.1–5.2 · teknikk fra slides forelesning 5 · 10–16</div>
+      <span class="lm-pill">Deltema 6.1 · prio 1</span>
+      <p class="dropcap">Oppskriften for slike gåter: (1) ett symbol per ukjent faktum, (2) oversett hvert utsagn, (3) «nøyaktig én av tre» skrives som en disjunksjon av tre konjunksjoner, (4) forenkle med ekvivalensene i avsnitt 04, (5) sannhetstabell over alle \(2^n\) modeller og les av radene der alt er sant.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o22-51">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 5.1</span><span class="o-ref">O22 · 5.1</span></div>
+        <div class="o-text">
+          <p>Tre kasser. Én inneholder gull, de to andre er tomme. Hver kasse har en påskrift: Kasse 1: «The gold is not here». Kasse 2: «The gold is not here». Kasse 3: «The gold is in Box 2». Bare én påskrift er sann, de to andre er usanne.</p>
+          <p>La \(B_i\) bety «gullet er i kasse \(i\)», \(i \in \{1,2,3\}\). Formaliser i proposisjonell logikk: \(S_1\): «One box contains gold, the other two are empty», og \(S_2\): «Only one message is true, the other two are false». Forenkle om nødvendig.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>PL har ingen kvantorer, så «nøyaktig én» må skrives ut:</p>
+            \[ S_1 = (B_1 \land \lnot B_2 \land \lnot B_3) \lor (\lnot B_1 \land B_2 \land \lnot B_3) \lor (\lnot B_1 \land \lnot B_2 \land B_3) \]
+            <p>Påskriftene som setninger: \(M_1 = \lnot B_1\), \(M_2 = \lnot B_2\), \(M_3 = B_2\). «Nøyaktig én påskrift er sann»:</p>
+            \[ S_2 = (M_1 \land \lnot M_2 \land \lnot M_3) \lor (\lnot M_1 \land M_2 \land \lnot M_3) \lor (\lnot M_1 \land \lnot M_2 \land M_3) \]
+            <p>Sett inn og forenkle (dobbel negasjon, \(\alpha \land \lnot\alpha \equiv False\), \(\alpha \land \alpha \equiv \alpha\), distributivitet):</p>
+            \[ \begin{aligned} S_2 &amp;= (\lnot B_1 \land \lnot\lnot B_2 \land \lnot B_2) \lor (\lnot\lnot B_1 \land \lnot B_2 \land \lnot B_2) \lor (\lnot\lnot B_1 \land \lnot\lnot B_2 \land B_2) \\ &amp;= (\lnot B_1 \land B_2 \land \lnot B_2) \lor (B_1 \land \lnot B_2) \lor (B_1 \land B_2) \\ &amp;= False \lor (B_1 \land \lnot B_2) \lor (B_1 \land B_2) \\ &amp;= B_1 \land (\lnot B_2 \lor B_2) = B_1 \land True = B_1 \end{aligned} \]
+            <p>Løsningsforslaget kaller den forenklede formen \(S_3 = (B_1 \land \lnot B_2) \lor (B_1 \land B_2)\), som er ekvivalent med \(B_1\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-52">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 5.2</span><span class="o-ref">O22 · 5.2</span></div>
+        <div class="o-text"><p>Lag sannhetstabellen for \(S_1\) og den forenklede \(S_2\) (kalt \(S_3\)), og slutt hvilken kasse som har gullet.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Tre symboler gir \(2^3 = 8\) modeller. \(S_1\) er sann når nøyaktig ett \(B_i\) er 1; \(S_3 \equiv B_1\).</p>
+            <div class="table-wrap">
+              <table class="tt">
+                <tr><th>\(B_1\)</th><th>\(B_2\)</th><th>\(B_3\)</th><th>\(S_1\)</th><th>\(S_3\)</th><th>\(S_1 \land S_3\)</th></tr>
+                <tr><td>1</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+                <tr><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+                <tr><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+                <tr class="kb"><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td class="hl">1</td></tr>
+                <tr><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+                <tr><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+                <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+              </table>
+            </div>
+            <p>Begge utsagnene er gitt som sanne, så bare rader der \(S_1 \land S_3 = 1\) er mulige. Det er én rad: \(B_1 = T,\ B_2 = F,\ B_3 = F\). <strong>Gullet er i kasse 1.</strong> Sjekk: påskrift 1 («ikke her») er usann, påskrift 2 («ikke her») er sann, påskrift 3 («i kasse 2») er usann. Nøyaktig én sann.</p>
+            <p>Med ordene fra avsnitt 02: \(M(S_1 \land S_3)\) har ett element, og der er \(B_1\) sann, så \(\{S_1, S_3\} \models B_1\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ekvivalenser">
+    <div class="container">
+      <div class="section-badge">04 · Ekvivalenser</div>
+      <h2>Logiske <em>ekvivalenser</em></h2>
+      <div class="source-note">Slides forelesning 5 · 24–25</div>
+      <span class="lm-pill">Deltema 6.1 · prio 1</span>
+      <p class="dropcap">\(\alpha \equiv \beta\) (<span class="term" data-term="logisk-ekvivalens">logisk ekvivalens</span>) betyr at \(\alpha \Leftrightarrow \beta\) er sann i alle modeller, altså \(\alpha \models \beta\) og \(\beta \models \alpha\). Ekvivalensene under brukes både til å forenkle (som i gullkassene) og som inferensregler, og de er selve CNF-konverteringen i <a href="resolusjon.html#cnf">6B</a>. Lær dem utenat.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><td>\(\alpha \land \beta \equiv \beta \land \alpha\), \(\ \alpha \lor \beta \equiv \beta \lor \alpha\)</td><td>kommutativitet</td></tr>
+          <tr><td>\((\alpha \land \beta) \land \gamma \equiv \alpha \land (\beta \land \gamma)\), tilsvarende for \(\lor\)</td><td>assosiativitet</td></tr>
+          <tr><td>\(\lnot(\lnot\alpha) \equiv \alpha\)</td><td>double-negation elimination</td></tr>
+          <tr><td>\(\alpha \Rightarrow \beta \equiv \lnot\beta \Rightarrow \lnot\alpha\)</td><td><span class="term" data-term="kontraposisjon">contraposition</span></td></tr>
+          <tr><td>\(\alpha \Rightarrow \beta \equiv \lnot\alpha \lor \beta\)</td><td>implication elimination</td></tr>
+          <tr><td>\(\alpha \Leftrightarrow \beta \equiv (\alpha \Rightarrow \beta) \land (\beta \Rightarrow \alpha)\)</td><td>biconditional elimination</td></tr>
+          <tr><td>\(\lnot(\alpha \land \beta) \equiv \lnot\alpha \lor \lnot\beta\), \(\ \lnot(\alpha \lor \beta) \equiv \lnot\alpha \land \lnot\beta\)</td><td><span class="term" data-term="de-morgan">De Morgan</span></td></tr>
+          <tr><td>\(\alpha \land (\beta \lor \gamma) \equiv (\alpha \land \beta) \lor (\alpha \land \gamma)\)</td><td>distributivitet av \(\land\) over \(\lor\)</td></tr>
+          <tr><td>\(\alpha \lor (\beta \land \gamma) \equiv (\alpha \lor \beta) \land (\alpha \lor \gamma)\)</td><td>distributivitet av \(\lor\) over \(\land\)</td></tr>
+          <tr><td>\(\alpha \land \lnot\alpha \equiv False\), \(\ \alpha \lor \lnot\alpha \equiv True\), \(\ \alpha \equiv \alpha \land \alpha \equiv \alpha \lor \alpha\)</td><td>selvmotsigelse, tautologi</td></tr>
+        </table>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Forenkle \(\lnot(A \Rightarrow B) \lor B\) og si om den er gyldig, tilfredsstillbar eller utilfredsstillbar.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\lnot(\lnot A \lor B) \lor B \equiv (A \land \lnot B) \lor B \equiv (A \lor B) \land (\lnot B \lor B) \equiv A \lor B\). Implication elimination, De Morgan og dobbel negasjon, så distributivitet og \(\lnot B \lor B \equiv True\). \(A \lor B\) er tilfredsstillbar (sann for \(A = T\)), men ikke gyldig (usann for \(A = B = F\)).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="inferensregler">
+    <div class="container">
+      <div class="section-badge">05 · Inferensregler</div>
+      <h2>Utledning med <em>navngitte</em> regler</h2>
+      <div class="source-note">Slides forelesning 5 · 26–32 · Modus Tollens og Disjunctive Syllogism: Boka kap. 7.5 (ikke i slidene, men brukt i eksamen 2023)</div>
+      <span class="lm-pill">Deltema 6.2 · prio 1</span>
+      <p class="dropcap">I stedet for å sjekke alle modeller kan vi bruke <span class="term" data-term="inferensregel">inferensregler</span> på KB til vi når konklusjonen, slik vi deler på 2 i \(2x = 4\) i stedet for å prøve alle \(x\). Over streken står premissene, under står det vi får utlede. Alle ekvivalensene i avsnitt 04 kan også brukes som regler.</p>
+      <div class="rule-grid">
+        <div class="rule-box"><div class="rn"><span class="term" data-term="modus-ponens">Modus Ponens</span></div>\[ \frac{\alpha \Rightarrow \beta,\quad \alpha}{\beta} \]<p>Implikasjonen og forutsetningen gir konklusjonen.</p></div>
+        <div class="rule-box"><div class="rn"><span class="term" data-term="modus-tollens">Modus Tollens</span></div>\[ \frac{\alpha \Rightarrow \beta,\quad \lnot\beta}{\lnot\alpha} \]<p>Konklusjonen er usann, altså er forutsetningen usann.</p></div>
+        <div class="rule-box"><div class="rn"><span class="term" data-term="and-elimination">And-Elimination</span></div>\[ \frac{\alpha \land \beta}{\alpha} \qquad \frac{\alpha \land \beta}{\beta} \]<p>Hent ut ett ledd av en konjunksjon.</p></div>
+        <div class="rule-box"><div class="rn"><span class="term" data-term="disjunctive-syllogism">Disjunctive Syllogism</span></div>\[ \frac{\alpha \lor \beta,\quad \lnot\alpha}{\beta} \]<p>Ett alternativ er utelukket, da gjelder det andre. Et spesialtilfelle av <span class="term" data-term="unit-resolution">unit resolution</span>.</p></div>
+      </div>
+      <p>Utledbarhet skrives \(KB \vdash_i \alpha\): \(\alpha\) kan <span class="term" data-term="avledning">avledes</span> fra KB med algoritmen \(i\). To egenskaper vi vil ha:</p>
+      \[ \text{Sunn: } KB \vdash_i \alpha \Rightarrow KB \models \alpha \qquad\qquad \text{Fullstendig: } KB \models \alpha \Rightarrow KB \vdash_i \alpha \]
+      <p>En algoritme som bare bruker Modus Ponens er <span class="term" data-term="sunnhet">sunn</span>, men ikke <span class="term" data-term="fullstendighet">fullstendig</span>: \(\{\alpha,\ \alpha \lor \beta \Rightarrow \gamma\} \models \gamma\), men Modus Ponens alene kan ikke utlede \(\gamma\), fordi premisset \(\alpha \lor \beta\) aldri står i KB (slide 22).</p>
+
+      <div class="oppgave" data-quiz id="oppg-o23-31">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 3.1 (10 p)</span><span class="o-ref">O23 · 3.1</span></div>
+        <div class="o-text">
+          <p>Du skal finne en bok som er gjemt i huset eller hagen. Hint: (1) If the house is painted red, then the book is not in the kitchen. (2) If there is an apple tree in the front yard, then the book is in the kitchen. (3) The house is painted red. (4) The tree in the front yard is an apple tree or the book is under the flower pot. (5) If the tree in the backyard is a plum tree, then the book is in the garage.</p>
+          <p>a) Oversett hintene til proposisjonell logikk med én stor bokstav per proposisjon. b) Finn ut hvor boka er med inferensreglene fra lista i oppgaven. Nummerer hvert steg, oppgi hvilke setninger som brukes, navnet på regelen og den utledede setningen. <strong>Løsningen må bruke Modus Tollens.</strong></p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>a) \(R\): huset er rødt. \(K\): boka er på kjøkkenet. \(A\): epletre i forhagen. \(F\): boka er under blomsterpotta. \(P\): plommetre i bakhagen. \(G\): boka er i garasjen.</p>
+            <div class="proof">1. \(R \Rightarrow \lnot K\)<br>2. \(A \Rightarrow K\)<br>3. \(R\)<br>4. \(A \lor F\)<br>5. \(P \Rightarrow G\)</div>
+            <p>b)</p>
+            <div class="proof">6. \(\lnot K\) · Modus Ponens på 1 og 3 · \(\dfrac{R \Rightarrow \lnot K,\ R}{\lnot K}\)<br>7. \(\lnot A\) · Modus Tollens på 2 og 6 · \(\dfrac{A \Rightarrow K,\ \lnot K}{\lnot A}\)<br>8. \(F\) · Disjunctive Syllogism på 4 og 7 · \(\dfrac{A \lor F,\ \lnot A}{F}\)</div>
+            <p><strong>Boka er under blomsterpotta.</strong> Hint 5 er en avledning: \(P\) er ukjent, så \(P \Rightarrow G\) gir ingenting. Selve regellista fra oppgavesettet er ikke med i løsningsforslaget vi har, men de tre reglene over er det som trengs.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-nokkel">
+        <div class="o-label"><span>Egen oppgave · samme type som O23 3.1</span><span class="o-ref">6.2</span></div>
+        <div class="o-text">
+          <p>Hvor er sykkelnøkkelen? Hint: (1) Det er mandag og det regner. (2) Hvis det regner, har jeg ikke syklet i dag. (3) Hvis nøkkelen ligger i jakka, har jeg syklet i dag. (4) Nøkkelen ligger i jakka eller i skuffen. (5) Hvis det er lørdag, ligger nøkkelen i bilen.</p>
+          <p>Oversett, og utled svaret med nummererte steg og navngitte regler. Bruk Modus Tollens og And-Elimination.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>\(M\): mandag, \(R\): regn, \(C\): jeg har syklet i dag, \(J\): nøkkelen i jakka, \(S\): nøkkelen i skuffen, \(L\): lørdag, \(B\): nøkkelen i bilen.</p>
+            <div class="proof">1. \(M \land R\)&nbsp;&nbsp;2. \(R \Rightarrow \lnot C\)&nbsp;&nbsp;3. \(J \Rightarrow C\)&nbsp;&nbsp;4. \(J \lor S\)&nbsp;&nbsp;5. \(L \Rightarrow B\)<br>6. \(R\) · And-Elimination på 1<br>7. \(\lnot C\) · Modus Ponens på 2 og 6<br>8. \(\lnot J\) · Modus Tollens på 3 og 7<br>9. \(S\) · Disjunctive Syllogism på 4 og 8</div>
+            <p><strong>Nøkkelen er i skuffen.</strong> Hint 5 er en avledning (vi vet at det er mandag, men KB sier ikke at mandag utelukker lørdag).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="horn">
+    <div class="container">
+      <div class="section-badge">06 · Horn</div>
+      <h2>Horn- og <em>definite</em> clauses</h2>
+      <div class="source-note">Slides forelesning 5 · 34–36</div>
+      <span class="lm-pill">Deltema 6.2 · prio 1</span>
+      <p class="dropcap">Mange kunnskapsbaser har en enkel form der Modus Ponens alene er nok. En <span class="term" data-term="horn-klausul">Horn-klausul</span> er en av tre typer (\(P_1, \dots, P_n, Q\) er symboler):</p>
+      \[ \underbrace{P_1 \land P_2 \land \dots \land P_n \Rightarrow Q}_{\text{definite clause}} \qquad \underbrace{Q}_{\text{fact } (n = 0)} \qquad \underbrace{P_1 \land P_2 \land \dots \land P_n \Rightarrow False}_{\text{goal clause}} \]
+      <p>En <span class="term" data-term="definite-clause">definite clause</span> har nøyaktig én positiv literal når den skrives som klausul: \(P_1 \land P_2 \Rightarrow Q \equiv \lnot P_1 \lor \lnot P_2 \lor Q\). En Horn-klausul har <em>høyst</em> én.</p>
+      <div class="callout">
+        <span class="label">Nøkkelpoeng</span>
+        <p>Inneholder KB bare definite clauses, er gjentatt Modus Ponens både sunn og fullstendig for et symbol \(Q\): \(KB \models Q \Leftrightarrow KB \vdash_{MPA} Q\). Og avgjørelsen tar <strong>lineær tid</strong> i størrelsen på KB (resolusjon er eksponentiell).</p>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-o23-kort-horn">
+        <div class="o-label"><span>Eksamen Ord. 2023 · kort spørsmål</span><span class="o-ref">O23 · del 1</span></div>
+        <div class="o-text"><p>Backward and forward chaining algorithms in logic work with sentences in a specific form, and a specific inference rule. What are the names of the representation and the rule?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p><strong>Horn clauses</strong> (definite clauses) og <strong>Modus Ponens</strong>. Utdypet: med bare definite clauses er Modus Ponens sunn og fullstendig, og chaining går i lineær tid.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="chaining">
+    <div class="container">
+      <div class="section-badge">07 · Chaining</div>
+      <h2>Forward og backward <em>chaining</em></h2>
+      <div class="source-note">Slides forelesning 5 · 37–42 · pseudokoden: Boka kap. 7.5.4, fig. 7.15</div>
+      <span class="lm-pill">Deltema 6.2 · prio 1</span>
+      <p class="dropcap"><span class="term" data-term="forward-chaining">Forward chaining</span> starter i faktaene og bruker Modus Ponens på hver regel der alle premissene er kjent, til spørringen \(q\) er utledet eller ingenting nytt kommer. Boka holder en teller per regel: hvor mange premisser som ennå ikke er kjent. Når telleren blir 0, «fyrer» regelen.</p>
+<pre><code>function PL-FC-ENTAILS?(KB, q) returns true or false
+  count  ← a table, count[c] = number of symbols in c's premise
+  inferred ← a table, inferred[s] = false for all symbols
+  queue  ← a queue of symbols, initially the symbols known to be true in KB
+  while queue is not empty do
+    p ← POP(queue)
+    if p = q then return true
+    if inferred[p] = false then
+      inferred[p] ← true
+      for each clause c in KB where p is in c.PREMISE do
+        decrement count[c]
+        if count[c] = 0 then add c.CONCLUSION to queue
+  return false</code></pre>
+      <p><span class="term" data-term="backward-chaining">Backward chaining</span> går motsatt vei: start i \(q\), finn regler med \(q\) som konklusjon, og prøv å vise alle premissene deres rekursivt. Den er målrettet og rører bare fakta som er relevante for \(q\). Begge bruker bare Modus Ponens.</p>
+
+      <div class="oppgave" data-quiz id="oppg-slide-traffic">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 37–40</span></div>
+        <div class="o-text"><p>Gitt \(KB = \{Rain,\ Weekday,\ Rain \Rightarrow Wet,\ Wet \land Weekday \Rightarrow Traffic,\ Traffic \land Careless \Rightarrow Accident\}\). Gjelder \(KB \models Traffic\)? Vis med Modus Ponens (forward chaining), med tellerne fra pseudokoden. Hva med \(Accident\)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene (tellerne og Accident: forslag)</span>
+            <p>Start: count\([Rain \Rightarrow Wet] = 1\), count\([Wet \land Weekday \Rightarrow Traffic] = 2\), count\([Traffic \land Careless \Rightarrow Accident] = 2\). Kø: \(Rain, Weekday\).</p>
+            <div class="proof">Pop Rain: count[Rain ⇒ Wet] 1 → 0, legg Wet i køen.<br>Pop Weekday: count[Wet ∧ Weekday ⇒ Traffic] 2 → 1.<br>Pop Wet: Modus Ponens på Rain og Rain ⇒ Wet ga Wet; count[Wet ∧ Weekday ⇒ Traffic] 1 → 0, legg Traffic i køen.<br>Pop Traffic = q: returner true.</div>
+            <p>Slidene: «Apply Modus Ponens to Rain and Rain ⇒ Wet to derive Wet. Apply Modus Ponens to Wet ∧ Weekday and Wet ∧ Weekday ⇒ Traffic to derive Traffic.» Svar: ja, \(KB \vdash_{MPA} Traffic\), derfor \(KB \models Traffic\). (\(Wet \land Weekday\) får vi først fra \(Wet\) og \(Weekday\); boka bruker telleren til det.)</p>
+            <p>\(Accident\): telleren til siste regel stopper på 1 fordi \(Careless\) aldri blir kjent. Køen tømmes og svaret er false. Siden Modus Ponens er fullstendig for definite clauses, betyr det \(KB \not\models Accident\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-19">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.9</span><span class="o-ref">O22 · 1.9</span></div>
+        <div class="o-text"><p>Entailment (\(\models\)) er ikke en del av representasjonsspråket og ikke et konnektiv. Hva er entailment da? Entailment kan implementeres med resolusjon/refutasjon eller forward/backward chaining. Hvilken inferensregel brukes i resolusjonsrefutasjon, og hvilken i forward/backward chaining?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Entailment er en relasjon <em>mellom</em> setninger: \(KB \models \alpha\) betyr at \(\alpha\) er sann i alle modeller der KB er sann (\(M(KB) \subseteq M(\alpha)\)). Den har semantisk mening, ikke bare utledning, og kan vises med modellsjekking, inferensregler eller andre bevismetoder. Resolusjon bruker <strong>resolusjonsregelen</strong> (med disjunctive syllogism / unit resolution som spesialtilfeller). Forward/backward chaining bruker <strong>Modus Ponens</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">08 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Implikasjon</strong>\(P \Rightarrow Q\) er bare usann når \(P = T,\ Q = F\).</div>
+        <div class="recap-pill"><strong>Entailment</strong>\(KB \models \alpha \Leftrightarrow M(KB) \subseteq M(\alpha) \Leftrightarrow KB \land \lnot\alpha\) utilfredsstillbar.</div>
+        <div class="recap-pill"><strong>Sannhetstabell</strong>\(2^n\) rader; se bare på radene der KB er sann; α må være sann i alle.</div>
+        <div class="recap-pill"><strong>Regler</strong>MP: \(\alpha \Rightarrow \beta, \alpha \vdash \beta\). MT: \(\alpha \Rightarrow \beta, \lnot\beta \vdash \lnot\alpha\). DS: \(\alpha \lor \beta, \lnot\alpha \vdash \beta\).</div>
+        <div class="recap-pill"><strong>Sunn / fullstendig</strong>Utleder bare det som følger / utleder alt som følger.</div>
+        <div class="recap-pill"><strong>Horn</strong>Høyst én positiv literal. Chaining med MP er fullstendig og lineær.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvorfor er \(\{A \Rightarrow B,\ B\} \models A\) feil? Hva heter feilslutningen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Modellen \(A = F,\ B = T\) gjør begge premissene sanne, men \(A\) usann. Det er et moteksempel, så entailment gjelder ikke. Feilen er å «bekrefte konsekvensen». Riktig retning er Modus Tollens: fra \(\lnot B\) følger \(\lnot A\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvilke av disse er Horn-klausuler: (a) \(A \land B \Rightarrow C\), (b) \(A \Rightarrow B \lor C\), (c) \(\lnot A \lor \lnot B\), (d) \(D\)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(a) Ja, definite clause (\(\lnot A \lor \lnot B \lor C\), én positiv). (b) Nei: \(\lnot A \lor B \lor C\) har to positive literaler. (c) Ja, goal clause (\(A \land B \Rightarrow False\), null positive). (d) Ja, et faktum.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvor mange rader har sannhetstabellen for en KB med 5 symboler, og hvorfor foretrekker vi inferens framfor modellsjekking?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(2^5 = 32\) rader. Modellsjekking vokser eksponentielt i antall symboler. Inferensregler rører bare setningene som trengs, og for Horn-KB avgjør chaining spørsmålet i lineær tid.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 6: oversikt</div></a>
+        <a href="resolusjon.html" class="next"><div class="pn-label">Neste · 6B</div><div class="pn-title">CNF og resolusjon →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  /* ─── Widget: sannhetstabell / modellsjekking ─── */
+  var root = document.getElementById('w-tt'); if (!root) return;
+  var imp = function (a, b) { return !a || b; };
+  var one = function (a, b, c) { return (a && !b && !c) || (!a && b && !c) || (!a && !b && c); };
+  var P = [
+    { navn: 'Slidene: {Rain, Rain ⇒ Wet} ⊨ Wet ?', sym: ['Rain', 'Wet'],
+      kb: [['Rain', function (m) { return m.Rain; }], ['Rain ⇒ Wet', function (m) { return imp(m.Rain, m.Wet); }]],
+      a: ['Wet', function (m) { return m.Wet; }] },
+    { navn: 'Slidene: Rain ⊨ Rain ∨ Wind ?', sym: ['Rain', 'Wind'],
+      kb: [['Rain', function (m) { return m.Rain; }]],
+      a: ['Rain ∨ Wind', function (m) { return m.Rain || m.Wind; }] },
+    { navn: 'Rain ∨ Wind ⊨ Rain ?', sym: ['Rain', 'Wind'],
+      kb: [['Rain ∨ Wind', function (m) { return m.Rain || m.Wind; }]],
+      a: ['Rain', function (m) { return m.Rain; }] },
+    { navn: 'Modus Tollens: {A ⇒ K, ¬K} ⊨ ¬A ?', sym: ['A', 'K'],
+      kb: [['A ⇒ K', function (m) { return imp(m.A, m.K); }], ['¬K', function (m) { return !m.K; }]],
+      a: ['¬A', function (m) { return !m.A; }] },
+    { navn: 'Feilslutning: {A ⇒ K, K} ⊨ A ?', sym: ['A', 'K'],
+      kb: [['A ⇒ K', function (m) { return imp(m.A, m.K); }], ['K', function (m) { return m.K; }]],
+      a: ['A', function (m) { return m.A; }] },
+    { navn: 'Slidene: {P, P ∨ Q ⇒ R} ⊨ R ?', sym: ['P', 'Q', 'R'],
+      kb: [['P', function (m) { return m.P; }], ['P ∨ Q ⇒ R', function (m) { return imp(m.P || m.Q, m.R); }]],
+      a: ['R', function (m) { return m.R; }] },
+    { navn: 'Gullkassene (O22 5): {S1, S2} ⊨ B1 ?', sym: ['B1', 'B2', 'B3'],
+      kb: [['S1', function (m) { return one(m.B1, m.B2, m.B3); }], ['S2', function (m) { return one(!m.B1, !m.B2, m.B2); }]],
+      a: ['B1', function (m) { return m.B1; }] }
+  ];
+  var sel = document.getElementById('tt-sel'), tab = document.getElementById('tt-table'), out = document.getElementById('tt-out');
+  P.forEach(function (p, i) { var o = document.createElement('option'); o.value = i; o.textContent = p.navn; sel.appendChild(o); });
+  function b(v) { return v ? '1' : '0'; }
+  function draw() {
+    var p = P[+sel.value], n = p.sym.length, rows = [], kbRows = 0, bad = [];
+    var h = '<tr>' + p.sym.map(function (s) { return '<th>' + s + '</th>'; }).join('') +
+      p.kb.map(function (k) { return '<th>' + k[0] + '</th>'; }).join('') + '<th>KB</th><th>α = ' + p.a[0] + '</th></tr>';
+    for (var r = 0; r < (1 << n); r++) {
+      var m = {}, cells = '';
+      p.sym.forEach(function (s, j) { m[s] = !((r >> (n - 1 - j)) & 1); cells += '<td>' + b(m[s]) + '</td>'; });
+      var all = true;
+      p.kb.forEach(function (k) { var v = k[1](m); all = all && v; cells += '<td>' + b(v) + '</td>'; });
+      var av = p.a[1](m);
+      cells += '<td class="' + (all ? 'hl' : '') + '">' + b(all) + '</td><td>' + b(av) + '</td>';
+      if (all) { kbRows++; if (!av) bad.push(p.sym.map(function (s) { return s + '=' + b(m[s]); }).join(', ')); }
+      h += '<tr class="' + (all ? (av ? 'kb' : 'bad') : '') + '">' + cells + '</tr>';
+    }
+    tab.innerHTML = h;
+    out.innerHTML = 'KB er sann i <span class="hl">' + kbRows + '</span> av ' + (1 << n) + ' modeller. ' +
+      (bad.length ? 'α er usann i ' + bad.length + ' av dem (moteksempel: ' + bad[0] + '), så <strong>KB ⊭ α</strong>.'
+                  : 'α er sann i alle, altså M(KB) ⊆ M(α) og <strong>KB ⊨ α</strong>.');
+  }
+  sel.addEventListener('change', draw);
+  draw();
+})();
+</script>
+</body>
+</html>

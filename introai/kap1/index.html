@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 1 — Intelligente agenter</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Intelligente agenter">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · Slides forelesning 1 del 3 · Boka kap. 2 (og litt kap. 1)</div>
+      <h1>Intelligente <em>agenter</em></h1>
+      <p class="lede">Grunnlaget for hele kurset: en rasjonell agent som sanser og handler i et miljø. Kapittelet gir deg språket eksamen bruker (PEAS, de sju miljøegenskapene, agenttypene), og en oppgave av typen «spesifiser, klassifiser, velg og tegn» har kommet på eksamen.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgaver</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ─────────── Helhetsbilde ─────────── -->
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kurset og boka definerer AI som å bygge <span class="term" data-term="rasjonell-agent">rasjonelle agenter</span>: systemer som sanser et miljø og velger handlingen som forventes å gi best resultat etter et ytelsesmål. Resten av kurset (søk, CSP, logikk, planlegging, spill) er ulike agentprogrammer for ulike typer miljøer. Dette kapittelet gir ordforrådet for å si <em>hvilket</em> miljø vi har og <em>hvilken</em> agent som passer.</p>
+
+      <ul>
+        <li><strong>Agent og rasjonalitet.</strong> Sensorer, aktuatorer, persepter, agentfunksjon mot agentprogram. Rasjonell betyr maksimere <em>forventet</em> ytelse, ikke være allvitende.</li>
+        <li><strong>PEAS.</strong> Ytelsesmål, miljø, aktuatorer, sensorer: slik spesifiserer vi et <span class="term" data-term="oppgavemiljo">oppgavemiljø</span>.</li>
+        <li><strong>Sju dimensjoner.</strong> Observerbart, antall agenter, determinisme, episodisk/sekvensielt, statisk/dynamisk, diskret/kontinuerlig, kjent/ukjent.</li>
+        <li><strong>Agenttyper.</strong> Tabell, enkel refleks, <span class="term" data-term="modellbasert-agent">modellbasert</span>, målbasert, nyttebasert, og lærende. Miljøet avgjør typen.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Eksamen</span>
+        <p>Ord. 2022 hadde en hel oppgave (butikkrobot: PEAS, miljøegenskaper, agenttype med tegning) pluss ett kort spørsmål. Ord. 2023 hadde fire korte spørsmål fra kapittelet. Alle ligger som «Se svar»-bokser på siden, med løsningsforslaget utdypet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Læringssti ─────────── -->
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Én side, i slidenes rekkefølge. Bruk mest tid på steg 3–5; det er der poengene ligger.</p>
+
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="agenter.html#agent">Agent</a></div><div class="desc">Sensorer, aktuatorer, persepter, agentfunksjon og agentprogram, støvsugerverdenen.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="agenter.html#rasjonalitet">Rasjonalitet</a></div><div class="desc">Ytelsesmål, de fire faktorene, definisjonen, allvitenhet og autonomi.</div></div><div class="min">~6 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="agenter.html#peas">PEAS</a></div><div class="desc">Taxi fra slidene, oppskrift for eksamen.</div></div><div class="min">~4 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="agenter.html#miljo">Sju miljøegenskaper</a></div><div class="desc">Testen for hver dimensjon, stokastisk vs ikke-deterministisk, butikkroboten. Prøv klassifiseringswidgeten.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="agenter.html#agenttyper">Agenttyper</a></div><div class="desc">Refleks, modellbasert, mål, nytte, lærende. Tegn den modellbaserte agenten. Prøv støvsugeren.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="agenter.html#historie">Hva er AI?</a></div><div class="desc">De fire definisjonene og Newell og Simon. Lav prioritet.</div></div><div class="min">~2 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Deler ─────────── -->
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="agenter.html" class="subpage-card">
+          <span class="sp-icon">1A</span>
+          <div class="sp-info">
+            <div class="sp-title">Intelligente agenter</div>
+            <div class="sp-desc">Slides forelesning 1 del 3 (boka kap. 2): agent og rasjonalitet, PEAS, de sju miljøegenskapene, agenttypene fra tabell til lærende, kort om AI-definisjoner. 12 oppgaver (7 fra eksamen), 2 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <!-- ─────────── Begrepskart ─────────── -->
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Eksamensløypa i midten: fra scenario til agenttype. Til høyre: hvilken egenskap ved miljøet som tvinger fram hvilken agent.</p>
+
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 1">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
+            </marker>
+          </defs>
+
+          <rect class="bh" x="270" y="18" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="38" text-anchor="middle">Agent</text>
+          <text class="cap" x="370" y="54" text-anchor="middle">sensorer · persepter · aktuatorer</text>
+
+          <rect class="bh" x="270" y="98" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="118" text-anchor="middle">Rasjonalitet</text>
+          <text class="cap" x="370" y="134" text-anchor="middle">maks forventet ytelsesmål</text>
+
+          <rect class="bh" x="270" y="178" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="198" text-anchor="middle">PEAS</text>
+          <text class="cap" x="370" y="214" text-anchor="middle">ytelsesmål · miljø · aktuatorer · sensorer</text>
+
+          <rect class="bh" x="270" y="258" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="278" text-anchor="middle">Sju miljøegenskaper</text>
+          <text class="cap" x="370" y="294" text-anchor="middle">observerbar · agenter · determinisme …</text>
+
+          <rect class="bh" x="270" y="338" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="358" text-anchor="middle">Agenttype</text>
+          <text class="cap" x="370" y="374" text-anchor="middle">velg · begrunn · tegn</text>
+
+          <path class="e" d="M370 64 L370 96"/>
+          <path class="e" d="M370 144 L370 176"/>
+          <path class="e" d="M370 224 L370 256"/>
+          <path class="e" d="M370 304 L370 336"/>
+
+          <!-- Venstre: eksempler -->
+          <rect class="b" x="30" y="98" width="180" height="46" rx="6"/>
+          <text class="lbl" x="120" y="118" text-anchor="middle">Støvsugerverdenen</text>
+          <text class="cap" x="120" y="134" text-anchor="middle">to ruter · er refleksagenten rasjonell?</text>
+          <path class="e-faded" d="M210 121 L270 121"/>
+
+          <rect class="b" x="30" y="178" width="180" height="46" rx="6"/>
+          <text class="lbl" x="120" y="198" text-anchor="middle">Taxi · butikkrobot</text>
+          <text class="cap" x="120" y="214" text-anchor="middle">PEAS-eksemplene på eksamen</text>
+          <path class="e-faded" d="M210 201 L270 201"/>
+
+          <rect class="b" x="30" y="258" width="180" height="46" rx="6"/>
+          <text class="lbl" x="120" y="278" text-anchor="middle">Stokastisk ≠ ikke-det.</text>
+          <text class="cap" x="120" y="294" text-anchor="middle">kjent ≠ observerbar</text>
+          <path class="e-faded" d="M210 281 L270 281"/>
+
+          <!-- Høyre: agenttyper -->
+          <rect class="bw" x="540" y="178" width="190" height="40" rx="6"/>
+          <text class="lbl" x="635" y="196" text-anchor="middle">Enkel refleks</text>
+          <text class="cap" x="635" y="210" text-anchor="middle">fullt observerbart</text>
+          <rect class="bw" x="540" y="228" width="190" height="40" rx="6"/>
+          <text class="lbl" x="635" y="246" text-anchor="middle">Modellbasert</text>
+          <text class="cap" x="635" y="260" text-anchor="middle">delvis observerbart → intern tilstand</text>
+          <rect class="bw" x="540" y="278" width="190" height="40" rx="6"/>
+          <text class="lbl" x="635" y="296" text-anchor="middle">Målbasert</text>
+          <text class="cap" x="635" y="310" text-anchor="middle">må planlegge · søk (kap. 2)</text>
+          <rect class="bw" x="540" y="328" width="190" height="40" rx="6"/>
+          <text class="lbl" x="635" y="346" text-anchor="middle">Nyttebasert</text>
+          <text class="cap" x="635" y="360" text-anchor="middle">konflikterende/usikre mål</text>
+          <rect class="b" x="540" y="378" width="190" height="34" rx="6"/>
+          <text class="lbl" x="635" y="399" text-anchor="middle">+ lærende: ukjent miljø</text>
+          <path class="e-faded" d="M470 361 L540 361"/>
+          <path class="e-faded" d="M470 281 L540 248"/>
+        </svg>
+        <figcaption>Heltrukne piler: rekkefølgen i en eksamensbesvarelse. Stiplede: eksempler (venstre) og hvilken agenttype egenskapene peker mot (høyre).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────── Oppgaver ─────────── -->
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgaver</div>
+      <h2>Alle <em>oppgavene</em> i kapittelet</h2>
+      <p class="section-intro">Eksamensoppgavene først, så slidenes eksempler og egne oppgaver av eksamenstype. Grønn status: svar fra løsningsforslaget eller slidene. Gul: forslag skrevet for denne siden.</p>
+
+      <ul class="oppgave-index">
+        <li><a href="agenter.html#oppg-o22-2-1"><span class="oi-ref">O22 · 2.1</span><span>Butikkrobot: ytelsesmål, miljøegenskaper, aktuatorer og sensorer, med begrunnelse.</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-o22-2-2"><span class="oi-ref">O22 · 2.2</span><span>Butikkrobot: hvilken agenttype, hvorfor, og tegn komponentene.</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-o22-1-2"><span class="oi-ref">O22 · 1.2</span><span>Hva er fordelen med en modell i en modellbasert agent?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-o23-kort-hr"><span class="oi-ref">O23 · kort</span><span>HR-system med korrigerende beslutninger: episodisk eller sekvensielt?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-o23-kort-stokastisk"><span class="oi-ref">O23 · kort</span><span>Forskjellen på stokastisk og ikke-deterministisk miljø.</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-o23-kort-refleks"><span class="oi-ref">O23 · kort</span><span>Delvis observerbart miljø: hvordan må agenten være annerledes enn en enkel refleksagent?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-o23-kort-gps"><span class="oi-ref">O23 · kort</span><span>Hvilke to pionerer implementerte Aristoteles' idé, og hva het programmet? (Lav prio.)</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="agenter.html#oppg-stovsuger-rasjonell"><span class="oi-ref">Slide 16</span><span>Er den enkle støvsugeragenten rasjonell? Og med straff for flytting?</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="agenter.html#oppg-taxi-peas"><span class="oi-ref">Slide 19</span><span>PEAS for en automatisk taxisjåfør.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="agenter.html#oppg-taxi-miljo"><span class="oi-ref">Slide 21–28</span><span>Klassifiser taxi-miljøet langs alle sju dimensjonene.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="agenter.html#oppg-spamfilter"><span class="oi-ref">Egen</span><span>Spamfilter: PEAS, sju egenskaper og agenttype.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="agenter.html#oppg-robotstovsuger"><span class="oi-ref">Egen</span><span>Ekte robotstøvsuger: hva endrer seg fra to-rute-verdenen, og hvilken agenttype?</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <ul>
+        <li><strong>Slide 20:</strong> lag PEAS for satellittbildeanalyse, deleplukkende robot, raffinerikontroller og interaktiv engelsklærer. Fasit står i tabellen på slide 20.</li>
+        <li><strong>Tenk over · slide 17:</strong> du krysser gata trygt, og en lastedør faller av et fly og treffer deg. Var det irrasjonelt å krysse? (Nei: rasjonalitet maksimerer forventet, ikke faktisk ytelse.)</li>
+        <li><strong>Ord. 2023 · kort spørsmål:</strong> hvorfor kan randomisert atferd være rasjonelt i konkurrerende fleragentmiljøer? Hører til spillteori (kapittel 5). Slide 32 viser randomisering i enkeltagentmiljø som triks mot løkker.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────── Quiz ─────────── -->
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som knytter miljø og agenttype sammen, slik eksamen gjør. Flere spørsmål finnes nederst på innholdssiden.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Hvilke tre av de sju miljøegenskapene har størst betydning for valget mellom enkel refleks, modellbasert og målbasert agent, og hvorfor?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><strong>Observerbarhet:</strong> delvis observerbart krever intern tilstand (modellbasert). <strong>Episodisk/sekvensielt:</strong> sekvensielt krever at agenten tenker framover (målbasert, søk). <strong>Determinisme:</strong> ikke-deterministisk eller stokastisk gjør at målet kanskje ikke nås, som peker mot nyttebasert med forventet nytte. Et fullt observerbart, episodisk miljø kan klare seg med en refleksagent.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Et ytelsesmål skal evaluere miljøtilstander, ikke agentens atferd. Gi et eksempel fra slidene på hva som går galt ellers.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Belønner vi støvsugeren for «mengde skitt sugd opp» i et 8-timers skift, kan en rasjonell agent suge, tømme skitten ut igjen og suge på nytt. Et mål som «antall rene ruter per tidssteg» beskriver tilstanden vi faktisk vil ha. «What you ask for is what you get.»</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">En modellbasert støvsuger antar at rene ruter forblir rene, og gjør ingenting når den husker at begge er rene. Hva skjer om skitt kan komme tilbake, og hva sier det om forholdet mellom modell og rasjonalitet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Den husker den andre ruta som ren og står stille selv om ruta har blitt skitten igjen, så ytelsen synker. Rasjonalitet er definert <em>gitt</em> agentens innebygde kunnskap; er overgangsmodellen feil for miljøet, blir handlingene dårlige selv om de følger logisk av modellen. En lærende agent kunne oppdaget at skitt kommer tilbake og justert modellen (prøv «skitt kommer tilbake» i støvsugerwidgeten).</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="agenter.html" class="next"><div class="pn-label">Start · 1A</div><div class="pn-title">Intelligente agenter →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

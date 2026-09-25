@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Øvinger — TDT4136</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .subpage-card.soon { opacity: 0.55; pointer-events: none; }
+  .sp-status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Øvinger">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Øvinger · Assignment-forelesning 1–2</div>
+      <h1>Øvinger<em> (assignments)</em></h1>
+      <p class="lede">Én kort side per assignment: hva du skal gjøre, hvilken variant av algoritmen som gjelder, eksemplene fra assignment-forelesningen, og hva av det som er eksamensrelevant.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#deler">Deler</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva øvingene <em>egentlig</em> trener</h2>
+      <p class="dropcap">Assignmentene går parallelt med forelesningene. Læringsassistenten sier om begge de to første temaene at de pleier å komme på eksamen: søk med <span class="term" data-term="bfs">BFS</span> og A* for hånd, og CSP med <span class="term" data-term="ac-3">AC-3</span> og backtracking.</p>
+      <ul>
+        <li><strong>Assignment 1</strong> er samme oppgavetype som eksamen: algoritmer for hånd på en graf.</li>
+        <li><strong>Assignment 2</strong> er programmering, mens eksamen spør om det samme for hånd. Øvingssiden legger derfor vekt på de små regneeksemplene.</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Sidene bygger på slidene fra assignment-forelesning 1 og 2 (kilder/forelesninger). Slidene sier TDT4137 i tittelen, men faget er TDT4136. Løsningen på selve assignmentet (Doom-grafen, Sudoku-koden) gjengis ikke.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Alle <em>assignmentene</em></h2>
+      <div class="subpage-list">
+        <a href="assignment1.html" class="subpage-card">
+          <span class="sp-icon">A1</span>
+          <div class="sp-info">
+            <div class="sp-title">Assignment 1: søk for hånd <span class="sp-status">Klar</span></div>
+            <div class="sp-desc">BFS, DFS, UCS, greedy og A* på Doom-grafen, admissibel og konsistent heuristikk. 7 oppgaver, 1 widget.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="assignment2.html" class="subpage-card">
+          <span class="sp-icon">A2</span>
+          <div class="sp-info">
+            <div class="sp-title">Assignment 2: CSP på Sudoku <span class="sp-status">Klar</span></div>
+            <div class="sp-desc">AC-3 og backtracking i Python, MRV/LCV-eksempelet, GA eller CSP for 8-dronninger. 6 oppgaver.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <div class="subpage-card soon">
+          <span class="sp-icon">A3+</span>
+          <div class="sp-info">
+            <div class="sp-title">Kommer</div>
+            <div class="sp-desc">Legges til når assignment-forelesningen er holdt.</div>
+          </div>
+          <span class="sp-arrow">…</span>
+        </div>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="assignment1.html" class="next"><div class="pn-label">Start · Assignment 1</div><div class="pn-title">Søk for hånd →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

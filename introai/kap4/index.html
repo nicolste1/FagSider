@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 4 — Constraint satisfaction problems</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Constraint satisfaction problems">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · Slides forelesning 4 · Assignment-forelesning 2 · Boka kap. 5.1–5.4</div>
+      <h1>Constraint satisfaction <em>problems</em></h1>
+      <p class="lede">Problemer der variabler skal få verdier som oppfyller et sett regler. CSP har kommet på eksamen hvert år (15 poeng i 2023): formuler, kjør AC-3, løs med backtracking og MRV/LCV. Alt skal gjøres for hånd, steg for steg.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+      <p class="dropcap">Et <span class="term" data-term="csp">CSP</span> er et søkeproblem med fast struktur: variabler, domener og constraints. Strukturen gir to verktøy som vanlig søk ikke har: inferens som stryker umulige verdier (AC-3, forward checking), og generelle heuristikker for hvilken variabel og verdi som prøves først (MRV, degree, LCV).</p>
+      <ul>
+        <li><strong>Formulering.</strong> Skriv \(X\), \(D\), \(C\) og tegn <span class="term" data-term="constraint-graf">constraint graph</span>. Unære constraints brukes rett på domenene.</li>
+        <li><strong>Inferens.</strong> <span class="term" data-term="ac3">AC-3</span> gjør alle buer arc-consistent; forward checking gjør ett steg etter hver tildeling.</li>
+        <li><strong>Søk.</strong> <span class="term" data-term="backtracking-sok">Backtracking</span> med <span class="term" data-term="mrv">MRV</span> og <span class="term" data-term="lcv">LCV</span>, med oppgavens tie-break-regel.</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde og eksamen</span>
+        <p>Sidene bygger på slidene fra forelesning 4 (9. sept. 2026) og assignment-forelesning 2, med pseudokode og kompleksitet fra boka kap. 5 der slidene er tynne. Alle CSP-oppgavene fra Ord. 2022 og Ord. 2023 er med, med full mellomregning. Tre-strukturerte CSP (boka 5.5) er ute av pensum 2026.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Formulering og AC-3 først, fordi eksamen bruker det reduserte problemet fra AC-3 som input til backtracking.</p>
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="csp-formulering.html#definisjon">CSP = (X, D, C)</a></div><div class="desc">Unære, binære og globale constraints.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="csp-formulering.html#eksamen-formulering">Formuler som CSP (eksamen)</a></div><div class="desc">Firesifret tall og gartnerne.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="csp-formulering.html#ac3">AC-3</a></div><div class="desc">Pseudokode, \(O(cd^3)\), widget.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="csp-formulering.html#o23-ac3">AC-3 på gartnerne</a></div><div class="desc">Alle 28 buer i køen.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="backtracking.html#mrv">MRV, degree, LCV</a></div><div class="desc">Definisjonene ordrett.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="backtracking.html#o22-42">Backtracking på eksamen</a></div><div class="desc">Ord. 2022 og 2023 steg for steg.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="backtracking.html#egen-oppgave">Øv: kartfarging</a></div><div class="desc">MRV + degree + LCV + FC.</div></div><div class="min">~10 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="csp-formulering.html" class="subpage-card">
+          <span class="sp-icon">4A</span>
+          <div class="sp-info">
+            <div class="sp-title">CSP og AC-3</div>
+            <div class="sp-desc">Formulering, constraint graph, node/arc consistency, AC-3, forward checking. 7 oppgaver, AC-3-widget.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="backtracking.html" class="subpage-card">
+          <span class="sp-icon">4B</span>
+          <div class="sp-info">
+            <div class="sp-title">Backtracking med MRV og LCV</div>
+            <div class="sp-desc">Backtracking search, MRV, degree, LCV, forward checking i søket, min-conflicts. 8 oppgaver, backtracking-widget.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Fra formulering via inferens til søk. Stiplet: lavere prioritet.</p>
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for CSP">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/></marker>
+          </defs>
+          <rect class="bh" x="20" y="20" width="170" height="46" rx="6"/>
+          <text class="lbl-c" x="105" y="40" text-anchor="middle">CSP = (X, D, C)</text>
+          <text class="cap" x="105" y="56" text-anchor="middle">unær · binær · global</text>
+          <rect class="bh" x="20" y="130" width="170" height="46" rx="6"/>
+          <text class="lbl-c" x="105" y="150" text-anchor="middle">Constraint graph</text>
+          <text class="cap" x="105" y="166" text-anchor="middle">node = variabel, kant = constraint</text>
+          <path class="e" d="M105 66 L105 128"/>
+          <rect class="bh" x="270" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="40" text-anchor="middle">Node / arc consistency</text>
+          <text class="cap" x="370" y="56" text-anchor="middle">stryk verdier uten støtte</text>
+          <rect class="bh" x="270" y="130" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="370" y="150" text-anchor="middle">AC-3 · forward checking</text>
+          <text class="cap" x="370" y="166" text-anchor="middle">kø av buer · O(cd³)</text>
+          <path class="e" d="M190 43 L268 43"/>
+          <path class="e" d="M370 66 L370 128"/>
+          <rect class="bh" x="550" y="130" width="190" height="46" rx="6"/>
+          <text class="lbl-c" x="645" y="150" text-anchor="middle">Backtracking search</text>
+          <text class="cap" x="645" y="166" text-anchor="middle">DFS, én variabel per nivå</text>
+          <path class="e" d="M470 153 L548 153"/>
+          <rect class="bw" x="550" y="20" width="190" height="46" rx="6"/>
+          <text class="lbl" x="645" y="40" text-anchor="middle">MRV · degree · LCV</text>
+          <text class="cap" x="645" y="56" text-anchor="middle">hvilken variabel, hvilken verdi</text>
+          <path class="e" d="M645 66 L645 128"/>
+          <rect class="b" x="550" y="200" width="190" height="40" rx="6"/>
+          <text class="lbl" x="645" y="224" text-anchor="middle">Min-conflicts (prio 3)</text>
+          <path class="e-faded" d="M190 153 L268 153"/>
+          <path class="e-faded" d="M645 176 L645 198"/>
+        </svg>
+        <figcaption>Heltrukne piler: rekkefølgen i løypa. Stiplede: sammenheng med lavere prioritet (grafen brukes av AC-3; min-conflicts er et alternativ til backtracking).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">Alle oppgavebokser i kapittelet, lenket til stedet der de står. Grønn status: svaret er hentet fra løsningsforslaget eller slidene (mellomregning kan være lagt til). Gul: forslag skrevet for denne siden.</p>
+      <h3>4A · CSP og AC-3</h3>
+      <ul class="oppgave-index">
+        <li><a href="csp-formulering.html#oppg-8dronninger"><span class="oi-ref">Slide 40</span><span>8-dronninger: hva er variabler og domener?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="csp-formulering.html#oppg-o22-41"><span class="oi-ref">Ord. 2022 · 4.1</span><span>Firesifret tall: X, D, C, constraint graph, unære constraints.</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="csp-formulering.html#oppg-o23-41"><span class="oi-ref">Ord. 2023 · 4.1</span><span>Gartnerne: skriv constraintene (2 p).</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="csp-formulering.html#oppg-slide-buer"><span class="oi-ref">Slide 17–22</span><span>Er \((X_3,X_4)\) og \((X_4,X_3)\) arc-consistent?</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="csp-formulering.html#oppg-slide-ac3"><span class="oi-ref">Slide 25–28</span><span>AC-3 etter \(X_2 = \text{green}\).</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="csp-formulering.html#oppg-o23-42"><span class="oi-ref">Ord. 2023 · 4.2</span><span>Gartnerne: arc-consistent? Kjør AC-3 (6 p).</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="csp-formulering.html#oppg-kjede-ac3"><span class="oi-ref">Assignment 2 · 23</span><span>A blå: domenene etter AC-3.</span><span class="oi-status notes">Fra slidene</span></a></li>
+      </ul>
+      <h3>4B · Backtracking med MRV og LCV</h3>
+      <ul class="oppgave-index">
+        <li><a href="backtracking.html#oppg-slide-mrv"><span class="oi-ref">Slide 34–35</span><span>MRV: \(X_3\) eller \(X_4\)?</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="backtracking.html#oppg-slide-lcv"><span class="oi-ref">Slide 36–37</span><span>LCV: red eller blue?</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="backtracking.html#oppg-fc-australia"><span class="oi-ref">Slide 40</span><span>Forward checking: WA = red, Q = green, V = blue.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="backtracking.html#oppg-o22-42"><span class="oi-ref">Ord. 2022 · 4.2</span><span>Firesifret tall: backtracking med MRV og LCV.</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="backtracking.html#oppg-o23-43"><span class="oi-ref">Ord. 2023 · 4.3</span><span>Gartnerne: backtracking uten FC, MRV + LCV (7 p).</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="backtracking.html#oppg-kjede-mrv"><span class="oi-ref">Assignment 2 · 14–15</span><span>MRV + LCV mot tilfeldige valg på A – B – C.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="backtracking.html#oppg-kjede-mrv-lcv"><span class="oi-ref">Assignment 2 · 23</span><span>Etter AC-3 med A blå: er MRV + LCV bedre nå?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="backtracking.html#oppg-egen-australia"><span class="oi-ref">Egen</span><span>Australia med MRV, degree, LCV og forward checking.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+      <h3>Ekstra, ikke på siden</h3>
+      <ul>
+        <li>Assignment-forelesning 2 · slide 6: «Er genetiske algoritmer eller en CSP-løser mest effektiv for 8-dronninger, og hvorfor?» (diskusjon; kort svar: CSP-løseren, fordi den utnytter constraintene direkte, og min-conflicts løser n-dronninger på få steg).</li>
+        <li>Slide 2: løs zebra-puslespillet (formuleringen står i en utdypning på 4A).</li>
+        <li>Slide 38: løs TWO + TWO = FOUR med søk (formuleringen står på 4A).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Hvorfor kjører vi ofte AC-3 før backtracking, slik Ord. 2023 gjør i 4.2 → 4.3?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">AC-3 stryker verdier som aldri kan inngå i en løsning. Mindre domener gir mindre søketre, og MRV får ulike domenestørrelser å velge etter. I gartnerproblemet ble \(X_1\) og \(X_3\) bestemt allerede av AC-3, og backtracking fant løsningen uten å gå tilbake.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hva er forskjellen på forward checking og MAC?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Begge kjøres etter en tildeling \(X_i = v\). Forward checking stryker bare verdier i de utildelte naboene til \(X_i\). MAC kjører AC-3 med buene \((X_j, X_i)\) i startkøen og sprer endringene videre så lenge noe endres. Eksempel: etter WA = red, Q = green ser MAC at NT og SA begge bare har blue og er naboer; forward checking ser det ikke.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et problem har \(n\) variabler med domenestørrelse \(d\). Hvor mange blader har et naivt søketre der hvert nivå kan velge hvilken som helst variabel og verdi, og hvorfor trenger backtracking bare \(d^n\)?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Naivt: på nivå \(\ell\) finnes \((n-\ell)d\) valg, så \(n!\,d^n\) blader. Men CSP er kommutative: rekkefølgen tildelingene gjøres i spiller ingen rolle, så backtracking velger én variabel per nivå og får \(d^n\) blader (boka kap. 5.3).</div></div>
+      </div>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="csp-formulering.html" class="next"><div class="pn-label">Start · 4A</div><div class="pn-title">CSP og AC-3 →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

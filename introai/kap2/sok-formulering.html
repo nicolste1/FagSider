@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Problemformulering og tilstandsrom — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  .gsvg { width: 100%; max-width: 440px; display: block; margin: 1rem auto; }
+  .gsvg.wide, .gsvg.wgc { max-width: 760px; }
+  .gsvg .ed { stroke: var(--ink-faded); stroke-width: 1.5; fill: none; }
+  .gsvg .ed.dead { stroke-dasharray: 4 3; stroke: var(--ink-ghost); }
+  .gsvg .ed.hot { stroke: var(--accent); stroke-width: 3.2; }
+  .gsvg .ed.bad { stroke: var(--red); stroke-width: 3; }
+  .gsvg .ah { fill: var(--ink-faded); }
+  .gsvg .nd circle, .gsvg .nd rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+  .gsvg .nd.bad rect { stroke: var(--red); stroke-dasharray: 4 3; fill: rgba(179,38,30,0.06); }
+  .gsvg .nd.bad circle { stroke: var(--red); stroke-width: 2.6; }
+  .gsvg .nd.start rect, .gsvg .nd.goal rect { stroke: var(--accent); stroke-width: 2.4; }
+  .gsvg .nd.fr circle { stroke: var(--accent); stroke-width: 2.6; }
+  .gsvg .nd.exp circle { fill: rgba(27,94,90,0.22); }
+  .gsvg .nd.cur circle { fill: var(--accent); }
+  .gsvg .nd.cur text { fill: var(--paper); }
+  .gsvg text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  .gsvg .cost { font-size: 12px; fill: var(--warm); font-weight: 600; }
+  .gsvg .hv, .gsvg .elbl { font-size: 11px; fill: var(--ink-faded); }
+  .gsvg .zone { fill: var(--accent-soft); stroke: none; }
+  .trace { font-family: var(--mono); font-size: 0.84rem; }
+  .trace td, .trace th { padding: 4px 8px; vertical-align: top; }
+  .svar-format { font-family: var(--mono); font-size: 0.9rem; background: var(--paper); border-left: 3px solid var(--accent); padding: 0.5rem 0.9rem; margin: 0.6rem 0; line-height: 1.6; }
+  .w-sel { font-family: var(--sans); font-size: 0.86rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+  .hin { width: 3.4rem; font-family: var(--mono); font-size: 0.9rem; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+  .note-sm { font-size: 0.86rem; color: var(--ink-faded); margin: 0.4rem 0 0.8rem; }
+
+  .bank { display: grid; grid-template-columns: 1fr 80px 1fr; gap: 8px; align-items: center; margin: 0.8rem 0; }
+  .bank .side { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.6rem 0.8rem; min-height: 3.2rem; font-family: var(--mono); font-size: 0.9rem; }
+  .bank .river { text-align: center; font-family: var(--mono); font-size: 0.8rem; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 0.9rem 0; }
+  .bank .side .k { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faded); display: block; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+
+<main data-chapter="Kapittel 2: Problemløsning ved søk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2A · Slides forelesning 2 · 1–83 · Boka kap. 3.1–3.3 · ~25 min</div>
+      <h1>Problem<em>formulering</em></h1>
+      <p class="lede">Før vi kan søke, må problemet skrives som tilstander, handlinger, overgangsmodell, måltest og kostnad. Denne siden gir deg formuleringen, forskjellen på tilstandsromgraf og søketre, og eksamensoppgaven der du skal tegne tilstandsgrafen for ulv, geit og kål.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#agent"><span>01</span> Problemløsende agent</a>
+        <a href="#formulering"><span>02</span> Formulering</a>
+        <a href="#eksempler"><span>03</span> Standardproblemer</a>
+        <a href="#representasjon"><span>04</span> Representasjon</a>
+        <a href="#graf-tre"><span>05</span> Graf og søketre</a>
+        <a href="#ulv-geit-kaal"><span>06</span> Ulv, geit og kål</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md) · deltema 2.1, prio 1</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Tegn tilstandsgrafen</strong> for et lite puslespill, forklar hva noder og kanter er, marker start og mål (Ord. 2022 oppg. 3.1, ulv/geit/kål). Øv med <a href="#oppg-o22-3-1">oppgaven under</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Formuler tilstanden som tuppel</strong> og skriv starttilstanden (Ord. 2023, kort spørsmål om flytterobot).</li>
+          <li><span class="tag">Forklar</span><strong>Atomisk vs faktorisert representasjon</strong> (Ord. 2022 oppg. 1.1).</li>
+          <li><span class="tag">Forklar</span>Node vs tilstand, tilstandsromgraf vs søketre, frontier og reached. Dette er grunnmuren for regneoppgavene i <a href="uinformert-sok.html">2B</a>–<a href="heuristikker.html">2D</a>.</li>
+          <li><span class="tag lav">Lavere</span>Anvendelser (TSP, montering, VLSI), grid world-detaljer og notasjonsslidene. Ligger i «Utdypning».</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="agent">
+    <div class="container">
+      <div class="section-badge">01 · Problemløsende agent</div>
+      <h2>Tenke <em>fremover</em></h2>
+      <div class="source-note">Slides forelesning 2 · 3–18</div>
+      <span class="lm-pill">Deltema 2.1 · prio 1</span>
+      <p class="dropcap">Når riktig handling ikke er åpenbar med én gang, må agenten planlegge: den vurderer <em>sekvenser</em> av handlinger som danner en sti til en måltilstand. En slik agent kalles en <span class="term" data-term="problemlosende-agent">problemløsende agent</span>, og beregningen den gjør heter <span class="term" data-term="sok">søk</span>. Vi antar at agenten har informasjon om verden, for eksempel et kart.</p>
+      <ol class="steps">
+        <li><strong>Målformulering:</strong> velg målet, f.eks. «kom til Bucharest».</li>
+        <li><strong>Problemformulering:</strong> bestem hvilke tilstander og handlinger som finnes.</li>
+        <li><strong>Søk:</strong> simuler handlingssekvenser til du finner en som når målet. Sekvensen er <span class="term" data-term="losning">løsningen</span>.</li>
+        <li><strong>Utførelse:</strong> utfør handlingene i løsningen, én om gangen.</li>
+      </ol>
+      <details>
+        <summary>Utdypning · lavere prioritet</summary>
+        <p>Slidene skiller mellom <em>standardiserte problemer</em> (grid world, glidebrikkespill) som brukes til å øve og sammenlikne metoder, og <em>virkelige problemer</em> (ruteplanlegging, robotnavigasjon, VLSI-utlegg). Eksempler på det siste: Travelling Salesperson Problem (korteste rundtur som besøker alle steder én gang) og monteringsproblemer (finn rekkefølgen delene settes sammen i). Virkeligheten er vanskeligere: begrensede ressurser, restriksjoner og krav om raske svar.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="formulering">
+    <div class="container">
+      <div class="section-badge">02 · Formulering</div>
+      <h2>Fem ting du må <em>spesifisere</em></h2>
+      <div class="source-note">Slides forelesning 2 · 19–30 · Boka kap. 3.1.1</div>
+      <p class="dropcap">Et <span class="term" data-term="sokeproblem">søkeproblem</span> er definert av disse komponentene. På eksamen er det nesten alltid dem du skal fylle inn, for Romania, en robot eller et puslespill.</p>
+      <div class="def-box">
+        <span class="def-label">Definisjon · søkeproblem</span>
+        <ul>
+          <li><span class="term" data-term="tilstandsrom">Tilstandsrom</span> \(S\): mengden av alle mulige <span class="term" data-term="tilstand">tilstander</span> i miljøet.</li>
+          <li><span class="term" data-term="starttilstand">Starttilstand</span> \(s_0 \in S\).</li>
+          <li><span class="term" data-term="maltilstand">Måltilstand(er)</span> \(s_g\), eller en måltest <code>IS-GOAL(s)</code>.</li>
+          <li><span class="term" data-term="handling">Handlinger</span> <code>ACTIONS(s)</code>: hva agenten kan gjøre i \(s\).</li>
+          <li><span class="term" data-term="overgangsmodell">Overgangsmodell</span> \(\text{RESULT}: S \times A \to S\): hvilken tilstand en handling fører til.</li>
+          <li><span class="term" data-term="handlingskostnad">Handlingskostnad</span> \(c: S \times A \times S \to \mathbb{R}\), skrevet \(c(s, a, s')\).</li>
+        </ul>
+      </div>
+      <p>En <em>sti</em> er en sekvens av handlinger. <span class="term" data-term="stikostnad">Stikostnaden</span> er summen av handlingskostnadene langs stien, og en <span class="term" data-term="optimal-losning">optimal løsning</span> har lavest stikostnad blant alle løsninger.</p>
+      \[ g(\text{sti}) = \sum_{i} c(s_{i-1}, a_i, s_i) \]
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Tilstandsrom</div><div class="fc-val">\(S = \{\)Oradea, Zerind, Arad, Timisoara, …\(\}\), alle byene på kartet</div></div>
+        <div class="fact-card"><div class="fc-key">Start / mål</div><div class="fc-val">\(s_0 =\) Arad, \(s_g =\) Bucharest</div></div>
+        <div class="fact-card"><div class="fc-key">Handlinger</div><div class="fc-val">ACTIONS(Arad) = {ToSibiu, ToTimisoara, ToZerind}</div></div>
+        <div class="fact-card"><div class="fc-key">Overgang og kostnad</div><div class="fc-val">RESULT(Arad, ToSibiu) = Sibiu, \(c = 140\) (veilengde i miles)</div></div>
+      </div>
+      <p>Tilstandene og overgangene mellom dem utgjør en <span class="term" data-term="tilstandsromgraf">tilstandsromgraf</span>: noder er tilstander, rettede kanter er handlinger. Romania-kartet (tegnet i <a href="informert-sok.html#widget">2C</a>) er nettopp en slik graf.</p>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hva er forskjellen på overgangsmodellen og handlingskostnaden?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Overgangsmodellen \(\text{RESULT}(s,a)\) sier <em>hvor</em> du havner (en tilstand). Handlingskostnaden \(c(s,a,s')\) sier <em>hva det koster</em> (et tall). Romania: RESULT(Arad, ToSibiu) = Sibiu, og \(c = 140\).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="eksempler">
+    <div class="container">
+      <div class="section-badge">03 · Standardproblemer</div>
+      <h2>Vacuum world og <em>8-puzzle</em></h2>
+      <div class="source-note">Slides forelesning 2 · 36–51 (grid world, vacuum world, ruteplanlegging) · 8-puzzle: Boka kap. 3.2.1 (ikke i slidene)</div>
+      <p class="dropcap">En <span class="term" data-term="grid-world">grid world</span> er et todimensjonalt rutenett der agenten flytter seg til ledige naboruter, og ruter kan inneholde objekter eller vegger. <span class="term" data-term="vakuumverden">Vacuum world</span> er det enkleste eksempelet: to ruter, en støvsuger og støv.</p>
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Vacuum world (to ruter)</h4>
+          <ul>
+            <li><strong>Tilstand:</strong> hvor agenten er + om hver rute er skitten. \(2 \cdot 2^2 = 8\) tilstander.</li>
+            <li><strong>Start:</strong> hvilken som helst tilstand.</li>
+            <li><strong>Mål:</strong> ingen rute har støv.</li>
+            <li><strong>Handlinger:</strong> Suck, Left, Right.</li>
+            <li><strong>Overgang:</strong> Suck fjerner støvet i ruten; Left/Right flytter (ingen effekt i kanten).</li>
+            <li><strong>Kostnad:</strong> 1 per handling.</li>
+          </ul>
+        </div>
+        <div class="compare-cell warm">
+          <h4><span class="term" data-term="8-puzzle">8-puzzle</span> (3×3, åtte brikker)</h4>
+          <ul>
+            <li><strong>Tilstand:</strong> plasseringen av hver brikke og det tomme feltet.</li>
+            <li><strong>Start:</strong> hvilken som helst plassering.</li>
+            <li><strong>Mål:</strong> en gitt plassering (f.eks. tomt felt øverst til venstre, så 1–8).</li>
+            <li><strong>Handlinger:</strong> flytt det tomme feltet Left, Right, Up, Down.</li>
+            <li><strong>Overgang:</strong> det tomme feltet bytter plass med nabobrikken.</li>
+            <li><strong>Kostnad:</strong> 1 per flytt. \(9!/2 = 181\,440\) nåbare tilstander.</li>
+          </ul>
+        </div>
+      </div>
+      <p><span class="term" data-term="ruteplanlegging">Ruteplanlegging</span> (Romania, bilnavigasjon) er et virkelig problem av samme type: tilstander er steder, handlinger er veier. Komplikasjonene i praksis er varierende kostnader (kø) og omkjøring (stengte veier).</p>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvor mange tilstander har vacuum world med \(n\) ruter på rad?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Agenten kan stå i \(n\) ruter, og hver rute er skitten eller ren: \(n \cdot 2^n\). For \(n = 2\) gir det 8, som på slidene.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="representasjon">
+    <div class="container">
+      <div class="section-badge">04 · Representasjon</div>
+      <h2>Atomisk eller <em>faktorisert</em></h2>
+      <div class="source-note">Boka kap. 2.4.7 og 3.1 (ikke eget punkt i slidene) · eksamensoppgavene Ord. 2022 1.1 og Ord. 2023 kort spørsmål</div>
+      <p class="dropcap">I en <span class="term" data-term="atomisk-representasjon">atomisk representasjon</span> er en tilstand en svart boks uten indre struktur: «Arad». Algoritmen kan bare se om to tilstander er like eller forskjellige. I en <span class="term" data-term="faktorisert-representasjon">faktorisert representasjon</span> er tilstanden en vektor av variabler med verdier, for eksempel (agentens plassering, antall bokser i hvert rom). Søkealgoritmene i dette kapittelet behandler tilstander atomisk, men heuristikker og CSP (kap. 4) utnytter faktorene.</p>
+      <div class="oppgave" data-quiz id="oppg-o22-1-1">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.1</span><span class="o-ref">kort teorispørsmål</span></div>
+        <div class="o-text"><p>Why might we want to use a factored state representation instead of an atomic state representation?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Med atomisk representasjon vet vi bare at to tilstander er forskjellige. Med faktorisert representasjon får vi egenskaper (features) ved tilstanden som vi kan bruke til å vurdere, sammenlikne og generalisere mellom tilstander, f.eks. i heuristikker og evalueringsfunksjoner. Faktorisert representasjon gjør det også lettere å håndtere usikkerhet og ufullstendig informasjon ved å knytte den til enkeltvariabler, f.eks. posisjon og orientering til et objekt.</p>
+          </div>
+        </div>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-o23-kort-robot">
+        <div class="o-label"><span>Eksamen Ord. 2023 · kort spørsmål</span><span class="o-ref">flytterobot</span></div>
+        <div class="o-text"><p>A robot is going to help to move a person from one apartment to another, by loading the boxes in different rooms to a truck parked outside. There are 4 rooms R1, …, R4. In the beginning R1 has 3 boxes, R2 has 1 box, R3 has 5 and R4 has 2. On each turn the robot can move a box into an adjacent room (north, south, east, west). In the beginning the robot is in the truck. How would you formulate a state in the search space in general, and how would the beginning state be represented?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>En tuppel \((\textit{agent}, R_1, R_2, R_3, R_4, \textit{Truck})\), der \(\textit{agent} \in \{R_1, R_2, R_3, R_4, \textit{Truck}\}\) er agentens plassering og de andre er tall \(\ge 0\) for hvor mange bokser som står i hvert rom (og i bilen). Starttilstanden er</p>
+            \[ (\textit{Truck}, 3, 1, 5, 2, 0). \]
+            <p>Merk at dette er en faktorisert representasjon: seks variabler med hver sin verdi.</p>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>Utdypning · lavere prioritet</summary>
+        <p>Boka har et tredje nivå, <em>strukturert representasjon</em>, der tilstanden består av objekter og relasjoner mellom dem. Det brukes i logikk og planlegging (kap. 6–9).</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="graf-tre">
+    <div class="container">
+      <div class="section-badge">05 · Graf og søketre</div>
+      <h2>En node er ikke en <em>tilstand</em></h2>
+      <div class="source-note">Slides forelesning 2 · 59–83</div>
+      <p class="dropcap">En søkealgoritme bygger et <span class="term" data-term="soketre">søketre</span> oppå tilstandsromgrafen. Roten er starttilstanden, hver node svarer til en tilstand og hver kant til en handling. Det er sjelden mulig å bygge hele grafen, så agenten utforsker en liten del ved å generere etterfølgere av tilstander den allerede har utforsket.</p>
+<pre><code>Arad
+├── Sibiu      → Arad, Fagaras, Oradea, Rimnicu Vilcea
+├── Timisoara  → Arad, Lugoj
+└── Zerind     → Arad, Oradea</code></pre>
+      <p>Arad dukker opp igjen under Sibiu: det er en <span class="term" data-term="syklus">syklus</span>, og den stien er ikke verdt å fortsette. Samme tilstand kan altså stå i mange noder, og et endelig tilstandsrom kan gi et uendelig søketre.</p>
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Tilstand</h4>
+          <p>En konfigurasjon av verden (en by, en brikkeplassering). Finnes én gang i tilstandsromgrafen.</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4><span class="term" data-term="node">Node</span></h4>
+          <p>En datastruktur i søketreet: <code>node.STATE</code>, <code>node.PARENT</code>, <code>node.ACTION</code>, <code>node.PATH-COST</code>. «Et steg i søket», ikke en tilstand.</p>
+        </div>
+      </div>
+      <p>To mengder holder orden på søket. <span class="term" data-term="frontier">Frontier</span> er nodene vi kan ekspandere nå; <span class="term" data-term="reached">reached</span> er alle tilstander vi har nådd, både de i frontier og de som er ekspandert:</p>
+      \[ \text{Frontier} \subset \text{Reached}, \qquad \text{Expanded} = \text{Reached} \setminus \text{Frontier}. \]
+      <p>At en node ligger i frontier betyr altså <em>ikke</em> at den er ekspandert. Hvordan frontier er lagret (FIFO, LIFO eller prioritetskø) er det som skiller algoritmene; det tar vi i <a href="uinformert-sok.html#prosedyre">2B</a>.</p>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Romania-kartet har 20 byer. Hvorfor kan søketreet likevel ha uendelig mange noder?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Fordi veiene går begge veier: Arad → Sibiu → Arad → Sibiu … gir stadig nye noder (med ny forelder og høyere stikostnad) for de samme tilstandene. Uten sjekk av sykluser eller reached vokser treet uten grense.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ulv-geit-kaal">
+    <div class="container">
+      <div class="section-badge">06 · Ulv, geit og kål</div>
+      <h2>Tegn <em>tilstandsgrafen</em></h2>
+      <div class="source-note">Eksamen Ord. 2022 · oppg. 3.1 · notasjonen er løsningsforslagets</div>
+      <p class="dropcap">En bonde skal ro en ulv, en geit og en kål over en elv. Båten tar bonden og høyst én av dem. Står ulv og geit alene sammen, spiser ulven geita; står geit og kål alene sammen, spiser geita kålen. Løsningsforslaget bruker en faktorisert tilstand: tre biter for (ulv, geit, kål), der <strong>1 = fortsatt på startsiden</strong> og 0 = på andre siden, pluss hvilken side bonden er på (<code>i</code> = initial, <code>o</code> = other).</p>
+      <div class="svar-format">Start: 111-i &nbsp;·&nbsp; Mål: 000-o &nbsp;·&nbsp; Handling: bonden ror over, alene eller med én vare på sin side &nbsp;·&nbsp; Kostnad: 1 per tur</div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-3-1">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 3.1</span><span class="o-ref">tegn</span></div>
+        <div class="o-text"><p>Draw part of a state-space graph for this problem, with nodes that are 3 or less edges away from the start node. Explain what nodes and edges represent. Mark start and end nodes.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · figuren tegnet på nytt i samme notasjon</span>
+            <p>Løsningsforslaget viser hele grafen og sier at det holder å vise de fire første nivåene (0–3 kanter fra start, skyggelagt under).</p>
+            <svg class="gsvg wgc" viewBox="0 0 760 318" role="img" aria-label="Tilstandsgraf for ulv, geit og kål">
+<rect class="zone" x="8" y="8" width="382" height="304" rx="10"/>
+<text class="hv" x="195" y="22">maks 3 kanter fra start (det oppgaven spør om)</text>
+<line class="ed dead" x1="75" y1="168" x2="111" y2="58"/>
+<text class="elbl" x="97" y="92">ulv</text>
+<line class="ed" x1="75" y1="168" x2="111" y2="168"/>
+<text class="elbl" x="97" y="158">geit</text>
+<line class="ed dead" x1="75" y1="168" x2="111" y2="233"/>
+<text class="elbl" x="97" y="197">kål</text>
+<line class="ed dead" x1="75" y1="168" x2="111" y2="288"/>
+<text class="elbl" x="97" y="230">alene</text>
+<line class="ed" x1="171" y1="168" x2="207" y2="168"/>
+<text class="elbl" x="193" y="158">alene</text>
+<line class="ed" x1="267" y1="168" x2="303" y2="118"/>
+<text class="elbl" x="289" y="128">ulv</text>
+<line class="ed" x1="267" y1="168" x2="303" y2="218"/>
+<text class="elbl" x="289" y="188">kål</text>
+<line class="ed dead" x1="363" y1="118" x2="399" y2="58"/>
+<text class="elbl" x="385" y="72">alene</text>
+<line class="ed" x1="363" y1="118" x2="399" y2="118"/>
+<text class="elbl" x="385" y="108">geit</text>
+<line class="ed" x1="363" y1="218" x2="399" y2="218"/>
+<text class="elbl" x="385" y="208">geit</text>
+<line class="ed dead" x1="363" y1="218" x2="399" y2="283"/>
+<text class="elbl" x="385" y="247">alene</text>
+<line class="ed" x1="459" y1="118" x2="495" y2="168"/>
+<text class="elbl" x="481" y="138">kål</text>
+<line class="ed" x1="459" y1="218" x2="495" y2="168"/>
+<text class="elbl" x="481" y="178">ulv</text>
+<line class="ed" x1="555" y1="168" x2="591" y2="168"/>
+<text class="elbl" x="577" y="158">alene</text>
+<line class="ed" x1="651" y1="168" x2="687" y2="168"/>
+<text class="elbl" x="673" y="158">geit</text>
+<g class="nd start"><rect x="15" y="155" width="60" height="26" rx="6"/><text x="45" y="168">111-i</text></g>
+<g class="nd bad"><rect x="111" y="45" width="60" height="26" rx="6"/><text x="141" y="58">011-o</text></g>
+<g class="nd"><rect x="111" y="155" width="60" height="26" rx="6"/><text x="141" y="168">101-o</text></g>
+<g class="nd bad"><rect x="111" y="220" width="60" height="26" rx="6"/><text x="141" y="233">110-o</text></g>
+<g class="nd bad"><rect x="111" y="275" width="60" height="26" rx="6"/><text x="141" y="288">111-o</text></g>
+<g class="nd"><rect x="207" y="155" width="60" height="26" rx="6"/><text x="237" y="168">101-i</text></g>
+<g class="nd"><rect x="303" y="105" width="60" height="26" rx="6"/><text x="333" y="118">001-o</text></g>
+<g class="nd"><rect x="303" y="205" width="60" height="26" rx="6"/><text x="333" y="218">100-o</text></g>
+<g class="nd bad"><rect x="399" y="45" width="60" height="26" rx="6"/><text x="429" y="58">001-i</text></g>
+<g class="nd"><rect x="399" y="105" width="60" height="26" rx="6"/><text x="429" y="118">011-i</text></g>
+<g class="nd"><rect x="399" y="205" width="60" height="26" rx="6"/><text x="429" y="218">110-i</text></g>
+<g class="nd bad"><rect x="399" y="270" width="60" height="26" rx="6"/><text x="429" y="283">100-i</text></g>
+<g class="nd"><rect x="495" y="155" width="60" height="26" rx="6"/><text x="525" y="168">010-o</text></g>
+<g class="nd"><rect x="591" y="155" width="60" height="26" rx="6"/><text x="621" y="168">010-i</text></g>
+<g class="nd goal"><rect x="687" y="155" width="60" height="26" rx="6"/><text x="717" y="168">000-o</text></g>
+<text class="hv" x="45" y="196">start</text><text class="hv" x="717" y="196">mål</text>
+</svg>
+            <ul>
+              <li><strong>Noder</strong> er tilstander: hvilke varer som er på startsiden (bit = 1) og hvilken side bonden er på.</li>
+              <li><strong>Kanter</strong> er handlinger: én overfart, merket med hva bonden tar med. Alle overfarter kan reverseres, så grafen er urettet.</li>
+              <li><strong>Start</strong> er 111-i, <strong>mål</strong> er 000-o (merket med tykk ramme).</li>
+              <li>Røde, stiplede noder er tilstander der noe blir spist. Løsningsforslaget tar dem med som blindveier (ingen etterfølgere), og det gjør også IDS-oppgaven i <a href="uinformert-sok.html#oppg-o22-3-2">2B</a>.</li>
+            </ul>
+            <p>Korteste løsning har 7 overfarter: geit over, tilbake alene, ulv (eller kål) over, geit tilbake, kål (eller ulv) over, tilbake alene, geit over.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-wgc">
+        <div class="widget-label">Prøv selv · Gå i tilstandsgrafen</div>
+        <p class="widget-intro">Klikk hva bonden skal ta med over. Du ser tilstanden i løsningsforslagets notasjon og stien du har gått. Havner du i en ulovlig tilstand, er det en blindvei: nullstill eller angre.</p>
+        <div class="bank">
+          <div class="side" id="wgc-i"></div>
+          <div class="river">elv</div>
+          <div class="side" id="wgc-o"></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn" type="button" data-k="-1">Alene</button>
+          <button class="w-btn" type="button" data-k="0">Med ulv</button>
+          <button class="w-btn" type="button" data-k="1">Med geit</button>
+          <button class="w-btn" type="button" data-k="2">Med kål</button>
+          <button class="w-btn secondary" type="button" id="wgc-undo">Angre</button>
+          <button class="w-btn secondary" type="button" id="wgc-reset">Nullstill</button>
+        </div>
+        <div class="w-out" id="wgc-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Seks komponenter</strong>Tilstandsrom, start, mål/måltest, ACTIONS, RESULT og kostnad \(c(s,a,s')\).</div>
+        <div class="recap-pill"><strong>Løsning</strong>En handlingssekvens fra start til mål; optimal = lavest stikostnad.</div>
+        <div class="recap-pill"><strong>Node ≠ tilstand</strong>Noden har STATE, PARENT, ACTION og PATH-COST; samme tilstand kan stå i mange noder.</div>
+        <div class="recap-pill"><strong>Frontier ⊂ reached</strong>Expanded = reached \ frontier.</div>
+        <div class="recap-pill"><strong>Faktorisert</strong>Tilstanden som variabler (tuppel); gir grunnlag for heuristikker.</div>
+        <div class="recap-pill"><strong>Tegne graf</strong>Forklar noder og kanter, marker start og mål, vis blindveier.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Formuler 8-puzzle som søkeproblem: tilstand, handlinger, måltest og kostnad.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Tilstand: plasseringen av de åtte brikkene og det tomme feltet. Handlinger: flytt det tomme feltet Left/Right/Up/Down (der det er lov). Måltest: er plasseringen lik målplasseringen? Kostnad: 1 per flytt.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">I ulv/geit/kål: hvilke tilstander ligger nøyaktig to kanter fra start, og hvorfor bare dem?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Bare 101-i. Det eneste lovlige første trekket er å ta geita over (101-o). Derfra kan bonden ro tilbake alene (101-i) eller med geita, men det gir starttilstanden 111-i igjen, som ligger null kanter fra start. De tre andre første trekkene gir tilstander der noe spises, og de har ingen etterfølgere.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvorfor sier slidene at «a node is not a state, but a step in the search»?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Noden husker også hvordan vi kom dit (forelder, handling) og hva det kostet (stikostnad). To noder kan ha samme tilstand men ulik sti og kostnad, f.eks. Arad som rot og Arad via Sibiu.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 2: oversikt</div></a>
+        <a href="uinformert-sok.html" class="next"><div class="pn-label">Neste · 2B</div><div class="pn-title">Uinformert søk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+
+<script>
+(function () {
+  'use strict';
+  /* ─── Widget: ulv, geit og kål ─── */
+  (function () {
+    var root = document.getElementById('w-wgc'); if (!root) return;
+    var NAV = ['Ulv', 'Geit', 'Kål'], st, hist;
+    function code(s) { return s.b.join('') + '-' + s.f; }
+    function bad(s) { var fb = s.f === 'i' ? 1 : 0; return (s.b[0] === s.b[1] && s.b[0] !== fb) || (s.b[1] === s.b[2] && s.b[1] !== fb); }
+    function reset() { st = { b: [1, 1, 1], f: 'i' }; hist = [JSON.stringify(st)]; render(); }
+    function render() {
+      var i = [], o = [];
+      NAV.forEach(function (n, k) { (st.b[k] ? i : o).push(n); });
+      (st.f === 'i' ? i : o).unshift('<strong>Bonde</strong>');
+      document.getElementById('wgc-i').innerHTML = '<span class="k">Startsiden (i)</span>' + (i.join(', ') || '–');
+      document.getElementById('wgc-o').innerHTML = '<span class="k">Andre siden (o)</span>' + (o.join(', ') || '–');
+      var fb = st.f === 'i' ? 1 : 0, dead = bad(st), goal = code(st) === '000-o';
+      root.querySelectorAll('[data-k]').forEach(function (b) { var k = +b.getAttribute('data-k'); b.disabled = dead || goal || (k >= 0 && st.b[k] !== fb); });
+      var path = hist.map(function (h) { return code(JSON.parse(h)); }).join(' → ');
+      document.getElementById('wgc-out').innerHTML = 'Tilstand <span class="hl">' + code(st) + '</span> · dybde ' + (hist.length - 1) + '<br>Sti: ' + path +
+        (dead ? '<br><strong style="color:var(--red)">Noe blir spist: blindvei uten etterfølgere.</strong>' : '') + (goal ? '<br><strong style="color:var(--green)">Mål nådd på ' + (hist.length - 1) + ' overfarter.</strong>' : '');
+    }
+    root.querySelectorAll('[data-k]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = +b.getAttribute('data-k');
+        if (k >= 0) st.b[k] = st.f === 'i' ? 0 : 1;
+        st.f = st.f === 'i' ? 'o' : 'i'; hist.push(JSON.stringify(st)); render();
+      });
+    });
+    document.getElementById('wgc-undo').addEventListener('click', function () { if (hist.length > 1) { hist.pop(); st = JSON.parse(hist[hist.length - 1]); render(); } });
+    document.getElementById('wgc-reset').addEventListener('click', reset);
+    reset();
+  })();
+})();
+</script>
+</body>
+</html>

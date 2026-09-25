@@ -9,6 +9,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <style>
   /* ─── Sidespesifikt: småting som bare denne siden trenger ─── */
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
   .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
   .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
   .legend-row .l-a::before { background: var(--accent); }
@@ -43,11 +49,29 @@
       <h1>Tittel på <em>del A</em></h1>
       <p class="lede">To–tre setninger som sier hva leseren kan etter denne siden.</p>
       <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#intro"><span>01</span> Første seksjon</a>
         <a href="#oppsummering"><span>02</span> Oppsummering</a>
       </nav>
     </div>
   </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS (obligatorisk, fra kilder/eksamen.json) ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalysen (kilder/eksamensanalyse.md, dato) · læringsmål X.Y</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Tema med prio 1:</strong> hva oppgaven typisk ber om (tidligere: Ord. 2024 oppg. 5.4).</li>
+          <li><span class="tag">Forklar</span>Tema som gis som kortsvar («nevn og forklar …»).</li>
+          <li><span class="tag">Lavere</span>Stoff fra kilden som er kuttet eller lagt i «Utdypning» fordi det ikke kommer på eksamen.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
   <!-- ─────────────────────────── 01 ─────────────────────────── -->
   <section id="intro">
@@ -55,6 +79,15 @@
       <div class="section-badge">01 · Første seksjon</div>
       <h2>Overskrift med ett ord i <em>kursiv</em></h2>
       <div class="source-note">Kilde · hvor i fagstoffet dette står (avsnitt/slides/sider)</div>
+      <span class="lm-pill">Læringsmål X.Y · prio 1</span>
+      <ul class="lm-list">
+        <li>Læringsmålet ordrett fra emnebeskrivelsen/læringsutbyttebeskrivelsen, om faget har en.</li>
+      </ul>
+
+      <details>
+        <summary>Utdypning · lavere prioritet</summary>
+        <p>Bakgrunnsstoff fra kilden som ikke er eksamensrelevant legges her i stedet for å slettes, så det kan finnes med søk.</p>
+      </details>
 
       <p class="dropcap">Brødtekst som forklarer, ikke bare gjengir. Første gang et fagbegrep dukker opp i seksjonen gjøres det klikkbart: <span class="term" data-term="kjoretid">kjøretiden</span> til en algoritme. Nøkkelen må finnes i <code>begreper.js</code>.</p>
 

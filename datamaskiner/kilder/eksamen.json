@@ -1,0 +1,70 @@
+{
+  "_kommentar": "UTKAST fra læringsutbyttebeskrivelsen, ikke godkjent. Nøkkel = deltema som i dekning.json. prio 1–3, type regn/forklar/tegn/kode/flervalg, oppgaver = tidligere eksamensoppgaver (O24-5.4 = Ord. 2024 oppg. 5.4). Se eksamensanalyse.md.",
+  "status": "utkast",
+  "sett": [
+    "O24",
+    "K26"
+  ],
+  "1.1": {
+    "prio": 2,
+    "type": [
+      "forklar"
+    ],
+    "oppgaver": []
+  },
+  "1.2": {
+    "prio": 2,
+    "type": [
+      "forklar",
+      "regn"
+    ],
+    "oppgaver": []
+  },
+  "1.3": {
+    "prio": 1,
+    "type": [
+      "regn"
+    ],
+    "oppgaver": [
+      "O24-5.4",
+      "K26-5.5"
+    ]
+  },
+  "1.4": {
+    "prio": 1,
+    "type": [
+      "regn"
+    ],
+    "oppgaver": []
+  },
+  "2.1": {
+    "prio": 1,
+    "type": [
+      "kode",
+      "forklar"
+    ],
+    "oppgaver": []
+  },
+  "2.2": {
+    "prio": 2,
+    "type": [
+      "regn"
+    ],
+    "oppgaver": []
+  },
+  "2.3": {
+    "prio": 1,
+    "type": [
+      "kode"
+    ],
+    "oppgaver": []
+  },
+  "2.4": {
+    "prio": 2,
+    "type": [
+      "forklar",
+      "kode"
+    ],
+    "oppgaver": []
+  }
+}

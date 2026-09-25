@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 2 — Problemløsning ved søk</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Problemløsning ved søk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · Forelesning 2 og 3 (slides 1–53) · Assignment-forelesning 1 · Boka kap. 3</div>
+      <h1>Problemløsning ved <em>søk</em></h1>
+      <p class="lede">Det viktigste kapittelet på eksamen: rundt 20 poeng regning (kjør fem søkealgoritmer for hånd, finn hvilke h-verdier som gir konsistens) pluss korte spørsmål. Assignment 1 handler om det samme.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Alle oppgavene</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+      <p class="dropcap">En problemløsende agent formulerer et <span class="term" data-term="sokeproblem">søkeproblem</span> og leter etter en handlingssekvens fra start til mål. Nesten alle algoritmene i kurset er den samme <span class="term" data-term="best-first-search">best-first search</span> med ulik evalueringsfunksjon \(f(n)\); bare BFS er egen. Eksamensoppgavene tester om du kjører nøyaktig kursets variant.</p>
+      <ul>
+        <li><strong>Formulering (2A).</strong> Tilstander, handlinger, overgangsmodell, måltest, kostnad; tegn tilstandsgrafen.</li>
+        <li><strong>Uinformert søk (2B).</strong> BFS (tidlig måltest), DFS, DLS/IDS, UCS; tree-like vs graph search.</li>
+        <li><strong>Informert søk (2C).</strong> Greedy (\(f = h\)) og A* (\(f = g + h\)) på Romania og eksamensgrafen.</li>
+        <li><strong>Heuristikker (2D).</strong> Admissibel, konsistent, dominans, relaksering; ulikheter for ukjent \(h(B)\).</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Sidene bygger på slidene fra forelesning 2 (Ruocco) og forelesning 3 slides 1–53 (Jekic), assignment-forelesning 1, og løsningsforslagene til Ord. 2022 og 2023. Der slidene er tynne, er boka (Russell &amp; Norvig 4. utg. kap. 3) brukt og merket. Alle eksamensoppgavene fra analysen for deltema 2.1–2.4 står som egne bokser.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Algoritmedetaljene i 2B må sitte før 2C og 2D gir mening; eksamensoppgavene ligger der de hører hjemme.</p>
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="sok-formulering.html#formulering">Formuler et søkeproblem</a></div><div class="desc">Seks komponenter, Romania, vacuum world, 8-puzzle.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="sok-formulering.html#ulv-geit-kaal">Tegn tilstandsgrafen</a></div><div class="desc">Ulv, geit og kål (O22 3.1), node vs tilstand.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="uinformert-sok.html#fallgruver">Kursets varianter</a></div><div class="desc">Best-first s. 91, BFS s. 95, tree-like, måltest, tie-break.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="uinformert-sok.html#bfs">BFS, DFS, IDS, UCS</a></div><div class="desc">Slidegrafen steg for steg, IDS på ulv/geit/kål (O22 3.2).</div></div><div class="min">~20 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="uinformert-sok.html#eksamen">Eksamen 2023, a–c</a></div><div class="desc">Løkka i A, widget med tree-like og graph search.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="informert-sok.html#astar">Greedy og A*</a></div><div class="desc">Romania 450 mot 418, eksamen 2023 d–e, assignment-eksempelet.</div></div><div class="min">~25 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="heuristikker.html#konsistens">Admissibel og konsistent</a></div><div class="desc">Definisjoner, bevisskisser, O22 1.3.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">08</div><div><div class="title"><a href="heuristikker.html#eksamen">Ulikheter for h(B)</a></div><div class="desc">Eksamen 2023 oppg. 2.2 med widget.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">09</div><div><div class="title"><a href="heuristikker.html#lage">Lage heuristikker</a></div><div class="desc">Relaksering, h₁ og h₂ for 8-puzzle, dominans, O22 3.3.</div></div><div class="min">~10 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="sok-formulering.html" class="subpage-card">
+          <span class="sp-icon">2A</span>
+          <div class="sp-info">
+            <div class="sp-title">Problemformulering og tilstandsrom</div>
+            <div class="sp-desc">Komponentene i et søkeproblem, atomisk vs faktorisert, søketre vs graf. 3 oppgaver, widget: gå i ulv/geit/kål-grafen.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="uinformert-sok.html" class="subpage-card">
+          <span class="sp-icon">2B</span>
+          <div class="sp-info">
+            <div class="sp-title">Uinformert søk</div>
+            <div class="sp-desc">Best-first, BFS, DFS, DLS/IDS, UCS, egenskapstabellen. 3 oppgaver, widget: BFS/DFS/UCS steg for steg.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="informert-sok.html" class="subpage-card">
+          <span class="sp-icon">2C</span>
+          <div class="sp-info">
+            <div class="sp-title">Informert søk: greedy og A*</div>
+            <div class="sp-desc">Heuristikk, greedy og A* på Romania, eksamen 2023 og assignment-eksempelet. 2 oppgaver, widget: greedy mot A*.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="heuristikker.html" class="subpage-card">
+          <span class="sp-icon">2D</span>
+          <div class="sp-info">
+            <div class="sp-title">Heuristikker og A*-optimalitet</div>
+            <div class="sp-desc">Admissibel, konsistent, bevisskisser, dominans, relaksering. 6 oppgaver, widget: sett h-verdier og se bruddene.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene fra kapittelet, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Én prosedyre, fire valg av \(f\), og heuristikkens egenskaper avgjør om A* er optimal.</p>
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 2">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/></marker>
+          </defs>
+          <rect class="bh" x="20" y="18" width="190" height="50" rx="6"/>
+          <text class="lbl-c" x="115" y="39" text-anchor="middle">Søkeproblem</text>
+          <text class="cap" x="115" y="56" text-anchor="middle">S, s₀, mål, ACTIONS, RESULT, c · 2A</text>
+          <rect class="bh" x="285" y="18" width="190" height="50" rx="6"/>
+          <text class="lbl-c" x="380" y="39" text-anchor="middle">Søketre</text>
+          <text class="cap" x="380" y="56" text-anchor="middle">node, frontier, reached · 2A</text>
+          <rect class="bh" x="550" y="18" width="190" height="50" rx="6"/>
+          <text class="lbl-c" x="645" y="39" text-anchor="middle">BEST-FIRST-SEARCH</text>
+          <text class="cap" x="645" y="56" text-anchor="middle">pop lavest f(n), sen måltest · 2B</text>
+          <path class="e" d="M210 43 L283 43"/>
+          <path class="e" d="M475 43 L548 43"/>
+          <rect class="b" x="20" y="150" width="160" height="50" rx="6"/>
+          <text class="lbl" x="100" y="171" text-anchor="middle">BFS (s. 95)</text>
+          <text class="cap" x="100" y="188" text-anchor="middle">FIFO, tidlig måltest · 2B</text>
+          <rect class="b" x="200" y="150" width="160" height="50" rx="6"/>
+          <text class="lbl" x="280" y="171" text-anchor="middle">DFS · UCS · IDS</text>
+          <text class="cap" x="280" y="188" text-anchor="middle">f = −depth, f = g · 2B</text>
+          <rect class="bw" x="380" y="150" width="170" height="50" rx="6"/>
+          <text class="lbl" x="465" y="171" text-anchor="middle">Greedy · A*</text>
+          <text class="cap" x="465" y="188" text-anchor="middle">f = h, f = g + h · 2C</text>
+          <rect class="bw" x="570" y="150" width="170" height="50" rx="6"/>
+          <text class="lbl" x="655" y="171" text-anchor="middle">Heuristikk h</text>
+          <text class="cap" x="655" y="188" text-anchor="middle">admissibel, konsistent · 2D</text>
+          <path class="e" d="M600 68 L300 148"/>
+          <path class="e" d="M630 68 L480 148"/>
+          <path class="e-faded" d="M380 68 L110 148"/>
+          <path class="e-faded" d="M640 200 Q560 230 480 200"/>
+          <text class="cap" x="560" y="232" text-anchor="middle">gjør A* optimal</text>
+        </svg>
+        <figcaption>Heltrukne piler: algoritmene er BEST-FIRST-SEARCH med ulik f. Stiplet: BFS er egen algoritme; heuristikken bestemmer om A* er optimal.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Alle oppgavene</div>
+      <h2>Eksamen, slidene og <em>assignment</em></h2>
+      <p class="section-intro">Alle oppgaveboksene i kapittelet, lenket til stedet der de står. Grønn status betyr at svaret er hentet fra løsningsforslaget eller slidene (med utfylt mellomregning), gul at svaret er et forslag skrevet for denne siden.</p>
+      <ul class="oppgave-index">
+        <li><a href="sok-formulering.html#oppg-o22-1-1"><span class="oi-ref">O22 1.1</span><span>Hvorfor faktorisert framfor atomisk representasjon?</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="sok-formulering.html#oppg-o23-kort-robot"><span class="oi-ref">O23 kort</span><span>Tilstand og starttilstand for flytteroboten med bokser i R1–R4.</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="sok-formulering.html#oppg-o22-3-1"><span class="oi-ref">O22 3.1</span><span>Tegn tilstandsgrafen for ulv, geit og kål (3 kanter fra start).</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="uinformert-sok.html#oppg-o22-3-2"><span class="oi-ref">O22 3.2</span><span>Iterativ fordypning med grense 3 på ulv, geit og kål.</span><span class="oi-status notes">Løsningsforslag + forslag</span></a></li>
+        <li><a href="uinformert-sok.html#oppg-l2-bfs-dfs-ucs"><span class="oi-ref">F2 116–159</span><span>BFS, DFS og UCS på slidegrafen A → G.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="uinformert-sok.html#oppg-o23-2-1-uinf"><span class="oi-ref">O23 2.1 a–c</span><span>Tree-like BFS, DFS og UCS på grafen med løkke.</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="informert-sok.html#oppg-o23-2-1-inf"><span class="oi-ref">O23 2.1 d–e</span><span>Tree-like greedy og A* på samme graf.</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="informert-sok.html#oppg-al1-eksempel"><span class="oi-ref">AF1 9–15</span><span>Alle fem algoritmene på assignment-eksempelgrafen.</span><span class="oi-status notes">Fra assignment-forelesningen</span></a></li>
+        <li><a href="heuristikker.html#oppg-o22-1-3"><span class="oi-ref">O22 1.3</span><span>Hvorfor er konsistens ønskelig?</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="heuristikker.html#oppg-o23-2-2"><span class="oi-ref">O23 2.2</span><span>Verdier av h(B): konsistens, rekkefølge A, C, B, suboptimal sti.</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="heuristikker.html#oppg-al1-heuristikk"><span class="oi-ref">AF1 17–18</span><span>Er eksempelheuristikken admissibel og konsistent?</span><span class="oi-status notes">Fra assignment-forelesningen + forslag</span></a></li>
+        <li><a href="heuristikker.html#oppg-o23-kort-snitt"><span class="oi-ref">O23 kort</span><span>Er snittet av to admissible heuristikker admissibelt?</span><span class="oi-status notes">Fra løsningsforslaget</span></a></li>
+        <li><a href="heuristikker.html#oppg-8puzzle-h1-h2"><span class="oi-ref">Boka 3.6</span><span>Regn h₁ (feilplasserte) og h₂ (Manhattan) for 8-puzzle.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="heuristikker.html#oppg-o22-3-3"><span class="oi-ref">O22 3.3</span><span>Design en admissibel heuristikk for ulv, geit og kål.</span><span class="oi-status notes">Løsningsforslag + forslag</span></a></li>
+      </ul>
+      <h3>Ekstra, ikke på siden</h3>
+      <ul>
+        <li><strong>Forelesning 3 · 19–20:</strong> tre spørsmål om negative heuristikker (med svar på sliden). Kort gjengitt i «Utdypning» på <a href="heuristikker.html#admissibel">2D</a>; ikke sett på eksamen.</li>
+        <li><strong>Assignment 1:</strong> kostnaden for alle stier i Doom-grafen, de fem algoritmene på den, og bonusoppgaven om hvilken A*-variant som krever konsistens (assignment-forelesning 1 · 8–10 og 19; forelesning 3 · 24–29). Løses i øvingen og spoiles ikke her; bruk <a href="informert-sok.html#oppg-al1-eksempel">eksempelet</a> til å sjekke metoden.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Hvilken algoritme i kurset har tidlig måltest, og hvilke har sen? Hvorfor spiller det en rolle for ekspansjonsrekkefølgen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Bare BFS (s. 95) har tidlig måltest, ved generering. DFS, UCS, greedy og A* (BEST-FIRST-SEARCH, s. 91) har sen, ved pop. Med sen måltest kan flere noder ekspanderes etter at målet er generert (UCS på eksamensgrafen ekspanderer C etter at G er i frontier), og en billigere vei kan erstatte den første.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvilket valg av \(f\) og \(h\) gjør at A* oppfører seg som UCS, og hvorfor er det fortsatt optimalt?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(h(n) = 0\) for alle \(n\) gir \(f = g\), altså UCS. \(h = 0\) er både admissibel (\(0 \le h^*\)) og konsistent (\(0 \le c + 0\)), så optimaliteten følger av 2D. Det tilsvarer også \(w = 0\) i \(f = g + w\cdot h\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Eksamensgrafen fra 2023 (S→A 4, S→B 7, A→A 13, A→C 4, C→G 4, B→G 10; h = 3 for A, B, C). Hvilke av de fem algoritmene finner en sti med tree-like search, og hvilke finner den optimale?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">BFS finner S B G (17), ikke optimal. DFS og greedy går i løkke i A og finner ingenting. UCS og A* finner S A C G (12), optimal. A* er optimal fordi \(h\) er admissibel: \(h^*(A) = 8\), \(h^*(B) = 10\), \(h^*(C) = 4\), alle \(\ge 3\).</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="sok-formulering.html" class="next"><div class="pn-label">Start · 2A</div><div class="pn-title">Problemformulering →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+</body>
+</html>

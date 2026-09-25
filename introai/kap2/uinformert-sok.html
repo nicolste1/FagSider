@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Uinformert søk — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  .gsvg { width: 100%; max-width: 440px; display: block; margin: 1rem auto; }
+  .gsvg.wide, .gsvg.wgc { max-width: 760px; }
+  .gsvg .ed { stroke: var(--ink-faded); stroke-width: 1.5; fill: none; }
+  .gsvg .ed.dead { stroke-dasharray: 4 3; stroke: var(--ink-ghost); }
+  .gsvg .ed.hot { stroke: var(--accent); stroke-width: 3.2; }
+  .gsvg .ed.bad { stroke: var(--red); stroke-width: 3; }
+  .gsvg .ah { fill: var(--ink-faded); }
+  .gsvg .nd circle, .gsvg .nd rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+  .gsvg .nd.bad rect { stroke: var(--red); stroke-dasharray: 4 3; fill: rgba(179,38,30,0.06); }
+  .gsvg .nd.bad circle { stroke: var(--red); stroke-width: 2.6; }
+  .gsvg .nd.start rect, .gsvg .nd.goal rect { stroke: var(--accent); stroke-width: 2.4; }
+  .gsvg .nd.fr circle { stroke: var(--accent); stroke-width: 2.6; }
+  .gsvg .nd.exp circle { fill: rgba(27,94,90,0.22); }
+  .gsvg .nd.cur circle { fill: var(--accent); }
+  .gsvg .nd.cur text { fill: var(--paper); }
+  .gsvg text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  .gsvg .cost { font-size: 12px; fill: var(--warm); font-weight: 600; }
+  .gsvg .hv, .gsvg .elbl { font-size: 11px; fill: var(--ink-faded); }
+  .gsvg .zone { fill: var(--accent-soft); stroke: none; }
+  .trace { font-family: var(--mono); font-size: 0.84rem; }
+  .trace td, .trace th { padding: 4px 8px; vertical-align: top; }
+  .svar-format { font-family: var(--mono); font-size: 0.9rem; background: var(--paper); border-left: 3px solid var(--accent); padding: 0.5rem 0.9rem; margin: 0.6rem 0; line-height: 1.6; }
+  .w-sel { font-family: var(--sans); font-size: 0.86rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+  .hin { width: 3.4rem; font-family: var(--mono); font-size: 0.9rem; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+  .note-sm { font-size: 0.86rem; color: var(--ink-faded); margin: 0.4rem 0 0.8rem; }
+
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+
+<main data-chapter="Kapittel 2: Problemløsning ved søk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2B · Slides forelesning 2 · 84–161 · Forelesning 3 · 4–10 · Assignment-forelesning 1 · ~40 min</div>
+      <h1>Uinformert <em>søk</em></h1>
+      <p class="lede">BFS, DFS, dybdebegrenset søk, iterativ fordypning og UCS er samme prosedyre med ulik rekkefølge i frontier. Her lærer du kursets eksakte varianter (BFS s. 95, alt annet som best-first s. 91), og hvordan du skriver ekspansjonsrekkefølge, sti og kostnad slik eksamen vil ha det.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#prosedyre"><span>01</span> Prosedyren</a>
+        <a href="#fallgruver"><span>02</span> Fallgruver</a>
+        <a href="#bfs"><span>03</span> BFS</a>
+        <a href="#dfs"><span>04</span> DFS</a>
+        <a href="#ids"><span>05</span> DLS og IDS</a>
+        <a href="#ucs"><span>06</span> UCS</a>
+        <a href="#egenskaper"><span>07</span> Egenskaper</a>
+        <a href="#eksamen"><span>08</span> Eksamen 2023</a>
+        <a href="#oppsummering"><span>09</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md) · deltema 2.2, prio 1</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Kjør BFS, DFS og UCS for hånd</strong> på en gitt graf: ekspansjonsrekkefølge, sti og kostnad (Ord. 2023 oppg. 2.1, del av 10 p). Se <a href="#oppg-o23-2-1-uinf">oppgaven</a> og øv i <a href="#w-uinf">widgeten</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Iterativ fordypning med grense</strong>: list nodene i den rekkefølgen de ekspanderes, per dybde (Ord. 2022 oppg. 3.2, ulv/geit/kål).</li>
+          <li><span class="tag">Forklar</span>De tre detaljene som gir poengtrekk: <em>tree-like</em> vs graph search, tidlig (BFS) vs sen måltest, alfabetisk tie-break.</li>
+          <li><span class="tag">Forklar</span>Tabellen med fullstendighet, optimalitet, tid og plass i \(b, d, m, \ell\).</li>
+          <li><span class="tag lav">Lavere</span>Utledning av kompleksitetene, notasjonsslidene (node.STATE osv.).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="prosedyre">
+    <div class="container">
+      <div class="section-badge">01 · Prosedyren</div>
+      <h2>Én algoritme, mange <em>strategier</em></h2>
+      <div class="source-note">Slides forelesning 2 · 71–98 og 202 · Boka kap. 3.3.1 · s. 91</div>
+      <span class="lm-pill">Deltema 2.2 · prio 1</span>
+      <p class="dropcap">Du står i startnoden. (1) Er dette målet? (2) Hvis ikke: <span class="term" data-term="ekspandere">ekspander</span> noden, dvs. <span class="term" data-term="generere">generer</span> etterfølgerne. (3) Legg dem i <span class="term" data-term="frontier">frontier</span>. (4) Velg neste node fra frontier etter en <span class="term" data-term="evalueringsfunksjon">evalueringsfunksjon</span> \(f(n)\). Gjenta. Når måltesten gjøres, avhenger av algoritmen.</p>
+      <p>Alle strategiene i kurset unntatt BFS er <span class="term" data-term="best-first-search">best-first search</span>: frontier er en <span class="term" data-term="prioritetsko">prioritetskø</span> ordnet etter \(f\), og bare \(f\) skiller dem.</p>
+<pre><code>function BEST-FIRST-SEARCH(problem, f) returns a solution node or failure
+  node ← NODE(STATE=problem.INITIAL)
+  frontier ← a priority queue ordered by f, with node as an element
+  reached ← a lookup table, with one entry with key problem.INITIAL and value node
+  while not IS-EMPTY(frontier) do
+    node ← POP(frontier)
+    if problem.IS-GOAL(node.STATE) then return node        ← sen måltest
+    for each child in EXPAND(problem, node) do
+      s ← child.STATE
+      if s is not in reached or child.PATH-COST &lt; reached[s].PATH-COST then
+        reached[s] ← child
+        add child to frontier
+  return failure
+
+function EXPAND(problem, node) yields nodes
+  s ← node.STATE
+  for each action in problem.ACTIONS(s) do
+    s' ← problem.RESULT(s, action)
+    cost ← node.PATH-COST + problem.ACTION-COST(s, action, s')
+    yield NODE(STATE=s', PARENT=node, ACTION=action, PATH-COST=cost)</code></pre>
+      <div class="table-wrap">
+        <table>
+          <caption>Cheatsheet fra slidene: samme BEST-FIRST-SEARCH, ulik f</caption>
+          <thead><tr><th>Algoritme</th><th>\(f(n)\)</th><th>Frontier oppfører seg som</th></tr></thead>
+          <tbody>
+            <tr><td>Depth-first search</td><td>\(-\text{depth}(n)\)</td><td><span class="term" data-term="lifo-ko">LIFO-kø</span> (stakk): dypeste først</td></tr>
+            <tr><td>Uniform-cost search (Dijkstra)</td><td>\(g(n)\)</td><td>billigste stikostnad først</td></tr>
+            <tr><td>Greedy best-first search</td><td>\(h(n)\)</td><td>lavest estimat først (<a href="informert-sok.html#greedy">2C</a>)</td></tr>
+            <tr><td>A* search</td><td>\(g(n) + h(n)\)</td><td>lavest totalestimat først (<a href="informert-sok.html#astar">2C</a>)</td></tr>
+            <tr><td>Breadth-first search</td><td>egen algoritme (s. 95)</td><td><span class="term" data-term="fifo-ko">FIFO-kø</span>: eldste først</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Algoritmene vurderes på fire mål: <span class="term" data-term="fullstendighet">fullstendighet</span> (finner den alltid en løsning om det finnes en?), <span class="term" data-term="kostnadsoptimalitet">kostnadsoptimalitet</span> (finner den billigste?), <span class="term" data-term="tidskompleksitet">tidskompleksitet</span> og <span class="term" data-term="plasskompleksitet">plasskompleksitet</span>.</p>
+      <div class="callout">
+        <span class="label">Nøkkelpoeng</span>
+        <p>Etter at Arad er ekspandert ligger Sibiu, Timisoara, Zerind i frontier (lagt til i den rekkefølgen). FIFO popper Sibiu (først inn), LIFO popper Zerind (sist inn), prioritetskø etter \(g\) popper også Zerind (75 mi er billigst), men av en helt annen grunn.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="fallgruver">
+    <div class="container">
+      <div class="section-badge">02 · Fallgruver</div>
+      <h2>Tre detaljer som endrer <em>svaret</em></h2>
+      <div class="source-note">Slides forelesning 2 · 112–115 og 201 · Forelesning 3 · 5–10 · Assignment-forelesning 1 · 2–7</div>
+      <p class="dropcap">Assignment-forelesningen sier det rett ut: små detaljer gir store forskjeller, og «A*» på nettet er sjelden kursets A*. Har du tatt TDT4120, er dette stedet du lettest går i fella.</p>
+      <ol class="steps">
+        <li><strong>Graph search eller <span class="term" data-term="tree-like-search">tree-like search</span>?</strong> <span class="term" data-term="graph-search">Graph search</span> bruker <span class="term" data-term="reached">reached</span> og legger ikke inn en tilstand på nytt med dårligere kostnad (<span class="term" data-term="redundant-sti">redundante stier</span>). Tree-like search er samme pseudokode <em>uten</em> reached-testen: alle barn legges i frontier, også løkker. Står det «tree-like» i oppgaven, er det dette.</li>
+        <li><strong>Når sjekkes målet?</strong> BFS har <span class="term" data-term="tidlig-malsjekk">tidlig måltest</span>: målet sjekkes når en node <em>genereres</em>, og søket stopper før målet legges i frontier. Alle best-first-variantene (DFS, UCS, greedy, A*) har <span class="term" data-term="sen-malsjekk">sen måltest</span>: målet sjekkes når noden <em>poppes</em> for ekspansjon.</li>
+        <li><strong>Uavgjort?</strong> Behandle etterfølgere i alfabetisk rekkefølge, og ved likt \(f\) i prioritetskøen: velg alfabetisk (eller «venstre til høyre» om oppgaven sier det).</li>
+      </ol>
+      <p>Svarformatet fra assignment-forelesningen og eksamen. Målet står i parentes fordi det ikke ekspanderes, bare oppdages:</p>
+      <div class="svar-format">Order of expansion: S, A, B, (G)<br>Found path: S B G<br>Path cost: 4</div>
+      <div class="callout callout-warn">
+        <span class="label">Vanlig feil</span>
+        <p>Å stoppe UCS når målet først dukker opp i frontier. UCS (og A*) stopper først når målet <em>poppes</em>; en billigere vei kan bli funnet i mellomtiden. Og motsatt: å fortsette BFS etter at målet er generert.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="bfs">
+    <div class="container">
+      <div class="section-badge">03 · BFS</div>
+      <h2>Bredde først, mål <em>tidlig</em></h2>
+      <div class="source-note">Slides forelesning 2 · 116–129 · Boka kap. 3.4.1 · s. 95</div>
+      <p class="dropcap"><span class="term" data-term="bfs">Breadth-first search</span> ekspanderer de eldste nodene først: frontier er en FIFO-kø. Kursets offisielle versjon er bokas s. 95:</p>
+<pre><code>function BREADTH-FIRST-SEARCH(problem) returns a solution node or failure
+  node ← NODE(problem.INITIAL)
+  if problem.IS-GOAL(node.STATE) then return node
+  frontier ← a FIFO queue, with node as an element
+  reached ← {problem.INITIAL}
+  while not IS-EMPTY(frontier) do
+    node ← POP(frontier)
+    for each child in EXPAND(problem, node) do
+      s ← child.STATE
+      if problem.IS-GOAL(s) then return child              ← tidlig måltest
+      if s is not in reached then
+        add s to reached
+        add child to frontier
+  return failure</code></pre>
+      <p>Grafen under er slidenes gjennomgående eksempel for BFS, DFS og UCS (start A, mål G).</p>
+      <svg class="gsvg" viewBox="0 0 360 310" role="img" aria-label="Eksempelgraf fra forelesning 2">
+<defs><marker id="ar-lec" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>
+<line class="ed" x1="188" y1="42" x2="153" y2="81" marker-end="url(#ar-lec)"/>
+<text class="cost" x="160" y="54">5</text>
+<line class="ed" x1="212" y1="42" x2="256" y2="82" marker-end="url(#ar-lec)"/>
+<text class="cost" x="226" y="72">7</text>
+<line class="ed" x1="132" y1="110" x2="109" y2="149" marker-end="url(#ar-lec)"/>
+<text class="cost" x="109" y="124">8</text>
+<line class="ed" x1="153" y1="106" x2="206" y2="152" marker-end="url(#ar-lec)"/>
+<text class="cost" x="171" y="140">3</text>
+<line class="ed" x1="93" y1="181" x2="77" y2="218" marker-end="url(#ar-lec)"/>
+<text class="cost" x="73" y="195">4</text>
+<line class="ed" x1="85" y1="243" x2="153" y2="277" marker-end="url(#ar-lec)"/>
+<text class="cost" x="114" y="272">6</text>
+<line class="ed" x1="213" y1="181" x2="177" y2="267" marker-end="url(#ar-lec)"/>
+<text class="cost" x="183" y="220">17</text>
+<g class="nd"><circle cx="200" cy="30" r="17"/><text x="200" y="30">A</text></g>
+<g class="nd"><circle cx="140" cy="95" r="17"/><text x="140" y="95">B</text></g>
+<g class="nd"><circle cx="270" cy="95" r="17"/><text x="270" y="95">C</text></g>
+<g class="nd"><circle cx="100" cy="165" r="17"/><text x="100" y="165">D</text></g>
+<g class="nd"><circle cx="220" cy="165" r="17"/><text x="220" y="165">E</text></g>
+<g class="nd"><circle cx="70" cy="235" r="17"/><text x="70" y="235">F</text></g>
+<g class="nd goal"><circle cx="170" cy="285" r="17"/><circle cx="170" cy="285" r="13"/><text x="170" y="285">G</text></g>
+</svg>
+      <div class="table-wrap">
+        <table class="trace">
+          <caption>BFS på slidegrafen (slides 116–124)</caption>
+          <thead><tr><th>Ekspanderer</th><th>Genererer</th><th>Frontier etterpå</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>B, C (ikke mål)</td><td>⟨B, C⟩</td></tr>
+            <tr><td>B</td><td>D, E</td><td>⟨C, D, E⟩</td></tr>
+            <tr><td>C</td><td>ingen (blindvei)</td><td>⟨D, E⟩</td></tr>
+            <tr><td>D</td><td>F</td><td>⟨E, F⟩</td></tr>
+            <tr><td>E</td><td>G = mål → stopp før G legges inn</td><td>–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Løsningen hentes ved å følge PARENT-pekerne bakover fra G: A → B → E → G, kostnad \(5+3+17 = 25\). BFS er fullstendig i endelige rom, men ikke kostnadsoptimal med ulike kostnader; tid og plass \(O(b^d)\), der \(b\) er <span class="term" data-term="forgreiningsfaktor">forgreiningsfaktoren</span> og \(d\) dybden til den grunneste løsningen.</p>
+    </div>
+  </section>
+
+  <section id="dfs">
+    <div class="container">
+      <div class="section-badge">04 · DFS</div>
+      <h2>Dybde <em>først</em></h2>
+      <div class="source-note">Slides forelesning 2 · 130–142</div>
+      <p class="dropcap"><span class="term" data-term="dfs">Depth-first search</span> ekspanderer den nyeste (dypeste) noden først: best-first med \(f(n) = -\text{depth}(n)\), altså en stakk. Etterfølgerne legges på stakken i omvendt rekkefølge, slik at den alfabetisk første havner øverst.</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <caption>DFS på slidegrafen (slides 130–137); toppen av stakken står først</caption>
+          <thead><tr><th>Ekspanderer</th><th>Frontier etterpå</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>⟨B, C⟩</td></tr>
+            <tr><td>B</td><td>⟨D, E, C⟩</td></tr>
+            <tr><td>D</td><td>⟨F, E, C⟩</td></tr>
+            <tr><td>F</td><td>⟨G, E, C⟩</td></tr>
+            <tr><td>G poppes: mål</td><td>E og C ble aldri besøkt</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Sti A → B → D → F → G, kostnad 23. DFS var heldig her. Den er <strong>ikke fullstendig</strong> (feiler i uendelig dype rom og i løkker, fordi den vanligvis kjøres som tree-like search) og ikke kostnadsoptimal. Til gjengjeld er plassbruken lineær: tid \(O(b^m)\), plass \(O(bm)\), der \(m\) er maksimal dybde.</p>
+    </div>
+  </section>
+
+  <section id="ids">
+    <div class="container">
+      <div class="section-badge">05 · DLS og IDS</div>
+      <h2>Dybdegrense og iterativ <em>fordypning</em></h2>
+      <div class="source-note">Slides forelesning 2 · 143–145 · pseudokoden: Boka kap. 3.4.4 (ikke i slidene)</div>
+      <p class="dropcap"><span class="term" data-term="dls">Depth-limited search</span> er DFS med en grense \(\ell\): noder på dybde \(\ell\) behandles som om de ikke har etterfølgere. <span class="term" data-term="ids">Iterative deepening search</span> prøver \(\ell = 0, 1, 2, \dots\) til den finner en løsning. Begge kjøres som tree-like search. Resultatet er en løsning, <em>failure</em>, eller <span class="term" data-term="cutoff">cutoff</span>: grensen ble nådd, så det kan finnes en løsning dypere.</p>
+<pre><code>function ITERATIVE-DEEPENING-SEARCH(problem) returns a solution node or failure
+  for depth = 0 to ∞ do
+    result ← DEPTH-LIMITED-SEARCH(problem, depth)
+    if result ≠ cutoff then return result
+
+function DEPTH-LIMITED-SEARCH(problem, ℓ) returns a node or failure or cutoff
+  frontier ← a LIFO queue (stack) with NODE(problem.INITIAL) as an element
+  result ← failure
+  while not IS-EMPTY(frontier) do
+    node ← POP(frontier)
+    if problem.IS-GOAL(node.STATE) then return node
+    if DEPTH(node) &gt; ℓ then result ← cutoff
+    else if not IS-CYCLE(node) do
+      for each child in EXPAND(problem, node) do add child to frontier
+  return result</code></pre>
+      <p>IDS er fullstendig når rommet er endelig, kostnadsoptimal bare når alle kostnader er like (som BFS), med tid \(O(b^d)\) og plass \(O(bd)\) (som DFS). Slidene: «slightly better than both DFS and BFS».</p>
+      <div class="callout callout-warn">
+        <span class="label">Hvor går grensen?</span>
+        <p>Slideteksten sier at noder <em>på</em> dybde \(\ell\) ikke får etterfølgere. Bokas pseudokode (og løsningsforslaget under) kutter først noder med dybde \(\gt \ell\), så nodene på dybde \(\ell\) blir ekspandert. Skriv hvilken konvensjon du bruker på eksamen.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-3-2">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 3.2</span><span class="o-ref">ulv, geit og kål</span></div>
+        <div class="o-text"><p>Apply iterative deepening search with depth limit of 3. Enumerate nodes in the order they are expanded. (Tilstandsgrafen og notasjonen står i <a href="sok-formulering.html#oppg-o22-3-1">2A</a>: 1 = vare på startsiden, i/o = bondens side.)</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Løsningsforslaget velger alltid det minste tallet først og går videre til neste dybde ved første cutoff:</p>
+<pre><code>depth=0  111-i (barn 011-o, 101-o, 110-o, 111-o) → 011-o på nivå 1: cutoff
+depth=1  111-i → 011-o (ingen barn) → 101-o (barn 101-i) → 101-i på nivå 2: cutoff
+depth=2  111-i → 011-o → 101-o → 101-i (barn 001-o, 100-o) → 001-o på nivå 3: cutoff
+depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 001-i på nivå 4: cutoff</code></pre>
+            <p>Barn som er forfedre på stien (f.eks. 111-i under 101-o) genereres ikke. 011-o, 110-o og 111-o er tilstander der noe spises, så de har ingen barn.</p>
+          </div>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra løsningsforslaget</span>
+            <p>Bokas DLS stopper ikke ved første cutoff; den popper resten av stakken også. Med samme konvensjoner (minste først, dybde \(\gt \ell\) gir cutoff, forfedre genereres ikke) blir den fullstendige ekspansjonsrekkefølgen:</p>
+            <div class="table-wrap">
+              <table class="trace">
+                <thead><tr><th>\(\ell\)</th><th>Ekspandert (i rekkefølge)</th><th>Cutoff (poppet, ikke ekspandert)</th></tr></thead>
+                <tbody>
+                  <tr><td>0</td><td>111-i</td><td>011-o, 101-o, 110-o, 111-o</td></tr>
+                  <tr><td>1</td><td>111-i, 011-o, 101-o, 110-o, 111-o</td><td>101-i</td></tr>
+                  <tr><td>2</td><td>111-i, 011-o, 101-o, 101-i, 110-o, 111-o</td><td>001-o, 100-o</td></tr>
+                  <tr><td>3</td><td>111-i, 011-o, 101-o, 101-i, 001-o, 100-o, 110-o, 111-o</td><td>001-i, 011-i, 100-i, 110-i</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Resultatet er <em>cutoff</em>: målet 000-o ligger på dybde 7. Bruker du slidenes definisjon (dybde \(\ell\) får ingen barn), blir listen for \(\ell\) lik listen for \(\ell - 1\) i tabellen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ucs">
+    <div class="container">
+      <div class="section-badge">06 · UCS</div>
+      <h2>Billigste sti <em>først</em></h2>
+      <div class="source-note">Slides forelesning 2 · 146–159</div>
+      <p class="dropcap"><span class="term" data-term="ucs">Uniform-cost search</span> (Dijkstra) ekspanderer alltid noden med lavest stikostnad: \(f(n) = g(n)\). Måltesten er <em>sen</em>: G kan ligge i frontier lenge før den poppes, og en billigere vei kan erstatte den.</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <caption>UCS på slidegrafen (slides 146–156)</caption>
+          <thead><tr><th>Ekspanderer</th><th>Frontier etterpå</th><th>Kommentar</th></tr></thead>
+          <tbody>
+            <tr><td>A (0)</td><td>{B:5, C:7}</td><td></td></tr>
+            <tr><td>B (5)</td><td>{C:7, E:8, D:13}</td><td></td></tr>
+            <tr><td>C (7)</td><td>{E:8, D:13}</td><td>blindvei</td></tr>
+            <tr><td>E (8)</td><td>{D:13, G:25}</td><td>G nådd, men ikke billigst: ikke stopp</td></tr>
+            <tr><td>D (13)</td><td>{F:17, G:25}</td><td></td></tr>
+            <tr><td>F (17)</td><td>{G:23}</td><td>billigere vei til G: 23 &lt; 25 erstatter</td></tr>
+            <tr><td>G (23) poppes</td><td>–</td><td>mål</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>UCS er kostnadsoptimal (finner 23, mens BFS fant A → B → E → G til 25) og fullstendig så lenge alle kostnader er \(\ge \epsilon \gt 0\). Tid og plass er \(O(b^{1+\lfloor C^*/\epsilon \rfloor})\), der \(C^*\) er kostnaden til den optimale løsningen.</p>
+
+      <div class="oppgave" data-quiz id="oppg-l2-bfs-dfs-ucs">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">forelesning 2 · 116–159</span></div>
+        <div class="o-text"><p>Kjør BFS, DFS og UCS på slidegrafen i <a href="#bfs">seksjon 03</a> (start A, mål G, alfabetisk rekkefølge). Gi ekspansjonsrekkefølge, sti og kostnad for hver.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · skrevet i eksamensformatet</span>
+            <div class="svar-format">BFS: A, B, C, D, E, (G) · sti A B E G · kostnad 5 + 3 + 17 = 25<br>DFS: A, B, D, F, (G) · sti A B D F G · kostnad 5 + 8 + 4 + 6 = 23<br>UCS: A, B, C, E, D, F, (G) · sti A B D F G · kostnad 23</div>
+            <p>BFS stopper når G genereres fra E. DFS og UCS stopper når G poppes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="egenskaper">
+    <div class="container">
+      <div class="section-badge">07 · Egenskaper</div>
+      <h2>Tabellen du må <em>kunne</em></h2>
+      <div class="source-note">Forelesning 3 · 10 (recap-tabellen) · Boka kap. 3.4.7</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Algoritme</th><th>Fullstendig?</th><th>Optimal?</th><th>Tid</th><th>Plass</th></tr></thead>
+          <tbody>
+            <tr><td>Breadth-first</td><td>Ja¹</td><td>Ja³</td><td>\(O(b^d)\)</td><td>\(O(b^d)\)</td></tr>
+            <tr><td>Uniform-cost</td><td>Ja¹ ²</td><td>Ja</td><td>\(O(b^{1+\lfloor C^*/\epsilon\rfloor})\)</td><td>\(O(b^{1+\lfloor C^*/\epsilon\rfloor})\)</td></tr>
+            <tr><td>Depth-first</td><td>Nei</td><td>Nei</td><td>\(O(b^m)\)</td><td>\(O(bm)\)</td></tr>
+            <tr><td>Depth-limited</td><td>Nei</td><td>Nei</td><td>\(O(b^\ell)\)</td><td>\(O(b\ell)\)</td></tr>
+            <tr><td>Iterative deepening</td><td>Ja¹</td><td>Ja³</td><td>\(O(b^d)\)</td><td>\(O(bd)\)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note-sm">\(b\): forgreiningsfaktor · \(d\): dybden til grunneste løsning · \(m\): maksimal dybde · \(\ell\): dybdegrense. ¹ fullstendig hvis \(b\) er endelig; ² hvis alle kostnader \(\ge \epsilon \gt 0\); ³ kostnadsoptimal hvis alle kostnader er like.</p>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor er IDS ofte å foretrekke framfor BFS når tilstandsrommet er stort og løsningsdybden ukjent?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">IDS har samme garantier som BFS (fullstendig, optimal ved like kostnader) og samme tid \(O(b^d)\), men bare lineær plass \(O(bd)\) som DFS. BFS må lagre hele frontier, \(O(b^d)\). At de øverste nivåene genereres flere ganger koster lite, fordi det nederste nivået dominerer.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="eksamen">
+    <div class="container">
+      <div class="section-badge">08 · Eksamen 2023</div>
+      <h2>Tree-like search på en graf med <em>løkke</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 · oppg. 2.1 (BFS, DFS, UCS) · grafen fra PDF-side 3 · samme graf som slides forelesning 2 · 177–200</div>
+      <div class="oppgave" data-quiz id="oppg-o23-2-1-uinf">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 2.1 a–c</span><span class="o-ref">del av 10 p</span></div>
+        <div class="o-text">
+          <p>Execute tree-like search through the following graph for the given algorithms: a) Breadth first search, b) Depth first search, c) Uniform cost search. Tie breaking: left-to-right order of successors. For each algorithm show the order in which the nodes are expanded, the path from start to goal (or «None»), and the cost of the path found. (Greedy og A*, d–e, står i <a href="informert-sok.html#oppg-o23-2-1-inf">2C</a>.)</p>
+          <svg class="gsvg" viewBox="0 0 380 270" role="img" aria-label="Graf til eksamen 2023 oppgave 2.1">
+<defs><marker id="ar-o23a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>
+<line class="ed" x1="196" y1="40" x2="125" y2="94" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="152" y="57">4</text>
+<line class="ed" x1="223" y1="41" x2="285" y2="93" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="247" y="77">7</text>
+<path class="ed" d="M98 93 C40 48 40 162 98 119" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="32" y="105">13</text>
+<line class="ed" x1="115" y1="121" x2="134" y2="177" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="113" y="154">4</text>
+<line class="ed" x1="157" y1="198" x2="281" y2="221" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="218" y="223">4</text>
+<line class="ed" x1="300" y1="122" x2="300" y2="206" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="287" y="165">10</text>
+<g class="nd"><circle cx="210" cy="30" r="17"/><text x="210" y="30">S</text></g>
+<g class="nd"><circle cx="110" cy="105" r="17"/><text x="110" y="105">A</text></g>
+<text class="hv" x="138" y="85">h=3</text>
+<g class="nd"><circle cx="300" cy="105" r="17"/><text x="300" y="105">B</text></g>
+<text class="hv" x="338" y="105">h=3</text>
+<g class="nd"><circle cx="140" cy="195" r="17"/><text x="140" y="195">C</text></g>
+<text class="hv" x="100" y="195">h=3</text>
+<g class="nd goal"><circle cx="300" cy="225" r="17"/><circle cx="300" cy="225" r="13"/><text x="300" y="225">G</text></g>
+<text class="hv" x="340" y="225">h=0</text>
+</svg>
+          <p>Start S, mål G. Kantene er rettede; A har en løkke tilbake til seg selv med kostnad 13.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · mellomregningen er lagt til</span>
+            <p><strong>a) BFS</strong> (tidlig måltest, tree-like: ingen reached-sjekk)</p>
+            <ul>
+              <li>S er ikke mål. Ekspander S: genererer A, B (ingen er mål). Frontier ⟨A, B⟩.</li>
+              <li>Ekspander A: genererer A (løkka) og C, ingen er mål. Frontier ⟨B, A, C⟩.</li>
+              <li>Ekspander B: genererer G, som er målet → returner med en gang.</li>
+            </ul>
+            <div class="svar-format">Order of expansion: S, A, B, (G) · Path: S B G · Cost: 7 + 10 = 17</div>
+            <p><strong>b) DFS</strong> (\(f = -\text{depth}\), tree-like)</p>
+            <ul>
+              <li>Ekspander S: A og B på dybde 1; A velges (venstre først).</li>
+              <li>Ekspander A: A (løkka) og C på dybde 2; A velges igjen, og slik fortsetter det.</li>
+            </ul>
+            <div class="svar-format">Order of expansion: S, A, A, A, … · Path: None · Cost: None</div>
+            <p><strong>c) UCS</strong> (\(f = g\), sen måltest)</p>
+            <div class="table-wrap">
+              <table class="trace">
+                <thead><tr><th>Popper</th><th>Legger til</th><th>Frontier etterpå</th></tr></thead>
+                <tbody>
+                  <tr><td>S (0)</td><td>A:4, B:7</td><td>{A:4, B:7}</td></tr>
+                  <tr><td>A (4)</td><td>A:4+13=17, C:4+4=8</td><td>{B:7, C:8, A:17}</td></tr>
+                  <tr><td>B (7)</td><td>G:7+10=17</td><td>{C:8, A:17, G:17}</td></tr>
+                  <tr><td>C (8)</td><td>G:8+4=12</td><td>{G:12, A:17, G:17}</td></tr>
+                  <tr><td>G (12)</td><td colspan="2">mål poppet → stopp</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="svar-format">Order of expansion: S, A, B, C, (G) · Path: S A C G · Cost: 4 + 4 + 4 = 12</div>
+            <p>Løsningsforslaget godtok også svar som sjekket besøkte noder. Med graph search (reached) avvises løkka A→A fordi 17 &gt; 4, og DFS gir da S, A, C, (G), sti S A C G, kostnad 12.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-uinf">
+        <div class="widget-label">Prøv selv · BFS, DFS og UCS steg for steg</div>
+        <p class="widget-intro">Velg graf og algoritme og trykk «Ett steg». Mørk node = ekspanderes nå, lys fylt = ekspandert, blå ring = i frontier. Bytt mellom tree-like og graph search og se hvordan løkka i eksamensgrafen oppfører seg.</p>
+        <div class="w-row">
+          <select class="w-sel" id="u-graph" aria-label="Graf">
+            <option value="o23">Eksamen 2023 (S → G)</option>
+            <option value="lec">Slidegrafen (A → G)</option>
+            <option value="al1">Assignment-eksempel (A → E)</option>
+          </select>
+          <div class="w-toggle" id="u-algo"><button type="button" data-v="bfs" class="active">BFS</button><button type="button" data-v="dfs">DFS</button><button type="button" data-v="ucs">UCS</button></div>
+          <div class="w-toggle" id="u-tree"><button type="button" data-v="1" class="active">tree-like</button><button type="button" data-v="0">graph search</button></div>
+        </div>
+        <svg class="gsvg" id="u-svg" viewBox="0 0 380 310" aria-label="Søkegraf"></svg>
+        <div class="w-row">
+          <button class="w-btn" id="u-step" type="button">Ett steg</button>
+          <button class="w-btn" id="u-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="u-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="u-out"></div>
+        <div class="w-log" id="u-log"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">09 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Best-first s. 91</strong>DFS: \(f=-\text{depth}\); UCS: \(f=g\). Sen måltest (ved pop).</div>
+        <div class="recap-pill"><strong>BFS s. 95</strong>FIFO, egen algoritme, tidlig måltest (ved generering).</div>
+        <div class="recap-pill"><strong>Tree-like</strong>Ingen reached-sjekk: løkker kan gi uendelig søk (DFS på eksamensgrafen).</div>
+        <div class="recap-pill"><strong>Tie-break</strong>Alfabetisk / venstre til høyre, både for etterfølgere og like \(f\).</div>
+        <div class="recap-pill"><strong>IDS</strong>DLS med \(\ell = 0, 1, 2, \dots\); list ekspansjoner per \(\ell\).</div>
+        <div class="recap-pill"><strong>Format</strong>Order of expansion med (mål) i parentes, sti, kostnad med utregning.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Kjør BFS (graph search) på assignment-eksempelgrafen: kanter A–B 3, A–C 2, C–D 3, D–E 3, B–E 4 (urettet), start A, mål E.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Ekspander A: genererer B, C. Ekspander B: genererer A (allerede i reached) og E, som er målet. Order of expansion: A, B, (E) · Path: A B E · Cost: 3 + 4 = 7. Samme som på assignment-slidene.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">UCS på samme graf. Hvorfor ekspanderes D før målet poppes?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Pop A: C:2, B:3. Pop C: D:5 (A:4 avvises). Pop B: E:7. Pop D (5 &lt; 7): E via D koster 8 &gt; 7, avvises. Pop E (7): mål. Order: A, C, B, D, (E), sti A B E, kostnad 7. D ekspanderes fordi \(g(D) = 5 \lt g(E) = 7\), og UCS stopper først når målet poppes.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Ville BFS gitt et annet svar på eksamensgrafen om den hadde sen måltest?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Ja. Med sen måltest legges G i frontier etter B: ⟨A, C, G⟩. Så ekspanderes A (løkke) og C, og G poppes: S, A, B, A, C, (G). Stien er fortsatt S B G (17), men ekspansjonsrekkefølgen blir feil. Det er nettopp denne forskjellen løsningsforslaget sier mange bommet på.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="sok-formulering.html" class="prev"><div class="pn-label">← Forrige · 2A</div><div class="pn-title">Problemformulering</div></a>
+        <a href="informert-sok.html" class="next"><div class="pn-label">Neste · 2C</div><div class="pn-title">Informert søk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+
+<script>
+function runSearch(G, algo, tree, limit) {
+  limit = limit || 14;
+  var adj = {};
+  G.e.forEach(function (e) {
+    (adj[e[0]] = adj[e[0]] || []).push([e[1], e[2]]);
+    if (!G.dir) (adj[e[1]] = adj[e[1]] || []).push([e[0], e[2]]);
+  });
+  function kids(n) {
+    return (adj[n.s] || []).slice().sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; })
+      .map(function (t) { return { s: t[0], g: n.g + t[1], d: n.d + 1, p: n, id: ++uid }; });
+  }
+  function h(s) { return G.h && G.h[s] != null ? G.h[s] : 0; }
+  function f(n) { return algo === 'dfs' ? -n.d : algo === 'ucs' ? n.g : algo === 'greedy' ? h(n.s) : n.g + h(n.s); }
+  function path(n) { var p = []; for (; n; n = n.p) p.unshift(n.s); return p; }
+  var uid = 0, root = { s: G.start, g: 0, d: 0, p: null, id: 0 }, steps = [], exp = [];
+  var fr = [root], reached = {}; reached[G.start] = root;
+  function snap(node, note, done) {
+    steps.push({ node: node && node.s, exp: exp.slice(), fr: fr.map(function (n) { return { s: n.s, g: n.g, f: f(n) }; }), note: note, done: done || null });
+  }
+  if (algo === 'bfs') {
+    if (root.s === G.goal) { snap(null, 'start er mål', { path: [root.s], cost: 0 }); return steps; }
+    snap(null, 'start');
+    while (fr.length) {
+      if (exp.length >= limit) { snap(null, 'stopp: løkke', { loop: true }); return steps; }
+      var n = fr.shift(); exp.push(n.s);
+      var ks = kids(n);
+      for (var i = 0; i < ks.length; i++) {
+        var c = ks[i];
+        if (c.s === G.goal) { snap(n.s, 'mål generert', { path: path(c), cost: c.g, goal: c.s }); return steps; }
+        if (tree || !reached[c.s]) { reached[c.s] = c; fr.push(c); }
+      }
+      snap(n.s, 'ekspandert');
+    }
+    snap(null, 'failure', { fail: true }); return steps;
+  }
+  snap(null, 'start');
+  while (fr.length) {
+    fr.sort(function (a, b) { return f(a) - f(b) || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0) || a.id - b.id; });
+    var n = fr.shift();
+    if (n.s === G.goal) { snap(n.s, 'mål poppet', { path: path(n), cost: n.g, goal: n.s }); return steps; }
+    if (exp.length >= limit) { snap(null, 'stopp: løkke', { loop: true }); return steps; }
+    exp.push(n.s);
+    kids(n).forEach(function (c) {
+      if (tree || !reached[c.s] || c.g < reached[c.s].g) { reached[c.s] = c; fr.push(c); }
+    });
+    fr.sort(function (a, b) { return f(a) - f(b) || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0) || a.id - b.id; });
+    snap(n.s, 'ekspandert');
+  }
+  snap(null, 'failure', { fail: true }); return steps;
+}
+
+function drawGraph(svg, G, mid) {
+  var R = G.small ? 7 : 17, s = '', P = G.pos;
+  if (G.dir) s += '<defs><marker id="' + mid + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>';
+  var mk = G.dir ? ' marker-end="url(#' + mid + ')"' : '';
+  G.e.forEach(function (e) {
+    var a = P[e[0]], b = P[e[1]], k = ' data-e="' + e[0] + '|' + e[1] + '"';
+    if (e[0] === e[1]) {
+      s += '<path class="ed"' + k + ' d="M' + (a[0] - 12) + ' ' + (a[1] - 12) + ' C' + (a[0] - 70) + ' ' + (a[1] - 57) + ' ' + (a[0] - 70) + ' ' + (a[1] + 57) + ' ' + (a[0] - 12) + ' ' + (a[1] + 14) + '"' + mk + '/>';
+      s += '<text class="cost" x="' + (a[0] - 74) + '" y="' + a[1] + '">' + e[2] + '</text>'; return;
+    }
+    var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+    s += '<line class="ed"' + k + ' x1="' + (a[0] + ux * R) + '" y1="' + (a[1] + uy * R) + '" x2="' + (b[0] - ux * (R + 2)) + '" y2="' + (b[1] - uy * (R + 2)) + '"' + mk + '/>';
+    s += '<text class="cost" x="' + ((a[0] + b[0]) / 2 - uy * 10) + '" y="' + ((a[1] + b[1]) / 2 + ux * 10) + '">' + e[2] + '</text>';
+  });
+  Object.keys(P).forEach(function (n) {
+    var p = P[n], goal = n === G.goal;
+    s += '<g class="nd" data-n="' + n + '"><circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + R + '"/>' + (goal && !G.small ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (R - 4) + '"/>' : '') +
+      '<text x="' + p[0] + '" y="' + (G.small ? p[1] - 14 : p[1]) + '"' + (G.small ? ' style="font-size:11px"' : '') + '>' + n + '</text></g>';
+    var o = (G.hpos && G.hpos[n]) || (G.small ? [0, 14] : [30, -18]);
+    if (G.h && G.h[n] != null && G.showH !== false) s += '<text class="hv" x="' + (p[0] + o[0]) + '" y="' + (p[1] + o[1]) + '">h=' + G.h[n] + '</text>';
+  });
+  svg.innerHTML = s;
+}
+function markGraph(svg, st, done) {
+  var exp = st ? st.exp : [], fr = st ? st.fr.map(function (x) { return x.s; }) : [];
+  svg.querySelectorAll('.nd').forEach(function (g) {
+    var n = g.getAttribute('data-n');
+    g.setAttribute('class', 'nd' + (st && st.node === n ? ' cur' : exp.indexOf(n) >= 0 ? ' exp' : fr.indexOf(n) >= 0 ? ' fr' : ''));
+  });
+  var path = done && done.path ? done.path : [];
+  svg.querySelectorAll('.ed').forEach(function (l) {
+    var k = l.getAttribute('data-e').split('|'), on = false;
+    for (var i = 0; i + 1 < path.length; i++) if ((path[i] === k[0] && path[i + 1] === k[1]) || (path[i] === k[1] && path[i + 1] === k[0])) on = true;
+    l.setAttribute('class', 'ed' + (on ? ' hot' : ''));
+  });
+}
+
+(function () {
+  'use strict';
+  /* ─── Widget: BFS/DFS/UCS steg for steg ─── */
+  (function () {
+    var root = document.getElementById('w-uinf'); if (!root) return;
+    var GR = {
+      o23: { start: 'S', goal: 'G', dir: true, tree: '1', h: { A: 3, B: 3, C: 3, G: 0 }, showH: false, pos: { S: [210, 35], A: [130, 110], B: [300, 110], C: [150, 200], G: [300, 230] }, e: [['S', 'A', 4], ['S', 'B', 7], ['A', 'A', 13], ['A', 'C', 4], ['C', 'G', 4], ['B', 'G', 10]] },
+      lec: { start: 'A', goal: 'G', dir: true, tree: '0', pos: { A: [200, 30], B: [140, 95], C: [270, 95], D: [100, 165], E: [220, 165], F: [70, 235], G: [170, 285] }, e: [['A', 'B', 5], ['A', 'C', 7], ['B', 'D', 8], ['B', 'E', 3], ['D', 'F', 4], ['F', 'G', 6], ['E', 'G', 17]] },
+      al1: { start: 'A', goal: 'E', dir: false, tree: '0', pos: { A: [100, 265], B: [270, 215], C: [80, 155], D: [160, 45], E: [310, 40] }, e: [['A', 'B', 3], ['A', 'C', 2], ['C', 'D', 3], ['D', 'E', 3], ['B', 'E', 4]] }
+    };
+    var svg = document.getElementById('u-svg'), out = document.getElementById('u-out'), log = document.getElementById('u-log');
+    var gk = 'o23', algo = 'bfs', tree = true, steps, i;
+    function tog(id, cb) { var el = document.getElementById(id); el.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (!b) return; el.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); cb(b.getAttribute('data-v')); }); }
+    function setTree(v) { tree = v === '1'; document.querySelectorAll('#u-tree button').forEach(function (x) { x.classList.toggle('active', x.getAttribute('data-v') === v); }); }
+    function frTxt(st) {
+      if (!st.fr.length) return '⟨ ⟩';
+      if (algo === 'bfs') return '⟨' + st.fr.map(function (x) { return x.s; }).join(', ') + '⟩';
+      return '{' + st.fr.map(function (x) { return x.s + ':' + (algo === 'dfs' ? 'd' + (-x.f) : x.g); }).join(', ') + '}';
+    }
+    function fin(d, st) {
+      if (d.loop) return 'Order of expansion: ' + st.exp.slice(0, 6).join(', ') + ', … (løkke) · Path: None · Cost: None';
+      if (d.fail) return 'failure';
+      return 'Order of expansion: ' + st.exp.join(', ') + ', (' + d.goal + ') · Path: ' + d.path.join(' ') + ' · Cost: ' + d.cost;
+    }
+    function render() {
+      var st = steps[i];
+      markGraph(svg, st, st.done);
+      out.innerHTML = (st.node ? 'Ekspanderte <span class="hl">' + st.node + '</span>. ' : '') + (st.done ? '<strong>' + fin(st.done, st) + '</strong>' : 'Frontier: ' + frTxt(st));
+      log.innerHTML = steps.slice(1, i + 1).map(function (s, k) { return '<span class="entry' + (s.done && s.done.path ? ' ok' : s.done ? ' bad' : '') + '">' + (k + 1) + '. ' + (s.node ? s.node + ' · ' : '') + (s.done ? s.note : 'frontier ' + frTxt(s)) + '</span>'; }).join('') || '<span class="entry">Start: frontier ⟨' + GR[gk].start + '⟩</span>';
+    }
+    function reset() { steps = runSearch(GR[gk], algo, tree, 12); i = 0; render(); }
+    function load() { drawGraph(svg, GR[gk], 'ar-uw'); reset(); }
+    document.getElementById('u-graph').addEventListener('change', function (e) { gk = e.target.value; setTree(GR[gk].tree); load(); });
+    tog('u-algo', function (v) { algo = v; reset(); });
+    tog('u-tree', function (v) { tree = v === '1'; reset(); });
+    document.getElementById('u-step').addEventListener('click', function () { if (i < steps.length - 1) { i++; render(); } });
+    document.getElementById('u-run').addEventListener('click', function () { i = steps.length - 1; render(); });
+    document.getElementById('u-reset').addEventListener('click', reset);
+    load();
+  })();
+})();
+</script>
+</body>
+</html>

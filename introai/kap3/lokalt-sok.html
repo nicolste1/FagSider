@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Lokalt søk — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  svg.mlplot .marker-small { fill: var(--accent); opacity: 0.45; }
+  svg.mlplot .marker-end { fill: var(--green); stroke: var(--paper); stroke-width: 1.5; }
+  .w-ctl select { font-family: var(--mono); font-size: 0.85rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .board-svg .bd-l { fill: var(--paper); stroke: var(--line); stroke-width: 0.6; }
+  .board-svg .bd-d { fill: var(--paper-dark); stroke: var(--line); stroke-width: 0.6; }
+  .board-svg .bd-q { font-size: 20px; fill: var(--accent); }
+  .board-svg .bd-lbl { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); }
+  .tbl-small td, .tbl-small th { padding: 0.35rem 0.5rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Søk i komplekse miljøer">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3A · Slides forelesning 3 · 54–90 · Boka kap. 4.1 · ca. 30 min</div>
+      <h1>Lokalt <em>søk</em></h1>
+      <p class="lede">Når bare sluttilstanden teller, ikke stien dit: hill climbing og hvorfor den setter seg fast, simulated annealing, local beam search og genetiske algoritmer. Eksamen spør om dette som korte forklaringsspørsmål.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#idee"><span>01</span> Lokalt vs inkrementelt</a>
+        <a href="#landskap"><span>02</span> Landskapet</a>
+        <a href="#hill-climbing"><span>03</span> Hill climbing</a>
+        <a href="#annealing"><span>04</span> Simulated annealing</a>
+        <a href="#beam"><span>05</span> Local beam</a>
+        <a href="#genetisk"><span>06</span> Genetiske algoritmer</a>
+        <a href="#gradient"><span>07</span> Gradient descent</a>
+        <a href="#oppsummering"><span>08</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md) · deltema 3.1, prio 2</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Hill climbing sitter fast:</strong> hva tilstanden kan være (lokalt maksimum, platå/skulder, rygg) og hvilket triks som hjelper (random restart, sidelengs trekk, simulated annealing). <a href="#oppg-o23-kort-hill-climbing">Ord. 2023 · kort spørsmål</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Inkrementelt vs lokalt søk:</strong> bygge en løsning bit for bit vs forbedre én komplett tilstand. <a href="#oppg-o22-1-4">Ord. 2022 · 1.4</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Genetiske algoritmer:</strong> seleksjon, crossover, mutasjon, og hvorfor vi har mutasjon. <a href="#oppg-o22-1-5">Ord. 2022 · 1.5</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Ikke sett på eksamen, men lett å gi:</strong> kjøre hill climbing på en liten tabell, akseptsannsynlighet \(e^{-\Delta E/T}\) i simulated annealing, fitness for 8-queens.</li>
+          <li><span class="tag lav">Lavere</span>Local beam og stochastic beam search, gradient descent og maskinlæring (slide 75–78), Griewank-funksjonen, kontinuerlig vs diskret optimering.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 IDÉ ─────────────────────────── -->
+  <section id="idee">
+    <div class="container">
+      <div class="section-badge">01 · Lokalt vs inkrementelt</div>
+      <h2>Når stien <em>ikke teller</em></h2>
+      <div class="source-note">Slides forelesning 3 · 57–63 · Boka kap. 4.1</div>
+      <span class="lm-pill">Deltema 3.1 · prio 2</span>
+
+      <p class="dropcap">BFS, UCS og A* fra kapittel 2 utforsker rommet systematisk: de holder stier i minnet og husker hvilke alternativer som er prøvd, og stien til målet <em>er</em> løsningen. I mange problemer bryr vi oss bare om sluttilstanden. Slidene: vi vil vite hvilke primtall som ganges til et stort tall, ikke alle tallene vi prøvde underveis.</p>
+      <p><span class="term" data-term="lokalt-sok">Lokalt søk</span> har én <em>current</em>-tilstand og flytter seg til nabotilstander. Det gir opp fullstendighet og optimalitet for å få bedre tids- og minnebruk: det bruker lite (ofte konstant) minne og finner ofte gode nok løsninger i svært store eller uendelige tilstandsrom.</p>
+
+      <div class="compare-grid">
+        <div class="compare-cell accent"><h4>Inkrementelt (systematisk) søk</h4><p>Starter med en tom eller delvis løsning og bygger den ut steg for steg til den er komplett. Husker stier og frontier. Eksempel: A* legger til én handling om gangen.</p></div>
+        <div class="compare-cell warm"><h4>Lokalt søk</h4><p>Starter med en <em>komplett</em> (men dårlig) tilstand og endrer den litt om gangen. Husker bare current-tilstanden. Eksempel: 8-queens med alle åtte dronninger på brettet, flytt én.</p></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-1-4">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.4</span><span class="o-ref">kort spørsmål</span></div>
+        <div class="o-text"><p>What is the difference between incremental and local search?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget (utvidet)</span>
+            <p>Løsningsforslaget: <em>inkrementelle</em> søkealgoritmer starter med en delvis løsning og bygger gradvis videre på den til en komplett løsning er funnet.</p>
+            <p>Den andre halvdelen (ikke med i løsningsforslaget, men forventet i et fullt svar): <em>lokalt</em> søk starter med en komplett tilstand og forbedrer den ved å flytte til nabotilstander. Det husker ikke stien, bruker lite minne, men er verken fullstendig eller optimalt.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 LANDSKAP ─────────────────────────── -->
+  <section id="landskap">
+    <div class="container">
+      <div class="section-badge">02 · Landskapet</div>
+      <h2>Tilstandsrommet som <em>terreng</em></h2>
+      <div class="source-note">Slides forelesning 3 · 64–66 · Boka kap. 4.1 (figur 4.1)</div>
+
+      <p class="dropcap">Tenk på tilstandsrommet som et <span class="term" data-term="tilstandslandskap">landskap</span>: hvert punkt er en tilstand, og høyden er verdien. Er høyden en <span class="term" data-term="objektfunksjon">objektfunksjon</span>, leter vi etter den høyeste toppen (<span class="term" data-term="globalt-maksimum">globalt maksimum</span>). Er høyden en kostnadsfunksjon, leter vi etter den dypeste dalen (globalt minimum). Begge er samme problem med motsatt fortegn.</p>
+      <p>Hvor vi kan gå, bestemmes av <span class="term" data-term="nabolag">nabolaget</span>: naboene til en tilstand er tilstandene vi når med én handling. I slidenes graf er A nabo til S, C og seg selv, så nabolaget til A er \(\{A, C, S\}\).</p>
+
+      <figure>
+        <svg id="land-svg" viewBox="0 0 600 250" data-w="600" data-h="250" aria-label="Tilstandslandskap"></svg>
+        <figcaption>Etter figur 4.1 i boka (slide 65). Diskrete tilstander \(x = 0,\dots,40\), naboer \(x \pm 1\). Samme landskap brukes i widgeten under.</figcaption>
+      </figure>
+
+      <table class="tbl-small">
+        <tr><th>Sted</th><th>Kjennetegn</th><th>Hill climbing</th></tr>
+        <tr><td><span class="term" data-term="lokalt-maksimum">Lokalt maksimum</span></td><td>høyere enn alle naboer, lavere enn globalt maks</td><td>stopper</td></tr>
+        <tr><td>Flatt lokalt maksimum</td><td>flatt område, lavere på begge sider</td><td>stopper, sidelengs trekk hjelper ikke</td></tr>
+        <tr><td><span class="term" data-term="skulder">Skulder</span></td><td>flatt område som fortsetter oppover på den ene siden</td><td>stopper, sidelengs trekk hjelper</td></tr>
+        <tr><td><span class="term" data-term="rygg">Rygg</span></td><td>sekvens av lokale maksima der ingen enkelt nabo går oppover</td><td>stopper eller sikksakker sakte</td></tr>
+      </table>
+      <p><span class="term" data-term="plata">Platå</span> er fellesnavnet på flate områder (flatt lokalt maksimum og skulder).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 HILL CLIMBING ─────────────────────────── -->
+  <section id="hill-climbing">
+    <div class="container">
+      <div class="section-badge">03 · Hill climbing</div>
+      <h2>Gå til det beste stedet du <em>ser nå</em></h2>
+      <div class="source-note">Slides forelesning 3 · 69–74 · Boka kap. 4.1.1 (figur 4.2)</div>
+
+      <p class="dropcap"><span class="term" data-term="hill-climbing">Hill climbing</span> (steepest ascent) ser på alle naboene og flytter til den beste, men bare hvis den er <em>strengt</em> bedre. Ellers returnerer den current. Den husker ingenting annet og ser ikke lenger enn nærmeste nabo; boka kaller det «å klatre Everest i tett tåke med hukommelsestap».</p>
+<pre><code>function HILL-CLIMBING(problem) returns a state that is a local maximum
+    current ← problem.INITIAL
+    while true do
+        neighbor ← a highest-valued successor state of current
+        if VALUE(neighbor) ≤ VALUE(current) then return current
+        current ← neighbor</code></pre>
+      <p>Den er grådig, rask i starten, men sitter fast i <strong>lokale maksima</strong>, på <strong>rygger</strong> og på <strong>platåer</strong>. Varianter som hjelper:</p>
+      <ul>
+        <li><span class="term" data-term="sidelengs-trekk">Sidelengs trekk</span>: tillat trekk til en like god nabo, med en grense på antall på rad (ellers evig løkke på et flatt lokalt maksimum). Kommer seg over skuldre.</li>
+        <li><span class="term" data-term="stokastisk-hill-climbing">Stokastisk hill climbing</span>: velg tilfeldig blant naboene som er bedre, med sannsynlighet etter hvor bratt. <span class="term" data-term="first-choice">First-choice</span>: generer tilfeldige naboer til du finner en bedre (godt når det er svært mange naboer).</li>
+        <li><span class="term" data-term="random-restart">Random-restart hill climbing</span>: kjør hill climbing fra tilfeldige starttilstander til en av dem treffer målet. Er \(p\) sannsynligheten for suksess per kjøring, er forventet antall restarter \(1/p\). Fullstendig med sannsynlighet 1.</li>
+      </ul>
+
+      <div class="widget" id="w-hc">
+        <div class="widget-label">Prøv selv · Hill climbing og simulated annealing</div>
+        <p class="widget-intro">Velg startpunkt og algoritme. «Ett steg» flytter én gang. Start på \(x = 14\) (flatt lokalt maks), \(x = 25\) (skulder) og \(x = 3\) (lokalt maks). Slå på sidelengs trekk og se hvilke platåer den kommer seg over. Simulated annealing med høy starttemperatur kommer seg ofte helt til \(x = 32\).</p>
+        <svg viewBox="0 0 600 260" data-w="600" data-h="260" aria-label="Hill climbing på et 1D-landskap"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="hc-alg">Algoritme</label>
+            <select id="hc-alg">
+              <option value="hill">Hill climbing (steepest ascent)</option>
+              <option value="side">Hill climbing + sidelengs trekk (maks 10)</option>
+              <option value="sa">Simulated annealing</option>
+            </select></div>
+          <div class="w-ctl"><label for="hc-start">Start x</label><input type="range" id="hc-start" min="0" max="40" step="1" value="14"><span class="w-val" id="hc-start-val">14</span></div>
+          <div class="w-ctl"><label for="hc-t0">T₀ (SA)</label><input type="range" id="hc-t0" min="0.5" max="8" step="0.5" value="4"><span class="w-val" id="hc-t0-val">4</span></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn" id="hc-step" type="button">Ett steg</button>
+          <button class="w-btn" id="hc-run" type="button">Kjør ferdig</button>
+          <button class="w-btn" id="hc-restart" type="button">Random restart × 10</button>
+          <button class="w-btn secondary" id="hc-seed" type="button">Nytt frø</button>
+          <button class="w-btn secondary" id="hc-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="hc-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o23-kort-hill-climbing">
+        <div class="o-label"><span>Eksamen Ord. 2023 · kort spørsmål</span><span class="o-ref">del 1</span></div>
+        <div class="o-text"><p>Assume a Hill Climbing algorithm found a state from which none of the neighbour states produce an increase in the score value. What can this state be, if not a global maximum? What method/trick may be added to the algorithm in order to proceed from such states?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>«It may also be a local minimum or a plateau. Random start would be a good trick.»</p>
+            <p>Merk: vi maksimerer, så det løsningsforslaget kaller «local minimum» er et <strong>lokalt maksimum</strong>. Et fullt svar: tilstanden kan være et lokalt maksimum, et platå (flatt lokalt maksimum eller skulder) eller en del av en rygg. Triks: <strong>random restart</strong> (start på nytt fra en tilfeldig tilstand og behold den beste), eventuelt sidelengs trekk (hjelper på skulder) eller simulated annealing (tillater dårlige trekk).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-hc-tabell">
+        <div class="o-label"><span>Oppgave av eksamenstype</span><span class="o-ref">egen oppgave</span></div>
+        <div class="o-text">
+          <p>Ti tilstander ligger på rad, og naboene til tilstand \(i\) er \(i-1\) og \(i+1\). Verdiene er:</p>
+          <table class="tbl-small">
+            <tr><th>i</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+            <tr><th>f(i)</th><td>4</td><td>6</td><td>7</td><td>7</td><td>5</td><td>3</td><td>6</td><td>9</td><td>12</td><td>8</td></tr>
+          </table>
+          <ol type="a">
+            <li>Kjør steepest-ascent hill climbing fra tilstand 1 og fra tilstand 6. Hvor stopper den, og hva slags sted er det?</li>
+            <li>Fra hvilke starttilstander finner hill climbing globalt maksimum?</li>
+            <li>Med random restart (start trukket uniformt blant de ti): hvor mange kjøringer trenger vi i forventning?</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>(a) Fra 1: naboen 2 har 6 &gt; 4, flytt til 2. Naboer 1 (4) og 3 (7): flytt til 3. Naboer 2 (6) og 4 (7): ingen er <em>strengt</em> bedre enn 7, så den stopper i 3 med \(f = 7\). Tilstand 3 og 4 er et flatt lokalt maksimum (platå med lavere verdi på begge sider). Fra 6: naboer 5 (5) og 7 (6), flytt til 7. Så 8 (9), så 9 (12). Naboer 8 (9) og 10 (8): stopp i 9 med \(f = 12\), globalt maksimum.</p>
+            <p>(b) Start 5 går til 4 (7 &gt; 3 i 6) og stopper. Starter 1–5 ender i 3 eller 4. Starter 6, 7, 8, 9 og 10 ender i 9 (fra 10: nabo 9 har 12 &gt; 8). Altså 5 av 10.</p>
+            <p>(c) \(p = 5/10 = 0{,}5\) per kjøring, forventet antall kjøringer \(1/p = 2\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 SIMULATED ANNEALING ─────────────────────────── -->
+  <section id="annealing">
+    <div class="container">
+      <div class="section-badge">04 · Simulated annealing</div>
+      <h2>Ta <em>dårlige</em> valg, men sjeldnere og sjeldnere</h2>
+      <div class="source-note">Slides forelesning 3 · 71–74 · Boka kap. 4.1.2 (figur 4.5)</div>
+
+      <p class="dropcap">Slidene gir tre idéer for å komme seg ut av lokale optima. Idé 1: ta noen ikke-så-gode valg innimellom (<span class="term" data-term="stokastisk-lokalt-sok">stokastisk lokalt søk</span>). Idé 2: senk gradvis hvor ofte vi tar slike dårlige valg, som er <span class="term" data-term="simulated-annealing">simulated annealing</span>. Idé 3: søk flere stier samtidig (populasjonsbasert, avsnitt 05–06). Slike metoder kalles <span class="term" data-term="metaheuristikk">metaheuristikker</span>.</p>
+      <p>Simulated annealing velger en <em>tilfeldig</em> nabo. Er den bedre, flytter vi alltid. Er den dårligere med \(\Delta E \gt 0\) (hvor mye verre), flytter vi med sannsynlighet</p>
+      \[ P(\text{aksepter}) = e^{-\Delta E / T} \]
+      <p>der <span class="term" data-term="temperatur">temperaturen</span> \(T\) senkes over tid etter en <em>schedule</em>. Høy \(T\): nesten alt aksepteres (tilfeldig vandring). \(T \to 0\): ingen dårlige trekk aksepteres (ren hill climbing). Senkes \(T\) langsomt nok, går sannsynligheten for å finne globalt optimum mot 1. Bildet er metall som kjøles: atomene beveger seg mye når det er varmt og legger seg til ro når det kjøles.</p>
+<pre><code>function SIMULATED-ANNEALING(problem, schedule) returns a solution state
+    current ← problem.INITIAL
+    for t = 1 to ∞ do
+        T ← schedule(t)
+        if T = 0 then return current
+        next ← a randomly selected successor of current
+        ΔE ← how much worse next is than current
+        if ΔE ≤ 0 then current ← next
+        else current ← next only with probability e^(−ΔE/T)</code></pre>
+
+      <div class="callout callout-warn">
+        <span class="label">Fortegn</span>
+        <p>Boka og slidene skriver formelen litt ulikt (maksimering med \(e^{\Delta E/T}\) der \(\Delta E \lt 0\), eller energi/kostnad med \(e^{-\Delta E/T}\) der \(\Delta E \gt 0\)). Innholdet er det samme: sannsynligheten er alltid mindre enn 1 for et dårligere trekk, faller når trekket er mye verre, og faller når \(T\) synker.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-sa-sannsynlighet">
+        <div class="o-label"><span>Oppgave av eksamenstype</span><span class="o-ref">egen oppgave</span></div>
+        <div class="o-text"><p>Vi maksimerer. Current har verdi 10. Simulated annealing trekker en nabo med verdi 7. Hva er sannsynligheten for å flytte når \(T = 2\), og når \(T = 0{,}5\)? Hva skjer om naboen har verdi 12?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Naboen er \(\Delta E = 10 - 7 = 3\) verre.</p>
+            <p>\(T = 2\): \(P = e^{-3/2} = e^{-1{,}5} \approx 0{,}223\).</p>
+            <p>\(T = 0{,}5\): \(P = e^{-3/0{,}5} = e^{-6} \approx 0{,}0025\). Kaldere gir færre dårlige trekk.</p>
+            <p>Nabo med verdi 12 er bedre (\(\Delta E = -2 \le 0\)), så vi flytter alltid, uansett \(T\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hva blir simulated annealing når \(T\) er svært høy hele tiden, og når \(T = 0\) hele tiden?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Svært høy \(T\): \(e^{-\Delta E/T} \approx 1\), alle trekk aksepteres, en tilfeldig vandring. \(T = 0\): ingen dårlige trekk, altså (stokastisk) hill climbing som setter seg fast i lokale maksima.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 LOCAL BEAM ─────────────────────────── -->
+  <section id="beam">
+    <div class="container">
+      <div class="section-badge">05 · Local beam</div>
+      <h2>\(k\) tilstander <em>samtidig</em></h2>
+      <div class="source-note">Slides forelesning 3 · 71–74 (idé 3) · Boka kap. 4.1.3 (ikke i slidene)</div>
+
+      <p class="dropcap"><span class="term" data-term="local-beam-search">Local beam search</span> holder \(k\) tilstander. I hvert steg genereres alle etterfølgerne til alle \(k\), og de \(k\) beste av hele mengden beholdes. Forskjellen fra \(k\) uavhengige random restarts: informasjon deles, så søket flytter ressursene dit det går best. Ulempen er at alle \(k\) fort samles i samme område. <span class="term" data-term="stokastisk-beam">Stochastic beam search</span> velger derfor de \(k\) etterfølgerne tilfeldig med sannsynlighet etter verdi, som naturlig seleksjon, og leder over i genetiske algoritmer.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 GENETISKE ALGORITMER ─────────────────────────── -->
+  <section id="genetisk">
+    <div class="container">
+      <div class="section-badge">06 · Genetiske algoritmer</div>
+      <h2>En <em>populasjon</em> som utvikler seg</h2>
+      <div class="source-note">Slides forelesning 3 · 79–88 · Boka kap. 4.1.4 (figur 4.6–4.8)</div>
+
+      <p>En <span class="term" data-term="genetisk-algoritme">genetisk algoritme</span> (GA) er en populasjonsbasert metaheuristikk. Slidene: «If you have no signal on where to go, this can be very powerful.» Stegene:</p>
+      <ol class="steps">
+        <li>Start med en <span class="term" data-term="populasjon">populasjon</span> av \(k\) tilfeldig genererte tilstander.</li>
+        <li>Velg tilfeldig to foreldre, vektet etter <span class="term" data-term="fitness">fitness</span> (objektfunksjonen). Dette er <span class="term" data-term="seleksjon">seleksjon</span>.</li>
+        <li>Lag barn ved å kombinere foreldrene tilfeldig: <span class="term" data-term="crossover">crossover</span>, typisk ved et tilfeldig kuttpunkt.</li>
+        <li>Legg barna til populasjonen; med liten sannsynlighet får hvert barn en <span class="term" data-term="mutasjon">mutasjon</span> (ett tilfeldig tegn endres).</li>
+        <li>Erstatt den gamle populasjonen med den nye. Gjenta til en løsning er funnet eller nok generasjoner har gått.</li>
+      </ol>
+      <p>Seleksjon med sannsynlighet proporsjonal med fitness:</p>
+      \[ P(\text{velg } i) = \frac{\text{fitness}(i)}{\sum_j \text{fitness}(j)} \]
+
+      <h3>8-queens</h3>
+      <p><span class="term" data-term="atta-dronninger">8-queens</span>: plasser 8 dronninger på et sjakkbrett så ingen truer hverandre. Boka koder en tilstand som 8 sifre, der siffer nummer \(i\) er raden til dronningen i kolonne \(i\). Fitness er antall par som <em>ikke</em> angriper hverandre; en løsning har \(\binom{8}{2} = 28\).</p>
+
+      <figure>
+        <svg class="board-svg" viewBox="0 0 256 256" style="max-width:260px" aria-label="8-queens-tilstanden 24748552">
+<rect class="bd-l" x="24" y="202" width="28" height="28"/>
+<rect class="bd-d" x="24" y="174" width="28" height="28"/>
+<rect class="bd-l" x="24" y="146" width="28" height="28"/>
+<rect class="bd-d" x="24" y="118" width="28" height="28"/>
+<rect class="bd-l" x="24" y="90" width="28" height="28"/>
+<rect class="bd-d" x="24" y="62" width="28" height="28"/>
+<rect class="bd-l" x="24" y="34" width="28" height="28"/>
+<rect class="bd-d" x="24" y="6" width="28" height="28"/>
+<rect class="bd-d" x="52" y="202" width="28" height="28"/>
+<rect class="bd-l" x="52" y="174" width="28" height="28"/>
+<rect class="bd-d" x="52" y="146" width="28" height="28"/>
+<rect class="bd-l" x="52" y="118" width="28" height="28"/>
+<rect class="bd-d" x="52" y="90" width="28" height="28"/>
+<rect class="bd-l" x="52" y="62" width="28" height="28"/>
+<rect class="bd-d" x="52" y="34" width="28" height="28"/>
+<rect class="bd-l" x="52" y="6" width="28" height="28"/>
+<rect class="bd-l" x="80" y="202" width="28" height="28"/>
+<rect class="bd-d" x="80" y="174" width="28" height="28"/>
+<rect class="bd-l" x="80" y="146" width="28" height="28"/>
+<rect class="bd-d" x="80" y="118" width="28" height="28"/>
+<rect class="bd-l" x="80" y="90" width="28" height="28"/>
+<rect class="bd-d" x="80" y="62" width="28" height="28"/>
+<rect class="bd-l" x="80" y="34" width="28" height="28"/>
+<rect class="bd-d" x="80" y="6" width="28" height="28"/>
+<rect class="bd-d" x="108" y="202" width="28" height="28"/>
+<rect class="bd-l" x="108" y="174" width="28" height="28"/>
+<rect class="bd-d" x="108" y="146" width="28" height="28"/>
+<rect class="bd-l" x="108" y="118" width="28" height="28"/>
+<rect class="bd-d" x="108" y="90" width="28" height="28"/>
+<rect class="bd-l" x="108" y="62" width="28" height="28"/>
+<rect class="bd-d" x="108" y="34" width="28" height="28"/>
+<rect class="bd-l" x="108" y="6" width="28" height="28"/>
+<rect class="bd-l" x="136" y="202" width="28" height="28"/>
+<rect class="bd-d" x="136" y="174" width="28" height="28"/>
+<rect class="bd-l" x="136" y="146" width="28" height="28"/>
+<rect class="bd-d" x="136" y="118" width="28" height="28"/>
+<rect class="bd-l" x="136" y="90" width="28" height="28"/>
+<rect class="bd-d" x="136" y="62" width="28" height="28"/>
+<rect class="bd-l" x="136" y="34" width="28" height="28"/>
+<rect class="bd-d" x="136" y="6" width="28" height="28"/>
+<rect class="bd-d" x="164" y="202" width="28" height="28"/>
+<rect class="bd-l" x="164" y="174" width="28" height="28"/>
+<rect class="bd-d" x="164" y="146" width="28" height="28"/>
+<rect class="bd-l" x="164" y="118" width="28" height="28"/>
+<rect class="bd-d" x="164" y="90" width="28" height="28"/>
+<rect class="bd-l" x="164" y="62" width="28" height="28"/>
+<rect class="bd-d" x="164" y="34" width="28" height="28"/>
+<rect class="bd-l" x="164" y="6" width="28" height="28"/>
+<rect class="bd-l" x="192" y="202" width="28" height="28"/>
+<rect class="bd-d" x="192" y="174" width="28" height="28"/>
+<rect class="bd-l" x="192" y="146" width="28" height="28"/>
+<rect class="bd-d" x="192" y="118" width="28" height="28"/>
+<rect class="bd-l" x="192" y="90" width="28" height="28"/>
+<rect class="bd-d" x="192" y="62" width="28" height="28"/>
+<rect class="bd-l" x="192" y="34" width="28" height="28"/>
+<rect class="bd-d" x="192" y="6" width="28" height="28"/>
+<rect class="bd-d" x="220" y="202" width="28" height="28"/>
+<rect class="bd-l" x="220" y="174" width="28" height="28"/>
+<rect class="bd-d" x="220" y="146" width="28" height="28"/>
+<rect class="bd-l" x="220" y="118" width="28" height="28"/>
+<rect class="bd-d" x="220" y="90" width="28" height="28"/>
+<rect class="bd-l" x="220" y="62" width="28" height="28"/>
+<rect class="bd-d" x="220" y="34" width="28" height="28"/>
+<rect class="bd-l" x="220" y="6" width="28" height="28"/>
+<text class="bd-q" x="38" y="195" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="66" y="139" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="94" y="55" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="122" y="139" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="150" y="27" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="178" y="111" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="206" y="111" text-anchor="middle">&#9819;</text>
+<text class="bd-q" x="234" y="195" text-anchor="middle">&#9819;</text>
+<text class="bd-lbl" x="38" y="244" text-anchor="middle">1</text>
+<text class="bd-lbl" x="66" y="244" text-anchor="middle">2</text>
+<text class="bd-lbl" x="94" y="244" text-anchor="middle">3</text>
+<text class="bd-lbl" x="122" y="244" text-anchor="middle">4</text>
+<text class="bd-lbl" x="150" y="244" text-anchor="middle">5</text>
+<text class="bd-lbl" x="178" y="244" text-anchor="middle">6</text>
+<text class="bd-lbl" x="206" y="244" text-anchor="middle">7</text>
+<text class="bd-lbl" x="234" y="244" text-anchor="middle">8</text>
+<text class="bd-lbl" x="16" y="220" text-anchor="middle">1</text>
+<text class="bd-lbl" x="16" y="192" text-anchor="middle">2</text>
+<text class="bd-lbl" x="16" y="164" text-anchor="middle">3</text>
+<text class="bd-lbl" x="16" y="136" text-anchor="middle">4</text>
+<text class="bd-lbl" x="16" y="108" text-anchor="middle">5</text>
+<text class="bd-lbl" x="16" y="80" text-anchor="middle">6</text>
+<text class="bd-lbl" x="16" y="52" text-anchor="middle">7</text>
+<text class="bd-lbl" x="16" y="24" text-anchor="middle">8</text>
+        </svg>
+        <figcaption>Tilstanden 24748552 (rad 1 nederst).</figcaption>
+      </figure>
+
+      <div class="oppgave" data-quiz id="oppg-atta-dronninger">
+        <div class="o-label"><span>Oppgave · eksempel fra slidene</span><span class="o-ref">slide 87 · Boka figur 4.6</span></div>
+        <div class="o-text">
+          <p>En GA for 8-queens har populasjonen 24748552, 32752411, 24415124 og 32543213.</p>
+          <ol type="a">
+            <li>Regn ut fitness for 24748552 (antall ikke-angripende par).</li>
+            <li>De fire har fitness 24, 23, 20 og 11. Hva er seleksjonssannsynligheten for hver?</li>
+            <li>Gjør crossover av 32752411 og 24748552 med kuttpunkt etter posisjon 3. Hvilke barn får du?</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · tallene stemmer med boka, utregningen er vår</span>
+            <p>(a) Rader per kolonne: 2, 4, 7, 4, 8, 5, 5, 2. Angripende par: kolonne 1 og 8 (begge rad 2), kolonne 2 og 4 (begge rad 4), kolonne 6 og 7 (begge rad 5), og kolonne 3 og 8 på diagonal (radforskjell \(7-2 = 5\) = kolonneforskjell \(8-3 = 5\)). Ingen andre par deler rad eller diagonal. Fitness \(= 28 - 4 = 24\).</p>
+            <p>(b) Sum \(24+23+20+11 = 78\). \(24/78 \approx 31\,\%\), \(23/78 \approx 29\,\%\), \(20/78 \approx 26\,\%\), \(11/78 \approx 14\,\%\).</p>
+            <p>(c) 327|52411 og 247|48552 gir <strong>327</strong>48552 og <strong>247</strong>52411. Første barn får de tre første sifrene fra første forelder og resten fra andre, og omvendt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-1-5">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.5</span><span class="o-ref">kort spørsmål</span></div>
+        <div class="o-text"><p>Why do we have mutations in genetic algorithms?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>For å utforske nabolaget til løsningene ved å gjøre små endringer i genotypen, der vi håper på forbedret fitness. Crossover er en større endring som utnytter (<em>exploit</em>) de gode løsningene.</p>
+            <p>Tillegg: uten mutasjon kan populasjonen aldri få en verdi i en posisjon som ingen av foreldrene har, så mangfoldet går tapt og GA-en kan sette seg fast.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 GRADIENT ─────────────────────────── -->
+  <section id="gradient">
+    <div class="container">
+      <div class="section-badge">07 · Gradient descent</div>
+      <h2>Lokalt søk i <em>kontinuerlige</em> rom</h2>
+      <div class="source-note">Slides forelesning 3 · 69, 75–78, 89–90</div>
+
+      <p class="dropcap">Minimerer vi i stedet for å maksimere, kalles hill climbing <span class="term" data-term="gradient-descent">gradient descent</span>: vi flytter i retningen der «høyden» synker mest. I flere dimensjoner peker gradienten \(\nabla f\) dit funksjonen vokser mest, så vi går motsatt vei:</p>
+      \[ \theta \leftarrow \theta - \alpha \, \nabla_\theta f(\theta) \]
+      <p>Slidene kobler dette til maskinlæring: en tapsfunksjon over en milliard parametre er et milliard-dimensjonalt landskap, og treningen er lokalt søk der stien ikke betyr noe, bare bunnen.</p>
+
+      <div class="oppgave" data-quiz id="oppg-wake-up">
+        <div class="o-label"><span>Tenk over · fra slidene</span><span class="o-ref">slide 89–90 «Wake up problem»</span></div>
+        <div class="o-text"><p>Du vil finne minimum av \(f(x) = \sin x\). Er gradient descent med \(-f'(x)\) eller en genetisk algoritme raskest? Hva om funksjonen er Weierstrass-funksjonen \(W(x) = \sum_{n=0}^{\infty} a^n \cos(b^n \pi x)\), som er kontinuerlig men ikke deriverbar noe sted?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>\(\sin x\) er glatt, og hvert lokale minimum er også globalt (alle er \(-1\)). Gradienten peker rett ned, så gradient descent er mye raskere.</p>
+            <p>Weierstrass-funksjonen har ingen derivert og svært mange små topper og daler. Gradienten gir ikke noe signal, og lokalt søk setter seg fast overalt. Her er en GA (populasjon, crossover, mutasjon) bedre: «if you have no signal on where to go».</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">08 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Lokalt søk</strong>Én komplett tilstand, flytt til naboer. Lite minne, verken fullstendig eller optimalt.</div>
+        <div class="recap-pill"><strong>Fast</strong>Lokalt maksimum, platå (flatt lokalt maks, skulder), rygg.</div>
+        <div class="recap-pill"><strong>Triks</strong>Random restart (\(1/p\) forsøk), sidelengs trekk, stokastisk valg, simulated annealing.</div>
+        <div class="recap-pill"><strong>SA</strong>Dårligere trekk aksepteres med \(e^{-\Delta E/T}\); \(T\) synker.</div>
+        <div class="recap-pill"><strong>GA</strong>Populasjon, fitness-vektet seleksjon, crossover (exploit), mutasjon (explore).</div>
+        <div class="recap-pill"><strong>Gradient descent</strong>Hill climbing når vi minimerer i kontinuerlige rom: \(\theta - \alpha\nabla f\).</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvorfor hjelper sidelengs trekk på en skulder, men ikke på et flatt lokalt maksimum?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">På en skulder fortsetter terrenget oppover i enden av det flate området, så sidelengs trekk kan nå kanten og klatre videre. Et flatt lokalt maksimum er lavere på begge sider; sidelengs trekk vandrer bare fram og tilbake til grensen på antall trekk er nådd.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hva er forskjellen på local beam search med \(k\) tilstander og \(k\) parallelle random restarts?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Random restarts er uavhengige. Local beam velger de \(k\) beste blant <em>alle</em> etterfølgerne, så kjøringene deler informasjon og konsentrerer seg der det går best (men kan miste mangfold).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hill climbing lykkes fra 14 % av starttilstandene i 8-queens. Hvor mange kjøringer trenger random restart i forventning?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(1/p = 1/0{,}14 \approx 7\) kjøringer.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 3: oversikt</div></a>
+        <a href="delvis-observerbart.html" class="next"><div class="pn-label">Neste · 3B</div><div class="pn-title">Ikke-determinisme og belief states →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  /* Felles landskap: diskrete tilstander x = 0..40, naboer x ± 1 */
+  var F = [1, 1.5, 2.2, 3, 3.8, 4.6, 5.3, 5.8, 6, 5.7, 5, 4, 2.6, 3, 3, 3, 3, 3, 3, 2.5,
+           2, 2.2, 2.8, 3.5, 4.5, 4.5, 4.5, 4.5, 5.5, 6.8, 8, 9.2, 10, 9.4, 8.3, 7, 5.6, 4.3, 3.2, 2.4, 1.8];
+  var N = F.length - 1;
+  var PTS = F.map(function (v, i) { return [i, v]; });
+  var AX = { x: [0, 40], y: [0, 11], xLabel: 'tilstand x', yLabel: 'objektfunksjon', xTicks: [0, 5, 10, 15, 20, 25, 30, 35, 40], yTicks: [0, 2, 4, 6, 8, 10] };
+
+  /* ─── Figur: annotert landskap ─── */
+  (function () {
+    var svg = document.getElementById('land-svg'); if (!svg) return;
+    var p = MLPlot.make(svg, AX);
+    p.polyline(PTS, 'curve');
+    p.label(32, 10.4, 'globalt maksimum', 'middle');
+    p.label(8, 6.4, 'lokalt maksimum', 'middle');
+    p.label(15.5, 3.4, 'flatt lokalt maks', 'middle');
+    p.label(25.5, 4.9, 'skulder', 'middle');
+    p.point(8, 6); p.point(32, 10, 'marker-accent');
+  })();
+
+  /* ─── Widget: hill climbing / simulated annealing ─── */
+  (function () {
+    var root = document.getElementById('w-hc'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), AX);
+    plot.polyline(PTS, 'curve');
+    var alg = document.getElementById('hc-alg'), sIn = document.getElementById('hc-start'), tIn = document.getElementById('hc-t0');
+    var out = document.getElementById('hc-out');
+    var seed = 7, rnd, st;
+    function rng(s) { return function () { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
+    function reset() {
+      document.getElementById('hc-start-val').textContent = sIn.value;
+      document.getElementById('hc-t0-val').textContent = tIn.value;
+      rnd = rng(seed);
+      st = { cur: +sIn.value, prev: -1, path: [+sIn.value], t: 0, side: 0, done: false, bad: 0, ends: null, msg: 'Start i x = ' + sIn.value + ', f = ' + F[+sIn.value] + '.' };
+      render();
+    }
+    function kind(x) {
+      if (x === 32) return '<span class="ok">globalt maksimum</span>';
+      var l = x > 0 ? F[x - 1] : -1, r = x < N ? F[x + 1] : -1;
+      if (l === F[x] || r === F[x]) return '<span class="bad">platå</span> (flatt lokalt maksimum eller skulder)';
+      return '<span class="bad">lokalt maksimum</span>';
+    }
+    function hillStep(sideways) {
+      var nb = [st.cur - 1, st.cur + 1].filter(function (x) { return x >= 0 && x <= N; });
+      var best = nb[0];
+      nb.forEach(function (x) { if (F[x] > F[best] || (F[x] === F[best] && x !== st.prev)) best = x; });
+      if (F[best] > F[st.cur]) { st.prev = st.cur; st.cur = best; st.side = 0; st.msg = 'Flytter oppover til x = ' + best + ', f = ' + F[best] + '.'; }
+      else if (sideways && F[best] === F[st.cur] && st.side < 10) { st.prev = st.cur; st.cur = best; st.side++; st.msg = 'Sidelengs trekk ' + st.side + '/10 til x = ' + best + '.'; }
+      else { st.done = true; st.msg = 'Ingen nabo er bedre. Stopper i x = ' + st.cur + ', f = ' + F[st.cur] + ': ' + kind(st.cur) + '.'; }
+      st.path.push(st.cur);
+    }
+    function saStep() {
+      var T = +tIn.value * Math.pow(0.97, st.t);
+      if (T < 0.02 || st.t > 800) { st.done = true; st.msg = 'Temperaturen er ~0 etter ' + st.t + ' steg. Slutt i x = ' + st.cur + ', f = ' + F[st.cur] + ': ' + kind(st.cur) + '. Aksepterte dårlige trekk: ' + st.bad + '.'; return; }
+      var nx = st.cur + (rnd() < 0.5 ? -1 : 1); nx = Math.max(0, Math.min(N, nx));
+      var dE = F[st.cur] - F[nx];
+      var acc = dE <= 0 || rnd() < Math.exp(-dE / T);
+      if (acc) { if (dE > 0) st.bad++; st.cur = nx; }
+      st.t++; st.path.push(st.cur);
+      st.msg = 't = ' + st.t + ', T = ' + T.toFixed(2) + ': nabo x = ' + nx + (dE > 0 ? ' er ' + dE.toFixed(1) + ' verre, P = e^(−ΔE/T) = ' + Math.exp(-dE / T).toFixed(2) + (acc ? ', akseptert.' : ', avvist.') : ' er ikke verre, akseptert.');
+    }
+    function step() { if (st.done) return; if (alg.value === 'sa') saStep(); else hillStep(alg.value === 'side'); render(); }
+    function render() {
+      plot.clearOverlay();
+      var seen = {};
+      st.path.forEach(function (x) { if (!seen[x]) { seen[x] = 1; plot.point(x, F[x], 'marker-small', 3); } });
+      if (st.ends) st.ends.forEach(function (x) { plot.point(x, F[x], 'marker-end', 6); });
+      plot.point(st.cur, F[st.cur], 'marker', 7);
+      out.innerHTML = st.msg;
+    }
+    document.getElementById('hc-step').addEventListener('click', step);
+    document.getElementById('hc-run').addEventListener('click', function () { var g = 0; while (!st.done && g++ < 2000) { if (alg.value === 'sa') saStep(); else hillStep(alg.value === 'side'); } render(); });
+    document.getElementById('hc-restart').addEventListener('click', function () {
+      reset(); var ends = [], hits = 0;
+      for (var k = 0; k < 10; k++) {
+        st.cur = Math.floor(rnd() * (N + 1)); st.prev = -1; st.side = 0; st.done = false;
+        while (!st.done) hillStep(false);
+        ends.push(st.cur); if (st.cur === 32) hits++;
+      }
+      st.ends = ends; st.path = []; st.cur = ends.reduce(function (a, x) { return F[x] > F[a] ? x : a; }, ends[0]);
+      st.msg = 'Ti hill climbing-kjøringer fra tilfeldige starter endte i x = ' + ends.join(', ') + '. <span class="hl">' + hits + ' av 10</span> fant globalt maksimum; random restart beholder den beste (f = ' + Math.max.apply(null, ends.map(function (x) { return F[x]; })) + ').';
+      render();
+    });
+    document.getElementById('hc-seed').addEventListener('click', function () { seed = (seed * 31 + 11) % 100000; reset(); });
+    document.getElementById('hc-reset').addEventListener('click', reset);
+    [sIn, tIn, alg].forEach(function (el) { el.addEventListener('input', reset); });
+    reset();
+  })();
+})();
+</script>
+</body>
+</html>

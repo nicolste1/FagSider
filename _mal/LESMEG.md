@@ -29,5 +29,6 @@ Innhold i malen:
 - `kap1/index.html` — kapitteloversikt med alle seksjonene som skal fylles
 - `kap1/del-a.html` — innholdsside som viser hver komponent (seksjon, begrep, oppgave, quiz, widget, formler, page-nav)
 - `kilder/dekning.json`, `kilder/versjon.js` — skjema for sporing av kilden
+- `kilder/eksamensanalyse.md`, `kilder/eksamen.json` — eksamensanalysen (steg 0 i `NYTT-FAG.md`), fylles ut sammen med brukeren før sidene skrives
 
 Se `NYTT-FAG.md` for hele oppskriften og `introml/` for en ferdig fagside.

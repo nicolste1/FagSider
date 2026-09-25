@@ -1,0 +1,321 @@
+{
+  "_kommentar": "Hvilken HTML-side (og anker) som dekker hvert deltema i kilder/notater.md. Nøklene er deltema-numrene fra eksamensanalyse.md; A1/A2 = assignments.",
+  "1": {
+    "side": "kap1/index.html"
+  },
+  "1.1": {
+    "side": "kap1/agenter.html",
+    "anker": "agent"
+  },
+  "1.2": {
+    "side": "kap1/agenter.html",
+    "anker": "miljo"
+  },
+  "1.3": {
+    "side": "kap1/agenter.html",
+    "anker": "agenttyper"
+  },
+  "2.1": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "formulering"
+  },
+  "2.1.1": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "agent"
+  },
+  "2.1.2": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "formulering"
+  },
+  "2.1.3": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "eksempler"
+  },
+  "2.1.4": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "representasjon"
+  },
+  "2.1.5": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "graf-tre"
+  },
+  "2.1.6": {
+    "side": "kap2/sok-formulering.html",
+    "anker": "ulv-geit-kaal"
+  },
+  "2.2": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "prosedyre"
+  },
+  "2.2.1": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "prosedyre"
+  },
+  "2.2.2": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "fallgruver"
+  },
+  "2.2.3": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "bfs"
+  },
+  "2.2.4": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "dfs"
+  },
+  "2.2.5": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "ids"
+  },
+  "2.2.6": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "ucs"
+  },
+  "2.2.7": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "egenskaper"
+  },
+  "2.2.8": {
+    "side": "kap2/uinformert-sok.html",
+    "anker": "eksamen"
+  },
+  "2.3": {
+    "side": "kap2/informert-sok.html",
+    "anker": "heuristikk"
+  },
+  "2.3.1": {
+    "side": "kap2/informert-sok.html",
+    "anker": "heuristikk"
+  },
+  "2.3.2": {
+    "side": "kap2/informert-sok.html",
+    "anker": "greedy"
+  },
+  "2.3.3": {
+    "side": "kap2/informert-sok.html",
+    "anker": "astar"
+  },
+  "2.3.4": {
+    "side": "kap2/informert-sok.html",
+    "anker": "eksamen"
+  },
+  "2.4": {
+    "side": "kap2/heuristikker.html",
+    "anker": "admissibel"
+  },
+  "2.4.1": {
+    "side": "kap2/heuristikker.html",
+    "anker": "admissibel"
+  },
+  "2.4.2": {
+    "side": "kap2/heuristikker.html",
+    "anker": "konsistens"
+  },
+  "2.4.3": {
+    "side": "kap2/heuristikker.html",
+    "anker": "optimalitet"
+  },
+  "2.4.4": {
+    "side": "kap2/heuristikker.html",
+    "anker": "eksamen"
+  },
+  "2.4.5": {
+    "side": "kap2/heuristikker.html",
+    "anker": "dominans"
+  },
+  "2.4.6": {
+    "side": "kap2/heuristikker.html",
+    "anker": "lage"
+  },
+  "3.1": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "idee"
+  },
+  "3.1.1": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "landskap"
+  },
+  "3.1.2": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "hill-climbing"
+  },
+  "3.1.3": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "annealing"
+  },
+  "3.1.4": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "beam"
+  },
+  "3.1.5": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "genetisk"
+  },
+  "3.1.6": {
+    "side": "kap3/lokalt-sok.html",
+    "anker": "gradient"
+  },
+  "3.2": {
+    "side": "kap3/delvis-observerbart.html",
+    "anker": "ikke-deterministisk"
+  },
+  "3.3": {
+    "side": "kap3/delvis-observerbart.html",
+    "anker": "belief-state"
+  },
+  "3.3.1": {
+    "side": "kap3/delvis-observerbart.html",
+    "anker": "sensorless"
+  },
+  "3.3.2": {
+    "side": "kap3/delvis-observerbart.html",
+    "anker": "persepsjon"
+  },
+  "3.3.3": {
+    "side": "kap3/delvis-observerbart.html",
+    "anker": "labyrint"
+  },
+  "3.3.4": {
+    "side": "kap3/delvis-observerbart.html",
+    "anker": "online"
+  },
+  "4.1": {
+    "side": "kap4/csp-formulering.html",
+    "anker": "definisjon"
+  },
+  "4.2": {
+    "side": "kap4/csp-formulering.html",
+    "anker": "ac3"
+  },
+  "4.3": {
+    "side": "kap4/backtracking.html",
+    "anker": "backtracking"
+  },
+  "4.4": {
+    "side": "kap4/backtracking.html",
+    "anker": "lokalt-sok"
+  },
+  "6": {
+    "side": "kap6/index.html"
+  },
+  "6.1": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "syntaks"
+  },
+  "6.1.1": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "syntaks"
+  },
+  "6.1.2": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "entailment"
+  },
+  "6.1.3": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "gullkasser"
+  },
+  "6.1.4": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "ekvivalenser"
+  },
+  "6.2": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "inferensregler"
+  },
+  "6.2.1": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "inferensregler"
+  },
+  "6.2.2": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "horn"
+  },
+  "6.2.3": {
+    "side": "kap6/pl-grunnlag.html",
+    "anker": "chaining"
+  },
+  "6.3": {
+    "side": "kap6/resolusjon.html",
+    "anker": "regel"
+  },
+  "6.3.1": {
+    "side": "kap6/resolusjon.html",
+    "anker": "regel"
+  },
+  "6.3.2": {
+    "side": "kap6/resolusjon.html",
+    "anker": "cnf"
+  },
+  "6.3.3": {
+    "side": "kap6/resolusjon.html",
+    "anker": "refutasjon"
+  },
+  "6.3.4": {
+    "side": "kap6/resolusjon.html",
+    "anker": "csp"
+  },
+  "7.1": {
+    "side": "kap7/fol.html",
+    "anker": "begrensninger"
+  },
+  "7.1.1": {
+    "side": "kap7/fol.html",
+    "anker": "begrensninger"
+  },
+  "7.1.2": {
+    "side": "kap7/fol.html",
+    "anker": "syntaks"
+  },
+  "7.1.3": {
+    "side": "kap7/fol.html",
+    "anker": "kvantorer"
+  },
+  "7.1.4": {
+    "side": "kap7/fol.html",
+    "anker": "oversettelse"
+  },
+  "7.1.5": {
+    "side": "kap7/fol.html",
+    "anker": "modeller"
+  },
+  "7.1.6": {
+    "side": "kap7/fol.html",
+    "anker": "sporringer"
+  },
+  "12.1": {
+    "side": "kap1/agenter.html",
+    "anker": "historie"
+  },
+  "A1": {
+    "side": "oving/assignment1.html",
+    "anker": "oppgaven"
+  },
+  "A1.1": {
+    "side": "oving/assignment1.html",
+    "anker": "versjon"
+  },
+  "A1.2": {
+    "side": "oving/assignment1.html",
+    "anker": "eksempel"
+  },
+  "A1.3": {
+    "side": "oving/assignment1.html",
+    "anker": "oppg-a1-admissibel"
+  },
+  "A2": {
+    "side": "oving/assignment2.html",
+    "anker": "oppgaven"
+  },
+  "A2.1": {
+    "side": "oving/assignment2.html",
+    "anker": "oppg-a2-mrvlcv"
+  },
+  "A2.2": {
+    "side": "oving/assignment2.html",
+    "anker": "oppg-a2-ac3"
+  },
+  "A2.3": {
+    "side": "oving/assignment2.html",
+    "anker": "oppg-a2-8queens"
+  }
+}

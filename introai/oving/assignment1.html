@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Assignment 1: Søk — Øvinger</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .graf { display: block; max-width: 440px; margin: 0 auto; }
+  .graf text { font-family: var(--mono); font-size: 13px; fill: var(--ink); }
+  .graf .kant { stroke: var(--ink-soft); stroke-width: 2; }
+  .graf .kost { font-size: 11px; fill: var(--ink-faded); }
+  .graf .node circle { fill: var(--paper); stroke: var(--ink); stroke-width: 1.8; }
+  .graf .node.done circle { fill: rgba(61,107,58,0.2); stroke: var(--green); }
+  .graf .node.active circle { fill: var(--accent); stroke: var(--accent); }
+  .graf .node.active text.nm { fill: var(--paper); }
+  .graf .node.found circle { fill: var(--warm-soft); stroke: var(--warm); stroke-width: 2.6; }
+  .graf .hv circle { fill: var(--line-soft); stroke: none; }
+  .graf .hv text { font-size: 10px; fill: var(--ink-soft); }
+  .graf .merk { font-size: 10px; letter-spacing: 0.08em; fill: var(--ink-faded); }
+  .trace { font-family: var(--mono); font-size: 0.8rem; width: 100%; }
+  .trace td, .trace th { padding: 3px 6px; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Øvinger: Assignment 1">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Øvinger · Assignment 1 · Assignment-forelesning 1 · slides 1–19 · ~12 min</div>
+      <h1>Assignment 1: <em>søk for hånd</em></h1>
+      <p class="lede">Fem søkealgoritmer kjørt for hånd på en graf, og en sjekk av om heuristikken er admissibel og konsistent. Siden sier hvilken variant av hver algoritme som gjelder, og går gjennom eksempelet fra assignment-forelesningen.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#oppgaven"><span>01</span> Hva du skal gjøre</a>
+        <a href="#eksempel"><span>02</span> Gjennomgått eksempel</a>
+        <a href="#feil"><span>03</span> Vanlige feil</a>
+        <a href="#videre"><span>04</span> Videre</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hvorfor denne øvingen <em>teller</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 · deltema 2.2, 2.3, 2.4</div>
+      <p>Læringsassistenten om temaet (slide 3): «If you look at the old exams, there is usually a lot on this topic.» Det pleier å komme mye om dette, og på eksamen gjør du det for hånd. Øvingen er samme oppgavetype som Ord. 2023 oppg. 2.</p>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Kjør BFS, DFS, UCS, greedy og A* på en graf:</strong> ekspansjonsrekkefølge, funnet sti og kostnad (Ord. 2023 oppg. 2.1, 10 p; Ord. 2022 oppg. 3.2 med IDS).</li>
+          <li><span class="tag regn">Regn</span><strong>Admissibel og konsistent heuristikk:</strong> sjekk ulikheten for hver kant, finn hvilke h-verdier som gjør h konsistent (Ord. 2023 oppg. 2.2, 10 p).</li>
+          <li><span class="tag">Forklar</span>Hvorfor konsistens er ønskelig for A* (Ord. 2022 oppg. 1.3).</li>
+          <li><span class="tag">Lavere</span>Bonusoppgaven om hva som vinnes og tapes med små endringer i algoritmene (frivillig, slide 19).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppgaven">
+    <div class="container">
+      <div class="section-badge">01 · Hva du skal gjøre</div>
+      <h2>Oppgaven og <em>algoritmevarianten</em></h2>
+      <div class="source-note">Assignment-forelesning 1 · slides 2–10 · bygger på forelesning 2–3 og boka kap. 3</div>
+
+      <p>Grafen er et kart over Doom-nivået Phobos Anomaly. <strong>A</strong> er start, <strong>F</strong> er mål, og tallet i den grå sirkelen ved hver node er heuristikkverdien. Å krysse en linje koster 1, trapp koster 1 ekstra og heis 2 ekstra (A til G koster 1 + 1 + 2 = 4). Oppgaven har tre deler:</p>
+      <ol>
+        <li>Skriv opp kostnaden for alle kanter, f.eks. (A, G) = 4.</li>
+        <li>Løs for hånd med BFS, DFS, UCS (Dijkstra), greedy best-first (GBFS) og A*. Oppgi <em>ekspansjonsrekkefølge</em>, <em>funnet sti</em> og <em>stikostnad</em>, på formen «Order of expansion: S, A, B, (G)». Målnoden står i parentes fordi den oppdages, ikke ekspanderes.</li>
+        <li>Avgjør om heuristikken er <span class="term" data-term="admissibel">admissibel</span> og <span class="term" data-term="konsistent">konsistent</span>. En bonusoppgave er frivillig.</li>
+      </ol>
+
+      <div class="callout callout-warm" id="versjon">
+        <span class="label">Hvilken variant som gjelder (slides 4–7)</span>
+        <ul>
+          <li><strong><span class="term" data-term="bfs">BFS</span>:</strong> <code>BREADTH-FIRST-SEARCH</code> på s. 95 i boka (4. utg., Global). Den sjekker mål <em>med en gang en node genereres</em>, ikke når den tas ut av køen.</li>
+          <li><strong>Alle andre:</strong> <span class="term" data-term="best-first-sok">best-first search</span> på s. 91 med riktig \(f\): UCS \(f = g\), GBFS \(f = h\), A* \(f = g + h\). Her sjekkes mål når noden tas ut (pop). For DFS sier slidene bare «riktig f»; boka bruker \(f = -\text{dybde}\) (egen tolkning, gir svaret på slide 12).</li>
+          <li><strong>Rekkefølge:</strong> naboer behandles alfabetisk. Er \(f\) likt, velg alfabetisk.</li>
+          <li><strong>Grafsøk:</strong> begge versjonene husker besøkte tilstander i <code>reached</code>. Nettkilder om «A*» bruker ofte en annen variant.</li>
+        </ul>
+      </div>
+
+<pre><code>function BREADTH-FIRST-SEARCH(problem) returns a solution node or failure
+  node ← NODE(problem.INITIAL)
+  if problem.IS-GOAL(node.STATE) then return node
+  frontier ← a FIFO queue, with node as an element
+  reached ← {problem.INITIAL}
+  while not IS-EMPTY(frontier) do
+    node ← POP(frontier)
+    for each child in EXPAND(problem, node) do
+      s ← child.STATE
+      if problem.IS-GOAL(s) then return child        ← målsjekk ved generering
+      if s is not in reached then
+        add s to reached
+        add child to frontier
+  return failure
+
+function BEST-FIRST-SEARCH(problem, f) returns a solution node or failure
+  node ← NODE(STATE=problem.INITIAL)
+  frontier ← a priority queue ordered by f, with node as an element
+  reached ← a lookup table, with one entry with key problem.INITIAL and value node
+  while not IS-EMPTY(frontier) do
+    node ← POP(frontier)
+    if problem.IS-GOAL(node.STATE) then return node  ← målsjekk ved pop
+    for each child in EXPAND(problem, node) do
+      s ← child.STATE
+      if s is not in reached or child.PATH-COST &lt; reached[s].PATH-COST then
+        reached[s] ← child
+        add child to frontier
+  return failure</code></pre>
+    </div>
+  </section>
+
+  <section id="eksempel">
+    <div class="container">
+      <div class="section-badge">02 · Gjennomgått eksempel</div>
+      <h2>Eksempelgrafen fra <em>forelesningen</em></h2>
+      <div class="source-note">Assignment-forelesning 1 · slides 11–18</div>
+
+      <p>Doom-grafen løses ikke i forelesningen. I stedet brukes grafen under for å bli enige om formatet. Kantene er urettede, tallet på kanten er kostnaden, og grå sirkler er \(h\). A har ingen h-verdi i figuren (den trengs ikke, A er start).</p>
+
+      <figure>
+        <svg class="graf" id="graf" viewBox="0 0 420 300" aria-label="Eksempelgraf med nodene A til E">
+          <line class="kant" x1="110" y1="250" x2="280" y2="200"/><text class="kost" x="200" y="240">3</text>
+          <line class="kant" x1="110" y1="250" x2="90" y2="150"/><text class="kost" x="82" y="205">2</text>
+          <line class="kant" x1="90" y1="150" x2="170" y2="50"/><text class="kost" x="115" y="95">3</text>
+          <line class="kant" x1="170" y1="50" x2="330" y2="40"/><text class="kost" x="248" y="38">3</text>
+          <line class="kant" x1="280" y1="200" x2="330" y2="40"/><text class="kost" x="314" y="125">4</text>
+          <g class="node" data-n="A"><circle cx="110" cy="250" r="20"/><text class="nm" x="110" y="255" text-anchor="middle">A</text></g>
+          <g class="node" data-n="B"><circle cx="280" cy="200" r="20"/><text class="nm" x="280" y="205" text-anchor="middle">B</text></g>
+          <g class="node" data-n="C"><circle cx="90" cy="150" r="20"/><text class="nm" x="90" y="155" text-anchor="middle">C</text></g>
+          <g class="node" data-n="D"><circle cx="170" cy="50" r="20"/><text class="nm" x="170" y="55" text-anchor="middle">D</text></g>
+          <g class="node" data-n="E"><circle cx="330" cy="40" r="20"/><text class="nm" x="330" y="45" text-anchor="middle">E</text></g>
+          <g class="hv"><circle cx="310" cy="176" r="9"/><text x="310" y="180" text-anchor="middle">3</text></g>
+          <g class="hv"><circle cx="58" cy="140" r="9"/><text x="58" y="144" text-anchor="middle">7</text></g>
+          <g class="hv"><circle cx="140" cy="30" r="9"/><text x="140" y="34" text-anchor="middle">2</text></g>
+          <g class="hv"><circle cx="300" cy="18" r="9"/><text x="300" y="22" text-anchor="middle">5</text></g>
+          <text class="merk" x="46" y="272">START</text>
+          <text class="merk" x="358" y="44">GOAL</text>
+        </svg>
+        <figcaption>Gjenskapt fra slide 11. Kanter: A–B 3, A–C 2, C–D 3, D–E 3, B–E 4. Heuristikk: h(B) = 3, h(C) = 7, h(D) = 2, h(E) = 5.</figcaption>
+      </figure>
+
+      <div class="widget" id="w-sok">
+        <div class="widget-label">Prøv selv · Kjør algoritmen steg for steg</div>
+        <p class="widget-intro">Velg algoritme og klikk «Ett steg». Tabellen viser hvilken node som ekspanderes og hva som ligger i frontier etterpå (med \(f\)-verdi). Grønn = ekspandert, oransje = funnet mål.</p>
+        <div class="w-row" id="sok-algs"></div>
+        <div class="w-row">
+          <button class="w-btn" id="sok-step" type="button">Ett steg</button>
+          <button class="w-btn" id="sok-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="sok-reset" type="button">Nullstill</button>
+        </div>
+        <div class="table-wrap"><table class="trace"><thead><tr><th>Steg</th><th>Ekspanderer</th><th>Frontier etterpå</th></tr></thead><tbody id="sok-tab"></tbody></table></div>
+        <div class="w-out" id="sok-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-bfs">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 11</span></div>
+        <div class="o-text"><p>Kjør BFS (s. 95) fra A til E. Gi ekspansjonsrekkefølge, funnet sti og kostnad.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Order of expansion: A, B, (E). Found path: A, B, E. Path cost: 7.</p>
+            <p>Mellomregning: A er ikke mål. Ekspander A: barn B (ikke mål, legg i kø), C (ikke mål, legg i kø). Kø: [B, C]. Pop B, ekspander: A er i <code>reached</code>; E genereres og <em>er mål</em>, returner med én gang. C blir aldri ekspandert. Kostnad 3 + 4 = 7.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-dfs">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 12</span></div>
+        <div class="o-text"><p>Kjør DFS (best-first, s. 91) fra A til E.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Order of expansion: A, B, (E). Found path: A, B, E. Path cost: 7.</p>
+            <p>Mellomregning (med \(f = -\text{dybde}\)): pop A, legg til B og C (dybde 1). Likt, alfabetisk: pop B, ikke mål; legg til E (dybde 2). Dypest er E: pop E, mål. Kostnad 7.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-ucs">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 13</span></div>
+        <div class="o-text"><p>Kjør UCS (Dijkstra) fra A til E.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Order of expansion: A, C, B, D, (E). Found path: A, B, E. Path cost: 7.</p>
+            <p>Mellomregning (\(f = g\)): pop A(0) → B(3), C(2). Pop C(2) → A(4) forkastes (4 er ikke mindre enn 0), D(5). Pop B(3) → E(7). Frontier: D(5), E(7). Pop D(5) → E(8) forkastes siden 8 ≥ 7. Pop E(7): mål.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-gbfs">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 14</span></div>
+        <div class="o-text"><p>Kjør greedy best-first search fra A til E.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Order of expansion: A, B, (E). Found path: A, B, E. Path cost: 7.</p>
+            <p>Mellomregning (\(f = h\)): pop A → B(h = 3), C(h = 7). Pop B → E(h = 5). Frontier: E(5), C(7). Pop E: mål.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-astar">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slide 15</span></div>
+        <div class="o-text"><p>Kjør A* fra A til E.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Order of expansion: A, B, C, D, (E). Found path: A, B, E. Path cost: 7.</p>
+            <p>Mellomregning (\(f = g + h\)): pop A → B: 3 + 3 = 6, C: 2 + 7 = 9. Pop B(6) → E: 7 + 5 = 12. Pop C(9) → D: 5 + 2 = 7. Pop D(7) → E med g = 8 forkastes (8 ≥ 7). Pop E(12): mål. Den høye h(E) = 5 og h(C) = 7 gjør at A* ekspanderer C og D før målet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-admissibel">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slides 17–18</span></div>
+        <div class="o-text"><p>Er heuristikken admissibel? (Admissibel: overestimerer aldri kostnaden fra en node til målet.)</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Nei. Slidene begrunner med (D, E) = 3 mens h(E) = 5.</p>
+            <p>Full sjekk, \(h(n) \le h^*(n)\) for alle noder: \(h^*(E) = 0\), men \(h(E) = 5\) ✗. \(h^*(D) = 3 \ge 2\) ✓. \(h^*(B) = 4 \ge 3\) ✓. \(h^*(C) = \min(3+3,\ 2+3+4) = 6\), men \(h(C) = 7\) ✗. Det holder med én node som overestimerer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a1-konsistent">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slides 17–18</span></div>
+        <div class="o-text"><p>Er heuristikken konsistent? (Konsistent: \(h(n) \le c(n, a, n') + h(n')\) for alle noder \(n\) og etterfølgere \(n'\).)</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Nei, fordi alle konsistente heuristikker er admissible, og denne er ikke admissibel.</p>
+            <p><strong>Merk (egen kommentar, ikke fra slidene):</strong> slidens andre begrunnelse, \(h(D) \le c(D, a, E) + h(E)\) som gir \(2 \le 3 + 5\), er ingen motsigelse; \(2 \le 8\) er sant. Sjekk heller hver kant i begge retninger. Kanten C → D bryter: \(h(C) = 7 \gt 3 + h(D) = 5\). Resten holder, f.eks. E → D: \(5 \le 3 + 2\) og B → E: \(3 \le 4 + 5\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva blir ekspansjonsrekkefølgen for BFS hvis målsjekken flyttes til pop, som i best-first?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">A, B, C, (E). E legges i køen når B ekspanderes, men C ligger foran i FIFO-køen og ekspanderes først. Én ekstra ekspansjon; det er nøyaktig denne forskjellen slidene kaller den største «gotcha».</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="feil">
+    <div class="container">
+      <div class="section-badge">03 · Vanlige feil</div>
+      <h2>Hvor poengene <em>forsvinner</em></h2>
+      <div class="source-note">Assignment-forelesning 1 · slides 3–7, 18 · pluss egne erfaringspunkter</div>
+      <div class="callout callout-warn">
+        <span class="label">Vanlige feil</span>
+        <ul>
+          <li><strong>Målsjekk på feil sted.</strong> BFS sjekker ved generering, alle andre ved pop. Feil sted gir en ekstra (eller manglende) ekspansjon.</li>
+          <li><strong>Glemmer tie-break.</strong> Alfabetisk både for rekkefølgen barn genereres i og ved lik \(f\). Står det noe annet i eksamensoppgaven (f.eks. venstre mot høyre), gjelder det.</li>
+          <li><strong>Tar med målet som ekspandert.</strong> Skriv målet i parentes: det er oppdaget, ikke ekspandert.</li>
+          <li><strong>Glemmer <code>reached</code>-testen i best-first.</strong> En ny sti til en kjent node legges bare i frontier hvis den er <em>billigere</em>.</li>
+          <li><strong>Blander tree search og graph search.</strong> Eksamen kan be om «tree-like search» (ingen <code>reached</code>); da kan noder ekspanderes flere ganger.</li>
+          <li><strong>Sjekker konsistens bare én vei.</strong> Kantene er urettede, så ulikheten må holde i begge retninger. Og husk at \(h(\text{mål})\) må være 0 for admissibilitet.</li>
+          <li><strong>Glemmer trapp og heis i Doom-grafen.</strong> En kant med heis koster 1 + 2 = 3, ikke 1.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="videre">
+    <div class="container">
+      <div class="section-badge">04 · Videre</div>
+      <h2>Teorien bak <em>øvingen</em></h2>
+      <div class="subpage-list">
+        <a href="../kap2/uinformert-sok.html" class="subpage-card"><span class="sp-icon">2B</span><div class="sp-info"><div class="sp-title">Uinformert søk</div><div class="sp-desc">BFS, DFS, IDS, UCS og Ord. 2022 oppg. 3.</div></div><span class="sp-arrow">&rarr;</span></a>
+        <a href="../kap2/informert-sok.html" class="subpage-card"><span class="sp-icon">2C</span><div class="sp-info"><div class="sp-title">Informert søk</div><div class="sp-desc">Greedy og A*, med Ord. 2023 oppg. 2.1.</div></div><span class="sp-arrow">&rarr;</span></a>
+        <a href="../kap2/heuristikker.html" class="subpage-card"><span class="sp-icon">2D</span><div class="sp-info"><div class="sp-title">Heuristikker</div><div class="sp-desc">Admissibel, konsistent, dominans og Ord. 2023 oppg. 2.2.</div></div><span class="sp-arrow">&rarr;</span></a>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Øvinger: oversikt</div></a>
+        <a href="assignment2.html" class="next"><div class="pn-label">Neste · Assignment 2</div><div class="pn-title">CSP på Sudoku →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  /* ─── Widget: BFS / DFS / UCS / GBFS / A* på eksempelgrafen (slide 11) ─── */
+  var root = document.getElementById('w-sok'); if (!root) return;
+  var E = { A: { B: 3, C: 2 }, B: { A: 3, E: 4 }, C: { A: 2, D: 3 }, D: { C: 3, E: 3 }, E: { B: 4, D: 3 } };
+  var H = { A: 0, B: 3, C: 7, D: 2, E: 5 }, GOAL = 'E';
+  var F = {
+    DFS: function (n) { return -n.d; },
+    UCS: function (n) { return n.g; },
+    GBFS: function (n) { return H[n.s]; },
+    'A*': function (n) { return n.g + H[n.s]; }
+  };
+  function kids(n) {
+    return Object.keys(E[n.s]).sort().map(function (s) { return { s: s, g: n.g + E[n.s][s], d: n.d + 1, p: n }; });
+  }
+  function path(n) { var r = []; while (n) { r.unshift(n.s); n = n.p; } return r; }
+  function trace(alg) {
+    var steps = [], start = { s: 'A', g: 0, d: 0, p: null }, fr, reached, cnt = 0, n, i;
+    if (alg === 'BFS') {
+      fr = [start]; reached = { A: 1 };
+      while (fr.length) {
+        n = fr.shift(); var ks = kids(n), hit = null;
+        for (i = 0; i < ks.length; i++) {
+          if (ks[i].s === GOAL) { hit = ks[i]; break; }
+          if (!reached[ks[i].s]) { reached[ks[i].s] = 1; fr.push(ks[i]); }
+        }
+        steps.push({ x: n.s, fr: fr.map(function (m) { return m.s; }).join(', ') + (hit ? '  → genererer E: mål!' : '') });
+        if (hit) return { steps: steps, sol: hit };
+      }
+      return { steps: steps, sol: null };
+    }
+    var f = F[alg];
+    function key(m) { return [f(m), m.s, m.o]; }
+    function less(a, b) { var x = key(a), y = key(b); for (var j = 0; j < 3; j++) { if (x[j] < y[j]) return true; if (x[j] > y[j]) return false; } return false; }
+    start.o = cnt++; fr = [start]; reached = { A: start };
+    while (fr.length) {
+      var bi = 0; for (i = 1; i < fr.length; i++) if (less(fr[i], fr[bi])) bi = i;
+      n = fr.splice(bi, 1)[0];
+      if (n.s === GOAL) { steps.push({ x: '(' + n.s + ')', fr: 'pop E: mål!' }); return { steps: steps, sol: n }; }
+      kids(n).forEach(function (c) {
+        if (!reached[c.s] || c.g < reached[c.s].g) { c.o = cnt++; reached[c.s] = c; fr.push(c); }
+      });
+      steps.push({ x: n.s, fr: fr.slice().sort(function (a, b) { return less(a, b) ? -1 : 1; }).map(function (m) { return m.s + '(' + f(m) + ')'; }).join(', ') });
+    }
+    return { steps: steps, sol: null };
+  }
+  var alg = 'BFS', T, k = 0;
+  var algBox = document.getElementById('sok-algs'), tab = document.getElementById('sok-tab'), out = document.getElementById('sok-out');
+  ['BFS', 'DFS', 'UCS', 'GBFS', 'A*'].forEach(function (a) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'w-btn secondary'; b.textContent = a;
+    b.addEventListener('click', function () { alg = a; reset(); });
+    algBox.appendChild(b);
+  });
+  function render() {
+    algBox.querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b.textContent === alg); });
+    var shown = T.steps.slice(0, k), done = {};
+    tab.innerHTML = shown.map(function (s, i) { if (s.x.charAt(0) !== '(') done[s.x] = 1; return '<tr><td>' + (i + 1) + '</td><td>' + s.x + '</td><td>' + s.fr + '</td></tr>'; }).join('');
+    var fin = k >= T.steps.length;
+    document.querySelectorAll('#graf .node').forEach(function (g) {
+      var nm = g.getAttribute('data-n');
+      g.classList.toggle('done', !!done[nm]);
+      g.classList.toggle('active', k > 0 && !fin && shown[k - 1].x === nm);
+      g.classList.toggle('found', fin && nm === GOAL);
+    });
+    if (!fin) { out.innerHTML = k === 0 ? alg + ': start i A. Klikk «Ett steg».' : 'Steg ' + k + ' av ' + T.steps.length + '.'; return; }
+    var order = T.steps.map(function (s) { return s.x; });
+    if (alg === 'BFS') order.push('(E)');
+    out.innerHTML = 'Order of expansion: <span class="hl">' + order.join(', ') + '</span>. Found path: <span class="hl">' + path(T.sol).join(', ') + '</span>. Path cost: <span class="hl">' + T.sol.g + '</span>.';
+  }
+  function reset() { T = trace(alg); k = 0; render(); }
+  document.getElementById('sok-step').addEventListener('click', function () { if (k < T.steps.length) { k++; render(); } });
+  document.getElementById('sok-run').addEventListener('click', function () { k = T.steps.length; render(); });
+  document.getElementById('sok-reset').addEventListener('click', reset);
+  reset();
+})();
+</script>
+</body>
+</html>

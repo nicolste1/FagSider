@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Heuristikker og A*-optimalitet — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  .gsvg { width: 100%; max-width: 440px; display: block; margin: 1rem auto; }
+  .gsvg.wide, .gsvg.wgc { max-width: 760px; }
+  .gsvg .ed { stroke: var(--ink-faded); stroke-width: 1.5; fill: none; }
+  .gsvg .ed.dead { stroke-dasharray: 4 3; stroke: var(--ink-ghost); }
+  .gsvg .ed.hot { stroke: var(--accent); stroke-width: 3.2; }
+  .gsvg .ed.bad { stroke: var(--red); stroke-width: 3; }
+  .gsvg .ah { fill: var(--ink-faded); }
+  .gsvg .nd circle, .gsvg .nd rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+  .gsvg .nd.bad rect { stroke: var(--red); stroke-dasharray: 4 3; fill: rgba(179,38,30,0.06); }
+  .gsvg .nd.bad circle { stroke: var(--red); stroke-width: 2.6; }
+  .gsvg .nd.start rect, .gsvg .nd.goal rect { stroke: var(--accent); stroke-width: 2.4; }
+  .gsvg .nd.fr circle { stroke: var(--accent); stroke-width: 2.6; }
+  .gsvg .nd.exp circle { fill: rgba(27,94,90,0.22); }
+  .gsvg .nd.cur circle { fill: var(--accent); }
+  .gsvg .nd.cur text { fill: var(--paper); }
+  .gsvg text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  .gsvg .cost { font-size: 12px; fill: var(--warm); font-weight: 600; }
+  .gsvg .hv, .gsvg .elbl { font-size: 11px; fill: var(--ink-faded); }
+  .gsvg .zone { fill: var(--accent-soft); stroke: none; }
+  .trace { font-family: var(--mono); font-size: 0.84rem; }
+  .trace td, .trace th { padding: 4px 8px; vertical-align: top; }
+  .svar-format { font-family: var(--mono); font-size: 0.9rem; background: var(--paper); border-left: 3px solid var(--accent); padding: 0.5rem 0.9rem; margin: 0.6rem 0; line-height: 1.6; }
+  .w-sel { font-family: var(--sans); font-size: 0.86rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+  .hin { width: 3.4rem; font-family: var(--mono); font-size: 0.9rem; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+  .note-sm { font-size: 0.86rem; color: var(--ink-faded); margin: 0.4rem 0 0.8rem; }
+
+  .puzzle { display: inline-grid; grid-template-columns: repeat(3, 2.2rem); gap: 3px; margin: 0 1.2rem 0.6rem 0; vertical-align: top; }
+  .puzzle span { height: 2.2rem; display: flex; align-items: center; justify-content: center; font-family: var(--mono); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; }
+  .puzzle span.b { background: var(--paper-darker); }
+  .puzzle-cap { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-faded); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+
+<main data-chapter="Kapittel 2: Problemløsning ved søk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2D · Slides forelesning 3 · 11–53 · Assignment-forelesning 1 · 16–18 · Boka kap. 3.5–3.6 · ~35 min</div>
+      <h1>Heuristikker og A*-<em>optimalitet</em></h1>
+      <p class="lede">Når finner A* den billigste stien? Svaret er admissibilitet og konsistens. Her lærer du definisjonene, bevisskissene, dominans og hvordan man lager heuristikker ved relaksering, og du regner eksamensoppgaven fra 2023 der du skal finne hvilke verdier av \(h(B)\) som gjør heuristikken konsistent.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#admissibel"><span>01</span> Admissibilitet</a>
+        <a href="#konsistens"><span>02</span> Konsistens</a>
+        <a href="#optimalitet"><span>03</span> Hvorfor A* er optimal</a>
+        <a href="#eksamen"><span>04</span> Eksamen 2023: h(B)</a>
+        <a href="#dominans"><span>05</span> Dominans</a>
+        <a href="#lage"><span>06</span> Lage heuristikker</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md) · deltema 2.4, prio 1</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Ulikheter for en ukjent h-verdi</strong>: hvilke \(h(B)\) gir konsistens, gitt ekspansjonsrekkefølge, suboptimal sti (Ord. 2023 oppg. 2.2, 10 p). Se <a href="#oppg-o23-2-2">oppgaven</a> og <a href="#w-heur">widgeten</a>.</li>
+          <li><span class="tag regn">Regn</span>Sjekk om en gitt heuristikk er admissibel og konsistent, kant for kant (Assignment 1, <a href="#oppg-al1-heuristikk">eksempelet</a>).</li>
+          <li><span class="tag">Forklar</span>Hvorfor konsistens er ønskelig (Ord. 2022 oppg. 1.3); er snittet av to admissible heuristikker admissibelt (Ord. 2023 kort spørsmål).</li>
+          <li><span class="tag">Forklar</span>Design en admissibel heuristikk og begrunn (Ord. 2022 oppg. 3.3); relaksering, feilplasserte brikker vs Manhattan, dominans.</li>
+          <li><span class="tag lav">Lavere</span>IDA*, RBFS, beam search, mønsterdatabaser, negative heuristikker: én linje hver i «Utdypning».</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="admissibel">
+    <div class="container">
+      <div class="section-badge">01 · Admissibilitet</div>
+      <h2>Aldri <em>overestimer</em></h2>
+      <div class="source-note">Slides forelesning 3 · 11–20 · Assignment-forelesning 1 · 16–17</div>
+      <span class="lm-pill">Deltema 2.4 · prio 1</span>
+      <p class="dropcap"><span class="term" data-term="a-stjerne">A*</span> er <span class="term" data-term="kostnadsoptimalitet">kostnadsoptimal</span> når (1) alle kantkostnader er positive, (2) det finnes en løsning og (3) <span class="term" data-term="heuristikk">heuristikken</span> er <span class="term" data-term="admissibel">admissibel</span>: den overestimerer aldri kostnaden fra en node til målet.</p>
+      \[ h(n) \le h^*(n) \quad \text{for alle } n, \]
+      <p>der \(h^*(n)\) er den <span class="term" data-term="h-stjerne">faktiske (optimale) kostnaden</span> fra \(n\) til nærmeste mål. En admissibel heuristikk er <em>optimistisk</em>. Er alle \(h = 0\), blir A* til UCS, som er optimal.</p>
+      <p>Eksempelet fra slidene: fra A til G er den optimale veien A–B–C–G (kostnad 3), men \(h(B) = 1000 \gt h^*(B) = 2\).</p>
+      <svg class="gsvg" viewBox="0 -10 430 130" role="img" aria-label="Eksempel der h(B) overestimerer">
+<path class="ed" d="M52 58 Q160 -18 268 58"/>
+<text class="cost" x="160" y="10">999</text>
+<line class="ed" x1="57" y1="70" x2="141" y2="70"/>
+<text class="cost" x="100" y="83">1</text>
+<line class="ed" x1="177" y1="70" x2="261" y2="70"/>
+<text class="cost" x="220" y="83">1</text>
+<line class="ed" x1="297" y1="70" x2="371" y2="70"/>
+<text class="cost" x="335" y="83">1</text>
+<g class="nd"><circle cx="40" cy="70" r="17"/><text x="40" y="70">A</text></g>
+<text class="hv" x="40" y="102">h=3</text>
+<g class="nd"><circle cx="160" cy="70" r="17"/><text x="160" y="70">B</text></g>
+<text class="hv" x="160" y="102">h=1000</text>
+<g class="nd"><circle cx="280" cy="70" r="17"/><text x="280" y="70">C</text></g>
+<text class="hv" x="280" y="102">h=1</text>
+<g class="nd goal"><circle cx="390" cy="70" r="17"/><circle cx="390" cy="70" r="13"/><text x="390" y="70">G</text></g>
+<text class="hv" x="390" y="102">h=0</text>
+</svg>
+      <p>A* ekspanderer A og får B: \(1 + 1000 = 1001\) og C: \(999 + 1 = 1000\). C poppes, G genereres med \(f = 1000 + 0 = 1000 \lt 1001\), og G poppes med kostnad 1000 i stedet for 3. Overestimatet i B skjøv den optimale stien bakerst i køen.</p>
+      <details>
+        <summary>Utdypning · lavere prioritet: negative heuristikker (slide 19–20)</summary>
+        <p>Kan \(h\) være negativ? Tillater vi \(h(\text{mål}) \ne 0\), mister A* optimaliteten. En negativ «gjenværende kostnad» betyr ingenting fornuftig når alle kostnader er positive. Trekker man en stor konstant fra alle \(h\), endres ikke rekkefølgen; UCS er i snitt mer informativ enn tilfeldige negative verdier.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="konsistens">
+    <div class="container">
+      <div class="section-badge">02 · Konsistens</div>
+      <h2>Trekant<em>ulikheten</em></h2>
+      <div class="source-note">Slides forelesning 3 · 21–29 · Assignment-forelesning 1 · 17 · bevisene: Boka kap. 3.5.2 (ikke i slidene)</div>
+      <p class="dropcap">En sterkere egenskap: \(h\) er <span class="term" data-term="konsistent">konsistent</span> hvis det for hver node \(n\) og hver etterfølger \(n'\) generert av handling \(a\) gjelder</p>
+      \[ h(n) \le c(n, a, n') + h(n'). \]
+      <p>Estimatet i en node skal ikke være større enn kostnaden til en etterfølger pluss estimatet der. Det er en <span class="term" data-term="trekantulikhet">trekantulikhet</span>: siden \(h(n)\) skal være høyst like lang som omveien via \(n'\). Sjekkes for <strong>hver kant</strong>, og i urettede grafer i begge retninger.</p>
+      <div class="compare-grid">
+        <div class="compare-cell good">
+          <h4>Konsistent ⇒ admissibel</h4>
+          <p>Ta den optimale stien \(n \to n' \to \dots \to G\). Med \(h(G) = 0\) og induksjon bakover:</p>
+          <p>\(h(n) \le c(n,a,n') + h(n') \le c(n,a,n') + h^*(n') = h^*(n)\).</p>
+          <p>Det motsatte gjelder ikke: admissibel betyr ikke konsistent.</p>
+        </div>
+        <div class="compare-cell accent">
+          <h4>f er ikke-avtakende</h4>
+          <p>Langs en sti er \(g(n') = g(n) + c(n,a,n')\), så</p>
+          <p>\(f(n') = g(n) + c(n,a,n') + h(n') \ge g(n) + h(n) = f(n)\).</p>
+          <p>Konsistent \(h\) gir <span class="term" data-term="monoton-f">monotont</span> \(f\) langs enhver sti.</p>
+        </div>
+      </div>
+      <p>Hvorfor bry seg? Med konsistent \(h\) er \(g\) optimal første gang en node poppes, så graph search trenger aldri ekspandere en node på nytt. Da er A* også <span class="term" data-term="optimalt-effektiv">optimalt effektiv</span>: enhver annen algoritme med samme heuristikk må ekspandere minst de nodene A* ekspanderer (bortsett fra likheter).</p>
+      <div class="oppgave" data-quiz id="oppg-o22-1-3">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.3</span><span class="o-ref">kort teorispørsmål</span></div>
+        <div class="o-text"><p>Why is consistency a desired property of a heuristic?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Fordi A* med konsistent heuristikk ekspanderer hver node bare én gang, noe som forenkler algoritmen og gjør den mer effektiv. Det garanterer at når en node ekspanderes, er kostnaden for å nå den den lavest mulige. Ellers kan det finnes en billigere vei til noden, slik at den må ekspanderes på nytt for å nå en optimal løsning. Konsistens gir også admissibilitet, som kreves for å garantere en optimal løsning.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="optimalitet">
+    <div class="container">
+      <div class="section-badge">03 · Hvorfor A* er optimal</div>
+      <h2>Bevis<em>skissen</em></h2>
+      <div class="source-note">Boka kap. 3.5.2 (beviset er ikke i slidene; slides forelesning 3 · 16–18 viser idéen) · minne: slides forelesning 3 · 30–34</div>
+      <p class="dropcap">Anta at \(h\) er admissibel, og at A* returnerer en sti til målet med kostnad \(C \gt C^*\), der \(C^*\) er optimal kostnad. Da må en node \(n\) på den optimale stien ligge uekspandert i frontier da målet ble poppet (alle nodene før den er ekspandert, så \(g(n) = g^*(n)\)).</p>
+      \[ f(n) = g^*(n) + h(n) \le g^*(n) + h^*(n) = C^* \lt C. \]
+      <p>Men A* popper alltid lavest \(f\), og målet ble poppet med \(f = C\). Da skulle \(n\) vært poppet først. Motsigelse, så \(C = C^*\).</p>
+      <div class="callout">
+        <span class="label">Nøkkelpoeng</span>
+        <p><span class="term" data-term="tree-like-search">Tree-like</span> A* er optimal med admissibel \(h\). A* med reached (<span class="term" data-term="graph-search">graph search</span>) er optimal med konsistent \(h\) uten å ekspandere noe på nytt. Kursets <span class="term" data-term="best-first-search">BEST-FIRST-SEARCH</span> legger en node inn igjen når den nås billigere, så den tåler også inkonsistente, admissible \(h\), men da kan noder ekspanderes flere ganger.</p>
+      </div>
+      <details>
+        <summary>Utdypning · lavere prioritet: minnebruk</summary>
+        <p>A*s svakhet er minnet (frontier og reached). <span class="term" data-term="ida-stjerne">IDA*</span> øker en grense på \(f\) iterativt, som IDS gjør med dybde. <span class="term" data-term="rbfs">RBFS</span> og liknende kan trekke seg ut av deltrær og huske beste verdi de så, med fare for «thrashing». <span class="term" data-term="beam-search">Beam search</span> holder bare de \(k\) beste i frontier (ikke optimal). Referansetelling fjerner tilstander fra reached når de ikke kan nås på andre måter.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="eksamen">
+    <div class="container">
+      <div class="section-badge">04 · Eksamen 2023: h(B)</div>
+      <h2>Ulikheter for en <em>ukjent</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 · oppg. 2.2 (grafen fra PDF-side 5) · Assignment-forelesning 1 · 17–18</div>
+      <div class="oppgave" data-quiz id="oppg-o23-2-2">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 2.2</span><span class="o-ref">10 p</span></div>
+        <div class="o-text">
+          <svg class="gsvg" viewBox="0 0 380 330" role="img" aria-label="Graf til eksamen 2023 oppgave 2.2">
+<defs><marker id="ar-o23b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>
+<line class="ed" x1="186" y1="39" x2="106" y2="90" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="138" y="54">1</text>
+<line class="ed" x1="212" y1="42" x2="276" y2="102" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="236" y="82">4</text>
+<line class="ed" x1="107" y1="101" x2="271" y2="114" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="189" y="120">2</text>
+<line class="ed" x1="91" y1="117" x2="98" y2="196" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="82" y="159">3</text>
+<line class="ed" x1="292" y1="132" x2="298" y2="201" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="282" y="169">5</text>
+<line class="ed" x1="117" y1="213" x2="191" y2="203" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="157" y="220">2</text>
+<line class="ed" x1="110" y1="229" x2="149" y2="284" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="119" y="265">4</text>
+<line class="ed" x1="202" y1="215" x2="168" y2="283" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="173" y="244">1</text>
+<line class="ed" x1="285" y1="228" x2="176" y2="291" marker-end="url(#ar-o23b)"/>
+<text class="cost" x="224" y="249">3</text>
+<g class="nd"><circle cx="200" cy="30" r="17"/><text x="200" y="30">A</text></g>
+<g class="nd"><circle cx="90" cy="100" r="17"/><text x="90" y="100">B</text></g>
+<g class="nd"><circle cx="290" cy="115" r="17"/><text x="290" y="115">C</text></g>
+<g class="nd"><circle cx="100" cy="215" r="17"/><text x="100" y="215">D</text></g>
+<g class="nd"><circle cx="210" cy="200" r="17"/><text x="210" y="200">F</text></g>
+<g class="nd"><circle cx="300" cy="220" r="17"/><text x="300" y="220">E</text></g>
+<g class="nd goal"><circle cx="160" cy="300" r="17"/><circle cx="160" cy="300" r="13"/><text x="160" y="300">G</text></g>
+</svg>
+          <p>Assume \(h(A) = 5\), \(h(C) = 4\), \(h(D) = 3\), \(h(E) = 3\), \(h(F) = 1\), \(h(G) = 0\). Start A, goal G.</p>
+          <ol>
+            <li>What values of \(h(B)\) make \(h\) monotone/consistent?</li>
+            <li>What values of \(h(B)\) will cause A* search to expand node A, C, B in this order?</li>
+            <li>What values of \(h(B)\) will cause A* to return a sub-optimal path?</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · alle kantene er skrevet ut</span>
+            <p><strong>1) Konsistens.</strong> Sjekk \(h(n) \le c(n,n') + h(n')\) for hver kant. Kantene uten B holder uansett:</p>
+            <p>A→C: \(5 \le 4 + 4\) · C→E: \(4 \le 5 + 3\) · D→F: \(3 \le 2 + 1\) · D→G: \(3 \le 4 + 0\) · F→G: \(1 \le 1 + 0\) · E→G: \(3 \le 3 + 0\). Alle ✓.</p>
+            <p>Kantene med B gir kravene:</p>
+            \[ \begin{aligned} \text{A→B}&amp;: \; 5 \le 1 + h(B) &amp;&amp;\Rightarrow h(B) \ge 4 \\ \text{B→C}&amp;: \; h(B) \le 2 + 4 &amp;&amp;\Rightarrow h(B) \le 6 \\ \text{B→D}&amp;: \; h(B) \le 3 + 3 &amp;&amp;\Rightarrow h(B) \le 6 \end{aligned} \]
+            <div class="svar-format">\(4 \le h(B) \le 6\)</div>
+            <p class="note-sm">Løsningsforslaget skriver B→C-kravet som \(h(B) \le (2+1) + 4 = 7\). Kanten B→C koster 2, så riktig krav er \(\le 6\); svaret blir det samme fordi B→D også gir 6.</p>
+            <p><strong>2) Rekkefølgen A, C, B.</strong> Etter A: \(f(B) = 1 + h(B)\) og \(f(C) = 4 + 4 = 8\). C før B krever \(1 + h(B) \gt 8\) (ved likhet vinner B alfabetisk), altså \(h(B) \gt 7\). Å ekspandere C gir E med \(g = 9\), \(f = 9 + 3 = 12\). B før E krever \(1 + h(B) \le 12\).</p>
+            <div class="svar-format">Løsningsforslaget: \(7 \lt h(B) \lt 11\)</div>
+            <p class="note-sm">Med alfabetisk tie-break gir også \(h(B) = 11\) rekkefølgen A, C, B (B og E har da begge \(f = 12\), og B vinner). Skriv forutsetningen din om tie-break.</p>
+            <p><strong>3) Suboptimal sti.</strong> Optimal kostnad er 7 via A B D F G (\(1 + 3 + 2 + 1\)). A* returnerer noe annet bare hvis den går A → C → E → G uten å ekspandere B: C før B (\(h(B) \gt 7\)), E før B og G (\(g = 12\), \(f = 12\)) før B, dvs. \(1 + h(B) \gt 12\).</p>
+            <div class="svar-format">\(h(B) \gt 11\) · da returneres A C E G med kostnad 12</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-heur">
+        <div class="widget-label">Prøv selv · Er heuristikken admissibel og konsistent?</div>
+        <p class="widget-intro">Endre h-verdiene. Røde kanter bryter konsistens, rød node overestimerer (\(h \gt h^*\)). Under ser du hver ulikhet og hva A* (graph search, alfabetisk tie-break) gjør. Prøv \(h(B) = 5\), 8, 11 og 12.</p>
+        <svg class="gsvg" id="h-svg" viewBox="0 0 380 330" aria-label="Graf fra eksamen 2023 oppgave 2.2"></svg>
+        <div class="w-row" id="h-ins"></div>
+        <div class="w-row">
+          <button class="w-btn" type="button" data-hb="5">Eksamen, h(B)=5</button>
+          <button class="w-btn" type="button" data-hb="8">h(B)=8</button>
+          <button class="w-btn" type="button" data-hb="12">h(B)=12</button>
+        </div>
+        <div class="w-out" id="h-out"></div>
+        <div class="w-log" id="h-log"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-al1-heuristikk">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">Assignment-forelesning 1 · 17–18</span></div>
+        <div class="o-text"><p>Er heuristikken i eksempelgrafen admissibel? Er den konsistent? (Grafen: A–B 3, A–C 2, C–D 3, D–E 3, B–E 4, urettet, mål E; \(h(B)=3\), \(h(C)=7\), \(h(D)=2\), \(h(E)=5\). Se figuren i <a href="informert-sok.html#oppg-al1-eksempel">2C</a>.)</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen</span>
+            <p>Ikke admissibel, fordi \((D, E) = 3\) mens \(h(E) = 5\). Ikke konsistent, fordi alle konsistente heuristikker er admissible. Eller: \(h(d) \le c(d, a, e) + h(e)\) gir \(2 \le 3 + 5\), «og dette er en motsigelse».</p>
+          </div>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Konklusjonene stemmer, men begrunnelsen på sliden bør skrives mer presist. Faktiske kostnader til E: \(h^*(E)=0\), \(h^*(D)=3\), \(h^*(B)=4\), \(h^*(C)=\min(3+3,\ 2+3+4)=6\).</p>
+            <ul>
+              <li><strong>Admissibel?</strong> Nei: \(h(E) = 5 \gt h^*(E) = 0\) (målet må ha \(h = 0\)), og \(h(C) = 7 \gt h^*(C) = 6\).</li>
+              <li><strong>Konsistent?</strong> Nei: kanten C→D gir \(h(C) = 7 \le 3 + h(D) = 5\), som er usant. Ulikheten \(2 \le 3 + 5\) på sliden er derimot sann, så den viser ingenting.</li>
+              <li>«Konsistent ⇒ admissibel» forutsetter \(h(\text{mål}) = 0\). Her er \(h(E) = 5\), så argumentet holder bare med den forutsetningen.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dominans">
+    <div class="container">
+      <div class="section-badge">05 · Dominans</div>
+      <h2>Større er bedre, så lenge den er <em>admissibel</em></h2>
+      <div class="source-note">Slides forelesning 3 · 50–53</div>
+      <p class="dropcap">En admissibel heuristikk \(h_2\) <span class="term" data-term="dominans">dominerer</span> en annen admissibel \(h_1\) hvis \(h_2(n) \ge h_1(n)\) for alle \(n\). Da ekspanderer A* færre noder med \(h_2\) og finner den optimale løsningen raskere: den største akseptable verdien inneholder mest informasjon om problemet. Har vi flere admissible heuristikker, er <span class="term" data-term="maks-heuristikk">maksimum</span> admissibelt og dominerer alle:</p>
+      \[ h_{\text{best}}(n) = \max\big(h_a(n), h_b(n), \dots\big). \]
+      <div class="oppgave" data-quiz id="oppg-o23-kort-snitt">
+        <div class="o-label"><span>Eksamen Ord. 2023 · kort spørsmål</span><span class="o-ref">snitt av heuristikker</span></div>
+        <div class="o-text"><p>If \(h_1(s)\) and \(h_2(s)\) are two admissible A* heuristics, would their average \(h_3(s) = \tfrac12 h_1(s) + \tfrac12 h_2(s)\) be admissible? Explain your answer very briefly.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · utregningen er lagt til</span>
+            <p>Ja, det er bare en lineær kombinasjon (skalering). Utregning: siden \(h_1(s) \le h^*(s)\) og \(h_2(s) \le h^*(s)\),</p>
+            \[ h_3(s) = \tfrac12 h_1(s) + \tfrac12 h_2(s) \le \tfrac12 h^*(s) + \tfrac12 h^*(s) = h^*(s). \]
+            <p>Merk: snittet er dominert av \(\max(h_1, h_2)\), så maksimum er et bedre valg.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lage">
+    <div class="container">
+      <div class="section-badge">06 · Lage heuristikker</div>
+      <h2>Løs et <em>enklere</em> problem</h2>
+      <div class="source-note">Slides forelesning 3 · 47–53 · tallene for 8-puzzle-eksempelet: Boka kap. 3.6.1 (ikke i slidene)</div>
+      <p class="dropcap">For glidebrikkespillet foreslår slidene to heuristikker: \(h_1\) = antall <span class="term" data-term="feilplasserte-brikker">feilplasserte brikker</span>, og \(h_2\) = summen av <span class="term" data-term="manhattan-avstand">Manhattan-avstandene</span> (hvor mange ruter hver brikke er fra sin målplass, vannrett + loddrett). Begge er løsninger av et <span class="term" data-term="relaksert-problem">relaksert problem</span>, der noen regler er fjernet.</p>
+      <div class="def-box">
+        <span class="def-label">Regelen i 8-puzzle</span>
+        <p>En brikke kan flyttes fra rute X til rute Y hvis X er nabo til Y <strong>og</strong> Y er tom.</p>
+        <p>\(h_2\): fjern «Y er tom» (brikken kan gå gjennom andre). \(h_1\): fjern begge kravene (brikken kan hoppe rett på plass). Optimal kostnad i et relaksert problem er en admissibel heuristikk for det opprinnelige, og siden \(h_2\) fjerner færre regler, dominerer den \(h_1\).</p>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-8puzzle-h1-h2">
+        <div class="o-label"><span>Oppgave · regneeksempel fra boka</span><span class="o-ref">Boka kap. 3.6 · fig. 3.25</span></div>
+        <div class="o-text">
+          <div class="puzzle"><span>7</span><span>2</span><span>4</span><span>5</span><span class="b"></span><span>6</span><span>8</span><span>3</span><span>1</span></div>
+          <div class="puzzle"><span class="b"></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+          <p class="puzzle-cap">Start (venstre) og mål (høyre)</p>
+          <p>Regn \(h_1\) og \(h_2\) for starttilstanden. Den korteste løsningen har 26 trekk. Er begge admissible her?</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene (tallene stemmer med boka)</span>
+            <p>\(h_1 = 8\): alle åtte brikkene står feil (det tomme feltet telles ikke).</p>
+            <p>\(h_2\), brikke for brikke (rader og kolonner fra 0):</p>
+            <div class="table-wrap">
+              <table class="trace">
+                <thead><tr><th>Brikke</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr></thead>
+                <tbody><tr><td>Avstand</td><td>3</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>3</td><td>2</td></tr></tbody>
+              </table>
+            </div>
+            <p>\(h_2 = 3+1+2+2+2+3+3+2 = 18\). Begge er \(\le 26\), og \(h_2 \ge h_1\) som dominansen sier.</p>
+          </div>
+        </div>
+      </div>
+      <p>Andre måter: del problemet i <span class="term" data-term="delproblem">delproblemer</span> (få brikke 1–4 på plass), lagre løsningene i en <span class="term" data-term="monsterdatabase">mønsterdatabase</span>, og kombiner flere slike heuristikker med max.</p>
+      <div class="oppgave" data-quiz id="oppg-o22-3-3">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 3.3</span><span class="o-ref">ulv, geit og kål</span></div>
+        <div class="o-text"><p>Design an admissible heuristic for this problem. Describe the heuristic and explain why it is admissible. (Notasjonen fra <a href="sok-formulering.html#oppg-o22-3-1">2A</a>: tre biter, 1 = vare på startsiden.)</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Svaret avhenger av konvensjonen studenten har valgt. Løsningsforslaget: tell antall nuller, siden hver null betyr at én vare allerede er på andre siden. Den er admissibel fordi den aldri overestimerer kostnaden til målet, og konsistent fordi handlinger nærmere målet har flere nuller.</p>
+          </div>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra løsningsforslaget</span>
+            <p>Med 1 = «på startsiden» øker antall nuller <em>mot</em> målet (\(h(\text{mål}) = 3\)), så det må være antall <strong>enere</strong> som menes: \(h(n)\) = antall varer som fortsatt er på startsiden.</p>
+            <ul>
+              <li><strong>Admissibel:</strong> hver overfart koster 1 og flytter høyst én vare, så det trengs minst \(h(n)\) overfarter: \(h(n) \le h^*(n)\). I målet er \(h = 0\).</li>
+              <li><strong>Konsistent:</strong> én overfart endrer antall enere med høyst 1, så \(h(n) \le 1 + h(n')\) for hver kant.</li>
+            </ul>
+            <p>Eksempel: \(h(111\text{-}i) = 3 \le h^* = 7\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Admissibel</strong>\(h(n) \le h^*(n)\) for alle \(n\); gir optimal tree-like A*.</div>
+        <div class="recap-pill"><strong>Konsistent</strong>\(h(n) \le c(n,a,n') + h(n')\) for hver kant; gir ikke-avtakende \(f\).</div>
+        <div class="recap-pill"><strong>Konsistent ⇒ admissibel</strong>Med \(h(\text{mål}) = 0\); ikke omvendt.</div>
+        <div class="recap-pill"><strong>Ukjent h(B)</strong>Skriv én ulikhet per kant inn og ut av B, og ta snittet.</div>
+        <div class="recap-pill"><strong>Dominans</strong>\(h_2 \ge h_1\) og begge admissible ⇒ færre ekspansjoner; max er admissibel.</div>
+        <div class="recap-pill"><strong>Relaksering</strong>Fjern regler; optimal kostnad i det enklere problemet er admissibel.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Er \(h_1 + h_2\) admissibel når \(h_1\) og \(h_2\) er det? Er \(\max(h_1, h_2)\)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Summen trenger ikke være det: med \(h_1 = h_2 = h^*\) blir summen \(2h^* \gt h^*\). Maksimum er alltid admissibelt, fordi begge ligger under \(h^*\), og det dominerer begge.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Gi en heuristikk som er admissibel men ikke konsistent, på grafen A→B (kostnad 1), B→G (kostnad 1).</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(h^*(A) = 2\), \(h^*(B) = 1\). Velg \(h(A) = 2\), \(h(B) = 0\), \(h(G) = 0\). Admissibel (\(2 \le 2\), \(0 \le 1\)), men kanten A→B gir \(2 \le 1 + 0\), som er usant.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">I eksamen 2023 oppg. 2.2: for hvilke \(h(B)\) er heuristikken admissibel? Sammenlikn med konsistensintervallet.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(h^*(B) = \min(2 + 8,\ 3 + 3) = 6\), så admissibel krever \(h(B) \le 6\) (de andre verdiene er allerede \(\le h^*\): \(h^*(A)=7\), \(h^*(C)=8\), \(h^*(D)=3\), \(h^*(E)=3\), \(h^*(F)=1\)). Altså \(0 \le h(B) \le 6\), mens konsistens krever \(4 \le h(B) \le 6\). For \(h(B) \in [0, 4)\) er \(h\) admissibel men ikke konsistent.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="informert-sok.html" class="prev"><div class="pn-label">← Forrige · 2C</div><div class="pn-title">Informert søk</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake · kapittel 2</div><div class="pn-title">Oversikt og alle oppgaver →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+
+<script>
+function runSearch(G, algo, tree, limit) {
+  limit = limit || 14;
+  var adj = {};
+  G.e.forEach(function (e) {
+    (adj[e[0]] = adj[e[0]] || []).push([e[1], e[2]]);
+    if (!G.dir) (adj[e[1]] = adj[e[1]] || []).push([e[0], e[2]]);
+  });
+  function kids(n) {
+    return (adj[n.s] || []).slice().sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; })
+      .map(function (t) { return { s: t[0], g: n.g + t[1], d: n.d + 1, p: n, id: ++uid }; });
+  }
+  function h(s) { return G.h && G.h[s] != null ? G.h[s] : 0; }
+  function f(n) { return algo === 'dfs' ? -n.d : algo === 'ucs' ? n.g : algo === 'greedy' ? h(n.s) : n.g + h(n.s); }
+  function path(n) { var p = []; for (; n; n = n.p) p.unshift(n.s); return p; }
+  var uid = 0, root = { s: G.start, g: 0, d: 0, p: null, id: 0 }, steps = [], exp = [];
+  var fr = [root], reached = {}; reached[G.start] = root;
+  function snap(node, note, done) {
+    steps.push({ node: node && node.s, exp: exp.slice(), fr: fr.map(function (n) { return { s: n.s, g: n.g, f: f(n) }; }), note: note, done: done || null });
+  }
+  if (algo === 'bfs') {
+    if (root.s === G.goal) { snap(null, 'start er mål', { path: [root.s], cost: 0 }); return steps; }
+    snap(null, 'start');
+    while (fr.length) {
+      if (exp.length >= limit) { snap(null, 'stopp: løkke', { loop: true }); return steps; }
+      var n = fr.shift(); exp.push(n.s);
+      var ks = kids(n);
+      for (var i = 0; i < ks.length; i++) {
+        var c = ks[i];
+        if (c.s === G.goal) { snap(n.s, 'mål generert', { path: path(c), cost: c.g, goal: c.s }); return steps; }
+        if (tree || !reached[c.s]) { reached[c.s] = c; fr.push(c); }
+      }
+      snap(n.s, 'ekspandert');
+    }
+    snap(null, 'failure', { fail: true }); return steps;
+  }
+  snap(null, 'start');
+  while (fr.length) {
+    fr.sort(function (a, b) { return f(a) - f(b) || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0) || a.id - b.id; });
+    var n = fr.shift();
+    if (n.s === G.goal) { snap(n.s, 'mål poppet', { path: path(n), cost: n.g, goal: n.s }); return steps; }
+    if (exp.length >= limit) { snap(null, 'stopp: løkke', { loop: true }); return steps; }
+    exp.push(n.s);
+    kids(n).forEach(function (c) {
+      if (tree || !reached[c.s] || c.g < reached[c.s].g) { reached[c.s] = c; fr.push(c); }
+    });
+    fr.sort(function (a, b) { return f(a) - f(b) || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0) || a.id - b.id; });
+    snap(n.s, 'ekspandert');
+  }
+  snap(null, 'failure', { fail: true }); return steps;
+}
+
+function drawGraph(svg, G, mid) {
+  var R = G.small ? 7 : 17, s = '', P = G.pos;
+  if (G.dir) s += '<defs><marker id="' + mid + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>';
+  var mk = G.dir ? ' marker-end="url(#' + mid + ')"' : '';
+  G.e.forEach(function (e) {
+    var a = P[e[0]], b = P[e[1]], k = ' data-e="' + e[0] + '|' + e[1] + '"';
+    if (e[0] === e[1]) {
+      s += '<path class="ed"' + k + ' d="M' + (a[0] - 12) + ' ' + (a[1] - 12) + ' C' + (a[0] - 70) + ' ' + (a[1] - 57) + ' ' + (a[0] - 70) + ' ' + (a[1] + 57) + ' ' + (a[0] - 12) + ' ' + (a[1] + 14) + '"' + mk + '/>';
+      s += '<text class="cost" x="' + (a[0] - 74) + '" y="' + a[1] + '">' + e[2] + '</text>'; return;
+    }
+    var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+    s += '<line class="ed"' + k + ' x1="' + (a[0] + ux * R) + '" y1="' + (a[1] + uy * R) + '" x2="' + (b[0] - ux * (R + 2)) + '" y2="' + (b[1] - uy * (R + 2)) + '"' + mk + '/>';
+    s += '<text class="cost" x="' + ((a[0] + b[0]) / 2 - uy * 10) + '" y="' + ((a[1] + b[1]) / 2 + ux * 10) + '">' + e[2] + '</text>';
+  });
+  Object.keys(P).forEach(function (n) {
+    var p = P[n], goal = n === G.goal;
+    s += '<g class="nd" data-n="' + n + '"><circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + R + '"/>' + (goal && !G.small ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (R - 4) + '"/>' : '') +
+      '<text x="' + p[0] + '" y="' + (G.small ? p[1] - 14 : p[1]) + '"' + (G.small ? ' style="font-size:11px"' : '') + '>' + n + '</text></g>';
+    var o = (G.hpos && G.hpos[n]) || (G.small ? [0, 14] : [30, -18]);
+    if (G.h && G.h[n] != null && G.showH !== false) s += '<text class="hv" x="' + (p[0] + o[0]) + '" y="' + (p[1] + o[1]) + '">h=' + G.h[n] + '</text>';
+  });
+  svg.innerHTML = s;
+}
+function markGraph(svg, st, done) {
+  var exp = st ? st.exp : [], fr = st ? st.fr.map(function (x) { return x.s; }) : [];
+  svg.querySelectorAll('.nd').forEach(function (g) {
+    var n = g.getAttribute('data-n');
+    g.setAttribute('class', 'nd' + (st && st.node === n ? ' cur' : exp.indexOf(n) >= 0 ? ' exp' : fr.indexOf(n) >= 0 ? ' fr' : ''));
+  });
+  var path = done && done.path ? done.path : [];
+  svg.querySelectorAll('.ed').forEach(function (l) {
+    var k = l.getAttribute('data-e').split('|'), on = false;
+    for (var i = 0; i + 1 < path.length; i++) if ((path[i] === k[0] && path[i + 1] === k[1]) || (path[i] === k[1] && path[i + 1] === k[0])) on = true;
+    l.setAttribute('class', 'ed' + (on ? ' hot' : ''));
+  });
+}
+
+(function () {
+  'use strict';
+  /* ─── Widget: admissibel og konsistent på grafen fra eksamen 2023 oppg. 2.2 ─── */
+  (function () {
+    var root = document.getElementById('w-heur'); if (!root) return;
+    var G = { start: 'A', goal: 'G', dir: true, hpos: { B: [-38, 0], D: [-38, 0], G: [38, 0], E: [36, 12], C: [36, -12] }, pos: { A: [200, 30], B: [90, 100], C: [290, 115], D: [100, 215], F: [210, 200], E: [300, 220], G: [160, 300] },
+      e: [['A', 'B', 1], ['A', 'C', 4], ['B', 'C', 2], ['B', 'D', 3], ['C', 'E', 5], ['D', 'F', 2], ['D', 'G', 4], ['F', 'G', 1], ['E', 'G', 3]] };
+    var H0 = { A: 5, B: 5, C: 4, D: 3, E: 3, F: 1, G: 0 }, N = ['A', 'B', 'C', 'D', 'E', 'F'];
+    var svg = document.getElementById('h-svg'), ins = document.getElementById('h-ins');
+    ins.innerHTML = N.map(function (n) { return '<div class="w-ctl"><label for="h-' + n + '">h(' + n + ')</label><input class="hin" type="number" id="h-' + n + '" value="' + H0[n] + '"></div>'; }).join('');
+    var hs = { G: 0 };
+    for (var k = 0; k < 8; k++) G.e.forEach(function (e) { var v = hs[e[1]]; if (v != null && (hs[e[0]] == null || e[2] + v < hs[e[0]])) hs[e[0]] = e[2] + v; });
+    function update() {
+      var h = { G: 0 };
+      N.forEach(function (n) { h[n] = parseFloat(document.getElementById('h-' + n).value) || 0; });
+      G.h = h; drawGraph(svg, G, 'ar-hw');
+      var badN = N.filter(function (n) { return h[n] > hs[n]; }), badE = 0, rows = [];
+      svg.querySelectorAll('.nd').forEach(function (g) { if (badN.indexOf(g.getAttribute('data-n')) >= 0) g.setAttribute('class', 'nd bad'); });
+      G.e.forEach(function (e) {
+        var ok = h[e[0]] <= e[2] + h[e[1]]; if (!ok) badE++;
+        if (!ok) svg.querySelector('[data-e="' + e[0] + '|' + e[1] + '"]').setAttribute('class', 'ed bad');
+        rows.push('<span class="entry ' + (ok ? 'ok' : 'bad') + '">' + e[0] + '→' + e[1] + ': h(' + e[0] + ') = ' + h[e[0]] + ' ≤ ' + e[2] + ' + ' + h[e[1]] + ' = ' + (e[2] + h[e[1]]) + (ok ? '  ✓' : '  ✗') + '</span>');
+      });
+      var st = runSearch(G, 'astar', false, 20), l = st[st.length - 1], d = l.done;
+      document.getElementById('h-out').innerHTML = 'Admissibel: <span class="hl">' + (badN.length ? 'nei' : 'ja') + '</span>' + (badN.length ? ' (' + badN.map(function (n) { return 'h(' + n + ')=' + h[n] + ' &gt; h*=' + hs[n]; }).join(', ') + ')' : '') +
+        ' · Konsistent: <span class="hl">' + (badE ? 'nei (' + badE + ' kant' + (badE > 1 ? 'er' : '') + ')' : 'ja') + '</span><br>A*: ' + l.exp.join(', ') + ', (' + d.goal + ') · sti ' + d.path.join(' ') + ' · kostnad ' + d.cost + (d.cost > hs.A ? ' <strong>(suboptimal, optimal = ' + hs.A + ')</strong>' : ' (optimal)');
+      document.getElementById('h-log').innerHTML = rows.join('');
+    }
+    ins.addEventListener('input', update);
+    root.querySelectorAll('[data-hb]').forEach(function (b) { b.addEventListener('click', function () { N.forEach(function (n) { document.getElementById('h-' + n).value = H0[n]; }); document.getElementById('h-B').value = b.getAttribute('data-hb'); update(); }); });
+    update();
+  })();
+})();
+</script>
+</body>
+</html>

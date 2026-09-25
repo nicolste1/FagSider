@@ -11,6 +11,8 @@ Sjekker for hvert fag (mapper med fag.js, unntatt _mal/) at
   * <fag>/kilder/dekning.json dekker alle seksjoner i versjon.json (om den finnes)
   * alle .oppgave-bokser er listet i kapitteloversikten, og omvendt
   * sidene i fag.js finnes
+  * eksamensfokus: <fag>/kilder/eksamensanalyse.md og eksamen.json finnes, hver innholdsside har
+    <section id="fokus">
 Pluss at lenkene på rot-index.html (portalen) finnes.
 """
 
@@ -86,7 +88,7 @@ def sjekk_html(rel: str, h: str, ids: dict[str, set], problems: list[str]) -> No
 
 def sjekk_fag(fag: str, problems: list[str]) -> None:
     fd = ROOT / fag
-    pages = sorted(p.relative_to(ROOT).as_posix() for p in list(fd.glob("*.html")) + list(fd.glob("kap*/*.html")))
+    pages = sorted(p.relative_to(ROOT).as_posix() for p in list(fd.glob("*.html")) + list(fd.glob("kap*/*.html")) + list(fd.glob("oving/*.html")))
     html = {p: (ROOT / p).read_text(encoding="utf-8") for p in pages}
     ids = {p: set(re.findall(r'\sid="([^"]+)"', h)) for p, h in html.items()}
 
@@ -128,6 +130,31 @@ def sjekk_fag(fag: str, problems: list[str]) -> None:
                     problems.append(f"{fag}/kilder/dekning.json: side {dek[n]['side']} finnes ikke")
                 elif anker and anker not in ids[page]:
                     problems.append(f"{fag}/kilder/dekning.json: {dek[n]['side']}#{anker} finnes ikke")
+
+    # Eksamensfokus: analyse må finnes, og hver innholdsside har #fokus
+    if not (kilder / "eksamensanalyse.md").exists():
+        problems.append(f"{fag}/kilder/eksamensanalyse.md mangler (steg 0 i NYTT-FAG.md: lag den sammen med brukeren)")
+    eks_path = kilder / "eksamen.json"
+    if eks_path.exists():
+        try:
+            eks = json.loads(eks_path.read_text(encoding="utf-8"))
+            dek = json.loads((kilder / "dekning.json").read_text(encoding="utf-8")) if (kilder / "dekning.json").exists() else {}
+            for n in dek:
+                # Underpunkter (1.2.3) arver fra deltemaet (1.2); nøkler uten tall foran (A1.1 = øvinger) sjekkes ikke.
+                if n.startswith("_") or "." not in n or not n[0].isdigit():
+                    continue
+                deltema = ".".join(n.split(".")[:2])
+                if deltema not in eks:
+                    problems.append(f"{fag}/kilder/eksamen.json mangler deltema {deltema} (prio/type), brukt av {n} i dekning.json")
+        except json.JSONDecodeError as e:
+            problems.append(f"{fag}/kilder/eksamen.json: ugyldig JSON ({e})")
+    else:
+        problems.append(f"{fag}/kilder/eksamen.json mangler")
+    for p, h in html.items():
+        if not re.search(r"/(kap\d+|oving)/(?!index\.html)", "/" + p):
+            continue
+        if 'id="fokus"' not in h:
+            problems.append(f"{p}: mangler <section id=\"fokus\"> (00 · Eksamensfokus)")
 
     for kap in sorted(fd.glob("kap*/index.html")):
         listed = set(re.findall(r'href="[^"#]+#(oppg-[^"]+)"', kap.read_text(encoding="utf-8")))

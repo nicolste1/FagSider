@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>CSP-formulering og AC-3 — Kap 4</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .cg { display: block; max-width: 560px; margin: 1rem auto; }
+  .cg .e { stroke: var(--ink-faded); stroke-width: 1.5; fill: none; }
+  .cg .e.on { stroke: var(--warm); stroke-width: 3.5; }
+  .cg .n { fill: var(--paper-dark); stroke: var(--ink); stroke-width: 1.4; }
+  .cg text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; dominant-baseline: middle; }
+  .cg .dom { font-size: 11px; fill: var(--ink-faded); }
+  .cg .fix { fill: var(--paper); font-weight: 600; }
+  .w-ctl select { font-family: var(--sans); font-size: 0.88rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .ac-tab td, .ac-tab th { font-family: var(--mono); font-size: 0.82rem; padding: 3px 6px; }
+  .ac-tab tr.rev td { background: var(--warm-soft); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 4</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Constraint satisfaction problems">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · 4A · Slides forelesning 4 · 1–30 · Boka kap. 5.1–5.2 · ~40 min</div>
+      <h1>CSP og <em>AC-3</em></h1>
+      <p class="lede">Hvordan et problem skrives som variabler, domener og constraints, hvordan constraint graph tegnes, og hvordan AC-3 og forward checking krymper domenene før og under søket. Her ligger 8 av de 15 CSP-poengene fra Ord. 2023.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#definisjon"><span>01</span> Definisjon</a>
+        <a href="#constraint-graf"><span>02</span> Constraint graph</a>
+        <a href="#eksempler"><span>03</span> Flere eksempler</a>
+        <a href="#eksamen-formulering"><span>04</span> Eksamen: formulering</a>
+        <a href="#bue-konsistens"><span>05</span> Arc consistency</a>
+        <a href="#ac3"><span>06</span> AC-3</a>
+        <a href="#o23-ac3"><span>07</span> Eksamen: AC-3</a>
+        <a href="#forward-checking"><span>08</span> Forward checking</a>
+        <a href="#oppsummering"><span>09</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne</em> fra denne siden</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md, deltema 4.1–4.2)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>4.1 Formulering (prio 1):</strong> skriv \(X\), \(D\) og \(C\), tegn constraint graph, forklar noder og kanter, bruk unære constraints på domenene. Tidligere: <a href="#oppg-o22-41">Ord. 2022 oppg. 4.1</a>, <a href="#oppg-o23-41">Ord. 2023 oppg. 4.1</a> (2 p).</li>
+          <li><span class="tag regn">Regn</span><strong>4.2 AC-3 (prio 1):</strong> «er starttilstanden arc-consistent? Kjør AC-3 og skriv de reduserte domenene». Tidligere: <a href="#oppg-o23-42">Ord. 2023 oppg. 4.2</a> (6 p). Vis hver bue du sjekker.</li>
+          <li><span class="tag">Forklar</span>Forskjellen på node consistency, arc consistency og forward checking; hvorfor AC-3 er \(O(cd^3)\).</li>
+          <li><span class="tag">Lavere</span>Zebra-puslespillet, path/k-consistency, Sudoku-koden fra assignment 2, z3-eksempelet (ikke pensum), tre-strukturerte CSP (5.5, ute av pensum 2026).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="definisjon">
+    <div class="container">
+      <div class="section-badge">01 · Definisjon</div>
+      <h2>Variabler, domener, <em>constraints</em></h2>
+      <div class="source-note">Slides forelesning 4 · 4–5, 9–11 · Boka kap. 5.1</div>
+      <span class="lm-pill">Deltema 4.1 · prio 1</span>
+      <p class="dropcap">I vanlig søk er tilstanden en svart boks. Et <span class="term" data-term="csp">constraint satisfaction problem</span> (CSP) har i stedet en fast struktur: en mengde variabler som hver skal få en verdi, og regler for hvilke kombinasjoner som er lov. Da kan søkefunksjonen, inferensen og heuristikkene være problemuavhengige.</p>
+      <div class="def-box">
+        <span class="def-label">Definisjon · slide 5</span>
+        <div class="def-term">CSP = (X, D, C)</div>
+        <ul>
+          <li><strong>Variabler</strong> \(X = \{X_1, \dots, X_n\}\).</li>
+          <li><strong><span class="term" data-term="domene">Domener</span></strong> \(D = \{D_1, \dots, D_n\}\): verdiene hver variabel kan ta, \(X_i \in D_i\).</li>
+          <li><strong><span class="term" data-term="constraint">Constraints</span></strong> \(C = \{C_1, \dots, C_m\}\), hver med \(C_j(\dots) \in \{\text{true}, \text{false}\}\). Boknotasjon: \(C_1 : \langle (X_1, X_2), X_1 \ne X_2 \rangle\), eller bare \(X_1 \ne X_2\).</li>
+          <li><strong>Mål:</strong> en <span class="term" data-term="komplett-tildeling">komplett tildeling</span> \(\{X_1 = v_1, \dots, X_n = v_n\}\) som oppfyller alle constraints.</li>
+        </ul>
+      </div>
+      <p>En constraint kan skrives som et uttrykk eller som en liste av lovlige verditupler. Slide 10: \(D_1 = \{1,\dots,5\}\), \(D_2 = \{1, 2\}\) og \(X_1 + X_2 = 4\) er det samme som \(\langle (X_1, X_2), \{(2,2), (3,1)\} \rangle\).</p>
+      <div class="compare-grid">
+        <div><h4>Unær og binær</h4><p>En <span class="term" data-term="unaer-constraint">unær constraint</span> gjelder én variabel (\(T \ne 0\), «tallet er oddetall» \(\Rightarrow X_4 \in \{1,3,5\}\)) og brukes rett på domenet. En <span class="term" data-term="binaer-constraint">binær constraint</span> gjelder to variabler (\(X_1 \ne X_2\)).</p></div>
+        <div><h4>Global</h4><p>En <span class="term" data-term="global-constraint">global constraint</span> gjelder vilkårlig mange variabler. Viktigst: \(\text{Alldiff}(X_1, X_2, X_3) = \{X_1 \ne X_2, X_1 \ne X_3, X_2 \ne X_3\}\) (slide 11), som alltid kan skrives om til binære ulikheter.</p></div>
+      </div>
+      <p>En tildeling er <span class="term" data-term="konsistent-tildeling">konsistent</span> når den ikke bryter noen constraint. En <span class="term" data-term="losning-csp">løsning</span> er en tildeling som er både konsistent og komplett.</p>
+    </div>
+  </section>
+
+  <section id="constraint-graf">
+    <div class="container">
+      <div class="section-badge">02 · Kartfarging</div>
+      <h2>Constraint <em>graph</em></h2>
+      <div class="source-note">Slides forelesning 4 · 6–9 · Boka kap. 5.1.1, fig. 5.1</div>
+      <p>Standardeksempelet: farg regionene i Australia rød, grønn eller blå slik at naboregioner får ulik farge. Variablene er regionene, alle domener er \(\{\text{red}, \text{green}, \text{blue}\}\), og hver felles grense gir en constraint \(X_i \ne X_j\). I en <span class="term" data-term="constraint-graf">constraint graph</span> er hver <strong>node en variabel</strong> og hver <strong>kant en binær constraint</strong>.</p>
+      <svg class="cg" viewBox="0 0 480 300" aria-label="Constraint graph for kartfarging av Australia">
+        <line class="e" x1="70" y1="140" x2="190" y2="70"/><line class="e" x1="70" y1="140" x2="210" y2="175"/>
+        <line class="e" x1="190" y1="70" x2="210" y2="175"/><line class="e" x1="190" y1="70" x2="320" y2="80"/>
+        <line class="e" x1="210" y1="175" x2="320" y2="80"/><line class="e" x1="210" y1="175" x2="340" y2="185"/>
+        <line class="e" x1="210" y1="175" x2="300" y2="255"/><line class="e" x1="320" y1="80" x2="340" y2="185"/>
+        <line class="e" x1="340" y1="185" x2="300" y2="255"/>
+        <circle class="n" cx="70" cy="140" r="22"/><text x="70" y="140">WA</text>
+        <circle class="n" cx="190" cy="70" r="22"/><text x="190" y="70">NT</text>
+        <circle class="n" cx="210" cy="175" r="22"/><text x="210" y="175">SA</text>
+        <circle class="n" cx="320" cy="80" r="22"/><text x="320" y="80">Q</text>
+        <circle class="n" cx="340" cy="185" r="22"/><text x="340" y="185">NSW</text>
+        <circle class="n" cx="300" cy="255" r="22"/><text x="300" y="255">V</text>
+        <circle class="n" cx="420" cy="270" r="22"/><text x="420" y="270">T</text>
+        <text class="dom" x="70" y="178">X₁</text><text class="dom" x="190" y="32">X₂</text><text class="dom" x="172" y="208">X₃</text><text class="dom" x="320" y="42">X₄</text>
+      </svg>
+      <p>Slidene forenkler til fire variabler (WA \(= X_1\), NT \(= X_2\), SA \(= X_3\), Q \(= X_4\)) med \(C = \{X_1 \ne X_2, X_1 \ne X_3, X_2 \ne X_3, X_2 \ne X_4, X_3 \ne X_4\}\). Tasmania (T) har ingen naboer og kan fargelegges uavhengig av resten.</p>
+      <div class="callout">
+        <span class="label">Eksamenstips</span>
+        <p>Når constrainten er asymmetrisk (\(\gt\), «før»), tegn piler og si hva retningen betyr. For globale constraints med mer enn to variabler tegner boka en <em>constraint hypergraph</em> med en egen boks for constrainten.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="eksempler">
+    <div class="container">
+      <div class="section-badge">03 · Flere eksempler</div>
+      <h2>Sudoku, kryptaritmetikk, <em>dronninger</em></h2>
+      <div class="source-note">Slides forelesning 4 · 2, 4, 38, 40 · Boka kap. 5.1–5.2 (hjelpevariablene \(C_i\) står ikke i slidene)</div>
+      <ul>
+        <li><strong>Sudoku (slide 4):</strong> 81 variabler (cellene), domene \(\{1,\dots,9\}\), 27 Alldiff-constraints (9 rader, 9 kolonner, 9 blokker).</li>
+        <li><strong><span class="term" data-term="kryptaritmetikk">Kryptaritmetikk</span> (slide 38):</strong> TWO + TWO = FOUR med ulike sifre og \(T \ne 0\), \(F \ne 0\). Eksempelløsning 765 + 765 = 1530.</li>
+      </ul>
+      <p>Boka skriver summen kolonnevis med mentevariabler \(C_1, C_2, C_3 \in \{0,1\}\):</p>
+      \[ O + O = R + 10 C_1,\quad C_1 + W + W = U + 10 C_2,\quad C_2 + T + T = O + 10 C_3,\quad C_3 = F \]
+      <p>sammen med \(\text{Alldiff}(F,T,U,W,R,O)\). Sjekk med 765: \(5+5 = 0 + 10\) (\(C_1 = 1\)), \(1+6+6 = 3+10\) (\(C_2 = 1\)), \(1+7+7 = 5+10\) (\(C_3 = 1 = F\)).</p>
+
+      <div class="oppgave" data-quiz id="oppg-8dronninger">
+        <div class="o-label"><span>Tenk over · fra slidene</span><span class="o-ref">Slide 40</span></div>
+        <div class="o-text"><p>8-dronningproblemet: hva kan CSP-variablene og domenene være?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Én variabel per kolonne, \(Q_1, \dots, Q_8\), med domene \(\{1,\dots,8\}\) = raden dronningen står i. Da er «én per kolonne» bygget inn. Constraints for hvert par \(i \lt j\): \(Q_i \ne Q_j\) (ikke samme rad) og \(|Q_i - Q_j| \ne j - i\) (ikke samme diagonal).</p>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>Utdypning · lavere prioritet: zebra-puslespillet (slide 2)</summary>
+        <p>Fem hus, fem kategorier (nasjonalitet, farge, dyr, drikke, yrke). En naturlig formulering (egen tolkning): én variabel per egenskap (English, Red, Dog, …) med domene \(\{1,\dots,5\}\) = husnummer. Alldiff innen hver kategori, og hintene blir constraints som \(\text{English} = \text{Red}\), \(\text{Norwegian} = 1\), \(\text{Green} = \text{White} + 1\), \(|\text{Norwegian} - \text{Blue}| = 1\).</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="eksamen-formulering">
+    <div class="container">
+      <div class="section-badge">04 · Eksamen</div>
+      <h2>Formuler som <em>CSP</em></h2>
+      <div class="source-note">Eksamen Ord. 2022 oppg. 4.1 · Ord. 2023 oppg. 4.1</div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-41">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 4.1</span><span class="o-ref">Firesifret tall</span></div>
+        <div class="o-text">
+          <p>Finn et firesifret tall der (1) tallet er oddetall, (2) tallet bare inneholder sifrene 1, 2, 3, 4 og 5, (3) hvert siffer (unntatt det lengst til venstre) er strengt større enn sifferet til venstre for seg.</p>
+          <p>4.1.1 Formuler som CSP og tegn constraint graph. Forklar hva noder og kanter representerer. 4.1.2 Bruk de unære constraintene (betingelse 1) og vis domenene.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>\(\text{CSP} = (X, D, C)\) med \(X = \{x_1, x_2, x_3, x_4\}\) (sifrene fra venstre), \(D_i = \{1, 2, 3, 4, 5\}\) for alle \(i\) (betingelse 2), og</p>
+            \[ C = \{x_2 \gt x_1,\; x_3 \gt x_2,\; x_4 \gt x_3\} \cup \{(x_1 \mathbin{+\!\!+} x_2 \mathbin{+\!\!+} x_3 \mathbin{+\!\!+} x_4) \bmod 2 = 1\} \]
+            <p>der \(\mathbin{+\!\!+}\) er sammenkjeding. Et tall er odde når siste siffer er odde, så odde-kravet er i praksis den unære constrainten \(x_4 \bmod 2 = 1\).</p>
+            <svg class="cg" viewBox="0 0 480 110" aria-label="Constraint graph x1 til x4">
+              <defs><marker id="pil1" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6b6257"/></marker></defs>
+              <line class="e" x1="82" y1="55" x2="156" y2="55" marker-end="url(#pil1)"/><line class="e" x1="202" y1="55" x2="276" y2="55" marker-end="url(#pil1)"/><line class="e" x1="322" y1="55" x2="396" y2="55" marker-end="url(#pil1)"/>
+              <circle class="n" cx="60" cy="55" r="22"/><text x="60" y="55">x₁</text>
+              <circle class="n" cx="180" cy="55" r="22"/><text x="180" y="55">x₂</text>
+              <circle class="n" cx="300" cy="55" r="22"/><text x="300" y="55">x₃</text>
+              <circle class="n" cx="420" cy="55" r="22"/><text x="420" y="55">x₄</text>
+              <text class="dom" x="120" y="42">&lt;</text><text class="dom" x="240" y="42">&lt;</text><text class="dom" x="360" y="42">&lt;</text>
+              <text class="dom" x="420" y="95">odde (unær)</text>
+            </svg>
+            <p>Hver node er en variabel \(x_i\), hver kant en binær constraint. Pilene er viktige fordi «større enn» ikke er symmetrisk: \(x_i \to x_{i+1}\) betyr \(x_i \lt x_{i+1}\).</p>
+            <p>4.1.2: Unær constraint på \(x_4\) gir \(D_1 = D_2 = D_3 = \{1,2,3,4,5\}\) og \(D_4 = \{1, 3, 5\}\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o23-41">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 4.1</span><span class="o-ref">Gartnerne · 2 p</span></div>
+        <div class="o-text">
+          <p>Gartnerne Adrian, Brian og Celine har 2 timer på å gjøre 5 oppgaver (1–5). Hver oppgave tar 1 time, og hver gartner kan bare jobbe med én oppgave om gangen, alene. Adrian kan oppgave 1, 2, 3; Brian 1, 2, 5; Celine 2, 4, 5. Oppgave 1 må gjøres før oppgave 2, og oppgave 3 før oppgave 5.</p>
+          <p>Én variabel per oppgave, \(X_1, \dots, X_5\), med verdier fra \(\{A1, A2, B1, B2, C1, C2\}\), der \(X_1 = B2\) betyr at Brian gjør oppgave 1 i tidsluke 2. Domener: \(D_1 = \{A1, A2, B1, B2\}\), \(D_2 = \{A1, A2, B1, B2, C1, C2\}\), \(D_3 = \{A1, A2\}\), \(D_4 = \{C1, C2\}\), \(D_5 = \{B1, B2, C1, C2\}\). Skriv constraintene.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Løsningsforslaget: \(C = \{X_1 \ll X_2,\; X_3 \ll X_5,\; \text{all\_diff}\}\), der \(\ll\) betyr «før». Skrevet ut, med \(t(X_i)\) = tidsluka i verdien:</p>
+            \[ t(X_1) \lt t(X_2), \qquad t(X_3) \lt t(X_5), \qquad \text{Alldiff}(X_1, X_2, X_3, X_4, X_5). \]
+            <p>Alldiff dekker «én oppgave om gangen per gartner»: to oppgaver kan ikke få samme gartner i samme luke. Hvem som kan gjøre hva, ligger allerede i domenene (unære constraints). Med bare to luker betyr \(t(X_1) \lt t(X_2)\) at \(X_1\) må ha luke 1 og \(X_2\) luke 2. Siden Alldiff gir en ulikhet mellom alle par, er constraint graph komplett (\(K_5\)).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bue-konsistens">
+    <div class="container">
+      <div class="section-badge">05 · Inferens</div>
+      <h2>Node- og arc <em>consistency</em></h2>
+      <div class="source-note">Slides forelesning 4 · 14–23 · Boka kap. 5.2.1–5.2.2</div>
+      <span class="lm-pill">Deltema 4.2 · prio 1</span>
+      <p><span class="term" data-term="constraint-propagering">Constraint propagation</span> bruker constraints til å fjerne verdier fra domenene før eller under søket. Søketreet blir mye mindre (slide 14–15: samme problem uten og med inferens).</p>
+      <div class="def-box">
+        <span class="def-label">Definisjon · slide 17</span>
+        <div class="def-term">Arc consistency</div>
+        <p>\(X_i\) er arc-consistent med \(X_j\) hvis det for <em>hver</em> verdi i \(D_i\) finnes en verdi i \(D_j\) som ikke bryter noen constraint. Bare binære constraints. Buen \((X_i, X_j)\) er rettet: den kan bare fjerne verdier fra \(D_i\).</p>
+      </div>
+      <p><span class="term" data-term="node-konsistens">Node consistency</span> er det samme for unære constraints: alle verdier i \(D_i\) oppfyller de unære constraintene på \(X_i\). Den oppnås ved å stryke verdier én gang, før alt annet. Et nettverk er <span class="term" data-term="bue-konsistens">arc-consistent</span> når hver variabel er arc-consistent med alle naboene sine.</p>
+
+      <div class="oppgave" data-quiz id="oppg-slide-buer">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 17–22</span></div>
+        <div class="o-text"><p>I den forenklede kartfargingen er \(X_1 = \text{red}\), \(X_2 = \text{green}\), \(D_3 = \{\text{blue}\}\) og \(D_4 = \{\text{red}, \text{blue}\}\). (a) Er \((X_3, X_4)\) arc-consistent? (b) Er \((X_4, X_3)\)? (c) Hvordan gjør vi \((X_4, X_3)\) arc-consistent?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>(a) Ja: den eneste verdien blue i \(D_3\) har støtte i red \(\in D_4\). (b) Nei: blue \(\in D_4\) krever en verdi \(\ne\) blue i \(D_3 = \{\text{blue}\}\), og den finnes ikke. (c) \(D_4 \leftarrow D_4 \setminus \{\text{blue}\}\). Merk asymmetrien: samme kant, to buer, ulikt svar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ac3">
+    <div class="container">
+      <div class="section-badge">06 · Algoritmen</div>
+      <h2>AC-3 <em>steg for steg</em></h2>
+      <div class="source-note">Slides forelesning 4 · 23–30 · Pseudokode og kompleksitet: Boka kap. 5.2.2, fig. 5.3 (slidene gir bare punktlista)</div>
+      <p><span class="term" data-term="ac3">AC-3</span> holder en kø av buer. Den tar ut en bue, gjør den arc-consistent med <span class="term" data-term="revise">REVISE</span>, og hvis \(D_i\) krympet, legges alle buer \((X_k, X_i)\) fra de andre naboene tilbake, fordi verdiene deres kan ha mistet støtten sin.</p>
+<pre><code>function AC-3(csp) returns false if an inconsistency is found and true otherwise
+  queue ← a queue of arcs, initially all the arcs in csp
+  while queue is not empty do
+    (Xi, Xj) ← POP(queue)
+    if REVISE(csp, Xi, Xj) then
+      if size of Di = 0 then return false
+      for each Xk in Xi.NEIGHBORS − {Xj} do
+        add (Xk, Xi) to queue
+  return true
+
+function REVISE(csp, Xi, Xj) returns true iff we revise the domain of Xi
+  revised ← false
+  for each x in Di do
+    if no value y in Dj allows (x, y) to satisfy
+       the constraint between Xi and Xj then
+      delete x from Di
+      revised ← true
+  return revised</code></pre>
+      <p><strong>Kompleksitet.</strong> Med \(c\) binære constraints og domenestørrelse høyst \(d\) finnes \(2c\) buer. En bue \((X_k, X_i)\) legges bare inn igjen når \(D_i\) mister en verdi, altså høyst \(d\) ganger, og én REVISE sjekker \(d^2\) verdipar:</p>
+      \[ O(c \cdot d \cdot d^2) = O(c\,d^3). \]
+      <p>Resultatet er det samme uansett rekkefølge i køen. Tomt domene betyr at CSP-en ikke har løsning (med de tildelingene som er gjort). Slidene viser to bruksmåter: (1) én gang <em>før</em> søket med alle buer i køen (boka fig. 5.3; løser enkle Sudoku alene, slide 29–30), eller (2) <em>etter hver tildeling</em> med buene \((X_k, X_i)\) fra de utildelte naboene til den tildelte variabelen (slide 25–28, kalles MAC i boka).</p>
+
+      <div class="oppgave" data-quiz id="oppg-slide-ac3">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 25–28</span></div>
+        <div class="o-text"><p>Kartfarging med fire variabler. \(X_1 = \text{red}\) er tildelt og forward checking har gitt \(D_3 = \{\text{green}, \text{blue}\}\), \(D_4 = \{\text{red}, \text{green}, \text{blue}\}\). Nå tildeles \(X_2 = \text{green}\). Kjør AC-3 med buene fra de utildelte naboene til \(X_2\) i startkøen.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>Kø: \((X_3,X_2), (X_4,X_2)\).</p>
+            <ol>
+              <li>\((X_3, X_2)\): green \(\in D_3\) har ingen støtte i \(\{\text{green}\}\) ⇒ \(D_3 = \{\text{blue}\}\). \(D_3\) endret: legg til \((X_4, X_3)\) (\(X_1\) er tildelt og hoppes over).</li>
+              <li>\((X_4, X_2)\): fjern green ⇒ \(D_4 = \{\text{red}, \text{blue}\}\). Legg til \((X_3, X_4)\).</li>
+              <li>\((X_4, X_3)\): blue har ingen støtte i \(\{\text{blue}\}\) ⇒ \(D_4 = \{\text{red}\}\). \((X_3, X_4)\) ligger allerede i køen.</li>
+              <li>\((X_3, X_4)\): blue har støtte i red. Ingen endring, køen er tom.</li>
+            </ol>
+            <p>Resultat: \(D_3 = \{\text{blue}\}\), \(D_4 = \{\text{red}\}\). Kjør det i widgeten under (valget «Slidene»).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-ac3">
+        <div class="widget-label">Prøv selv · AC-3 stegvis</div>
+        <p class="widget-intro">Velg et problem. Oransje strek er buen som behandles; kø og logg står under. Fargede noder er tildelt. Startkøen er alle buer \((X_i, X_j)\) der \(X_i\) er utildelt, i alfabetisk rekkefølge (for «Slidene»: køen fra slide 25). En bue som alt ligger i køen, legges ikke inn på nytt.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ac-pre">Problem</label>
+            <select id="ac-pre">
+              <option value="slide">Slidene: X₁ = red, X₂ = green</option>
+              <option value="wa">Australia: WA = red</option>
+              <option value="waq">Australia: WA = red, Q = green</option>
+              <option value="kjede">Kjede A–B–C: A = blue</option>
+              <option value="gart">Gartnerne (Ord. 2023 4.2)</option>
+            </select></div>
+        </div>
+        <svg class="cg" id="ac-svg" viewBox="0 0 480 300" aria-label="AC-3 på constraint graph"></svg>
+        <div class="w-row">
+          <button class="w-btn" id="ac-step" type="button">Ett steg</button>
+          <button class="w-btn" id="ac-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="ac-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="ac-out"></div>
+        <div class="w-log" id="ac-log"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="o23-ac3">
+    <div class="container">
+      <div class="section-badge">07 · Eksamen</div>
+      <h2>AC-3 på <em>gartnerne</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 oppg. 4.2 · 6 poeng</div>
+
+      <div class="oppgave" data-quiz id="oppg-o23-42">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 4.2</span><span class="o-ref">6 p</span></div>
+        <div class="o-text"><p>Gartnerproblemet fra <a href="#oppg-o23-41">4.1</a>. Er starttilstanden arc-consistent? Hvis ikke, bruk AC-3 til å beskjære domenene og skriv ned de reduserte domenene for hver variabel.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · med full kø-gjennomgang lagt til</span>
+            <p><strong>Nei.</strong> For eksempel har \(X_1 = A2\) ingen verdi i \(D_2\) med senere tidsluke, så \((X_1, X_2)\) er ikke arc-consistent.</p>
+            <p>Hver binær constraint er «ulike verdier», og i tillegg «luke 1 før luke 2» for paret \((X_1, X_2)\) og \((X_3, X_5)\). Grafen er komplett, så alle 20 buer står i startkøen: \((X_1,X_2), (X_1,X_3), \dots, (X_5,X_4)\). En ulikhet kan bare fjerne en verdi når naboen har ett element igjen.</p>
+            <div class="table-wrap"><table class="ac-tab">
+              <thead><tr><th>#</th><th>Bue</th><th>Fjernes fra \(D_i\)</th><th>Ny \(D_i\)</th><th>Legges i køen</th></tr></thead>
+              <tbody>
+                <tr class="rev"><td>1</td><td>(X1,X2)</td><td>A2, B2 (luke 2 kan ikke komme før)</td><td>{A1, B1}</td><td>ingen nye (alle ligger alt i køen)</td></tr>
+                <tr><td>2–4</td><td>(X1,X3), (X1,X4), (X1,X5)</td><td>–</td><td></td><td></td></tr>
+                <tr class="rev"><td>5</td><td>(X2,X1)</td><td>A1, B1, C1 (luke 1 kan ikke komme etter)</td><td>{A2, B2, C2}</td><td>ingen nye</td></tr>
+                <tr><td>6–11</td><td>(X2,X3), (X2,X4), (X2,X5), (X3,X1), (X3,X2), (X3,X4)</td><td>–</td><td></td><td></td></tr>
+                <tr class="rev"><td>12</td><td>(X3,X5)</td><td>A2</td><td>{A1}</td><td>(X1,X3), (X2,X3)</td></tr>
+                <tr><td>13–18</td><td>(X4,X1), (X4,X2), (X4,X3), (X4,X5), (X5,X1), (X5,X2)</td><td>–</td><td></td><td></td></tr>
+                <tr class="rev"><td>19</td><td>(X5,X3)</td><td>B1, C1</td><td>{B2, C2}</td><td>(X1,X5), (X2,X5), (X4,X5)</td></tr>
+                <tr><td>20</td><td>(X5,X4)</td><td>–</td><td></td><td></td></tr>
+                <tr class="rev"><td>21</td><td>(X1,X3)</td><td>A1 (\(D_3 = \{A1\}\), ulike verdier)</td><td>{B1}</td><td>(X2,X1), (X4,X1), (X5,X1)</td></tr>
+                <tr><td>22–28</td><td>(X2,X3), (X1,X5), (X2,X5), (X4,X5), (X2,X1), (X4,X1), (X5,X1)</td><td>–</td><td></td><td>køen tom</td></tr>
+              </tbody>
+            </table></div>
+            <p>Reduserte domener:</p>
+            \[ D_1 = \{B1\},\; D_2 = \{A2, B2, C2\},\; D_3 = \{A1\},\; D_4 = \{C1, C2\},\; D_5 = \{B2, C2\}. \]
+            <p>Løsningsforslaget går i en annen rekkefølge (starter med \((X_3, X_5)\)), men AC-3 gir samme sluttdomener uansett rekkefølge. Velg «Gartnerne» i widgeten over for å gå gjennom tabellen.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <span class="label">Vanlig feil</span>
+        <p>Å glemme å legge buer tilbake i køen etter en endring. I rad 21 fjernes A1 fra \(D_1\) først fordi \(D_3\) ble \(\{A1\}\) i rad 12; det er nettopp re-innleggingen som fanger det.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="forward-checking">
+    <div class="container">
+      <div class="section-badge">08 · Forward checking</div>
+      <h2>Én runde <em>framover</em></h2>
+      <div class="source-note">Slides forelesning 4 · 16 · Assignment-forelesning 2 · 23 · Boka kap. 5.3.2</div>
+      <div class="def-box">
+        <span class="def-label">Algoritme · slide 16</span>
+        <div class="def-term">Forward checking</div>
+        <p>Etter at en variabel er tildelt en verdi: gå gjennom domenene til de <em>utildelte naboene</em> og fjern verdier som ville bryte en constraint. Domenet til den tildelte variabelen settes til verdien.</p>
+      </div>
+      <p>Slide 16: etter \(X_1 = \text{red}\) blir \(D_2 \leftarrow D_2 \setminus \{\text{red}\}\) og \(D_3 \leftarrow D_3 \setminus \{\text{red}\}\). <span class="term" data-term="forward-checking">Forward checking</span> sjekker altså bare buene \((X_k, X_i)\) inn mot den nettopp tildelte variabelen og sprer ikke endringene videre. AC-3 etter hver tildeling gjør det samme og fortsetter så lenge noe endres. Eksempel (boka): etter WA = red og Q = green gir forward checking NT = SA = {blue}, men oppdager ikke at NT og SA er naboer. AC-3 finner det (prøv «Australia: WA = red, Q = green» i widgeten).</p>
+
+      <div class="oppgave" data-quiz id="oppg-kjede-ac3">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Assignment-forelesning 2 · slide 23</span></div>
+        <div class="o-text">
+          <p>Tre variabler A, B, C i en kjede A – B – C (nabovariabler må ha ulik farge), alle med domene {B, G, R}. Anta at vi gjør A blå. Hvordan ser domenene ut etter AC-3?</p>
+          <svg class="cg" viewBox="0 0 480 90" aria-label="Kjede A B C">
+            <line class="e" x1="80" y1="50" x2="240" y2="50"/><line class="e" x1="240" y1="50" x2="400" y2="50"/>
+            <circle class="n" cx="80" cy="50" r="22"/><text x="80" y="50">A</text><circle class="n" cx="240" cy="50" r="22"/><text x="240" y="50">B</text><circle class="n" cx="400" cy="50" r="22"/><text x="400" y="50">C</text>
+            <text class="dom" x="80" y="14">{B, G, R}</text><text class="dom" x="240" y="14">{B, G, R}</text><text class="dom" x="400" y="14">{B, G, R}</text>
+          </svg>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · mellomregning lagt til</span>
+            <p>Slidene: «B’s domain becomes {G, R}». Med kø \((B,A), (B,C), (C,B)\):</p>
+            <ol>
+              <li>\((B, A)\): B = blå har ingen støtte i \(D_A = \{B\}\) ⇒ \(D_B = \{G, R\}\). \((C, B)\) ligger alt i køen.</li>
+              <li>\((B, C)\): G og R har begge støtte i \(D_C\). Uendret.</li>
+              <li>\((C, B)\): hver farge i \(D_C\) har minst én annen farge i \(\{G, R\}\). Uendret.</li>
+            </ol>
+            <p>\(D_A = \{B\}\), \(D_B = \{G, R\}\), \(D_C = \{B, G, R\}\). C påvirkes ikke fordi B fortsatt har to verdier. (Fortsettelsen, om MRV + LCV da slår tilfeldige valg, står på <a href="backtracking.html#oppg-kjede-mrv-lcv">4B</a>.)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Du har \(D_1 = \{1,2,3\}\), \(D_2 = \{1,2,3\}\) og constrainten \(X_1 \gt X_2\). Hva blir domenene etter AC-3?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\((X_1, X_2)\): 1 har ingen mindre verdi ⇒ \(D_1 = \{2, 3\}\). \((X_2, X_1)\): 3 har ingen større verdi i \(\{2,3\}\) ⇒ \(D_2 = \{1, 2\}\). Legg \((X_1, X_2)\) inn igjen: 2 har støtte i 1, 3 i 1 eller 2, uendret. Svar: \(D_1 = \{2,3\}\), \(D_2 = \{1,2\}\).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">09 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>(X, D, C)</strong>Variabler, domener, constraints. Løsning = komplett og konsistent tildeling.</div>
+        <div class="recap-pill"><strong>Constraint graph</strong>Node = variabel, kant = binær constraint. Piler når constrainten er asymmetrisk.</div>
+        <div class="recap-pill"><strong>Unær først</strong>Node consistency: stryk verdier som bryter unære constraints før alt annet.</div>
+        <div class="recap-pill"><strong>AC-3</strong>Kø av rettede buer. Endres \(D_i\), legg \((X_k, X_i)\) tilbake. \(O(cd^3)\).</div>
+        <div class="recap-pill"><strong>Forward checking</strong>Bare naboene til den nettopp tildelte variabelen, ingen videre spredning.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er forskjellen på en unær, en binær og en global constraint? Gi ett eksempel på hver.</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Unær: én variabel (\(T \ne 0\)). Binær: to variabler (\(X_1 \ne X_2\)). Global: vilkårlig mange (\(\text{Alldiff}(F,T,U,W,R,O)\)).</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvorfor legger AC-3 til \((X_k, X_i)\) og ikke \((X_i, X_k)\) når \(D_i\) krymper?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Buen \((X_k, X_i)\) sjekker om verdiene i \(D_k\) har støtte i \(D_i\). Når \(D_i\) krymper, kan noen av dem ha mistet støtten sin. Buen \((X_i, X_k)\) avhenger bare av \(D_k\), som ikke har endret seg.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Kan AC-3 alene avgjøre at et CSP er løsbart?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Bare i spesialtilfeller: tomt domene beviser at det ikke finnes løsning, og hvis alle domener får ett element, er det en løsning (slide 29–30, enkel Sudoku). Ellers kan et arc-consistent nettverk mangle løsning: tre naboer med domene {red, blue} er arc-consistent, men kan ikke fargelegges. Da trengs søk (4B).</div></div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 4: oversikt</div></a>
+        <a href="backtracking.html" class="next"><div class="pn-label">Neste · 4B</div><div class="pn-title">Backtracking med MRV og LCV →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Widget: AC-3 stegvis ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-ac3'); if (!root) return;
+  var FARGE = { red: '#b83a2e', green: '#3d7a3a', blue: '#2d5da8' };
+  var RGB = ['red', 'green', 'blue'];
+  function ne(i, x, j, y) { return x !== y; }
+  function luke(v) { return +v.charAt(1); }
+  function gartOk(i, x, j, y) {
+    if (x === y) return false;
+    if (i === 'X1' && j === 'X2' || i === 'X3' && j === 'X5') return luke(x) < luke(y);
+    if (i === 'X2' && j === 'X1' || i === 'X5' && j === 'X3') return luke(y) < luke(x);
+    return true;
+  }
+  var AUS = { pos: { NSW: [340, 185], NT: [190, 70], Q: [320, 80], SA: [210, 175], T: [420, 270], V: [300, 255], WA: [70, 140] },
+    E: [['WA','NT'],['WA','SA'],['NT','SA'],['NT','Q'],['SA','Q'],['SA','NSW'],['SA','V'],['Q','NSW'],['NSW','V']] };
+  function aus(fix) { var D = {}; Object.keys(AUS.pos).forEach(function (v) { D[v] = fix[v] ? [fix[v]] : RGB.slice(); });
+    return { pos: AUS.pos, E: AUS.E, D: D, fixed: Object.keys(fix), ok: ne, farge: true }; }
+  var G5 = ['X1','X2','X3','X4','X5'], K5 = [];
+  G5.forEach(function (a, i) { G5.slice(i + 1).forEach(function (b) { K5.push([a, b]); }); });
+  var PRE = {
+    slide: { pos: { X1: [150, 90], X2: [320, 90], X3: [150, 220], X4: [320, 220] }, E: [['X1','X2'],['X1','X3'],['X2','X3'],['X2','X4'],['X3','X4']],
+      D: { X1: ['red'], X2: ['green'], X3: ['green','blue'], X4: RGB.slice() }, fixed: ['X1','X2'], ok: ne, farge: true, queue: [['X3','X2'],['X4','X2']] },
+    wa: aus({ WA: 'red' }), waq: aus({ WA: 'red', Q: 'green' }),
+    kjede: { pos: { A: [80, 150], B: [240, 150], C: [400, 150] }, E: [['A','B'],['B','C']], D: { A: ['blue'], B: RGB.slice(), C: RGB.slice() }, fixed: ['A'], ok: ne, farge: true },
+    gart: { pos: { X1: [240, 50], X2: [410, 130], X3: [350, 260], X4: [130, 260], X5: [70, 130] }, E: K5,
+      D: { X1: ['A1','A2','B1','B2'], X2: ['A1','A2','B1','B2','C1','C2'], X3: ['A1','A2'], X4: ['C1','C2'], X5: ['B1','B2','C1','C2'] }, fixed: [], ok: gartOk, farge: false }
+  };
+  var svg = document.getElementById('ac-svg'), out = document.getElementById('ac-out'), logEl = document.getElementById('ac-log'), sel = document.getElementById('ac-pre');
+  var P, trace, k;
+
+  function naboer(v) { var n = []; P.E.forEach(function (e) { if (e[0] === v) n.push(e[1]); if (e[1] === v) n.push(e[0]); }); return n.sort(); }
+  function kopi(D) { var c = {}; for (var v in D) c[v] = D[v].slice(); return c; }
+  function bygg() {
+    P = PRE[sel.value];
+    var D = kopi(P.D), fixed = P.fixed, q = P.queue ? P.queue.map(function (a) { return a.slice(); }) : [];
+    if (!P.queue) Object.keys(P.pos).sort().forEach(function (v) { if (fixed.indexOf(v) < 0) naboer(v).forEach(function (w) { q.push([v, w]); }); });
+    trace = [{ D: kopi(D), q: q.slice(), arc: null, msg: 'Start. ' + q.length + ' buer i køen.' }];
+    while (q.length) {
+      var a = q.shift(), i = a[0], j = a[1];
+      var fjern = D[i].filter(function (x) { return !D[j].some(function (y) { return P.ok(i, x, j, y); }); });
+      var msg = '(' + i + ', ' + j + '): ';
+      if (fjern.length) {
+        D[i] = D[i].filter(function (x) { return fjern.indexOf(x) < 0; });
+        var nye = [];
+        naboer(i).forEach(function (kk) {
+          if (kk === j || fixed.indexOf(kk) >= 0) return;
+          if (!q.some(function (b) { return b[0] === kk && b[1] === i; })) { q.push([kk, i]); nye.push('(' + kk + ', ' + i + ')'); }
+        });
+        msg += 'fjern ' + fjern.join(', ') + ' ⇒ D(' + i + ') = {' + D[i].join(', ') + '}' + (nye.length ? '; legg til ' + nye.join(' ') : '; ingen nye buer');
+        if (!D[i].length) { trace.push({ D: kopi(D), q: [], arc: a, msg: msg + '. <span class="bad">Tomt domene: AC-3 returnerer false.</span>', bad: true }); return; }
+      } else msg += 'alle verdier har støtte, uendret';
+      trace.push({ D: kopi(D), q: q.slice(), arc: a, msg: msg, rev: fjern.length > 0 });
+    }
+    trace.push({ D: kopi(D), q: [], arc: null, msg: '<span class="ok">Køen er tom: nettverket er arc-consistent.</span>' });
+  }
+  function el(tag, attrs, txt) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (var a in attrs) e.setAttribute(a, attrs[a]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; }
+  function tegn() {
+    var s = trace[k], pos = P.pos;
+    svg.innerHTML = '';
+    P.E.forEach(function (e) { el('line', { 'class': 'e', x1: pos[e[0]][0], y1: pos[e[0]][1], x2: pos[e[1]][0], y2: pos[e[1]][1] }); });
+    if (s.arc) { var a = pos[s.arc[0]], b = pos[s.arc[1]]; el('line', { 'class': 'e on', x1: a[0], y1: a[1], x2: (a[0] + b[0]) / 2, y2: (a[1] + b[1]) / 2 }); }
+    Object.keys(pos).forEach(function (v) {
+      var p = pos[v], fix = P.fixed.indexOf(v) >= 0;
+      var c = el('circle', { 'class': 'n', cx: p[0], cy: p[1], r: 21 });
+      if (fix && P.farge) c.style.fill = FARGE[P.D[v][0]];
+      el('text', { x: p[0], y: p[1], 'class': fix && P.farge ? 'fix' : '' }, v);
+      if (P.farge) RGB.forEach(function (col, n) {
+        var d = el('circle', { cx: p[0] - 14 + n * 14, cy: p[1] - 33, r: 6 });
+        d.style.fill = s.D[v].indexOf(col) >= 0 ? FARGE[col] : '#d6d0c4'; d.style.stroke = '#3d3832'; d.style.strokeWidth = 0.8;
+      });
+      else el('text', { 'class': 'dom', x: p[0], y: p[1] + (p[1] > 150 ? 34 : -34) }, '{' + s.D[v].join(', ') + '}');
+    });
+    out.innerHTML = 'Steg ' + k + ' av ' + (trace.length - 1) + '. ' + s.msg + '<br>Kø: ' + (s.q.length ? s.q.map(function (a) { return '(' + a[0] + ',' + a[1] + ')'; }).join(' ') : 'tom');
+    out.className = 'w-out' + (s.bad ? ' warn' : '');
+    logEl.innerHTML = trace.slice(1, k + 1).map(function (t, n) { return '<span class="entry' + (t.rev ? ' ok' : '') + (t.bad ? ' bad' : '') + '">' + (n + 1) + '. ' + t.msg + '</span>'; }).join('');
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function reset() { bygg(); k = 0; tegn(); }
+  document.getElementById('ac-step').addEventListener('click', function () { if (k < trace.length - 1) { k++; tegn(); } });
+  document.getElementById('ac-run').addEventListener('click', function () { k = trace.length - 1; tegn(); });
+  document.getElementById('ac-reset').addEventListener('click', reset);
+  sel.addEventListener('change', reset);
+  reset();
+})();
+</script>
+</body>
+</html>

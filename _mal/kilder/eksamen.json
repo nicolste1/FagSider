@@ -1,0 +1,5 @@
+{
+  "_kommentar": "Maskinlesbar del av eksamensanalyse.md. Nøkkel = samme deltema-nummer som i dekning.json. prio 1–3 (1 = kommer nesten alltid). type: regn/forklar/tegn/kode/flervalg. oppgaver: tidligere eksamensoppgaver, f.eks. 'O24-5.4' (Ord. 2024 oppg. 5.4), 'K26-5.5' (Kont 2026). Brukes av tools/valider.py og skal speiles i Eksamensfokus-boksen (seksjon 00) på hver innholdsside.",
+  "sett": ["O24", "K26"],
+  "1.1": { "prio": 2, "type": ["forklar"], "oppgaver": [] }
+}

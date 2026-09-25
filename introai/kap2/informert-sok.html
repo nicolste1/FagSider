@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Informert søk: greedy og A* — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  .gsvg { width: 100%; max-width: 440px; display: block; margin: 1rem auto; }
+  .gsvg.wide, .gsvg.wgc { max-width: 760px; }
+  .gsvg .ed { stroke: var(--ink-faded); stroke-width: 1.5; fill: none; }
+  .gsvg .ed.dead { stroke-dasharray: 4 3; stroke: var(--ink-ghost); }
+  .gsvg .ed.hot { stroke: var(--accent); stroke-width: 3.2; }
+  .gsvg .ed.bad { stroke: var(--red); stroke-width: 3; }
+  .gsvg .ah { fill: var(--ink-faded); }
+  .gsvg .nd circle, .gsvg .nd rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+  .gsvg .nd.bad rect { stroke: var(--red); stroke-dasharray: 4 3; fill: rgba(179,38,30,0.06); }
+  .gsvg .nd.bad circle { stroke: var(--red); stroke-width: 2.6; }
+  .gsvg .nd.start rect, .gsvg .nd.goal rect { stroke: var(--accent); stroke-width: 2.4; }
+  .gsvg .nd.fr circle { stroke: var(--accent); stroke-width: 2.6; }
+  .gsvg .nd.exp circle { fill: rgba(27,94,90,0.22); }
+  .gsvg .nd.cur circle { fill: var(--accent); }
+  .gsvg .nd.cur text { fill: var(--paper); }
+  .gsvg text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  .gsvg .cost { font-size: 12px; fill: var(--warm); font-weight: 600; }
+  .gsvg .hv, .gsvg .elbl { font-size: 11px; fill: var(--ink-faded); }
+  .gsvg .zone { fill: var(--accent-soft); stroke: none; }
+  .trace { font-family: var(--mono); font-size: 0.84rem; }
+  .trace td, .trace th { padding: 4px 8px; vertical-align: top; }
+  .svar-format { font-family: var(--mono); font-size: 0.9rem; background: var(--paper); border-left: 3px solid var(--accent); padding: 0.5rem 0.9rem; margin: 0.6rem 0; line-height: 1.6; }
+  .w-sel { font-family: var(--sans); font-size: 0.86rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+  .hin { width: 3.4rem; font-family: var(--mono); font-size: 0.9rem; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+  .note-sm { font-size: 0.86rem; color: var(--ink-faded); margin: 0.4rem 0 0.8rem; }
+
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+
+<main data-chapter="Kapittel 2: Problemløsning ved søk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2C · Slides forelesning 2 · 162–202 · Forelesning 3 · 35–46 · Assignment-forelesning 1 · 9–15 · ~35 min</div>
+      <h1>Informert søk: greedy og <em>A*</em></h1>
+      <p class="lede">En heuristikk \(h(n)\) anslår hvor langt det er igjen til målet. Greedy best-first velger lavest \(h\), A* velger lavest \(g + h\). Her går vi gjennom Romania-eksempelet fra slidene, eksamensgrafen fra 2023 og eksempelgrafen fra assignment-forelesningen, steg for steg.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#heuristikk"><span>01</span> Heuristikk</a>
+        <a href="#greedy"><span>02</span> Greedy best-first</a>
+        <a href="#astar"><span>03</span> A*</a>
+        <a href="#eksamen"><span>04</span> Eksamen og assignment</a>
+        <a href="#widget"><span>05</span> Greedy mot A*</a>
+        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 (kilder/eksamensanalyse.md) · deltema 2.3, prio 1</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Kjør greedy best-first og A* for hånd</strong>: ekspansjonsrekkefølge, sti og kostnad, med \(f\)-verdiene i frontier for hvert steg (Ord. 2023 oppg. 2.1 d–e, del av 10 p). Se <a href="#oppg-o23-2-1-inf">oppgaven</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Assignment 1</strong> er samme type: alle fem algoritmene på én graf. Kontroller deg selv mot <a href="#oppg-al1-eksempel">assignment-forelesningens eksempel</a>.</li>
+          <li><span class="tag">Forklar</span>Hvorfor greedy ikke er optimal (Romania: 450 mot 418) og kan gå i løkke med tree-like search.</li>
+          <li><span class="tag lav">Lavere</span>Vektet A* (\(g + w\cdot h\)) utover sammenhengen med UCS/greedy. Når A* er optimal står i <a href="heuristikker.html">2D</a>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="heuristikk">
+    <div class="container">
+      <div class="section-badge">01 · Heuristikk</div>
+      <h2>Et kvalifisert <em>gjett</em></h2>
+      <div class="source-note">Slides forelesning 2 · 99–105 og 162–165</div>
+      <span class="lm-pill">Deltema 2.3 · prio 1</span>
+      <p class="dropcap"><span class="term" data-term="uinformert-sok">Uinformert søk</span> vet ikke om Zerind eller Sibiu er et bedre første steg fra Arad. <span class="term" data-term="informert-sok">Informert søk</span> bruker et domenespesifikt hint: en <span class="term" data-term="heuristikk">heuristikkfunksjon</span></p>
+      \[ h : S \to \mathbb{R}, \qquad h(n) = \text{estimert kostnad fra } n \text{ til nærmeste mål}, \qquad h(\text{mål}) = 0. \]
+      <p>I Romania bruker vi <span class="term" data-term="rettlinjet-avstand">rettlinjet avstand</span> (straight-line distance) til Bucharest, \(h_{SLD}\). Den er aldri lengre enn veien, og den står ikke på kartet: agenten må vite den fra før.</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <caption>\(h_{SLD}\) til Bucharest (slide 165, verdiene brukt i gjennomgangene)</caption>
+          <tbody>
+            <tr><td>Arad 366</td><td>Bucharest 0</td><td>Craiova 160</td><td>Dobreta 242</td><td>Eforie 161</td></tr>
+            <tr><td>Fagaras 176</td><td>Giurgiu 77</td><td>Hirsova 151</td><td>Iasi 226</td><td>Lugoj 244</td></tr>
+            <tr><td>Mehadia 241</td><td>Neamt 234</td><td>Oradea 380</td><td>Pitesti 100</td><td>R. Vilcea 193</td></tr>
+            <tr><td>Sibiu 253</td><td>Timisoara 329</td><td>Urziceni 80</td><td>Vaslui 199</td><td>Zerind 374</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note-sm">Tabellen på slide 165 har Fagaras 178 og Pitesti 98, men gjennomgangene (slide 175 og 190) regner med bokas 176 og 100. Vi bruker 176 og 100.</p>
+    </div>
+  </section>
+
+  <section id="greedy">
+    <div class="container">
+      <div class="section-badge">02 · Greedy best-first</div>
+      <h2>Velg det som <em>ser</em> nærmest ut</h2>
+      <div class="source-note">Slides forelesning 2 · 166–181</div>
+      <p class="dropcap"><span class="term" data-term="greedy-best-first">Greedy best-first search</span> er <span class="term" data-term="best-first-search">best-first</span> med \(f(n) = h(n)\): den ekspanderer alltid noden som ser nærmest målet ut, og bryr seg ikke om hva det har kostet å komme dit.</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <caption>Greedy på Romania, start Arad (slides 172–176). Frontier sortert etter \(h\)</caption>
+          <thead><tr><th>Ekspanderer</th><th>Frontier etterpå</th></tr></thead>
+          <tbody>
+            <tr><td>Arad</td><td>{Sibiu:253, Timisoara:329, Zerind:374}</td></tr>
+            <tr><td>Sibiu</td><td>{Fagaras:176, R.Vilcea:193, Timisoara:329, Arad:366, Zerind:374, Oradea:380}</td></tr>
+            <tr><td>Fagaras</td><td>{Bucharest:0, R.Vilcea:193, Sibiu:253, …}</td></tr>
+            <tr><td>Bucharest poppes</td><td>mål</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="svar-format">Order of expansion: Arad, Sibiu, Fagaras, (Bucharest) · Path: Arad Sibiu Fagaras Bucharest · Cost: 140 + 99 + 211 = 450</div>
+      <p>Greedy ekspanderer ingen node utenfor den endelige stien (se <span class="term" data-term="ekspansjonsrekkefolge">ekspansjonsrekkefølgen</span>), men svaret er <strong>ikke optimalt</strong>: veien via Rimnicu Vilcea og Pitesti er 418, 32 miles kortere. Arad dukker opp igjen i frontier (\(h = 366\)) fordi slidene kjører tree-like search.</p>
+      <p>Med <span class="term" data-term="tree-like-search">tree-like search</span> kan greedy gå i løkke. På grafen i <a href="#oppg-o23-2-1-inf">eksamen 2023</a> har A, B og C alle \(h = 3\): S ekspanderes, A vinner alfabetisk, A genererer seg selv igjen (løkka) og C, og A vinner igjen, for alltid. Med <span class="term" data-term="graph-search">graph search</span> (<span class="term" data-term="reached">reached</span>) er greedy <span class="term" data-term="fullstendighet">fullstendig</span> i endelige rom; <span class="term" data-term="kostnadsoptimalitet">kostnadsoptimal</span> er den aldri garantert.</p>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva hadde greedy på eksamensgrafen gitt med graph search i stedet for tree-like?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Løkka A → A avvises (A er allerede nådd med kostnad 4 &lt; 17). Etter A er frontier {B:3, C:3}; B vinner alfabetisk og genererer G (\(h = 0\)), som poppes. Order: S, A, B, (G) · Path: S B G · Cost: 7 + 10 = 17. Ikke optimalt (S A C G koster 12).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="astar">
+    <div class="container">
+      <div class="section-badge">03 · A*</div>
+      <h2>Kostnad pluss <em>estimat</em></h2>
+      <div class="source-note">Slides forelesning 2 · 182–202 · Forelesning 3 · 10 og 35–46</div>
+      <p class="dropcap"><span class="term" data-term="a-stjerne">A* search</span> er best-first med</p>
+      \[ f(n) = g(n) + h(n), \]
+      <p>der \(g(n)\) er stikostnaden vi har betalt fra start til \(n\) (<span class="term" data-term="g-verdi">g-verdien</span>), \(h(n)\) er estimatet fra \(n\) til målet, og \(f(n)\), <span class="term" data-term="f-verdi">f-verdien</span>, er estimert kostnad for den billigste løsningen gjennom \(n\). Vanlig feil: \(g\) er summen langs <em>hele</em> stien, mens \(h\) bare leses av i \(n\).</p>
+      <div class="table-wrap">
+        <table class="trace">
+          <caption>A* på Romania (slides 187–193), \(f = g + h\)</caption>
+          <thead><tr><th>Ekspanderer</th><th>Nye noder, \(g + h = f\)</th></tr></thead>
+          <tbody>
+            <tr><td>Arad (366)</td><td>Sibiu 140+253=393 · Timisoara 118+329=447 · Zerind 75+374=449</td></tr>
+            <tr><td>Sibiu (393)</td><td>Arad 280+366=646 · Fagaras 239+176=415 · Oradea 291+380=671 · R.Vilcea 220+193=413</td></tr>
+            <tr><td>R.Vilcea (413)</td><td>Craiova 366+160=526 · Pitesti 317+100=417 · Sibiu 300+253=553</td></tr>
+            <tr><td>Fagaras (415)</td><td>Sibiu 338+253=591 · Bucharest 450+0=450 (ikke billigst ennå)</td></tr>
+            <tr><td>Pitesti (417)</td><td>Bucharest 418+0=418 · Craiova 455+160=615 · R.Vilcea 414+193=607</td></tr>
+            <tr><td>Bucharest (418) poppes</td><td>mål</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="svar-format">Order of expansion: Arad, Sibiu, R.Vilcea, Fagaras, Pitesti, (Bucharest) · Path: Arad Sibiu R.Vilcea Pitesti Bucharest · Cost: 140 + 80 + 97 + 101 = 418</div>
+      <p>Legg merke til at Bucharest ble generert med \(f = 450\) etter Fagaras, men A* har <span class="term" data-term="sen-malsjekk">sen måltest</span> og stopper ikke før målet poppes. Da er det funnet en billigere vei (418) som erstatter den. A* er fullstendig ved positive kostnader, endelig tilstandsrom og en eksisterende løsning; den er kostnadsoptimal «hvis visse betingelser er oppfylt», som er temaet i <a href="heuristikker.html">2D</a>.</p>
+      <div class="callout">
+        <span class="label">Generalisering · forelesning 3</span>
+        <p>\(f(n) = g(n) + w \cdot h(n)\). Med \(w = 0\) får du UCS, med \(w = 1\) A*, og når \(w \to \infty\) greedy best-first. \(w \gt 1\) er <span class="term" data-term="vektet-a-stjerne">vektet A*</span>: ofte raskere, men ikke garantert optimal.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="eksamen">
+    <div class="container">
+      <div class="section-badge">04 · Eksamen og assignment</div>
+      <h2>Regn det <em>ut</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 · oppg. 2.1 (PDF-side 3–4) · Assignment-forelesning 1 · 9–15</div>
+      <div class="oppgave" data-quiz id="oppg-o23-2-1-inf">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 2.1 d–e</span><span class="o-ref">del av 10 p</span></div>
+        <div class="o-text">
+          <p>Execute tree-like search through the following graph for d) Greedy best-first search and e) A* search. Tie breaking: left-to-right order of successors. Show the order in which the nodes are expanded, the path from start to goal (or «None»), and the cost of the path. (BFS, DFS og UCS står i <a href="uinformert-sok.html#oppg-o23-2-1-uinf">2B</a>.)</p>
+          <svg class="gsvg" viewBox="0 0 380 270" role="img" aria-label="Graf til eksamen 2023 oppgave 2.1">
+<defs><marker id="ar-o23a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>
+<line class="ed" x1="196" y1="40" x2="125" y2="94" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="152" y="57">4</text>
+<line class="ed" x1="223" y1="41" x2="285" y2="93" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="247" y="77">7</text>
+<path class="ed" d="M98 93 C40 48 40 162 98 119" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="32" y="105">13</text>
+<line class="ed" x1="115" y1="121" x2="134" y2="177" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="113" y="154">4</text>
+<line class="ed" x1="157" y1="198" x2="281" y2="221" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="218" y="223">4</text>
+<line class="ed" x1="300" y1="122" x2="300" y2="206" marker-end="url(#ar-o23a)"/>
+<text class="cost" x="287" y="165">10</text>
+<g class="nd"><circle cx="210" cy="30" r="17"/><text x="210" y="30">S</text></g>
+<g class="nd"><circle cx="110" cy="105" r="17"/><text x="110" y="105">A</text></g>
+<text class="hv" x="138" y="85">h=3</text>
+<g class="nd"><circle cx="300" cy="105" r="17"/><text x="300" y="105">B</text></g>
+<text class="hv" x="338" y="105">h=3</text>
+<g class="nd"><circle cx="140" cy="195" r="17"/><text x="140" y="195">C</text></g>
+<text class="hv" x="100" y="195">h=3</text>
+<g class="nd goal"><circle cx="300" cy="225" r="17"/><circle cx="300" cy="225" r="13"/><text x="300" y="225">G</text></g>
+<text class="hv" x="340" y="225">h=0</text>
+</svg>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · mellomregningen er lagt til (samme som slides 177–200)</span>
+            <p><strong>d) Greedy</strong> (\(f = h\))</p>
+            <ul>
+              <li>Pop S: legg til A:3, B:3. Likt; A velges (venstre/alfabetisk).</li>
+              <li>Pop A: legg til A:3 (løkka) og C:3. Frontier {A:3, B:3, C:3}; A velges igjen.</li>
+              <li>Hver ny A gir det samme: tree-like search kommer aldri ut av løkka.</li>
+            </ul>
+            <div class="svar-format">Order of expansion: S, A, A, A, … · Path: None · Cost: None</div>
+            <p><strong>e) A*</strong> (\(f = g + h\))</p>
+            <div class="table-wrap">
+              <table class="trace">
+                <thead><tr><th>Popper</th><th>Legger til (\(g + h = f\))</th><th>Frontier etterpå</th></tr></thead>
+                <tbody>
+                  <tr><td>S</td><td>A: 4+3=7 · B: 7+3=10</td><td>{A:7, B:10}</td></tr>
+                  <tr><td>A (7)</td><td>A: 17+3=20 · C: 8+3=11</td><td>{B:10, C:11, A:20}</td></tr>
+                  <tr><td>B (10)</td><td>G: 17+0=17</td><td>{C:11, G:17, A:20}</td></tr>
+                  <tr><td>C (11)</td><td>G: 12+0=12</td><td>{G:12, G:17, A:20}</td></tr>
+                  <tr><td>G (12)</td><td colspan="2">mål poppet → stopp</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="svar-format">Order of expansion: S, A, B, C, (G) · Path: S A C G · Cost: 4 + 4 + 4 = 12</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-al1-eksempel">
+        <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">Assignment-forelesning 1 · 9–15</span></div>
+        <div class="o-text">
+          <p>Kjør BFS, DFS, UCS, greedy best-first og A* på grafen under. Start A, mål E, tallene i grå sirkler (her «h=») er heuristikken. Kantene går begge veier. Bruk kursets versjoner: BFS fra s. 95, resten som BEST-FIRST-SEARCH fra s. 91 (med reached), alfabetisk <span class="term" data-term="tie-break">tie-break</span>.</p>
+          <svg class="gsvg" viewBox="0 0 380 300" role="img" aria-label="Eksempelgraf fra assignment-forelesning 1">
+<line class="ed" x1="116" y1="251" x2="252" y2="215"/>
+<text class="cost" x="188" y="245">3</text>
+<line class="ed" x1="97" y1="238" x2="84" y2="169"/>
+<text class="cost" x="103" y="200">2</text>
+<line class="ed" x1="90" y1="136" x2="148" y2="60"/>
+<text class="cost" x="130" y="105">3</text>
+<line class="ed" x1="177" y1="44" x2="291" y2="36"/>
+<text class="cost" x="236" y="53">3</text>
+<line class="ed" x1="274" y1="193" x2="306" y2="54"/>
+<text class="cost" x="303" y="125">4</text>
+<g class="nd"><circle cx="100" cy="255" r="17"/><text x="100" y="255">A</text></g>
+<g class="nd"><circle cx="270" cy="210" r="17"/><text x="270" y="210">B</text></g>
+<text class="hv" x="304" y="196">h=3</text>
+<g class="nd"><circle cx="80" cy="150" r="17"/><text x="80" y="150">C</text></g>
+<text class="hv" x="42" y="150">h=7</text>
+<g class="nd"><circle cx="160" cy="45" r="17"/><text x="160" y="45">D</text></g>
+<text class="hv" x="124" y="35">h=2</text>
+<g class="nd goal"><circle cx="310" cy="35" r="17"/><circle cx="310" cy="35" r="13"/><text x="310" y="35">E</text></g>
+<text class="hv" x="310" y="9">h=5</text>
+<text class="hv" x="100" y="285">start</text>
+</svg>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra assignment-forelesningen · mellomregningen er lagt til</span>
+            <ul>
+              <li><strong>BFS:</strong> ekspander A (genererer B, C); ekspander B: genererer A (i reached) og E = mål.</li>
+              <li><strong>DFS</strong> (\(f=-\text{depth}\)): pop A → B, C på dybde 1; B velges alfabetisk → E på dybde 2 (A avvises, 6 &gt; 0); E er dypest og poppes.</li>
+              <li><strong>UCS:</strong> pop A → {C:2, B:3}; pop C → D:5; pop B → E:7; pop D (5) → E via D koster 8 &gt; 7, avvises; pop E (7).</li>
+              <li><strong>Greedy:</strong> pop A → {B:3, C:7}; pop B → E:5; frontier {E:5, C:7}; pop E.</li>
+              <li><strong>A*:</strong> pop A → B: 3+3=6, C: 2+7=9; pop B → E: 7+5=12; pop C (9) → D: 5+2=7; pop D (7) → E via D: 8+5=13, avvises (8 &gt; 7); pop E (12).</li>
+            </ul>
+            <div class="svar-format">BFS: A, B, (E) · A B E · 7<br>DFS: A, B, (E) · A B E · 7<br>UCS: A, C, B, D, (E) · A B E · 7<br>GBFS: A, B, (E) · A B E · 7<br>A*: A, B, C, D, (E) · A B E · 7</div>
+            <p>Her er det brukt graph search (reached); det er det assignment-løsningen forutsetter. Med tree-like search går DFS og greedy i løkke mellom A og B.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="widget">
+    <div class="container">
+      <div class="section-badge">05 · Greedy mot A*</div>
+      <h2>Se forskjellen <em>steg for steg</em></h2>
+      <div class="source-note">Egen widget · grafene fra slides forelesning 2 · 12 og 165, eksamen Ord. 2023 og assignment-forelesning 1</div>
+      <div class="widget" id="w-inf">
+        <div class="widget-label">Prøv selv · Greedy best-first og A*</div>
+        <p class="widget-intro"><span class="term" data-term="frontier">Frontier</span> vises med \(h\) for greedy og \(g + h = f\) for A*. Kjør Romania med begge og se at greedy velger Fagaras mens A* går via Rimnicu Vilcea og Pitesti. Resultatet for begge algoritmene står alltid nederst.</p>
+        <div class="w-row">
+          <select class="w-sel" id="i-graph" aria-label="Graf">
+            <option value="rom">Romania (Arad → Bucharest)</option>
+            <option value="o23">Eksamen 2023 (S → G)</option>
+            <option value="al1">Assignment-eksempel (A → E)</option>
+          </select>
+          <div class="w-toggle" id="i-algo"><button type="button" data-v="greedy" class="active">Greedy</button><button type="button" data-v="astar">A*</button></div>
+          <div class="w-toggle" id="i-tree"><button type="button" data-v="1">tree-like</button><button type="button" data-v="0" class="active">graph search</button></div>
+        </div>
+        <svg class="gsvg wide" id="i-svg" viewBox="0 0 670 410" aria-label="Søkegraf"></svg>
+        <div class="w-row">
+          <button class="w-btn" id="i-step" type="button">Ett steg</button>
+          <button class="w-btn" id="i-run" type="button">Kjør ferdig</button>
+          <button class="w-btn secondary" id="i-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="i-out"></div>
+        <div class="metric-grid">
+          <div class="metric"><div class="m-name">Greedy</div><div class="m-formula" id="i-res-greedy"></div></div>
+          <div class="metric"><div class="m-name">A*</div><div class="m-formula" id="i-res-astar"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">06 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Heuristikk</strong>\(h(n)\) estimerer gjenværende kostnad; \(h(\text{mål}) = 0\).</div>
+        <div class="recap-pill"><strong>Greedy</strong>\(f = h\). Rask, men ikke optimal; løkker med tree-like search.</div>
+        <div class="recap-pill"><strong>A*</strong>\(f = g + h\), \(g\) summert langs hele stien. Stopper når målet poppes.</div>
+        <div class="recap-pill"><strong>Frontier med f</strong>Skriv \(g + h = f\) for hver node; det gir delpoeng.</div>
+        <div class="recap-pill"><strong>w-familien</strong>\(g + w h\): \(w=0\) UCS, \(w=1\) A*, \(w\to\infty\) greedy.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">I A* på Romania genereres Bucharest med \(f = 450\) før Pitesti (\(f = 417\)) er ekspandert. Hvorfor stopper ikke A* der?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">A* (best-first) har sen måltest: målet må poppes. Pitesti har lavere \(f\) og poppes først, og derfra finnes Bucharest med \(g = 418\), som erstatter 450.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Regn \(f\) for Pitesti når den nås via Arad → Sibiu → R.Vilcea.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(g = 140 + 80 + 97 = 317\), \(h = 100\), \(f = 417\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">På eksamensgrafen fra 2023 gir UCS og A* nøyaktig samme svar (S, A, B, C, (G), kostnad 12). Er det tilfeldig?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nesten ikke. Alle noder unntatt målet har \(h = 3\), så for dem er \(f = g + 3\): rangeringen mellom dem er den samme som i UCS. Bare målet får en «rabatt» på 3. Her endrer ikke det rekkefølgen, fordi G:12 poppes før A:17 (UCS) og G:12 før A:20 (A*). En konstant heuristikk gir lite informasjon.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="uinformert-sok.html" class="prev"><div class="pn-label">← Forrige · 2B</div><div class="pn-title">Uinformert søk</div></a>
+        <a href="heuristikker.html" class="next"><div class="pn-label">Neste · 2D</div><div class="pn-title">Heuristikker og A*-optimalitet →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+
+<script>
+function runSearch(G, algo, tree, limit) {
+  limit = limit || 14;
+  var adj = {};
+  G.e.forEach(function (e) {
+    (adj[e[0]] = adj[e[0]] || []).push([e[1], e[2]]);
+    if (!G.dir) (adj[e[1]] = adj[e[1]] || []).push([e[0], e[2]]);
+  });
+  function kids(n) {
+    return (adj[n.s] || []).slice().sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; })
+      .map(function (t) { return { s: t[0], g: n.g + t[1], d: n.d + 1, p: n, id: ++uid }; });
+  }
+  function h(s) { return G.h && G.h[s] != null ? G.h[s] : 0; }
+  function f(n) { return algo === 'dfs' ? -n.d : algo === 'ucs' ? n.g : algo === 'greedy' ? h(n.s) : n.g + h(n.s); }
+  function path(n) { var p = []; for (; n; n = n.p) p.unshift(n.s); return p; }
+  var uid = 0, root = { s: G.start, g: 0, d: 0, p: null, id: 0 }, steps = [], exp = [];
+  var fr = [root], reached = {}; reached[G.start] = root;
+  function snap(node, note, done) {
+    steps.push({ node: node && node.s, exp: exp.slice(), fr: fr.map(function (n) { return { s: n.s, g: n.g, f: f(n) }; }), note: note, done: done || null });
+  }
+  if (algo === 'bfs') {
+    if (root.s === G.goal) { snap(null, 'start er mål', { path: [root.s], cost: 0 }); return steps; }
+    snap(null, 'start');
+    while (fr.length) {
+      if (exp.length >= limit) { snap(null, 'stopp: løkke', { loop: true }); return steps; }
+      var n = fr.shift(); exp.push(n.s);
+      var ks = kids(n);
+      for (var i = 0; i < ks.length; i++) {
+        var c = ks[i];
+        if (c.s === G.goal) { snap(n.s, 'mål generert', { path: path(c), cost: c.g, goal: c.s }); return steps; }
+        if (tree || !reached[c.s]) { reached[c.s] = c; fr.push(c); }
+      }
+      snap(n.s, 'ekspandert');
+    }
+    snap(null, 'failure', { fail: true }); return steps;
+  }
+  snap(null, 'start');
+  while (fr.length) {
+    fr.sort(function (a, b) { return f(a) - f(b) || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0) || a.id - b.id; });
+    var n = fr.shift();
+    if (n.s === G.goal) { snap(n.s, 'mål poppet', { path: path(n), cost: n.g, goal: n.s }); return steps; }
+    if (exp.length >= limit) { snap(null, 'stopp: løkke', { loop: true }); return steps; }
+    exp.push(n.s);
+    kids(n).forEach(function (c) {
+      if (tree || !reached[c.s] || c.g < reached[c.s].g) { reached[c.s] = c; fr.push(c); }
+    });
+    fr.sort(function (a, b) { return f(a) - f(b) || (a.s < b.s ? -1 : a.s > b.s ? 1 : 0) || a.id - b.id; });
+    snap(n.s, 'ekspandert');
+  }
+  snap(null, 'failure', { fail: true }); return steps;
+}
+
+function drawGraph(svg, G, mid) {
+  var R = G.small ? 7 : 17, s = '', P = G.pos;
+  if (G.dir) s += '<defs><marker id="' + mid + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>';
+  var mk = G.dir ? ' marker-end="url(#' + mid + ')"' : '';
+  G.e.forEach(function (e) {
+    var a = P[e[0]], b = P[e[1]], k = ' data-e="' + e[0] + '|' + e[1] + '"';
+    if (e[0] === e[1]) {
+      s += '<path class="ed"' + k + ' d="M' + (a[0] - 12) + ' ' + (a[1] - 12) + ' C' + (a[0] - 70) + ' ' + (a[1] - 57) + ' ' + (a[0] - 70) + ' ' + (a[1] + 57) + ' ' + (a[0] - 12) + ' ' + (a[1] + 14) + '"' + mk + '/>';
+      s += '<text class="cost" x="' + (a[0] - 74) + '" y="' + a[1] + '">' + e[2] + '</text>'; return;
+    }
+    var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+    s += '<line class="ed"' + k + ' x1="' + (a[0] + ux * R) + '" y1="' + (a[1] + uy * R) + '" x2="' + (b[0] - ux * (R + 2)) + '" y2="' + (b[1] - uy * (R + 2)) + '"' + mk + '/>';
+    s += '<text class="cost" x="' + ((a[0] + b[0]) / 2 - uy * 10) + '" y="' + ((a[1] + b[1]) / 2 + ux * 10) + '">' + e[2] + '</text>';
+  });
+  Object.keys(P).forEach(function (n) {
+    var p = P[n], goal = n === G.goal;
+    s += '<g class="nd" data-n="' + n + '"><circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + R + '"/>' + (goal && !G.small ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (R - 4) + '"/>' : '') +
+      '<text x="' + p[0] + '" y="' + (G.small ? p[1] - 14 : p[1]) + '"' + (G.small ? ' style="font-size:11px"' : '') + '>' + n + '</text></g>';
+    var o = (G.hpos && G.hpos[n]) || (G.small ? [0, 14] : [30, -18]);
+    if (G.h && G.h[n] != null && G.showH !== false) s += '<text class="hv" x="' + (p[0] + o[0]) + '" y="' + (p[1] + o[1]) + '">h=' + G.h[n] + '</text>';
+  });
+  svg.innerHTML = s;
+}
+function markGraph(svg, st, done) {
+  var exp = st ? st.exp : [], fr = st ? st.fr.map(function (x) { return x.s; }) : [];
+  svg.querySelectorAll('.nd').forEach(function (g) {
+    var n = g.getAttribute('data-n');
+    g.setAttribute('class', 'nd' + (st && st.node === n ? ' cur' : exp.indexOf(n) >= 0 ? ' exp' : fr.indexOf(n) >= 0 ? ' fr' : ''));
+  });
+  var path = done && done.path ? done.path : [];
+  svg.querySelectorAll('.ed').forEach(function (l) {
+    var k = l.getAttribute('data-e').split('|'), on = false;
+    for (var i = 0; i + 1 < path.length; i++) if ((path[i] === k[0] && path[i + 1] === k[1]) || (path[i] === k[1] && path[i + 1] === k[0])) on = true;
+    l.setAttribute('class', 'ed' + (on ? ' hot' : ''));
+  });
+}
+
+(function () {
+  'use strict';
+  /* ─── Widget: greedy mot A* ─── */
+  (function () {
+    var root = document.getElementById('w-inf'); if (!root) return;
+    var GR = {
+      rom: { start: 'Arad', goal: 'Bucharest', dir: false, small: true, vb: '0 0 670 410',
+        pos: { Arad: [44, 131], Bucharest: [430, 321], Craiova: [246, 366], Dobreta: [136, 353], Eforie: [632, 360], Fagaras: [311, 181], Giurgiu: [399, 386], Hirsova: [598, 294], Iasi: [521, 115], Lugoj: [136, 261], Mehadia: [140, 307], Neamt: [438, 79], Oradea: [94, 40], Pitesti: [330, 274], 'R.Vilcea': [221, 225], Sibiu: [189, 171], Timisoara: [48, 225], Urziceni: [500, 294], Vaslui: [566, 186], Zerind: [65, 86] },
+        h: { Arad: 366, Bucharest: 0, Craiova: 160, Dobreta: 242, Eforie: 161, Fagaras: 176, Giurgiu: 77, Hirsova: 151, Iasi: 226, Lugoj: 244, Mehadia: 241, Neamt: 234, Oradea: 380, Pitesti: 100, 'R.Vilcea': 193, Sibiu: 253, Timisoara: 329, Urziceni: 80, Vaslui: 199, Zerind: 374 },
+        e: [['Arad', 'Zerind', 75], ['Arad', 'Sibiu', 140], ['Arad', 'Timisoara', 118], ['Zerind', 'Oradea', 71], ['Oradea', 'Sibiu', 151], ['Timisoara', 'Lugoj', 111], ['Lugoj', 'Mehadia', 70], ['Mehadia', 'Dobreta', 75], ['Dobreta', 'Craiova', 120], ['Craiova', 'R.Vilcea', 146], ['Craiova', 'Pitesti', 138], ['Sibiu', 'Fagaras', 99], ['Sibiu', 'R.Vilcea', 80], ['R.Vilcea', 'Pitesti', 97], ['Fagaras', 'Bucharest', 211], ['Pitesti', 'Bucharest', 101], ['Bucharest', 'Giurgiu', 90], ['Bucharest', 'Urziceni', 85], ['Urziceni', 'Hirsova', 98], ['Hirsova', 'Eforie', 86], ['Urziceni', 'Vaslui', 142], ['Vaslui', 'Iasi', 92], ['Iasi', 'Neamt', 87]] },
+      o23: { start: 'S', goal: 'G', dir: true, vb: '0 0 380 270', hpos: { A: [30, 20], B: [36, 0], C: [-38, 0], G: [36, 0] }, h: { A: 3, B: 3, C: 3, G: 0 }, pos: { S: [210, 35], A: [130, 110], B: [300, 110], C: [150, 200], G: [300, 230] }, e: [['S', 'A', 4], ['S', 'B', 7], ['A', 'A', 13], ['A', 'C', 4], ['C', 'G', 4], ['B', 'G', 10]] },
+      al1: { start: 'A', goal: 'E', dir: false, vb: '0 0 380 300', hpos: { B: [34, -14], C: [-38, 0], D: [-36, -10], E: [0, -26] }, h: { B: 3, C: 7, D: 2, E: 5 }, pos: { A: [100, 260], B: [270, 215], C: [80, 155], D: [160, 45], E: [310, 40] }, e: [['A', 'B', 3], ['A', 'C', 2], ['C', 'D', 3], ['D', 'E', 3], ['B', 'E', 4]] }
+    };
+    var svg = document.getElementById('i-svg'), out = document.getElementById('i-out');
+    var gk = 'rom', algo = 'greedy', tree = false, steps, i;
+    function tog(id, cb) { var el = document.getElementById(id); el.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (!b) return; el.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); cb(b.getAttribute('data-v')); }); }
+    function frTxt(st, a) {
+      var G = GR[gk];
+      return '{' + st.fr.map(function (x) { var h = G.h[x.s] || 0; return x.s + ':' + (a === 'greedy' ? h : x.g + '+' + h + '=' + (x.g + h)); }).join(', ') + '}';
+    }
+    function fin(d, st) {
+      if (d.loop) return 'Order: ' + st.exp.slice(0, 6).join(', ') + ', … (løkke) · Path: None';
+      if (d.fail) return 'failure';
+      return 'Order: ' + st.exp.join(', ') + ', (' + d.goal + ') · Path: ' + d.path.join(' ') + ' · Cost: ' + d.cost;
+    }
+    function render() {
+      var st = steps[i];
+      markGraph(svg, st, st.done);
+      out.innerHTML = 'Steg ' + i + '. ' + (st.node ? 'Ekspanderte <span class="hl">' + st.node + '</span>. ' : '') + (st.done ? '<strong>' + fin(st.done, st) + '</strong>' : 'Frontier: ' + frTxt(st, algo));
+    }
+    function reset() {
+      steps = runSearch(GR[gk], algo, tree, 12); i = 0; render();
+      ['greedy', 'astar'].forEach(function (a) { var s = runSearch(GR[gk], a, tree, 12), l = s[s.length - 1]; document.getElementById('i-res-' + a).textContent = fin(l.done, l); });
+    }
+    function load() { var G = GR[gk]; svg.setAttribute('viewBox', G.vb); svg.classList.toggle('wide', !!G.small); drawGraph(svg, G, 'ar-iw'); reset(); }
+    document.getElementById('i-graph').addEventListener('change', function (e) { gk = e.target.value; load(); });
+    tog('i-algo', function (v) { algo = v; reset(); });
+    tog('i-tree', function (v) { tree = v === '1'; reset(); });
+    document.getElementById('i-step').addEventListener('click', function () { if (i < steps.length - 1) { i++; render(); } });
+    document.getElementById('i-run').addEventListener('click', function () { i = steps.length - 1; render(); });
+    document.getElementById('i-reset').addEventListener('click', reset);
+    load();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Førsteordens logikk — Kap 7</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.snart { background: var(--paper-dark); color: var(--ink-faded); }
+  /* Kvantor-utforsker */
+  .kv-graph .nd circle { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+  .kv-graph .nd.stud circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.2; }
+  .kv-graph .nd text { font-family: var(--mono); font-size: 13px; fill: var(--ink); }
+  .kv-graph .nd .s-tag { font-size: 10px; fill: var(--accent); }
+  .kv-graph .ed { stroke: var(--warm); stroke-width: 1.8; fill: none; marker-end: url(#kv-ar); }
+  .kv-list { list-style: none; padding: 0; margin: 0.8rem 0; display: grid; gap: 6px; }
+  .kv-list li { display: grid; grid-template-columns: 1.6rem 1fr auto; gap: 0.6rem; align-items: center; padding: 0.45rem 0.7rem; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; }
+  .kv-list li.ok { border-color: var(--green); }
+  .kv-list li.bad { border-color: var(--red); }
+  .kv-list .kv-n { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-faded); }
+  .kv-list .kv-btns button { font-family: var(--mono); font-size: 0.75rem; padding: 3px 9px; margin-left: 4px; border: 1px solid var(--line); background: transparent; border-radius: 4px; cursor: pointer; color: var(--ink-soft); }
+  .kv-list .kv-btns button:hover { border-color: var(--accent); color: var(--accent); }
+  .kv-list .kv-why { grid-column: 2 / 4; font-size: 0.86rem; color: var(--ink-soft); }
+  .kv-list .kv-why:empty { display: none; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 7</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 7: Førsteordens logikk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 7 · 7.1 · Slides forelesning 6 · 1–48 · Boka kap. 8 · ~45 min</div>
+      <h1>Førsteordens <em>logikk</em></h1>
+      <p class="lede">Proposisjonell logikk kan bare si om enkeltutsagn er sanne. Førsteordens logikk (FOL) snakker om objekter, relasjoner og funksjoner, og kan si «for alle» og «det finnes». Her lærer du syntaksen, kvantorene, de to klassiske oversettelsesfeilene, hva en modell er i FOL, og hvordan en spørring med variabler besvares.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#begrensninger"><span>01</span> Hvorfor FOL</a>
+        <a href="#syntaks"><span>02</span> Syntaks</a>
+        <a href="#kvantorer"><span>03</span> Kvantorer</a>
+        <a href="#oversettelse"><span>04</span> Oversettelse</a>
+        <a href="#modeller"><span>05</span> Modeller</a>
+        <a href="#sporringer"><span>06</span> Spørringer</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 · deltema 7.1 (prio 1, regn)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Oversett naturlig språk til FOL</strong> (7.1, prio 1): del 1 av en logikkoppgave er nesten alltid «represent this information as FOL sentences». Tidligere: <a href="#oppg-o23-3-2a">Ord. 2023 oppg. 3.2a</a> (Fido/Snowy). Kunne \(\forall\) med \(\Rightarrow\), \(\exists\) med \(\land\), nestede kvantorer og likhet.</li>
+          <li><span class="tag">Forklar</span><strong>Hvorfor FOL:</strong> ulempen med proposisjonell logikk og hva FOL legger til. Tidligere: <a href="#oppg-o22-1-10">Ord. 2022 oppg. 1.10</a>.</li>
+          <li><span class="tag">Forklar</span>Modeller i FOL (domene, konstanter, predikater, funksjoner) og entailment; spørringer med variabler der svaret er en substitusjon.</li>
+          <li><span class="tag">Lavere</span>Prolog, Z3, SMT, Alive2 og «by hand»-bevisene (slides 5, 41–45, 49–59) er merket «not curriculum» og er kuttet. Peano-aksiomene ligger i en utdypning.</li>
+          <li><span class="tag snart">Kommer</span><strong>7.2</strong> unifikasjon og forward/backward chaining i FOL (prio 2) og <strong>7.3</strong> CNF, skolemisering og resolusjon i FOL (prio 1, Ord. 2023 oppg. 3.2b, 10 p). Lages når slidene kommer.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 BEGRENSNINGER ─────────────────────────── -->
+  <section id="begrensninger">
+    <div class="container">
+      <div class="section-badge">01 · Hvorfor FOL</div>
+      <h2>Begrensningene til <em>proposisjonell logikk</em></h2>
+      <div class="source-note">Slides forelesning 6 · 3–4, 6</div>
+      <span class="lm-pill">Deltema 7.1 · prio 1</span>
+
+      <p class="dropcap">I <span class="term" data-term="proposisjonell-logikk">proposisjonell logikk</span> er hvert symbol et helt utsagn uten indre struktur. Vil vi si «Alice og Bob er studenter, og alle studenter kan aritmetikk», må vi skrive én regel per student. <span class="term" data-term="fol">Førsteordens logikk</span> (FOL) ser inni utsagnene: verden består av <span class="term" data-term="objekt">objekter</span> (Alice, Bob), <span class="term" data-term="relasjon">relasjoner</span> mellom dem (Knows) og <span class="term" data-term="funksjon">funksjoner</span> (Mother), og vi kan si noe om <em>alle</em> objekter på én gang.</p>
+      \[
+      \begin{aligned}
+      \text{PL:}\quad KB &amp;= \{\text{AliceIsStudent},\ \text{BobIsStudent},\\
+      &amp;\qquad \text{AliceIsStudent} \Rightarrow \text{AliceKnowsArithmetic},\\
+      &amp;\qquad \text{BobIsStudent} \Rightarrow \text{BobKnowsArithmetic}\}\\
+      \text{FOL:}\quad KB &amp;= \{\text{Student}(\text{Alice}),\ \text{Student}(\text{Bob}),\\
+      &amp;\qquad \forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\}
+      \end{aligned}
+      \]
+      <p>Begge gir svaret ja på «kan Alice aritmetikk?», fordi \(KB \models \text{AliceKnowsArithmetic}\) og \(KB \models \text{Knows}(\text{Alice}, \text{Arithmetic})\). Men FOL-varianten vokser ikke med antall studenter. PL er et spesialtilfelle: \(\{\text{Rain}, \text{Rain} \Rightarrow \text{Wet}\}\) kan skrives \(\{\text{Is}(\text{Rain}), \text{Is}(\text{Rain}) \Rightarrow \text{Is}(\text{Wet})\}\) (slide 6).</p>
+
+      <div class="oppgave" data-quiz id="oppg-o22-1-10">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.10</span><span class="o-ref">kort spørsmål</span></div>
+        <div class="o-text"><p>What is the main disadvantage of propositional logic? What are the four new elements introduced in the syntax of first order logic to address this issue?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p><strong>Ulempe:</strong> begrenset uttrykkskraft. PL kan bare si om ett utsagn om ett objekt er sant eller ikke; det er vanskelig eller umulig å uttrykke noe om mange like objekter, relasjoner mellom dem eller grupper av objekter uten å skrive én setning per tilfelle.</p>
+            <p><strong>Fire nye elementer:</strong> <em>variabler</em>, <em>kvantorer</em> (\(\forall\), \(\exists\)), <em>predikater</em> og <em>funksjoner</em>. Da kan vi uttrykke sannhet om kategorier og klasser og relasjoner mellom objekter, f.eks. \(\forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\) i stedet for én regel per student.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 SYNTAKS ─────────────────────────── -->
+  <section id="syntaks">
+    <div class="container">
+      <div class="section-badge">02 · Syntaks</div>
+      <h2>Termer, predikater og <em>setninger</em></h2>
+      <div class="source-note">Slides forelesning 6 · 9–11</div>
+
+      <p class="dropcap">En <span class="term" data-term="term">term</span> peker på et objekt. En setning er sann eller usann. Alt i FOL er bygget av disse to lagene: termer settes inn i <span class="term" data-term="predikat">predikater</span> og gir <span class="term" data-term="atomaer-setning">atomære setninger</span>, som kombineres med <span class="term" data-term="konnektiv">konnektiver</span> og <span class="term" data-term="kvantor">kvantorer</span> til <span class="term" data-term="kompleks-setning">komplekse setninger</span>.</p>
+
+      <div class="table-wrap"><table>
+        <thead><tr><th>Element</th><th>Hva det er</th><th>Eksempel fra slidene</th></tr></thead>
+        <tbody>
+          <tr><td><span class="term" data-term="konstant">Konstant</span> (term)</td><td>et bestemt objekt</td><td>Alice, Bob, Arithmetic</td></tr>
+          <tr><td><span class="term" data-term="variabel">Variabel</span> (term)</td><td>et uspesifisert objekt</td><td>\(x \in \{\text{Alice}, \text{Bob}, \text{Arithmetic}\}\)</td></tr>
+          <tr><td>Funksjon (term)</td><td>avbilder objekter til <em>ett</em> objekt</td><td>\(\text{Mother}(\text{Alice})\) viser til Carrie</td></tr>
+          <tr><td><span class="term" data-term="likhet">Likhet</span></td><td>to termer viser til samme objekt</td><td>\(\text{Bob} = \text{Bobby}\)</td></tr>
+          <tr><td>Predikat</td><td>relasjon eller egenskap for termer</td><td>Knows, Student</td></tr>
+          <tr><td>Atomær setning</td><td>predikat eller likhet brukt på termer; sann eller usann</td><td>\(\text{Knows}(\text{Alice}, \text{Arithmetic})\)</td></tr>
+          <tr><td>Kompleks setning</td><td>konnektiv (\(\neg, \land, \lor, \Rightarrow, \Leftrightarrow\)) eller kvantor brukt på setninger</td><td>\(\text{Knows}(\text{Alice}, \text{Arithmetic}) \land \text{Knows}(\text{Bob}, \text{Arithmetic})\)</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout callout-warn">
+        <span class="label">Vanlig feil</span>
+        <p>\(\text{Mother}(\text{Alice})\) er en <em>term</em> (et objekt, Carrie), ikke en setning. Du kan ikke skrive \(\text{Mother}(\text{Alice}) \land \ldots\). Et predikat som \(\text{Mother}(\text{Alice}, \text{Carrie})\) er derimot en setning.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-mother">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 11</span></div>
+        <div class="o-text"><p>Uttrykk: «Alices mor er Carrie, Bobs mor er Denise, og alle mødre elsker barna sine», (a) uten funksjoner, (b) med en funksjon Mother.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>(a) Med et todelt predikat, der \(\text{Mother}(x, y)\) betyr «\(x\) sin mor er \(y\)»:</p>
+            \[ \begin{aligned} KB = \{&amp;\text{Mother}(\text{Alice}, \text{Carrie}),\ \text{Mother}(\text{Bob}, \text{Denise}),\\ &amp;\forall x\, \forall y\, \text{Mother}(x, y) \Rightarrow \text{Loves}(y, x)\} \end{aligned} \]
+            <p>(b) Med funksjon, der \(\text{Mother}(x)\) er objektet som er \(x\) sin mor:</p>
+            \[ \begin{aligned} KB = \{&amp;\text{Mother}(\text{Alice}) = \text{Carrie},\ \text{Mother}(\text{Bob}) = \text{Denise},\\ &amp;\forall x\, \text{Loves}(\text{Mother}(x), x)\} \end{aligned} \]
+            <p>Funksjonen sparer en variabel og en implikasjon, men forutsetter at alle har nøyaktig én mor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 KVANTORER ─────────────────────────── -->
+  <section id="kvantorer">
+    <div class="container">
+      <div class="section-badge">03 · Kvantorer</div>
+      <h2>For alle og <em>det finnes</em></h2>
+      <div class="source-note">Slides forelesning 6 · 9–10, 12–14</div>
+
+      <p class="dropcap"><span class="term" data-term="allkvantor">Allkvantoren</span> \(\forall\) er en stor konjunksjon over alle objekter, <span class="term" data-term="eksistenskvantor">eksistenskvantoren</span> \(\exists\) en stor disjunksjon:</p>
+      \[
+      \begin{aligned}
+      \forall x\, \text{Knows}(\text{Alice}, x) &amp;\equiv \text{Knows}(\text{Alice}, \text{Arithmetic})\\ &amp;\qquad \land \text{Knows}(\text{Alice}, \text{English}) \land \ldots\\
+      \exists x\, \text{Knows}(\text{Alice}, x) &amp;\equiv \text{Knows}(\text{Alice}, \text{Arithmetic})\\ &amp;\qquad \lor \text{Knows}(\text{Alice}, \text{English}) \lor \ldots
+      \end{aligned}
+      \]
+      <p>Første linje er «Alice kan alt», andre er «Alice kan noe».</p>
+
+      <h3>Nestede kvantorer</h3>
+      <p>Påfølgende kvantorer av <em>samme</em> type kan slås sammen: \(\forall x\, \forall y\) skrives \(\forall x, y\). Rekkefølgen mellom <span class="term" data-term="nestede-kvantorer">kvantorer av ulik type</span> betyr derimot noe:</p>
+      \[ \forall x\, \exists y\, \text{Loves}(x, y) \;\not\equiv\; \exists y\, \forall x\, \text{Loves}(x, y) \]
+      <p>Venstre: «alle elsker noen» (hver \(x\) kan velge sin egen \(y\)). Høyre: «det finnes en som er elsket av alle» (én fast \(y\) for alle \(x\)). Høyre medfører venstre, ikke omvendt.</p>
+
+      <h3>Sammenhengen mellom ∀ og ∃</h3>
+      <p>Siden \(\forall\) er en konjunksjon og \(\exists\) en disjunksjon, gjelder <span class="term" data-term="de-morgan-kvantor">De Morgan for kvantorer</span>. Negasjonen «flyttes inn» og bytter kvantor:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Med kvantorer</th><th>Uten kvantorer (to objekter A, B)</th></tr></thead>
+        <tbody>
+          <tr><td>\(\neg \forall x\, P(x) \equiv \exists x\, \neg P(x)\)</td><td>\(\neg(P(A) \land P(B)) \equiv \neg P(A) \lor \neg P(B)\)</td></tr>
+          <tr><td>\(\neg \exists x\, P(x) \equiv \forall x\, \neg P(x)\)</td><td>\(\neg(P(A) \lor P(B)) \equiv \neg P(A) \land \neg P(B)\)</td></tr>
+          <tr><td>\(\forall x\, P(x) \equiv \neg \exists x\, \neg P(x)\)</td><td>\(P(A) \land P(B) \equiv \neg(\neg P(A) \lor \neg P(B))\)</td></tr>
+          <tr><td>\(\exists x\, P(x) \equiv \neg \forall x\, \neg P(x)\)</td><td>\(P(A) \lor P(B) \equiv \neg(\neg P(A) \land \neg P(B))\)</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-iskrem">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 14</span></div>
+        <div class="o-text"><p>Skriv «alle liker iskrem» på to måter: med \(\forall\), og med \(\exists\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            \[ \forall x\, \text{Likes}(x, \text{IceCream}) \equiv \neg \exists x\, \neg \text{Likes}(x, \text{IceCream}) \]
+            <p>«Alle liker iskrem» \(\equiv\) «det finnes ingen som ikke liker iskrem» (tredje linje i tabellen med \(P(x) = \text{Likes}(x, \text{IceCream})\)).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-elsker">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 12–13</span></div>
+        <div class="o-text"><p>Oversett (a) «alle brødre er søsken», (b) «alle elsker noen» og (c) «det finnes noen som er elsket av alle».</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>(a) \(\forall x, y\, \text{Brother}(x, y) \Rightarrow \text{Sibling}(x, y)\)&ensp;(b) \(\forall x\, \exists y\, \text{Loves}(x, y)\)&ensp;(c) \(\exists y\, \forall x\, \text{Loves}(x, y)\)</p>
+            <p>(b) og (c) er ikke ekvivalente: bare rekkefølgen på kvantorene er byttet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-kvantor">
+        <div class="widget-label">Prøv selv · Kvantor-utforsker</div>
+        <p class="widget-intro">En modell med fire objekter. Fylte sirkler er studenter (\(\text{Student}(x)\) sann), en pil \(x \to y\) betyr at \(\text{Loves}(x, y)\) er sann. Gjett sann eller usann for hver setning; widgeten sjekker ved å gå gjennom hele domenet og viser vitne eller moteksempel. Bytt modell og prøv igjen.</p>
+        <svg class="kv-graph" viewBox="0 0 560 250" aria-label="Modell med fire objekter og Loves-relasjon">
+          <defs><marker id="kv-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a0522d"/></marker></defs>
+          <g id="kv-edges"></g><g id="kv-nodes"></g>
+        </svg>
+        <ol class="kv-list" id="kv-list"></ol>
+        <div class="w-row">
+          <div class="w-toggle" id="kv-model"><button type="button" class="active" data-m="0">Modell 1</button><button type="button" data-m="1">Modell 2</button></div>
+          <button class="w-btn secondary" id="kv-all" type="button">Vis alle svar</button>
+        </div>
+        <div class="w-out" id="kv-out"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Skriv \(\neg \forall x\, (\text{Student}(x) \Rightarrow \text{Smart}(x))\) uten negasjon foran kvantoren, og si det på norsk.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\exists x\, \neg(\text{Student}(x) \Rightarrow \text{Smart}(x)) \equiv \exists x\, \text{Student}(x) \land \neg \text{Smart}(x)\), fordi \(\neg(\alpha \Rightarrow \beta) \equiv \alpha \land \neg \beta\). «Det finnes en student som ikke er smart.»</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 OVERSETTELSE ─────────────────────────── -->
+  <section id="oversettelse">
+    <div class="container">
+      <div class="section-badge">04 · Oversettelse</div>
+      <h2>Fra naturlig språk til <em>FOL</em></h2>
+      <div class="source-note">Slides forelesning 6 · 15–28 · Eksamen Ord. 2023 oppg. 3.2a</div>
+      <span class="lm-pill">Deltema 7.1 · prio 1 · regn</span>
+
+      <p class="dropcap">Tommelfingerregelen fra slidene (15–20) er den viktigste på siden: <strong>\(\forall\) går sammen med \(\Rightarrow\), \(\exists\) går sammen med \(\land\).</strong> Slidene viser begge feilene før de viser riktig svar.</p>
+
+      <div class="oppgave" data-quiz id="oppg-slide-aritmetikk">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 15–20</span></div>
+        <div class="o-text"><p>Oversett (a) «Every student knows arithmetic» og (b) «Some students know arithmetic». Slidene viser først \(\forall x\, \text{Student}(x) \land \text{Knows}(x, \text{Arithmetic})\) og \(\exists x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\). Hva er galt med dem?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>(a) \(\forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\)&ensp;(b) \(\exists x\, \text{Student}(x) \land \text{Knows}(x, \text{Arithmetic})\)</p>
+            <p>\(\forall\) med \(\land\) sier at <em>alle objekter</em> er studenter og kan aritmetikk. \(\exists\) med \(\Rightarrow\) er sann så snart ett objekt <em>ikke</em> er student (da er implikasjonen sann), så den sier nesten ingenting.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">Oppskrift</span>
+        <ol class="steps">
+          <li>Velg predikater, funksjoner og konstanter (og si hva argumentene betyr).</li>
+          <li>Finn kvantorordene: «alle/hver/enhver» → \(\forall\), «noen/en/det finnes» → \(\exists\), «ingen» → \(\neg \exists\) (eller \(\forall \ldots \Rightarrow \neg\)).</li>
+          <li>\(\forall\): «type-predikatet» til venstre for \(\Rightarrow\). \(\exists\): alt kobles med \(\land\).</li>
+          <li>Kvantorer i den rekkefølgen avhengigheten krever: «hver \(x\) har en \(y\)» gir \(\forall x\, \exists y\).</li>
+          <li>«Minst to», «nøyaktig én», «en annen»: bruk likhet, \(\neg(x = y)\).</li>
+        </ol>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-kurs">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 21–26</span></div>
+        <div class="o-text"><p>Oversett: «There is some course that every student takes.»</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            \[ \exists y\, \text{Course}(y) \land (\forall x\, \text{Student}(x) \Rightarrow \text{Takes}(x, y)) \]
+            <p>Det ytre er «det finnes et kurs» (\(\exists\) med \(\land\)); inni er «alle studenter tar det» (\(\forall\) med \(\Rightarrow\)). \(\exists y\) står først fordi det er <em>samme</em> kurs for alle.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-goldbach">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 21–26</span></div>
+        <div class="o-text"><p>Oversett Goldbachs formodning: «Every even integer greater than 2 is the sum of two primes.»</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            \[ \begin{aligned} \forall x\ &amp;\text{Even}(x) \land \text{Greater}(x, 2)\\ &amp;\Rightarrow \bigl(\exists y, z\, \text{Equals}(x, \text{Sum}(y, z)) \land \text{Prime}(y) \land \text{Prime}(z)\bigr) \end{aligned} \]
+            <p>Sum er en funksjon (en term), Equals, Even, Greater og Prime er predikater. Merk mønsteret: \(\forall\) … \(\Rightarrow\) \(\exists\) … \(\land\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-konsept">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 21–26</span></div>
+        <div class="o-text"><p>Oversett: «If a student takes a course and the course covers a concept, then the student knows that concept.»</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            \[ \begin{aligned} \forall x, y, z\ &amp;\text{Student}(x) \land \text{Course}(y) \land \text{Concept}(z)\\ &amp;\land \text{Takes}(x, y) \land \text{Covers}(y, z) \Rightarrow \text{Knows}(x, z) \end{aligned} \]
+            <p>«En student … et kurs» i en hvis-setning betyr «enhver»: alle tre variablene er allkvantifisert.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-to-brodre">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 27–28</span></div>
+        <div class="o-text"><p>Oversett: «Bob has at least two brothers.» Hva er galt med \(\exists x, y\, \text{Brother}(\text{Bob}, x) \land \text{Brother}(\text{Bob}, y)\)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            \[ \exists x, y\, \text{Brother}(\text{Bob}, x) \land \text{Brother}(\text{Bob}, y) \land \neg(x = y) \]
+            <p>Uten \(\neg(x = y)\) kan \(x\) og \(y\) være samme objekt, og setningen er sann med bare én bror.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o23-3-2a">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 3.2a</span><span class="o-ref">del av 10 p</span></div>
+        <div class="o-text">
+          <p>You are given the following information: Fido is father of Snowy. Fido is alive. One’s father is one’s parent and vice versa. Somebody’s alive parent is older than them. Question: Is there anybody older than Snowy?</p>
+          <p>a) Represent this information and the question in form of First Order Logic (FoL) sentences.</p>
+          <p><em>b) (resolusjonsrefutasjon med CNF) hører til 7.3 og kommer på siden om FOL-inferens.</em></p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            \[
+            \begin{aligned}
+            &amp;1.\ \ \text{Father}(\text{Fido}, \text{Snowy})\\
+            &amp;2.\ \ \text{Alive}(\text{Fido})\\
+            &amp;3.\ \ \forall x, y\ \text{Parent}(x, y) \Leftrightarrow \text{Father}(x, y)\\
+            &amp;4.\ \ \forall x, y\ \text{Parent}(x, y) \land \text{Alive}(x) \Rightarrow \text{Older}(x, y)\\
+            &amp;Q:\ \ \exists x\ \text{Older}(x, \text{Snowy})
+            \end{aligned}
+            \]
+            <p>\(\text{Father}(x, y)\) = «\(x\) er far til \(y\)». «And vice versa» gir \(\Leftrightarrow\) i setning 3. Løsningsforslaget skriver setning 3 og 4 uten kvantorer og sier at de gjelder for alle \(x\) og \(y\); skriv \(\forall\) eksplisitt på eksamen. Spørsmålet «is there anybody …» er en \(\exists\). I b-delen negeres \(Q\) til \(\forall x\, \neg \text{Older}(x, \text{Snowy})\), og svaret blir Fido.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Egne oppgaver av eksamenstype</h3>
+
+      <div class="oppgave" data-quiz id="oppg-egen-venn">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.1</span></div>
+        <div class="o-text"><p>Oversett «Hver student har en venn som også er student». Hva betyr det om du bytter rekkefølgen på kvantorene?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[ \forall x\, \text{Student}(x) \Rightarrow \exists y\, \bigl(\text{Student}(y) \land \text{Venn}(x, y)\bigr) \]
+            <p>Ytre: «hver student» → \(\forall\) med \(\Rightarrow\). Indre: «har en venn som er student» → \(\exists\) med \(\land\). Byttet rekkefølge, \(\exists y\, \forall x \ldots\), betyr «det finnes én student som er venn med alle studenter», en mye sterkere påstand. (Tar vi ikke med at vennen er student, blir det bare \(\forall x\, \text{Student}(x) \Rightarrow \exists y\, \text{Venn}(x, y)\).)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-fugler">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.1</span></div>
+        <div class="o-text"><p>Oversett «Ikke alle fugler kan fly» og skriv den om slik at det ikke står negasjon foran en kvantor.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[ \begin{aligned} &amp;\neg \forall x\, (\text{Fugl}(x) \Rightarrow \text{KanFly}(x))\\ \equiv\ &amp;\exists x\, \neg(\text{Fugl}(x) \Rightarrow \text{KanFly}(x))\\ \equiv\ &amp;\exists x\, \text{Fugl}(x) \land \neg \text{KanFly}(x) \end{aligned} \]
+            <p>De Morgan flytter \(\neg\) inn og bytter \(\forall\) til \(\exists\); så \(\neg(\alpha \Rightarrow \beta) \equiv \alpha \land \neg \beta\). Resultatet følger regelen «\(\exists\) med \(\land\)».</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-ingen">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.1</span></div>
+        <div class="o-text"><p>Oversett «Ingen student tar alle kurs», på to ekvivalente måter.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[
+            \begin{aligned}
+            &amp;\neg \exists x\, \text{Student}(x) \land \forall y\, (\text{Kurs}(y) \Rightarrow \text{Tar}(x, y))\\
+            \equiv\ &amp;\forall x\, \text{Student}(x) \Rightarrow \exists y\, (\text{Kurs}(y) \land \neg \text{Tar}(x, y))
+            \end{aligned}
+            \]
+            <p>Første linje: «det finnes ikke en student som tar alle kurs». Andre linje: «hver student har et kurs hen ikke tar». Overgangen: \(\neg \exists \to \forall \neg\), \(\neg(\alpha \land \beta) \equiv \alpha \Rightarrow \neg \beta\), og \(\neg \forall y \to \exists y\, \neg\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-noyaktig-en">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.1</span></div>
+        <div class="o-text"><p>Oversett «Nøyaktig én student fikk A».</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[ \exists x\, \text{Student}(x) \land \text{FikkA}(x) \land \forall y\, \bigl(\text{Student}(y) \land \text{FikkA}(y) \Rightarrow y = x\bigr) \]
+            <p>«Minst én» gir \(\exists x\); «høyst én» sier at enhver annen student med A er samme objekt som \(x\). Samme triks med likhet som i «minst to brødre», bare motsatt vei.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-mor-eldre">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.1</span></div>
+        <div class="o-text"><p>Med en funksjon Mor: oversett «Enhver persons mor er eldre enn personen» og «Kari og Ola har samme mor».</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[ \forall x\, \text{Person}(x) \Rightarrow \text{Eldre}(\text{Mor}(x), x) \qquad \text{Mor}(\text{Kari}) = \text{Mor}(\text{Ola}) \]
+            <p>\(\text{Mor}(x)\) er en term, så den kan stå som argument til predikatet Eldre og på begge sider av \(=\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 MODELLER ─────────────────────────── -->
+  <section id="modeller">
+    <div class="container">
+      <div class="section-badge">05 · Modeller</div>
+      <h2>Hva gjør en FOL-setning <em>sann</em>?</h2>
+      <div class="source-note">Slides forelesning 6 · 30–39 · begrepene domene og interpretasjon: Boka kap. 8.2 (ikke i slidene)</div>
+
+      <p class="dropcap">I PL er en modell en tilordning av sann/usann til hvert symbol. En <span class="term" data-term="modell-fol">modell i FOL</span> består av et <span class="term" data-term="domene">domene</span> (mengden objekter) og en <span class="term" data-term="interpretasjon">interpretasjon</span>: hvilket objekt hver konstant viser til (constant assignments), hvilke tupler hvert predikat er sant for (predicate assignments), og hva hver funksjon avbilder til (function assignments).</p>
+      <p>Enkleste variant er <span class="term" data-term="databasesemantikk">databasesemantikk</span>: hver konstant er sitt eget objekt, og alt som ikke er listet er usant:</p>
+      \[ \begin{aligned} \{&amp;\text{Student} = \{\text{Alice} = \text{true},\ \text{else} = \text{false}\},\\ &amp;\text{Knows} = \{(\text{Alice}, \text{Arithmetic}) = \text{true},\ \text{else} = \text{false}\}\} \end{aligned} \]
+      <p>Her er \(\text{Student}(\text{Alice})\) sann og \(\text{Student}(\text{Bob})\) usann, og modellen oppfyller \(KB = \{\text{Student}(\text{Alice}), \neg\text{Student}(\text{Bob}), \forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\}\).</p>
+
+      <h3>Standardsemantikk</h3>
+      <p>I <span class="term" data-term="standardsemantikk">standardsemantikk</span> er objektene (A, B, C, …) skilt fra navnene. To ting kan da skje som ikke skjer i databasesemantikk:</p>
+      <ul>
+        <li><strong>To konstanter kan vise til samme objekt:</strong> \(\{\text{Bob} = B,\ \text{Bobby} = B\}\), \(\{\text{Student} = \{\text{else} = \text{true}\}\}\).</li>
+        <li><strong>Objekter uten navn kan finnes:</strong> \(\{\text{Bob} = A,\ \text{Bobby} = B\}\), \(\{\text{Student} = \{C = \text{false},\ \text{else} = \text{true}\}\}\).</li>
+      </ul>
+      <p>Begge modellene oppfyller \(KB = \{\text{Student}(\text{Bob}), \text{Student}(\text{Bobby})\}\). Det er derfor vi trenger \(\neg(x = y)\) for å si «to forskjellige».</p>
+
+      <div class="callout">
+        <span class="label">Entailment i FOL</span>
+        <p><span class="term" data-term="entailment">\(KB \models \alpha\)</span> betyr det samme som i PL: \(\alpha\) er sann i <em>alle</em> modeller der KB er sann. Det finnes mange, ofte overraskende modeller (slide 35: alle konstanter kan vise til samme objekt), men entailment kan likevel avgjøres. For å vise \(KB \not\models \alpha\) holder det med én modell av KB der \(\alpha\) er usann.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-slide-entailment">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 35–38</span></div>
+        <div class="o-text"><p>La \(KB = \{\text{Mother}(\text{Alice}, \text{Carrie}),\ \text{Mother}(\text{Carrie}, \text{Denise}),\ \forall x, y\, \text{Mother}(x, y) \Rightarrow \text{Loves}(y, x)\}\). Avgjør om KB medfører (a) \(\text{Loves}(\text{Carrie}, \text{Alice})\), (b) \(\text{Loves}(\text{Alice}, \text{Carrie})\), (c) \(\text{Loves}(\text{Denise}, \text{Carrie})\), (d) \(\text{Loves}(\text{Carrie}, \text{Denise})\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene (begrunnelse og motmodell er vårt tillegg)</span>
+            <p>(a) \(KB \models\): sett \(x = \text{Alice}, y = \text{Carrie}\) i regelen; premisset er sant, så \(\text{Loves}(\text{Carrie}, \text{Alice})\) er sann i alle modeller av KB. (c) \(KB \models\) på samme måte med \(x = \text{Carrie}, y = \text{Denise}\).</p>
+            <p>(b) og (d) \(KB \not\models\). Motmodell: \(\{\text{Alice} = A, \text{Carrie} = C, \text{Denise} = D\}\), \(\text{Mother} = \{(A, C), (C, D)\}\), \(\text{Loves} = \{(C, A), (D, C)\}\), alt annet usant. Den oppfyller alle tre setningene i KB, men \(\text{Loves}(\text{Alice}, \text{Carrie})\) og \(\text{Loves}(\text{Carrie}, \text{Denise})\) er usanne. Regelen sier bare at mødre elsker barna, ikke omvendt.</p>
+            <p>Samme svar med funksjonsvarianten \(\{\text{Mother}(\text{Alice}) = \text{Carrie}, \text{Mother}(\text{Carrie}) = \text{Denise}, \forall x\, \text{Loves}(\text{Mother}(x), x)\}\) (slide 37–38).</p>
+          </div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Utdypning · lavere prioritet: uendelige modeller (Peano, slide 39)</summary>
+        <p>\(KB = \{\text{NatNum}(0),\ \forall x\, \text{NatNum}(x) \Rightarrow \text{NatNum}(\text{Successor}(x)),\ \forall x\, \neg(\text{Successor}(x) = 0),\ \forall x, y\, \neg(x = y) \Rightarrow \neg(\text{Successor}(x) = \text{Successor}(y))\}\) tvinger fram en uendelig følge av forskjellige objekter \(0, \text{Successor}(0), \ldots\). En modell: \(\{0 = A\}\), \(\text{NatNum} = \{\text{else} = \text{true}\}\), \(\text{Successor} = \{A = C, C = B, B = D, \ldots\}\). Et <span class="term" data-term="aksiom">aksiom</span> er en setning som tas som sann uten å utledes fra andre.</p>
+      </details>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Standardsemantikk: konstantene \(\{\text{Ann} = A,\ \text{Per} = A\}\). Er \(\exists x, y\, \neg(x = y)\) sann? Er \(\neg(\text{Ann} = \text{Per})\) sann?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Det avhenger av domenet: finnes det et objekt til (f.eks. B uten navn), er \(\exists x, y\, \neg(x = y)\) sann; er domenet bare \(\{A\}\), er den usann. \(\neg(\text{Ann} = \text{Per})\) er usann, fordi begge navnene viser til A.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 SPØRRINGER ─────────────────────────── -->
+  <section id="sporringer">
+    <div class="container">
+      <div class="section-badge">06 · Spørringer</div>
+      <h2>Å spørre etter <em>variabler</em></h2>
+      <div class="source-note">Slides forelesning 6 · 47–48 · substitusjonsnotasjonen: Boka kap. 8.3 (ikke i slidene)</div>
+
+      <p class="dropcap">I PL kan vi bare spørre ja/nei. I FOL kan vi spørre «hvem?»: hvilke verdier av \(x\) gjør at \(KB \models \text{Knows}(x, \text{Arithmetic})\)? Svaret er en liste av <span class="term" data-term="substitusjon">substitusjoner</span>, skrevet \(\theta = \{x/\text{Alice}\}\): «bytt \(x\) med Alice».</p>
+
+      <div class="oppgave" data-quiz id="oppg-slide-hvem">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 47–48</span></div>
+        <div class="o-text"><p>La \(KB = \{\text{Student}(\text{Alice}),\ \text{Student}(\text{Bob}),\ \forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\}\). Hvem kan aritmetikk, dvs. hvilke \(x\) gir \(KB \models \text{Knows}(x, \text{Arithmetic})\)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>Alice og Bob, fordi \(KB \models \text{Knows}(\text{Alice}, \text{Arithmetic})\) og \(KB \models \text{Knows}(\text{Bob}, \text{Arithmetic})\). Som substitusjoner: \(\{x/\text{Alice}\}\) og \(\{x/\text{Bob}\}\). Arithmetic er ikke et svar: vi vet ikke at \(\text{Student}(\text{Arithmetic})\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-good">
+        <span class="label">Videre</span>
+        <p>Å finne substitusjonen automatisk er <em>unifikasjon</em>, og den er kjernen i FOL-inferens (7.2 og 7.3). I Fido/Snowy-oppgaven er svaret substitusjonen \(\{x/\text{Fido}\}\).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Hvorfor FOL</strong>PL har begrenset uttrykkskraft; FOL legger til variabler, kvantorer, predikater og funksjoner.</div>
+        <div class="recap-pill"><strong>Termer vs setninger</strong>Konstanter, variabler og funksjoner er termer (objekter); predikater og likhet gir setninger (sann/usann).</div>
+        <div class="recap-pill"><strong>∀ med ⇒, ∃ med ∧</strong>De to klassiske feilene er ∀ med ∧ og ∃ med ⇒.</div>
+        <div class="recap-pill"><strong>Rekkefølge</strong>∀x ∃y ≠ ∃y ∀x. Like kvantorer kan byttes og slås sammen.</div>
+        <div class="recap-pill"><strong>De Morgan</strong>¬∀x P ≡ ∃x ¬P og ¬∃x P ≡ ∀x ¬P.</div>
+        <div class="recap-pill"><strong>Modell</strong>Domene + interpretasjon av konstanter, predikater og funksjoner. KB ⊨ α: α sann i alle modeller av KB.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvorfor er \(\exists x\, \text{Dog}(x) \Rightarrow \text{Barks}(x)\) nesten alltid sann, og hva skulle stått for «noen hunder bjeffer»?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Det holder med ett objekt som ikke er en hund: da er premisset usant og implikasjonen sann. Riktig: \(\exists x\, \text{Dog}(x) \land \text{Barks}(x)\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Oversett «Alle som har et barn, er en forelder» med predikatene \(\text{Barn}(x, y)\) (\(y\) er barnet til \(x\)) og \(\text{Forelder}(x)\).</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\forall x\, (\exists y\, \text{Barn}(x, y)) \Rightarrow \text{Forelder}(x)\), som er ekvivalent med \(\forall x, y\, \text{Barn}(x, y) \Rightarrow \text{Forelder}(x)\) (en \(\exists\) i premisset blir \(\forall\) når den trekkes ut).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Gitt \(KB = \{\forall x\, \exists y\, \text{Loves}(x, y)\}\). Gjelder \(KB \models \exists y\, \forall x\, \text{Loves}(x, y)\)? Begrunn med en modell.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei. Domene \(\{A, B\}\) med \(\text{Loves} = \{(A, B), (B, A)\}\): alle elsker noen, men ingen er elsket av både A og B. KB er sann og spørsmålet usant, så \(KB \not\models\). (Omvendt vei gjelder: \(\exists y\, \forall x \models \forall x\, \exists y\).)</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 7: oversikt</div></a>
+        <a href="./" class="next"><div class="pn-label">Neste · 7.2 kommer</div><div class="pn-title">Kapitteloversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Kvantor-utforsker: evaluerer setninger over et lite domene ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-kvantor'); if (!root) return;
+  var D = ['Alice', 'Bob', 'Carrie', 'Denise'];
+  var POS = { Alice: [110, 70], Bob: [450, 70], Carrie: [110, 190], Denise: [450, 190] };
+  var MODELS = [
+    { S: ['Alice', 'Bob'], L: [['Alice', 'Bob'], ['Bob', 'Alice'], ['Carrie', 'Alice'], ['Denise', 'Carrie'], ['Bob', 'Bob']] },
+    { S: ['Bob', 'Carrie'], L: [['Alice', 'Denise'], ['Bob', 'Denise'], ['Carrie', 'Denise'], ['Denise', 'Denise'], ['Carrie', 'Bob'], ['Bob', 'Carrie']] }
+  ];
+  var M;
+  function S(x) { return M.S.indexOf(x) >= 0; }
+  function L(x, y) { return M.L.some(function (e) { return e[0] === x && e[1] === y; }); }
+  function some(f) { return D.some(f); }
+  /* kind: A = ∀x, E = ∃x, NE = ¬∃x, A2 = ∀x,y. f = kroppen. */
+  var SENT = [
+    { tex: '\\forall x\\, \\text{Student}(x) \\Rightarrow \\exists y\\, \\text{Loves}(x, y)', k: 'A', f: function (x) { return !S(x) || some(function (y) { return L(x, y); }); } },
+    { tex: '\\exists x\\, \\text{Student}(x) \\land \\text{Loves}(x, x)', k: 'E', f: function (x) { return S(x) && L(x, x); } },
+    { tex: '\\forall x\\, \\exists y\\, \\text{Loves}(x, y)', k: 'A', f: function (x) { return some(function (y) { return L(x, y); }); } },
+    { tex: '\\exists y\\, \\forall x\\, \\text{Loves}(x, y)', k: 'E', v: 'y', f: function (y) { return D.every(function (x) { return L(x, y); }); } },
+    { tex: '\\forall x\\, \\text{Student}(x) \\land \\text{Loves}(x, \\text{Alice})', k: 'A', f: function (x) { return S(x) && L(x, 'Alice'); }, note: 'Typisk feil: ∀ med ∧ krever at alle objekter er studenter.' },
+    { tex: '\\exists x\\, \\text{Student}(x) \\Rightarrow \\text{Loves}(x, \\text{Denise})', k: 'E', f: function (x) { return !S(x) || L(x, 'Denise'); }, note: 'Typisk feil: ∃ med ⇒ blir sann av ethvert objekt som ikke er student.' },
+    { tex: '\\neg \\exists x\\, \\text{Loves}(x, \\text{Denise})', k: 'NE', f: function (x) { return L(x, 'Denise'); } },
+    { tex: '\\forall x, y\\, \\text{Loves}(x, y) \\Rightarrow \\text{Loves}(y, x)', k: 'A2', f: function (x, y) { return !L(x, y) || L(y, x); } }
+  ];
+  function evaluate(s) {
+    var v = s.v || 'x', hit;
+    if (s.k === 'A2') {
+      var bad = null;
+      D.forEach(function (x) { D.forEach(function (y) { if (!bad && !s.f(x, y)) bad = [x, y]; }); });
+      return bad ? { val: false, why: 'Moteksempel: x = ' + bad[0] + ', y = ' + bad[1] + ' (pil ' + bad[0] + ' → ' + bad[1] + ', men ikke tilbake).' }
+                 : { val: true, why: 'Sann for alle 16 par (x, y).' };
+    }
+    hit = D.filter(s.f);
+    if (s.k === 'A') {
+      var fail = D.filter(function (x) { return !s.f(x); });
+      return fail.length ? { val: false, why: 'Moteksempel: ' + v + ' = ' + fail[0] + '.' } : { val: true, why: 'Kroppen er sann for alle 4 objekter.' };
+    }
+    if (s.k === 'E') return hit.length ? { val: true, why: 'Vitne: ' + v + ' = ' + hit.join(', ') + '.' } : { val: false, why: 'Ingen ' + v + ' i domenet gjør kroppen sann.' };
+    return hit.length ? { val: false, why: v + ' = ' + hit[0] + ' gjør Loves(' + hit[0] + ', Denise) sann, så ¬∃ er usann.' } : { val: true, why: 'Ingen piler inn til Denise, så ¬∃ er sann.' };
+  }
+  var list = document.getElementById('kv-list'), out = document.getElementById('kv-out');
+  list.innerHTML = SENT.map(function (s, i) {
+    return '<li data-i="' + i + '"><span class="kv-n">' + (i + 1) + '</span><span>\\(' + s.tex + '\\)</span>' +
+      '<span class="kv-btns"><button type="button" data-g="1">Sann</button><button type="button" data-g="0">Usann</button></span><span class="kv-why"></span></li>';
+  }).join('');
+  var answered;
+  function show(li, guess) {
+    var s = SENT[+li.dataset.i], r = evaluate(s);
+    var ok = guess === null ? null : (guess === r.val);
+    li.classList.remove('ok', 'bad'); if (ok !== null) li.classList.add(ok ? 'ok' : 'bad');
+    li.querySelector('.kv-why').innerHTML = (ok === null ? '' : ok ? '<span style="color:var(--green)">Riktig.</span> ' : '<span style="color:var(--red)">Feil.</span> ') +
+      '<strong>' + (r.val ? 'Sann' : 'Usann') + '.</strong> ' + r.why + (s.note ? ' ' + s.note : '');
+    if (ok !== null) { answered[li.dataset.i] = ok; }
+    var n = Object.keys(answered).length, c = Object.keys(answered).filter(function (k) { return answered[k]; }).length;
+    out.innerHTML = n ? 'Riktige: <span class="hl">' + c + ' av ' + n + '</span> besvart (' + SENT.length + ' setninger).' : 'Klikk «Sann» eller «Usann» for hver setning.';
+  }
+  list.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    show(b.closest('li'), b.dataset.g === '1');
+  });
+  function draw() {
+    var ed = document.getElementById('kv-edges'), nd = document.getElementById('kv-nodes'), R = 30, h = '';
+    M.L.forEach(function (e) {
+      var a = POS[e[0]], b = POS[e[1]];
+      if (e[0] === e[1]) { h += '<path class="ed" d="M' + (a[0] - 12) + ' ' + (a[1] - R + 2) + ' C ' + (a[0] - 40) + ' ' + (a[1] - 80) + ', ' + (a[0] + 40) + ' ' + (a[1] - 80) + ', ' + (a[0] + 12) + ' ' + (a[1] - R + 1) + '"/>'; return; }
+      var dx = b[0] - a[0], dy = b[1] - a[1], d = Math.sqrt(dx * dx + dy * dy), ux = dx / d, uy = dy / d, off = L(e[1], e[0]) ? 7 : 0;
+      var px = -uy * off, py = ux * off;
+      h += '<line class="ed" x1="' + (a[0] + ux * R + px) + '" y1="' + (a[1] + uy * R + py) + '" x2="' + (b[0] - ux * (R + 3) + px) + '" y2="' + (b[1] - uy * (R + 3) + py) + '"/>';
+    });
+    ed.innerHTML = h;
+    nd.innerHTML = D.map(function (x) {
+      var p = POS[x];
+      return '<g class="nd' + (S(x) ? ' stud' : '') + '"><circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + R + '"/><text x="' + p[0] + '" y="' + (p[1] + 4) + '" text-anchor="middle">' + x + '</text>' +
+        (S(x) ? '<text class="s-tag" x="' + p[0] + '" y="' + (p[1] + R + 14) + '" text-anchor="middle">Student</text>' : '') + '</g>';
+    }).join('');
+  }
+  function setModel(i) {
+    M = MODELS[i]; answered = {};
+    root.querySelectorAll('#kv-model button').forEach(function (b) { b.classList.toggle('active', +b.dataset.m === i); });
+    list.querySelectorAll('li').forEach(function (li) { li.classList.remove('ok', 'bad'); li.querySelector('.kv-why').innerHTML = ''; });
+    out.innerHTML = 'Modell ' + (i + 1) + '. Klikk «Sann» eller «Usann» for hver setning.';
+    draw();
+  }
+  root.querySelector('#kv-model').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setModel(+b.dataset.m); });
+  document.getElementById('kv-all').addEventListener('click', function () { list.querySelectorAll('li').forEach(function (li) { show(li, null); }); });
+  setModel(0);
+})();
+</script>
+</body>
+</html>

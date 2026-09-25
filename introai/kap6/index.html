@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 6 — Proposisjonell logikk</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 6: Proposisjonell logikk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 6 · Slides forelesning 5 (Ole C. Eidheim, 17. sept 2026) · Boka kap. 7 (7.7 ute av pensum)</div>
+      <h1>Proposisjonell <em>logikk</em></h1>
+      <p class="lede">Hvordan en agent kan representere kunnskap som logiske setninger og utlede ny kunnskap. Logikk er halve logikkoppgaven på eksamen (10 av 20 poeng i 2023), og CNF og resolusjon herfra brukes igjen i førsteordens logikk.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+      <p class="dropcap">Alt dreier seg om ett spørsmål: følger \(\alpha\) av kunnskapsbasen, \(KB \models \alpha\)? Kapittelet gir tre måter å svare på, og eksamen spør etter alle tre.</p>
+      <ul>
+        <li><strong>Modellsjekking:</strong> lag sannhetstabellen og se om \(\alpha\) er sann i alle rader der KB er sann. Enkelt, men \(2^n\) rader (Ord. 2022 oppg. 5).</li>
+        <li><strong>Inferensregler med navn:</strong> Modus Ponens, Modus Tollens, And-Elimination, Disjunctive Syllogism. For Horn-klausuler holder Modus Ponens, via forward/backward chaining (Ord. 2023 oppg. 3.1).</li>
+        <li><strong>Resolusjon:</strong> gjør \(KB \land \lnot\alpha\) om til CNF og resolver til den tomme klausulen. Sunn og fullstendig (Ord. 2022 oppg. 5.3, og FOL-varianten i Ord. 2023 oppg. 3.2).</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Sidene bygger på slidene fra forelesning 5 (76 sider i PDF-en; slide-numrene på sidene er sidenumre i PDF-en). Modus Tollens, Disjunctive Syllogism og pseudokoden for chaining og resolusjon er hentet fra boka kap. 7.5 og merket slik. Slides merket «not curriculum» (BusTUC, Lean, Z3, Prolog) er kuttet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Semantikken først (hva ⊨ betyr), så syntaktiske bevis, til slutt resolusjon, som bygger på både ekvivalensene og reductio.</p>
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="pl-grunnlag.html#syntaks">Syntaks og konnektiver</a></div><div class="desc">Symbol, setning, modell, KB. Sannhetstabellen for ⇒.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="pl-grunnlag.html#entailment">Modeller og entailment</a></div><div class="desc">M(α), ⊨, gyldig/tilfredsstillbar, reductio. Widget: sannhetstabell.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="pl-grunnlag.html#gullkasser">Gullkassene (O22 5.1–5.2)</a></div><div class="desc">Formaliser, forenkle, sannhetstabell.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="pl-grunnlag.html#ekvivalenser">Logiske ekvivalenser</a></div><div class="desc">De Morgan, implication elimination, distributivitet.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="pl-grunnlag.html#inferensregler">Inferensregler</a></div><div class="desc">MP, MT, AE, DS. Bok-gåten (O23 3.1). Sunnhet og fullstendighet.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="pl-grunnlag.html#chaining">Horn og chaining</a></div><div class="desc">Definite clauses, forward chaining med tellere, backward chaining.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="resolusjon.html#cnf">CNF</a></div><div class="desc">Fire steg, eksemplet fra slidene, egne øvinger.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">08</div><div><div class="title"><a href="resolusjon.html#refutasjon">Resolusjonsrefutasjon</a></div><div class="desc">Legg til ¬α, resolver til □. Widget: resolusjon stegvis.</div></div><div class="min">~15 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="pl-grunnlag.html" class="subpage-card">
+          <span class="sp-icon">6A</span>
+          <div class="sp-info">
+            <div class="sp-title">Modeller, entailment og inferens</div>
+            <div class="sp-desc">Syntaks, sannhetstabeller, ekvivalenser, inferensregler, Horn-klausuler, forward/backward chaining. 7 oppgaver, 1 widget (sannhetstabell).</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="resolusjon.html" class="subpage-card">
+          <span class="sp-icon">6B</span>
+          <div class="sp-info">
+            <div class="sp-title">CNF og resolusjon</div>
+            <div class="sp-desc">Resolusjonsregelen, CNF i fire steg, resolusjonsrefutasjon, CSP med resolusjon. 5 oppgaver, 1 widget (resolusjon stegvis).</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Tre veier til samme svar. Heltrukne piler: rekkefølgen. Stiplede: teori som brukes i steget den peker på.</p>
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 6">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/></marker>
+          </defs>
+          <rect class="bh" x="290" y="18" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="38" text-anchor="middle">Syntaks og modeller</text>
+          <text class="cap" x="380" y="54" text-anchor="middle">symbol · konnektiv · KB · 2ⁿ modeller</text>
+          <rect class="bh" x="290" y="96" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="116" text-anchor="middle">Entailment KB ⊨ α</text>
+          <text class="cap" x="380" y="132" text-anchor="middle">M(KB) ⊆ M(α)</text>
+          <path class="e" d="M380 64 L380 94"/>
+
+          <rect class="bh" x="30" y="186" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="120" y="206" text-anchor="middle">Modellsjekking</text>
+          <text class="cap" x="120" y="222" text-anchor="middle">sannhetstabell · eksponentiell</text>
+          <rect class="bh" x="290" y="186" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="206" text-anchor="middle">Inferensregler</text>
+          <text class="cap" x="380" y="222" text-anchor="middle">MP · MT · AE · DS · ⊢</text>
+          <rect class="bh" x="550" y="186" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="640" y="206" text-anchor="middle">Resolusjon</text>
+          <text class="cap" x="640" y="222" text-anchor="middle">sunn + fullstendig</text>
+          <path class="e" d="M340 142 L150 184"/>
+          <path class="e" d="M380 142 L380 184"/>
+          <path class="e" d="M420 142 L610 184"/>
+
+          <rect class="bh" x="290" y="266" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="286" text-anchor="middle">Horn + chaining</text>
+          <text class="cap" x="380" y="302" text-anchor="middle">forward/backward · lineær</text>
+          <rect class="bh" x="550" y="266" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="640" y="286" text-anchor="middle">CNF + refutasjon</text>
+          <text class="cap" x="640" y="302" text-anchor="middle">KB ∧ ¬α → □</text>
+          <path class="e" d="M380 232 L380 264"/>
+          <path class="e" d="M640 232 L640 264"/>
+
+          <rect class="bw" x="30" y="266" width="180" height="46" rx="6"/>
+          <text class="lbl" x="120" y="286" text-anchor="middle">Ekvivalenser</text>
+          <text class="cap" x="120" y="302" text-anchor="middle">De Morgan · ⇒-eliminasjon</text>
+          <path class="e-faded" d="M210 280 L290 215"/>
+          <path class="e-faded" d="M210 300 C 380 330, 470 320, 550 296"/>
+          <rect class="bw" x="560" y="96" width="170" height="46" rx="6"/>
+          <text class="lbl" x="645" y="116" text-anchor="middle">Reductio</text>
+          <text class="cap" x="645" y="132" text-anchor="middle">KB ∧ ¬α utilfredsstillbar</text>
+          <path class="e-faded" d="M645 142 L645 184"/>
+        </svg>
+        <figcaption>Oransje bokser: teori som forklarer hvorfor metoden virker.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">Tidligere eksamensoppgaver, eksemplene fra slidene og egne oppgaver av eksamenstype. Grønn status: svaret er fra løsningsforslaget eller slidene. Gul: forslag skrevet for denne siden.</p>
+      <ul class="oppgave-index">
+        <li><a href="pl-grunnlag.html#oppg-o22-51"><span class="oi-ref">O22 · 5.1</span><span>Gullkassene: formaliser «nøyaktig én kasse» og «nøyaktig én påskrift», forenkle.</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="pl-grunnlag.html#oppg-o22-52"><span class="oi-ref">O22 · 5.2</span><span>Gullkassene: sannhetstabell for S1 og S3, hvilken kasse har gullet?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="pl-grunnlag.html#oppg-o23-31"><span class="oi-ref">O23 · 3.1</span><span>Bok-gåten: oversett hintene, utled med navngitte regler inkl. Modus Tollens.</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="pl-grunnlag.html#oppg-egen-nokkel"><span class="oi-ref">6.2</span><span>Sykkelnøkkelen: egen gåte av samme type som O23 3.1.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="pl-grunnlag.html#oppg-o23-kort-horn"><span class="oi-ref">O23 · kort</span><span>Hvilken form og hvilken regel bruker forward/backward chaining?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="pl-grunnlag.html#oppg-slide-traffic"><span class="oi-ref">Slide 37</span><span>KB ⊨ Traffic med forward chaining; hva med Accident?</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="pl-grunnlag.html#oppg-o22-19"><span class="oi-ref">O22 · 1.9</span><span>Hva er entailment, og hvilke regler bruker resolusjon og chaining?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+        <li><a href="resolusjon.html#oppg-slide-cnf"><span class="oi-ref">Slide 53</span><span>Legg til ¬R og gjør {P, P ∨ Q ⇒ R} om til klausuler.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="resolusjon.html#oppg-egen-cnf"><span class="oi-ref">6.3</span><span>CNF for A ⇔ (B ∨ C) og (P ∧ Q) ⇒ ¬(R ∨ S).</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="resolusjon.html#oppg-slide-res"><span class="oi-ref">Slide 59</span><span>Resolver til tom klausul, med og uten unit preference.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="resolusjon.html#oppg-egen-res"><span class="oi-ref">6.3</span><span>Vis {A ∨ B, A ⇒ C, B ⇒ C} ⊨ C med resolusjon.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="resolusjon.html#oppg-o22-53"><span class="oi-ref">O22 · 5.3</span><span>Gullkassene med resolusjonsrefutasjon: hva er KB og α, hva må oppnås?</span><span class="oi-status notes">Løsningsforslag</span></a></li>
+      </ul>
+      <h3>Ekstra, ikke på siden</h3>
+      <ul>
+        <li>Slide 7–8: «A penny is better than nothing …», et eksempel på at naturlig språk er tvetydig. Ingen regning, kuttet.</li>
+        <li>Slide 29: «LLMs can do some Modus Ponens». Diskusjon, kuttet.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Vis \(\{A \Rightarrow B,\ \lnot B\} \models \lnot A\) på tre måter: sannhetstabell, inferensregel og resolusjon.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Tabell: KB er sann bare i raden \(A = F,\ B = F\), og der er \(\lnot A\) sann. Regel: Modus Tollens på \(A \Rightarrow B\) og \(\lnot B\) gir \(\lnot A\). Resolusjon: klausulene \(\lnot A \lor B\), \(\lnot B\) og negert spørring \(A\); \(A\) og \(\lnot A \lor B\) gir \(B\), \(B\) og \(\lnot B\) gir □.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Når vil du velge forward chaining framfor resolusjon, og hva taper du?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Når KB bare består av definite clauses (Horn): da er Modus Ponens sunn og fullstendig og kjører i lineær tid. Du taper uttrykkskraft: disjunksjoner som \(A \lor B\) (to positive literaler) kan ikke uttrykkes. Resolusjon er fullstendig for all PL, men eksponentiell.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Er \((A \Rightarrow B) \lor (B \Rightarrow A)\) gyldig? Vis det med ekvivalenser.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Implication elimination: \((\lnot A \lor B) \lor (\lnot B \lor A)\). Assosiativitet og kommutativitet: \((A \lor \lnot A) \lor (B \lor \lnot B) \equiv True \lor True \equiv True\). Den er gyldig, sann i alle fire modeller.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="pl-grunnlag.html" class="next"><div class="pn-label">Start · 6A</div><div class="pn-title">Modeller, entailment og inferens →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>
