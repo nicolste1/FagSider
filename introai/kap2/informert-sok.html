@@ -65,7 +65,7 @@
     <div class="container">
       <div class="eyebrow">Kapittel 2 · 2C · Slides forelesning 2 · 162–202 · Forelesning 3 · 35–46 · Assignment-forelesning 1 · 9–15 · ~35 min</div>
       <h1>Informert søk: greedy og <em>A*</em></h1>
-      <p class="lede">En heuristikk \(h(n)\) anslår hvor langt det er igjen til målet. Greedy best-first velger lavest \(h\), A* velger lavest \(g + h\). Her går vi gjennom Romania-eksempelet fra slidene, eksamensgrafen fra 2023 og eksempelgrafen fra assignment-forelesningen, steg for steg.</p>
+      <p class="lede">En heuristikk \(h(n)\) anslår hvor langt det er igjen til målet. Greedy best-first velger lavest \(h\), A* velger lavest \(g + h\). Her går vi gjennom Romania-eksempelet, eksamensgrafen fra 2023 og assignment-eksempelet, steg for steg.</p>
       <nav class="toc">
         <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#heuristikk"><span>01</span> Heuristikk</a>
@@ -87,7 +87,7 @@
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
           <li><span class="tag regn">Regn</span><strong>Kjør greedy best-first og A* for hånd</strong>: ekspansjonsrekkefølge, sti og kostnad, med \(f\)-verdiene i frontier for hvert steg (Ord. 2023 oppg. 2.1 d–e, del av 10 p). Se <a href="#oppg-o23-2-1-inf">oppgaven</a>.</li>
-          <li><span class="tag regn">Regn</span><strong>Assignment 1</strong> er samme type: alle fem algoritmene på én graf. Kontroller deg selv mot <a href="#oppg-al1-eksempel">assignment-forelesningens eksempel</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Assignment 1</strong> er samme type: alle fem algoritmene på én graf. Kontroller deg selv mot <a href="#oppg-al1-eksempel">assignment-eksempelet</a>.</li>
           <li><span class="tag">Forklar</span>Hvorfor greedy ikke er optimal (Romania: 450 mot 418) og kan gå i løkke med tree-like search.</li>
           <li><span class="tag lav">Lavere</span>Vektet A* (\(g + w\cdot h\)) utover sammenhengen med UCS/greedy. Når A* er optimal står i <a href="heuristikker.html">2D</a>.</li>
         </ul>
@@ -106,7 +106,7 @@
       <p>I Romania bruker vi <span class="term" data-term="rettlinjet-avstand">rettlinjet avstand</span> (straight-line distance) til Bucharest, \(h_{SLD}\). Den er aldri lengre enn veien, og den står ikke på kartet: agenten må vite den fra før.</p>
       <div class="table-wrap">
         <table class="trace">
-          <caption>\(h_{SLD}\) til Bucharest (slide 165, verdiene brukt i gjennomgangene)</caption>
+          <caption>\(h_{SLD}\) til Bucharest (verdiene brukt i gjennomgangene)</caption>
           <tbody>
             <tr><td>Arad 366</td><td>Bucharest 0</td><td>Craiova 160</td><td>Dobreta 242</td><td>Eforie 161</td></tr>
             <tr><td>Fagaras 176</td><td>Giurgiu 77</td><td>Hirsova 151</td><td>Iasi 226</td><td>Lugoj 244</td></tr>
@@ -115,7 +115,7 @@
           </tbody>
         </table>
       </div>
-      <p class="note-sm">Tabellen på slide 165 har Fagaras 178 og Pitesti 98, men gjennomgangene (slide 175 og 190) regner med bokas 176 og 100. Vi bruker 176 og 100.</p>
+      <p class="note-sm">Noen versjoner av tabellen har Fagaras 178 og Pitesti 98, men gjennomgangene regner med 176 og 100. Vi bruker 176 og 100.</p>
     </div>
   </section>
 
@@ -127,7 +127,7 @@
       <p class="dropcap"><span class="term" data-term="greedy-best-first">Greedy best-first search</span> er <span class="term" data-term="best-first-search">best-first</span> med \(f(n) = h(n)\): den ekspanderer alltid noden som ser nærmest målet ut, og bryr seg ikke om hva det har kostet å komme dit.</p>
       <div class="table-wrap">
         <table class="trace">
-          <caption>Greedy på Romania, start Arad (slides 172–176). Frontier sortert etter \(h\)</caption>
+          <caption>Greedy på Romania, start Arad. Frontier sortert etter \(h\)</caption>
           <thead><tr><th>Ekspanderer</th><th>Frontier etterpå</th></tr></thead>
           <tbody>
             <tr><td>Arad</td><td>{Sibiu:253, Timisoara:329, Zerind:374}</td></tr>
@@ -138,7 +138,7 @@
         </table>
       </div>
       <div class="svar-format">Order of expansion: Arad, Sibiu, Fagaras, (Bucharest) · Path: Arad Sibiu Fagaras Bucharest · Cost: 140 + 99 + 211 = 450</div>
-      <p>Greedy ekspanderer ingen node utenfor den endelige stien (se <span class="term" data-term="ekspansjonsrekkefolge">ekspansjonsrekkefølgen</span>), men svaret er <strong>ikke optimalt</strong>: veien via Rimnicu Vilcea og Pitesti er 418, 32 miles kortere. Arad dukker opp igjen i frontier (\(h = 366\)) fordi slidene kjører tree-like search.</p>
+      <p>Greedy ekspanderer ingen node utenfor den endelige stien (se <span class="term" data-term="ekspansjonsrekkefolge">ekspansjonsrekkefølgen</span>), men svaret er <strong>ikke optimalt</strong>: veien via Rimnicu Vilcea og Pitesti er 418, 32 miles kortere. Arad dukker opp igjen i frontier (\(h = 366\)) fordi gjennomgangen bruker tree-like search.</p>
       <p>Med <span class="term" data-term="tree-like-search">tree-like search</span> kan greedy gå i løkke. På grafen i <a href="#oppg-o23-2-1-inf">eksamen 2023</a> har A, B og C alle \(h = 3\): S ekspanderes, A vinner alfabetisk, A genererer seg selv igjen (løkka) og C, og A vinner igjen, for alltid. Med <span class="term" data-term="graph-search">graph search</span> (<span class="term" data-term="reached">reached</span>) er greedy <span class="term" data-term="fullstendighet">fullstendig</span> i endelige rom; <span class="term" data-term="kostnadsoptimalitet">kostnadsoptimal</span> er den aldri garantert.</p>
       <div class="quiz" data-quiz>
         <div class="q-label">Sjekk forståelsen · Middels</div>
@@ -161,7 +161,7 @@
       <p>der \(g(n)\) er stikostnaden vi har betalt fra start til \(n\) (<span class="term" data-term="g-verdi">g-verdien</span>), \(h(n)\) er estimatet fra \(n\) til målet, og \(f(n)\), <span class="term" data-term="f-verdi">f-verdien</span>, er estimert kostnad for den billigste løsningen gjennom \(n\). Vanlig feil: \(g\) er summen langs <em>hele</em> stien, mens \(h\) bare leses av i \(n\).</p>
       <div class="table-wrap">
         <table class="trace">
-          <caption>A* på Romania (slides 187–193), \(f = g + h\)</caption>
+          <caption>A* på Romania, \(f = g + h\)</caption>
           <thead><tr><th>Ekspanderer</th><th>Nye noder, \(g + h = f\)</th></tr></thead>
           <tbody>
             <tr><td>Arad (366)</td><td>Sibiu 140+253=393 · Timisoara 118+329=447 · Zerind 75+374=449</td></tr>
@@ -176,7 +176,7 @@
       <div class="svar-format">Order of expansion: Arad, Sibiu, R.Vilcea, Fagaras, Pitesti, (Bucharest) · Path: Arad Sibiu R.Vilcea Pitesti Bucharest · Cost: 140 + 80 + 97 + 101 = 418</div>
       <p>Legg merke til at Bucharest ble generert med \(f = 450\) etter Fagaras, men A* har <span class="term" data-term="sen-malsjekk">sen måltest</span> og stopper ikke før målet poppes. Da er det funnet en billigere vei (418) som erstatter den. A* er fullstendig ved positive kostnader, endelig tilstandsrom og en eksisterende løsning; den er kostnadsoptimal «hvis visse betingelser er oppfylt», som er temaet i <a href="heuristikker.html">2D</a>.</p>
       <div class="callout">
-        <span class="label">Generalisering · forelesning 3</span>
+        <span class="label">Generalisering</span>
         <p>\(f(n) = g(n) + w \cdot h(n)\). Med \(w = 0\) får du UCS, med \(w = 1\) A*, og når \(w \to \infty\) greedy best-first. \(w \gt 1\) er <span class="term" data-term="vektet-a-stjerne">vektet A*</span>: ofte raskere, men ikke garantert optimal.</p>
       </div>
     </div>
@@ -249,7 +249,7 @@
         <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">Assignment-forelesning 1 · 9–15</span></div>
         <div class="o-text">
           <p>Kjør BFS, DFS, UCS, greedy best-first og A* på grafen under. Start A, mål E, tallene i grå sirkler (her «h=») er heuristikken. Kantene går begge veier. Bruk kursets versjoner: BFS fra s. 95, resten som BEST-FIRST-SEARCH fra s. 91 (med reached), alfabetisk <span class="term" data-term="tie-break">tie-break</span>.</p>
-          <svg class="gsvg" viewBox="0 0 380 300" role="img" aria-label="Eksempelgraf fra assignment-forelesning 1">
+          <svg class="gsvg" viewBox="0 0 380 300" role="img" aria-label="Eksempelgraf fra assignment 1">
 <line class="ed" x1="116" y1="251" x2="252" y2="215"/>
 <text class="cost" x="188" y="245">3</text>
 <line class="ed" x1="97" y1="238" x2="84" y2="169"/>

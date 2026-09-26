@@ -106,7 +106,7 @@
       <span class="lm-pill">Deltema 3.2 · prio 3</span>
 
       <p class="dropcap">Til nå har handlinger vært deterministiske: vi får alltid resultatet vi forventer. I et <span class="term" data-term="ikke-deterministisk">ikke-deterministisk</span> miljø gir en handling en <em>mengde</em> mulige utfall, så løsningen kan ikke være én sekvens. Vi trenger en <span class="term" data-term="betinget-plan">betinget plan</span> (contingency plan) som sier hva vi gjør i hvert utfall.</p>
-      <p>Slidenes eksempel er <span class="term" data-term="erratic-vacuum">erratic vacuum world</span>: to ruter A og B, åtte tilstander. <em>Suck</em> på en skitten rute renser den, og noen ganger også naborute. <em>Suck</em> på en ren rute kan legge igjen skitt.</p>
+      <p>Eksempel: <span class="term" data-term="erratic-vacuum">erratic vacuum world</span>: to ruter A og B, åtte tilstander. <em>Suck</em> på en skitten rute renser den, og noen ganger også naborute. <em>Suck</em> på en ren rute kan legge igjen skitt.</p>
 
       <figure>
         <svg class="vac-svg" viewBox="0 0 560 136" aria-label="De åtte tilstandene i støvsugerverdenen">
@@ -152,7 +152,7 @@
 <circle class="vs-bot" cx="508" cy="80" r="8"/></g>
 <text class="vs-lbl" x="30" y="128">A = venstre rute, B = høyre rute · sirkel = roboten · prikker = skitt</text>
         </svg>
-        <figcaption>De åtte tilstandene, nummerert som i boka og slidene.</figcaption>
+        <figcaption>De åtte tilstandene, nummerert 1–8.</figcaption>
       </figure>
 
       <div class="oppgave" data-quiz id="oppg-erratic-suck">
@@ -190,7 +190,7 @@
           <rect class="ao-goal" x="216" y="302" width="64" height="28" rx="3"/><text x="248" y="321" text-anchor="middle">8 · mål</text>
           <rect class="ao-s" x="250" y="8" width="60" height="28" rx="3"/><text x="280" y="27" text-anchor="middle">1</text>
         </svg>
-        <figcaption>Utsnitt av slide 102 (Boka figur 4.10): løsningsdeltreet i fete streker. Buen under Suck betyr AND: både 7 og 5 må håndteres. Planen er <code>[Suck, if State = 5 then [Right, Suck] else []]</code>.</figcaption>
+        <figcaption>Utsnitt av søketreet: løsningsdeltreet i fete streker. Buen under Suck betyr AND: både 7 og 5 må håndteres. Planen er <code>[Suck, if State = 5 then [Right, Suck] else []]</code>.</figcaption>
       </figure>
     </div>
   </section>
@@ -214,7 +214,7 @@
       <p>Ny belief state etter handling \(a\) er alle tilstander vi kan havne i fra en tilstand i \(b\):</p>
       \[ b' = \text{RESULT}(b, a) = \{\, s' : s' = \text{RESULT}_P(s, a) \text{ og } s \in b \,\} \]
       \[ b' = \bigcup_{s \in b} \text{RESULTS}_P(s, a) \quad \text{(ikke-deterministisk)} \]
-      <p>I et deterministisk miljø kan vi bruke et vanlig søk (BFS, A* …) over belief states (slide 112). Er miljøet både ikke-deterministisk og delvis observerbart, blir nodene belief states i et AND-OR-tre, og løsningen er en betinget plan (slide 110, 114–116).</p>
+      <p>I et deterministisk miljø kan vi bruke et vanlig søk (BFS, A* …) over belief states. Er miljøet både ikke-deterministisk og delvis observerbart, blir nodene belief states i et AND-OR-tre, og løsningen er en betinget plan.</p>
     </div>
   </section>
 
@@ -225,7 +225,7 @@
       <h2>Løs problemet <em>uten å se</em></h2>
       <div class="source-note">Slides forelesning 3 · 104–109 · Boka kap. 4.4.1</div>
 
-      <p class="dropcap">Et <span class="term" data-term="sensorless">sensorless</span> (conformant) problem: agenten har ingen sensorer. Den starter med belief state lik alle tilstander og må finne en handlingssekvens som virker <em>uansett</em> hvor den startet. Slidene: «Think of 5D-chess: you solve the problem on multiple paths at the same time!» Handlinger som ikke har effekt (Left når roboten står i A) lar tilstanden være uendret.</p>
+      <p class="dropcap">Et <span class="term" data-term="sensorless">sensorless</span> (conformant) problem: agenten har ingen sensorer. Den starter med belief state lik alle tilstander og må finne en handlingssekvens som virker <em>uansett</em> hvor den startet. «Think of 5D-chess: you solve the problem on multiple paths at the same time!» Handlinger som ikke har effekt (Left når roboten står i A) lar tilstanden være uendret.</p>
 
       <div class="oppgave" data-quiz id="oppg-sensorless-vakuum">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 104–109</span></div>
@@ -363,7 +363,7 @@
             <p><strong>2.</strong> Prediksjon med Right: \(\{(r0,c1), (r3,c1), (r0,c8)\}\). Persepter: \((r0,c1)\) har ingen vegg i nord (\((r1,c1)\) er fri), stryk. \((r3,c1)\): nord kant, sør \((r2,c1)\) vegg, vest og øst fri. Passer. \((r0,c8)\): nord \((r1,c8)\) fri, stryk.</p>
             <p>\(S_2 = \{(r3,c1)\}\). Roboten er lokalisert.</p>
             <p><strong>3.</strong> Fra initial belief state \(S_1\): «Right» flytter nå mot vest, men alle tre rutene har vegg i vest. Roboten flytter seg ikke, får samme persept, og belief state er uendret: \(S = \{(r0,c0), (r3,c0), (r0,c7)\}\).</p>
-            <p>Løsningsforslaget godtok også å starte i figurens posisjon \((r2,c3)\): da flytter roboten til \((r2,c2)\), sanser {NoNorth, NoSouth, West, NoEast}, og belief state blir \(S = \{(r1,c8), (r2,c2)\}\).</p>
+            <p>Det er også godtatt å starte i figurens posisjon \((r2,c3)\): da flytter roboten til \((r2,c2)\), sanser {NoNorth, NoSouth, West, NoEast}, og belief state blir \(S = \{(r1,c8), (r2,c2)\}\).</p>
           </div>
         </div>
       </div>
@@ -420,7 +420,7 @@
       <div class="section-badge">06 · Online søk</div>
       <h2>Utforsk mens du <em>går</em></h2>
       <div class="source-note">Slides forelesning 3 · 117 · Boka kap. 4.5</div>
-      <p class="dropcap">Alle algoritmene så langt er <em>offline</em>: de regner ut løsningen fra en kjent graf før første trekk. <span class="term" data-term="online-sok">Online søk</span> må faktisk bevege seg for å oppdage grafen, og veksler mellom å handle og å observere. Eksempel fra slidene: <span class="term" data-term="lrta">LRTA*</span> (learning real-time A*), som oppdaterer heuristikkestimatet for tilstanden den forlater underveis.</p>
+      <p class="dropcap">Alle algoritmene så langt er <em>offline</em>: de regner ut løsningen fra en kjent graf før første trekk. <span class="term" data-term="online-sok">Online søk</span> må faktisk bevege seg for å oppdage grafen, og veksler mellom å handle og å observere. Eksempel: <span class="term" data-term="lrta">LRTA*</span> (learning real-time A*), som oppdaterer heuristikkestimatet for tilstanden den forlater underveis.</p>
     </div>
   </section>
 
@@ -443,7 +443,7 @@
         <div class="q-text">Hvor mange belief states finnes i støvsugerverdenen med åtte fysiske tilstander?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">\(2^8 = 256\) delmengder (255 uten den tomme). Boka påpeker at bare 12 av dem er nåbare fra \(\{1,\dots,8\}\).</div>
+          <div class="answer">\(2^8 = 256\) delmengder (255 uten den tomme). Bare 12 av dem er nåbare fra \(\{1,\dots,8\}\).</div>
         </div>
       </div>
       <div class="quiz" data-quiz>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Ensemble-modeller — Kap 1</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  .legend-row .l-g::before { background: var(--green); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .arr { display: flex; gap: 6px; flex-wrap: wrap; margin: 0.6rem 0; }
+  .arr .cell { min-width: 40px; padding: 7px 6px; text-align: center; font-family: var(--mono); font-size: 0.9rem; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; position: relative; }
+  .arr .cell.dup { background: var(--warm-soft); border-color: var(--warm); }
+  .arr .cell.miss { opacity: 0.35; border-style: dashed; }
+  .arr .cell .cnt { position: absolute; top: -8px; right: -6px; font-size: 0.62rem; background: var(--warm); color: var(--paper); border-radius: 8px; padding: 0 5px; }
+  .ens-svg text { font-family: var(--sans); font-size: 12px; fill: var(--ink); }
+  .ens-svg .kind { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--ink-faded); }
+  .ens-svg rect { rx: 7; stroke-width: 1.2; }
+  .ens-svg .m rect { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .ens-svg .d rect { fill: var(--paper); stroke: var(--ink-ghost); }
+  .ens-svg .o rect { fill: rgba(160,82,45,0.16); stroke: var(--warm); }
+  .ens-svg .e { stroke: var(--ink-ghost); stroke-width: 1.3; fill: none; marker-end: url(#arw); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 1</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Veiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · 1D · Notater 1.5 · s. 32–34 · ~25 min</div>
+      <h1>Ensemble-<em>modeller</em></h1>
+      <p class="lede">Én modell har alltid en svakhet. Flere modeller som stemmer, eller som retter opp hverandres feil, gjør det bedre. Bagging og random forest (parallelt), AdaBoost og gradient boosting (sekvensielt), og hvorfor bootstrap ikke er det samme som kryssvalidering.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#ensemble"><span>01</span> Ensembler</a>
+        <a href="#bagging"><span>02</span> Bagging</a>
+        <a href="#random-forest"><span>03</span> Random forest</a>
+        <a href="#boosting"><span>04</span> Boosting</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen 26. september 2026 (kilder/eksamensanalyse.md, forslag, ikke godkjent ennå) · deltema 1.5, prio 1</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Bootstrap = trekning med tilbakelegging</strong>, og hva det gjør for et ensemble: modellene trenes på ulike datasett og blir forskjellige (Ord. 2025 del 3 spm. 1). Forskjellen fra kryssvalidering, som deler i ikke-overlappende delsett (Ord. 2024 spm. 18). Se <a href="#bagging">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Random forest</strong>: trærne må være diverse og uavhengige, oppnådd med bootstrap-data og tilfeldige feature-utvalg per splitt, som reduserer korrelasjonen mellom trærne (Ord. 2024 spm. 16; Ord. 2025 del 3 spm. 2). Se <a href="#random-forest">03</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Boosting</strong>: AdaBoost øker vekten på feilklassifiserte punkter (Ord. 2025 del 3 spm. 3); gradient boosting tilpasser hvert nytt tre til pseudo-residualene, altså den gjenværende feilen (Ord. 2024 spm. 17; Ord. 2025 del 3 spm. 4). Se <a href="#boosting">04</a>.</li>
+          <li><span class="tag">Lavere</span>Historikken bak boosting (Kearns, Valiant, Schapire) og navnene CatBoost, LightGBM, XGBoost. Nevnes i én oppgave fra notatene, aldri på eksamen.</li>
+        </ul>
+        <p style="margin:0.6rem 0 0">Dette er det deltemaet med flest eksamensspørsmål per side i notatene: tre i 2024 og fire i 2025. Alle er «forklar»-spørsmål på flervalgsform, ingen regning.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 ENSEMBLER ─────────────────────────── -->
+  <section id="ensemble">
+    <div class="container">
+      <div class="section-badge">01 · Ensemble-modeller</div>
+      <h2>Flere modeller som <em>kompenserer for hverandre</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.5 · s. 32–33</div>
+
+      <p class="dropcap">Det kan være vanskelig å velge riktig modell for et gitt datasett og problem. Alle modeller har sine antakelser og svakheter: lineær regresjon antar at forholdet mellom features og target er lineært, og beslutningstrær antar at datarommet kan separeres med vertikale beslutningsflater (splitter). Tanken bak <span class="term" data-term="ensemble">ensemble learning</span> er at flere modeller kan kombineres slik at de kompenserer for hverandres svakheter, og til sammen utgjør en samling, et ensemble, som bruker hver enkelt modells styrke. Tenk på en gruppe eksperter der gruppens beslutning tar alle vurderingene med, men forkaster den som ikke deles av majoriteten.</p>
+
+      <p>Konseptuelt finnes det tre måter å kombinere modeller på:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="parallelt-ensemble">Parallelt</span></div><div class="fc-val">Flere modeller trenes uavhengig av hverandre, og prediksjonene kombineres til én prediksjon. Bagging, random forest.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="sekvensielt-ensemble">Sekvensielt</span></div><div class="fc-val">Modellene kommer etter hverandre, og hver modell opphever feilen begått av den foregående. Boosting.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="hierarkisk-ensemble">Hierarkisk</span></div><div class="fc-val">En (eller flere) modell(er) brukes til å kombinere prediksjonene fra en foregående parallellkombinasjon.</div></div>
+      </div>
+
+      <figure>
+        <svg class="ens-svg" viewBox="0 0 720 210" aria-label="Parallelt og sekvensielt ensemble">
+          <defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a39886"/></marker></defs>
+          <text class="kind" x="170" y="16" text-anchor="middle">Parallelt</text>
+          <g class="d"><rect x="20" y="86" width="70" height="36"/><text x="55" y="108" text-anchor="middle">Data</text></g>
+          <g class="m"><rect x="130" y="30" width="90" height="34"/><text x="175" y="51" text-anchor="middle">Modell 1</text></g>
+          <g class="m"><rect x="130" y="87" width="90" height="34"/><text x="175" y="108" text-anchor="middle">Modell 2</text></g>
+          <g class="m"><rect x="130" y="144" width="90" height="34"/><text x="175" y="165" text-anchor="middle">Modell 3</text></g>
+          <g class="o"><rect x="255" y="86" width="80" height="36"/><text x="295" y="103" text-anchor="middle">Aggreger</text><text x="295" y="116" text-anchor="middle" class="kind">snitt · vote</text></g>
+          <path class="e" d="M90 100 L128 50"/><path class="e" d="M90 104 L128 104"/><path class="e" d="M90 108 L128 158"/>
+          <path class="e" d="M220 47 L253 96"/><path class="e" d="M220 104 L253 104"/><path class="e" d="M220 161 L253 112"/>
+          <text class="kind" x="545" y="16" text-anchor="middle">Sekvensielt</text>
+          <g class="d"><rect x="380" y="86" width="70" height="36"/><text x="415" y="108" text-anchor="middle">Data</text></g>
+          <g class="m"><rect x="470" y="86" width="72" height="36"/><text x="506" y="108" text-anchor="middle">Modell 1</text></g>
+          <g class="m"><rect x="562" y="86" width="72" height="36"/><text x="598" y="108" text-anchor="middle">Modell 2</text></g>
+          <g class="o"><rect x="654" y="86" width="56" height="36"/><text x="682" y="108" text-anchor="middle">Sum</text></g>
+          <path class="e" d="M450 104 L468 104"/><path class="e" d="M542 104 L560 104"/><path class="e" d="M634 104 L652 104"/>
+          <text class="kind" x="506" y="145" text-anchor="middle">feil →</text>
+          <text class="kind" x="598" y="145" text-anchor="middle">retter feilen</text>
+        </svg>
+        <figcaption>Parallelt: uavhengige modeller, prediksjonene aggregeres. Sekvensielt: hver modell minimerer feilen fra den forrige.</figcaption>
+      </figure>
+
+      <p>Når vi bruker en trent modell til å gjøre prediksjoner, sier vi at vi gjør <span class="term" data-term="inferens">inferens</span>. Skillet mellom trening og inferens er viktig, og særlig synlig i ensemble learning: i et sekvensielt ensemble avhenger treningen av modell 2 av modell 1, men ved inferens kjøres hele rekken på ett datapunkt.</p>
+
+      <p>Et parallelt ensemble kan lages på flere måter: samme type modell (for eksempel et beslutningstre) med \(n\) ulike valg av <span class="term" data-term="hyperparameter">hyperparametre</span>; \(n\) ulike modelltyper (et tre, en lineær regresjonsmodell og et nevralt nettverk); og i tillegg kan de ulike modellene trenes på ulike deler av treningsdataene. På ett datapunkt gir modellene \(n\) prediksjoner, som vi <span class="term" data-term="aggregering">aggregerer</span> til én.</p>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett · flervalg som på eksamen</div>
+        <div class="q-text">Et ensemble der modell 2 trenes på feilene modell 1 gjorde, og modell 3 på feilene som gjenstår, er</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">parallelt, fordi alle modellene er av samme type</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">sekvensielt, fordi hver modell forholder seg til den forrige</button></li>
+          <li><button class="mcq-opt" type="button">hierarkisk, fordi en modell kombinerer de andre</button></li>
+        </ul>
+        <div class="mcq-feedback">Riktig: sekvensielt. Modellene kan ikke trenes uavhengig, siden hver trenger prediksjonene fra den forrige. Det er boosting.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 BAGGING ─────────────────────────── -->
+  <section id="bagging">
+    <div class="container">
+      <div class="section-badge">02 · Bagging</div>
+      <h2><em>Bootstrap</em> + aggregering</h2>
+      <div class="source-note">Notatene · avsnitt 1.5.1 · s. 33–34</div>
+
+      <p class="dropcap">Når vi lager et ensemble av modeller trent på ulike deler av treningsdataene og kombinerer prediksjonene til én, må vi ta stilling til to spørsmål: <strong>hvordan aggregere</strong> prediksjonene, og <strong>hvordan velge ut</strong> hvilke deler av treningsdataene hver modell trenes på.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <div class="cc-head">Aggregering · regresjon</div>
+          <p>Gjennomsnittet av alle modellenes prediksjoner.</p>
+        </div>
+        <div class="compare-card">
+          <div class="cc-head">Aggregering · klassifisering</div>
+          <p>Klassen flertallet av modellene predikerer (direkte avstemning), eller en vektet avstemning mellom modellene.</p>
+        </div>
+      </div>
+
+      <h3>Bootstrapping</h3>
+      <p>Vi vet at vi ikke kan samle nok data til å representere den underliggende fordelingen perfekt, men et stort nok datasett gir et tilstrekkelig representativt utvalg. Utvalget forteller likevel ikke uten videre om <em>usikkerheten</em> i estimatene vi gjør fra det. <span class="term" data-term="bootstrapping">Bootstrapping</span> løser det: trekk flere datapunkter fra det samme datasettet <strong>med tilbakelegging</strong> (samme datapunkt kan finnes flere ganger i det nye settet), og få slik flere ulike datasett ut av det ene. Hvert av dem gir et estimat, estimatene gir en fordeling, og fordelingen gir en spredning. Vi har laget mer uten å samle mer data, altså «pulled us up by our own bootstraps».</p>
+
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term"><span class="term" data-term="bagging">Bagging</span></div>
+        <p>Satt sammen av <strong>b</strong> fra <strong>b</strong>ootstrap og <strong>agging</strong> fra <strong>agg</strong>reger<strong>ing</strong>: tren én modell per bootstrap-trekning av treningsdataene, og aggreger prediksjonene.</p>
+      </div>
+
+      <div class="widget" id="w-boot">
+        <div class="widget-label">Prøv selv · Én bootstrap-trekning</div>
+        <p class="widget-intro">Ti datapunkter (1–10). Klikk for å trekke ti med tilbakelegging. Duplikater er markert i rust, og punkter som ikke ble med er tonet ned. Legg merke til hvor mange som mangler hver gang: i snitt er omtrent en tredjedel utelatt (egen illustrasjon, tallet står ikke i notatene).</p>
+        <div class="arr" id="boot-arr"></div>
+        <div class="w-row">
+          <button class="w-btn" id="boot-draw" type="button">Trekk på nytt</button>
+          <button class="w-btn secondary" id="boot-many" type="button">100 trekninger: snitt</button>
+        </div>
+        <div class="w-out" id="boot-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-3-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 3 · spm. 1</span><span class="o-ref">1.5.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Bagging trener flere modeller på ulike bootstrap-samples (sampling med tilbakelegging). Hva er den primære effekten av å bruke bootstrap-samples i denne sammenhengen?</p>
+          <ol class="mcq-list" type="A">
+            <li>Det øker variabilitet mellom modellene ved å sikre at modellene trenes på ulike datasett</li>
+            <li>Det endrer modellarkitekturen slik at trærne ikke kan vokse dypt</li>
+            <li>Det gjør alle modellene identiske fordi de mottar lignende treningsinput</li>
+            <li>Det reduserer bias ved å tvinge hver modell til å bruke alle de opprinnelige treningsdataene</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Poenget med bootstrap er å lage flere <em>ulike</em> datasett fra det ene vi har, slik at modellene blir forskjellige og har noe å tilføre når de aggregeres. B blander inn hyperparametre (dybde) som ikke har med datautvalget å gjøre. C er det motsatte av hensikten. D er feil fordi en bootstrap-trekning nettopp <em>ikke</em> bruker alle punktene (noen dupliseres, andre utelates), og bagging reduserer varians, ikke bias.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-18">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 18</span><span class="o-ref">1.4.4 + 1.5.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er hovedforskjellen i hvordan data deles opp mellom kryssvalidering og bootstrapping?</p>
+          <ol class="mcq-list" type="A">
+            <li>Kryssvalidering kan brukes for alle typer modeller, mens bootstrapping brukes for beslutningstrær og skoger.</li>
+            <li>Kryssvalidering brukes på store datasett, mens bootstrapping er basert på tilfeldig sampling med tilbakelegging, og derfor brukes på små datasett.</li>
+            <li>Kryssvalidering bruker kun treningsdata, mens bootstrapping bruker kun testdata.</li>
+            <li>Kryssvalidering deler datasettet i ikke-overlappende delsett, mens bootstrapping bruker tilfeldig sampling med tilbakelegging, som kan inkludere overlappende datapunkter.</li>
+            <li>Kryssvalidering deler datasettet i overlappende delsett, mens bootstrapping deler i ikke-overlappende delsett.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> <span class="term" data-term="k-fold">k-fold</span> kryssvalidering deler datasettet i \(k\) deler som ikke overlapper; hver del er testdata nøyaktig én gang. Bootstrapping trekker med tilbakelegging, så samme punkt kan komme flere ganger i én trekning og finnes i mange av trekningene. E har det baklengs. A og B blander inn hva metodene brukes til (kryssvalidering: estimere testfeil; bootstrap: spredning og bagging), ikke hvordan data deles. C er feil: begge jobber på treningsdataene.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 RANDOM FOREST ─────────────────────────── -->
+  <section id="random-forest">
+    <div class="container">
+      <div class="section-badge">03 · Random forest</div>
+      <h2>Trær som må være <em>diverse og uavhengige</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.5.1 · s. 34</div>
+
+      <p class="dropcap">En enkel ensemblemodell som bruker bagging er <span class="term" data-term="random-forest">random forest</span> (tilfeldig skog). Den lages ved å sette sammen ulike <span class="term" data-term="beslutningstre">beslutningstrær</span>, eventuelt <span class="term" data-term="trestump">stumper</span>. For at ensemblet skal bli godt, må trærne være <strong>diverse og uavhengige</strong>. Det oppnår vi med to typer tilfeldighet:</p>
+      <ol class="steps">
+        <li><strong>Ulike data:</strong> hvert tre trenes på sin egen bootstrap-trekning av treningsdataene.</li>
+        <li><strong>Ulike features:</strong> hvert tre (eller hver splitt) får bare et tilfeldig utvalg av featurene, slik at trærne modellerer ulike sammenhenger.</li>
+      </ol>
+      <p>Til slutt aggregeres prediksjonene fra alle trærne til én prediksjon, og bagging har skjedd.</p>
+
+      <div class="callout">
+        <span class="label">Parallelle ensembler, generelt</span>
+        <p>Modellene trenes uavhengig av hverandre, og den endelige prediksjonen er et gjennomsnitt eller en avstemning. Diversitet kan komme fra ulike modelltyper, ulike hyperparametre, ulike random seeds av samme læringsalgoritme, ulik feature engineering, ulike utvalg av treningsdataene, med mer.</p>
+      </div>
+
+      <div class="widget" id="w-vote">
+        <div class="widget-label">Prøv selv · Hvorfor uavhengighet betyr noe</div>
+        <p class="widget-intro">Egen illustrasjon (ikke fra notatene): \(k\) klassifikatorer som hver treffer med sannsynlighet \(p\), <em>uavhengig</em> av hverandre, og som stemmer. Sannsynligheten for at flertallet har rett er en binomialsum. Er trærne derimot helt korrelerte, er ensemblet ikke bedre enn ett tre. Det er dette bootstrap og feature-utvalg skal forhindre.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="vt-p">p per modell</label><input type="range" id="vt-p" min="0.5" max="0.95" step="0.01" value="0.65"><span class="w-val" id="vt-p-val">0.65</span></div>
+          <div class="w-ctl"><label for="vt-k">k modeller</label><input type="range" id="vt-k" min="1" max="51" step="2" value="11"><span class="w-val" id="vt-k-val">11</span></div>
+        </div>
+        <svg viewBox="0 0 560 220" data-w="560" data-h="220" aria-label="Flertallets treffsikkerhet mot antall modeller"></svg>
+        <div class="legend-row"><span class="l-a">Flertall av k uavhengige</span><span class="l-w">Én modell (p)</span></div>
+        <div class="w-out" id="vt-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-16">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 16</span><span class="o-ref">1.5.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er viktig for å lage en god tilfeldig skog (random forest) modell basert på beslutningstrær?</p>
+          <ol class="mcq-list" type="A">
+            <li>Beslutningstrærne har ulike dybder, som til sammen gir en god balanse mellom over- og undertilpasning.</li>
+            <li>Beslutningstrærne er diverse, som betyr at de bruker ulike deler av data og features, og uavhengige.</li>
+            <li>Beslutningstrærne har i gjennomsnitt lært de samme mønstrene fra dataene, som betyr at de bruker et representativt utvalg av data og features.</li>
+            <li>Beslutningstrærne er trent på samme bootstrap-trekning fra treningsdataene for å oppnå en modell med lavest mulig varians.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Ordrett fra notatene: trærne må være diverse og uavhengige, oppnådd gjennom ulike deler av dataene (bootstrap) og ulike utvalg av features. C og D beskriver trær som har lært det samme, og da tilfører avstemningen ingenting. A (ulike dybder) er en mulig kilde til diversitet, men ikke det som definerer random forest.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-3-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 3 · spm. 2</span><span class="o-ref">1.5.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Random Forests introduserer tilfeldighet ved (1) å sample treningsdata med tilbakelegging og (2) å velge et tilfeldig subset av features ved hver split. Hva er hensikten med å bruke begge disse idéene for å introdusere tilfeldigheter?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å redusere korrelasjonen mellom trærne slik at ensemblet blir mer robust</li>
+            <li>Å sikre at hvert tre undersøker alle features like ofte</li>
+            <li>Å garantere at alle trær vokser til samme maksimale dybde</li>
+            <li>Å unngå å bruke bootstrapping når trærne bygges</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> «Redusere korrelasjonen» er eksamensspråket for notatenes «diverse og uavhengige». Uten feature-utvalg ville alle trærne splitte på den samme sterkeste featuren øverst og bli like; med det får ulike trær ulike sammenhenger. B er det motsatte av et tilfeldig utvalg, C handler om dybde, og D motsier (1).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 BOOSTING ─────────────────────────── -->
+  <section id="boosting">
+    <div class="container">
+      <div class="section-badge">04 · Boosting</div>
+      <h2>Svake modeller i <em>rekke</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.5.2 · s. 34</div>
+
+      <p class="dropcap"><span class="term" data-term="boosting">Boosting</span> er algoritmer som iterativt trener <span class="term" data-term="svak-modell">svake modeller</span> (for eksempel trestumper) på en datafordeling, og kombinerer dem til én sterk modell, ensemblet. En svak modell er en modell hvis prediksjoner bare er svakt korrelert med target; en sterk modell er vilkårlig sterkt korrelert med target. Navnet kommer av at feilene begått av én modell gjør den påfølgende modellen bedre («booster» den). Modellene organiseres sekvensielt, og hver forholder seg til den forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell. Notatene ser på to algoritmer.</p>
+
+      <details>
+        <summary>Utdypning · lavere prioritet: opphavet</summary>
+        <p>Konseptet stammer fra publikasjoner av Kearns og Valiant (1988, 1989) og Schapire (1990), som undersøkte om flere svake modeller kan settes sammen til en sterk modell.</p>
+      </details>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <div class="cc-head"><span class="term" data-term="adaboost">AdaBoost</span></div>
+          <p>Bygger et ensemble av modeller som korrigerer hverandres feil gjennom en iterativ treningsprosedyre. I starten har <strong>alle datapunktene samme vekt</strong>, og én modell trenes. Ut fra targets ser vi hvilke datapunkter modellen har størst tap på, og i neste iterasjon <strong>økes vektene for disse</strong>. Så trenes en ny modell, som igjen predikerer, før vektene justeres igjen.</p>
+        </div>
+        <div class="compare-card">
+          <div class="cc-head"><span class="term" data-term="gradient-boosting">Gradient boosting</span></div>
+          <p>Er, til forskjell fra AdaBoost, ikke basert på vekting av observasjoner. I stedet predikerer hver modell <strong>forskjellen mellom targets og den forrige modellens prediksjon</strong>, såkalte <span class="term" data-term="pseudo-residual">pseudo-residualer</span>. Det nye ensemblet lages ved læringsregelen under.</p>
+        </div>
+      </div>
+
+<pre><code>new_ensemble = previous_ensemble - learning_rate * new_tree</code></pre>
+      <p>Uttrykket bør minne om <span class="term" data-term="gradient-descent">gradient descent</span>, som er opphavet til navnet. Vi gjør altså ikke gradient descent i rommet over alle mulige parameterverdier, men i rommet over alle mulige <em>trær</em> ensemblet kan bestå av. Gradienten er i dette tilfellet <code>-(label - prediction)</code>: det nye treet tilpasses den negative gradienten, altså residualene, og legges til med en <span class="term" data-term="laeringsrate">læringsrate</span> som styrer hvor stort steg vi tar.</p>
+
+      <div class="widget" id="w-gb">
+        <div class="widget-label">Prøv selv · Gradient boosting med stumper, ett tre om gangen</div>
+        <p class="widget-intro">Trappedata som i 1C (\(y = \lfloor x \rfloor\) pluss støy). Ensemblet starter som gjennomsnittet av \(y\). Hvert klikk regner ut pseudo-residualene \(y - F(x)\), tilpasser den stumpen (én splitt) som forklarer dem best, og legger den til med læringsraten. Se hvordan feilen minker, og hva lav læringsrate gjør med antall trær som trengs.</p>
+        <svg viewBox="0 0 560 250" data-w="560" data-h="250" aria-label="Gradient boosting"></svg>
+        <div class="legend-row"><span class="l-a">Ensemblet F(x)</span><span class="l-w">Data</span><span class="l-g">Sann funksjon</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="gb-lr">Læringsrate</label><input type="range" id="gb-lr" min="0.1" max="1" step="0.1" value="0.5"><span class="w-val" id="gb-lr-val">0.5</span></div>
+          <button class="w-btn" id="gb-step" type="button">Legg til ett tre</button>
+          <button class="w-btn" id="gb-run" type="button">10 trær</button>
+          <button class="w-btn secondary" id="gb-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="gb-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-3-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 3 · spm. 3</span><span class="o-ref">1.5.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I AdaBoost starter alle datapunkter med samme vekt. Etter at en svak læringsmodell er trent oppdateres vektene på datapunktene. Hvilke datapunkter får økt vekt?</p>
+          <ol class="mcq-list" type="A">
+            <li>Datapunkter som tilhører klassen med flest observasjoner</li>
+            <li>Et tilfeldig utvalg datapunkter valgt før hver iterasjon</li>
+            <li>Datapunkter som ble klassifisert riktig av den forrige modellen</li>
+            <li>Datapunkter som ble klassifisert feil av den forrige modellen</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Vektene økes for datapunktene modellen har størst tap på, slik at neste modell tvinges til å konsentrere seg om dem. C ville gjort neste modell lik den forrige. A og B har ingenting med feilen å gjøre.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-17">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 17</span><span class="o-ref">1.5.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hvilket utsagn er riktig i konteksten gradient boosting?</p>
+          <ol class="mcq-list" type="A">
+            <li>Gradientens verdi indikerer hvor mange trær som skal legges til i modellen.</li>
+            <li>For å unngå å bygge en for kompleks modell legger gradient boosting til ett tre av gangen under treningsprosessen.</li>
+            <li>Alle beslutningstrærne trenes samtidig for å finne den beste kombinasjonen av feature splits.</li>
+            <li>Hvert påfølgende beslutningstre trenes til å minimere residualene fra det forrige treet.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Det er definisjonen av pseudo-residualer: hvert nytt tre predikerer forskjellen mellom targets og ensemblets nåværende prediksjon. C beskriver et parallelt ensemble, ikke boosting. B er halvriktig (ett tre om gangen) men begrunnelsen er feil: ett tre om gangen er selve mekanismen, ikke et tiltak mot kompleksitet. A: antall trær er en hyperparameter, ikke noe gradienten bestemmer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-3-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 3 · spm. 4</span><span class="o-ref">1.5.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I gradient boosting for regresjon trenes hver nye svake læringsmodell til å approksimere forskjellen mellom den sanne target-verdien og den nåværende modellens prediksjon. Denne forskjellen kalles pseudo-residualer. Hva er hensikten med å tilpasse hver ny modell til disse pseudo-residualene?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å modellere den gjenværende feilen slik at hver ny modell fokuserer på det de forrige modellene ikke klarte å predikere</li>
+            <li>Å beregne klassesannsynligheter som brukes i majoritetsvotering i den endelige prediksjonen</li>
+            <li>Å tilføre tilfeldig variasjon i modellen for å gjøre trærne mer ulike</li>
+            <li>Å bestemme hyperparametere som antall boosting-runder</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Residualet er det som er igjen av feilen. Tilpasser vi et tre til residualet og legger det til, minker feilen, akkurat som et gradient descent-steg minker tapet. B (avstemning) og C (tilfeldighet for diversitet) hører til bagging og random forest. D: hyperparametre velges med validering, ikke av residualene.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-ensemble-navn">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.5.2 · s. 34</span></div>
+        <div class="o-text"><p>Trebaserte ensemblemodeller du bør ha hørt om, og helst brukt på et datasett, er CatBoost, LightGBM, AdaBoost og XGBoost. Hvilke av dem er bagging, og hvilke er boosting?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Alle fire er <strong>boosting</strong>. AdaBoost vekter datapunkter; XGBoost, LightGBM og CatBoost er ulike implementasjoner av gradient boosting med trær (navnene henspiller på «extreme», «light» og «categorical»). Bagging-representanten er random forest. Notatenes regel: bruk alltid en ensemble-modell som referanseverdi for hvor godt en modell kan gjøre det på <span class="term" data-term="tabulaere-data">tabulære data</span>, altså den typen data dette kurset bruker.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Tre måter</strong>Parallelt (uavhengige modeller, aggreger), sekvensielt (hver retter forrige), hierarkisk (en modell kombinerer de andre).</div>
+        <div class="recap-pill"><strong>Bootstrap</strong>Trekk med tilbakelegging fra ett datasett → mange datasett → en fordeling av estimater. Ikke det samme som k-fold, som deler i ikke-overlappende deler.</div>
+        <div class="recap-pill"><strong>Bagging</strong>Bootstrap + aggregering: gjennomsnitt for regresjon, flertall (evt. vektet) for klassifisering.</div>
+        <div class="recap-pill"><strong>Random forest</strong>Bagging med trær. Diverse og uavhengige trær via bootstrap-data og tilfeldige feature-utvalg. Reduserer korrelasjonen mellom trærne.</div>
+        <div class="recap-pill"><strong>AdaBoost</strong>Sekvensielt. Øk vekten på datapunktene forrige modell bommet på, tren ny modell.</div>
+        <div class="recap-pill"><strong>Gradient boosting</strong>Sekvensielt. Nytt tre tilpasses pseudo-residualene \(y - F(x)\); ensemble ← ensemble − lr · tre. Gradient descent i rommet av trær.</div>
+        <div class="recap-pill"><strong>Trening vs inferens</strong>Inferens = bruke en trent modell. Sekvensielle ensembler trenes i rekkefølge, men kjøres som ett.</div>
+        <div class="recap-pill"><strong>Referanse</strong>Bruk alltid en ensemble-modell som baseline på tabulære data.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels · flervalg</div>
+        <div class="q-text">Et datasett har 100 punkter. En bootstrap-trekning gir</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">100 ulike punkter i tilfeldig rekkefølge</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">100 punkter der noen kan forekomme flere ganger og andre mangle</button></li>
+          <li><button class="mcq-opt" type="button">et delsett på 80 punkter til trening og 20 til test</button></li>
+        </ul>
+        <div class="mcq-feedback">Med tilbakelegging: hvert av de 100 trekkene kan gi et hvilket som helst av punktene, uavhengig av tidligere trekk. Alternativ C beskriver train/test-split.</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Bagging reduserer variansen til en læringsalgoritme. Bruk bias–varians-språket fra 1C til å forklare hvorfor, og hvorfor det ikke hjelper mot bias.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Varians er hvor mye modellen varierer rundt sitt eget gjennomsnitt over ulike trekninger av treningsdata. Bagging trener modeller på nettopp ulike trekninger og tar gjennomsnittet, så tilfeldige utslag i hver modell jevnes ut: variansen synker. Bias er det systematiske avviket som er felles for alle modellene (feil antakelser om funksjonsformen), og et gjennomsnitt av modeller som alle bommer i samme retning bommer fortsatt i samme retning. Boosting, som retter opp feil sekvensielt, angriper derimot bias. (Egen sammenkobling av 1C og 1D.)</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Læringsregelen i gradient boosting er <code>new_ensemble = previous_ensemble - learning_rate * new_tree</code>, og treet er tilpasset gradienten <code>-(label - prediction)</code>. Vis at dette er det samme som å legge til et tre tilpasset residualene.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Treet \(h\) tilpasses gradienten \(-(y - F(x))\), altså \(h(x) \approx -(y - F(x))\). Regelen gir \(F_{\text{ny}} = F - \eta\,h \approx F + \eta\,(y - F(x))\): vi legger til en andel \(\eta\) av residualet, og \(F_{\text{ny}}\) flytter seg mot \(y\). Det er nøyaktig gradient descent på tapet \(\tfrac12 (y - F)^2\), der \(\partial \mathcal{L}/\partial F = -(y - F)\), med treet som «parameteroppdatering».</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="regresjon.html" class="prev"><div class="pn-label">← Forrige · 1C</div><div class="pn-title">Regresjon</div></a>
+        <a href="../kap2/" class="next"><div class="pn-label">Neste · Kapittel 2</div><div class="pn-title">Nevrale nettverk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+  /* ─── Bootstrap-trekning ─── */
+  (function () {
+    var root = document.getElementById('w-boot'); if (!root) return;
+    var arr = document.getElementById('boot-arr'), out = document.getElementById('boot-out');
+    var N = 10, r = rng(7);
+    function draw() {
+      var cnt = []; for (var i = 0; i < N; i++) cnt.push(0);
+      var seq = [];
+      for (var k = 0; k < N; k++) { var j = Math.floor(r() * N); cnt[j]++; seq.push(j + 1); }
+      var unique = cnt.filter(function (c) { return c > 0; }).length;
+      arr.innerHTML = cnt.map(function (c, i) {
+        return '<div class="cell' + (c > 1 ? ' dup' : c === 0 ? ' miss' : '') + '">' + (i + 1) + (c > 1 ? '<span class="cnt">×' + c + '</span>' : '') + '</div>';
+      }).join('');
+      out.innerHTML = 'Trukket (med tilbakelegging): [' + seq.join(', ') + ']\nUnike punkter: <span class="hl">' + unique + '</span> av ' + N + '  ·  mangler: ' + (N - unique) + '  ·  duplikater: ' + (N - unique);
+    }
+    document.getElementById('boot-draw').addEventListener('click', draw);
+    document.getElementById('boot-many').addEventListener('click', function () {
+      var tot = 0, R = 100;
+      for (var t = 0; t < R; t++) { var seen = {}; var u = 0; for (var k = 0; k < N; k++) { var j = Math.floor(r() * N); if (!seen[j]) { seen[j] = 1; u++; } } tot += u; }
+      draw();
+      out.innerHTML += '\n\nSnitt over ' + R + ' trekninger: <span class="hl">' + (tot / R).toFixed(2) + '</span> unike av ' + N + ' (teoretisk 1 − (1 − 1/n)ⁿ ≈ ' + (1 - Math.pow(1 - 1 / N, N)).toFixed(3) + ' · n = ' + (N * (1 - Math.pow(1 - 1 / N, N))).toFixed(2) + ')';
+    });
+    draw();
+  })();
+
+  /* ─── Flertallsavstemning ─── */
+  (function () {
+    var root = document.getElementById('w-vote'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [1, 51], y: [0.5, 1], xLabel: 'k modeller', yLabel: 'P(flertall rett)', xTicks: [1, 11, 21, 31, 41, 51], yTicks: [0.5, 0.6, 0.7, 0.8, 0.9, 1] });
+    var pIn = document.getElementById('vt-p'), kIn = document.getElementById('vt-k'), out = document.getElementById('vt-out');
+    function logC(n, k) { var s = 0; for (var i = 1; i <= k; i++) s += Math.log(n - k + i) - Math.log(i); return s; }
+    function maj(k, p) { var need = Math.floor(k / 2) + 1, s = 0; for (var i = need; i <= k; i++) s += Math.exp(logC(k, i) + i * Math.log(p) + (k - i) * Math.log(1 - p)); return s; }
+    function draw() {
+      var p = +pIn.value, k = +kIn.value;
+      document.getElementById('vt-p-val').textContent = p.toFixed(2); document.getElementById('vt-k-val').textContent = k;
+      plot.clearData(); plot.clearOverlay();
+      var pts = []; for (var kk = 1; kk <= 51; kk += 2) pts.push([kk, maj(kk, p)]);
+      plot.polyline(pts, 'curve');
+      plot.hline(p, 'curve-2');
+      plot.point(k, maj(k, p), 'marker-accent');
+      out.innerHTML = 'Én modell: ' + (p * 100).toFixed(0) + ' %.  Flertall av ' + k + ' uavhengige: <span class="hl">' + (maj(k, p) * 100).toFixed(1) + ' %</span>.\nHelt korrelerte modeller: fortsatt ' + (p * 100).toFixed(0) + ' %, uansett k.';
+    }
+    pIn.addEventListener('input', draw); kIn.addEventListener('input', draw);
+    draw();
+  })();
+
+  /* ─── Gradient boosting med stumper ─── */
+  (function () {
+    var root = document.getElementById('w-gb'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 4], y: [-0.5, 4], xLabel: 'x', yLabel: 'y', xTicks: [0, 1, 2, 3, 4], yTicks: [0, 1, 2, 3, 4] });
+    var lrIn = document.getElementById('gb-lr'), out = document.getElementById('gb-out');
+    var X = [], Y = [], r = rng(42);
+    for (var i = 0; i < 40; i++) { var x = (i + 0.5) / 10; X.push(x); Y.push(Math.floor(x) + (r() - 0.5) * 0.5); }
+    var trees = [], F0 = 0;
+    function F(x) { var v = F0; for (var t = 0; t < trees.length; t++) { var tr = trees[t]; v += tr.lr * (x <= tr.thr ? tr.left : tr.right); } return v; }
+    function mse() { var s = 0; for (var i = 0; i < X.length; i++) s += Math.pow(Y[i] - F(X[i]), 2); return s / X.length; }
+    function reset() { trees = []; F0 = Y.reduce(function (a, b) { return a + b; }, 0) / Y.length; draw('Start: F₀(x) = gjennomsnittet av y = ' + F0.toFixed(2)); }
+    function step() {
+      var res = X.map(function (x, i) { return Y[i] - F(x); });
+      var best = null;
+      for (var j = 0; j < X.length - 1; j++) {
+        var thr = (X[j] + X[j + 1]) / 2, sl = 0, nl = 0, sr = 0, nr = 0;
+        for (var i = 0; i < X.length; i++) { if (X[i] <= thr) { sl += res[i]; nl++; } else { sr += res[i]; nr++; } }
+        var ml = sl / nl, mr = sr / nr, sse = 0;
+        for (var i2 = 0; i2 < X.length; i2++) sse += Math.pow(res[i2] - (X[i2] <= thr ? ml : mr), 2);
+        if (!best || sse < best.sse) best = { thr: thr, left: ml, right: mr, sse: sse };
+      }
+      best.lr = +lrIn.value; trees.push(best);
+      draw('Tre ' + trees.length + ': splitt ved x ≤ ' + best.thr.toFixed(2) + ', predikerer residual ' + best.left.toFixed(2) + ' / ' + best.right.toFixed(2) + ', lagt til med lr = ' + best.lr);
+    }
+    function draw(msg) {
+      document.getElementById('gb-lr-val').textContent = (+lrIn.value).toFixed(1);
+      plot.clearData(); plot.clearOverlay();
+      plot.curve(function (x) { return Math.floor(x); }, 'curve-3', 400);
+      for (var i = 0; i < X.length; i++) plot.point(X[i], Y[i], 'marker');
+      plot.curve(F, 'curve', 400);
+      out.innerHTML = msg + '\nAntall trær: ' + trees.length + '   MSE på dataene: <span class="hl">' + mse().toFixed(3) + '</span>';
+    }
+    document.getElementById('gb-step').addEventListener('click', step);
+    document.getElementById('gb-run').addEventListener('click', function () { for (var k = 0; k < 10; k++) step(); });
+    document.getElementById('gb-reset').addEventListener('click', reset);
+    lrIn.addEventListener('input', function () { document.getElementById('gb-lr-val').textContent = (+lrIn.value).toFixed(1); });
+    reset();
+  })();
+})();
+</script>
+</body>
+</html>

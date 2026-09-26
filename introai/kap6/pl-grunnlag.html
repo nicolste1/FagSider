@@ -89,7 +89,7 @@
       <p class="dropcap">Et <span class="term" data-term="proposisjonssymbol">proposisjonssymbol</span> er sant eller usant, for eksempel \(Rain\). En <span class="term" data-term="setning">setning</span> bygges av symboler med <span class="term" data-term="konnektiv">konnektiver</span>, for eksempel \(Rain \land Wind\). En <span class="term" data-term="modell">modell</span> er en tilordning av sannhetsverdier til alle symbolene, for eksempel \(\{Rain = true,\ Wind = false\}\). Med \(n\) symboler finnes \(2^n\) modeller.</p>
       <div class="table-wrap">
         <table class="tt">
-          <caption>Sannhetstabellen for konnektivene (slide 10)</caption>
+          <caption>Sannhetstabellen for konnektivene</caption>
           <tr><th>\(P\)</th><th>\(Q\)</th><th>\(\lnot P\)</th><th>\(P \land Q\)</th><th>\(P \lor Q\)</th><th>\(P \Rightarrow Q\)</th><th>\(P \Leftrightarrow Q\)</th></tr>
           <tr><td>F</td><td>F</td><td>T</td><td>F</td><td>F</td><td class="hl">T</td><td>T</td></tr>
           <tr><td>F</td><td>T</td><td>T</td><td>F</td><td>T</td><td class="hl">T</td><td>F</td></tr>
@@ -114,16 +114,16 @@
       <span class="lm-pill">Deltema 6.1 · prio 1</span>
       <p class="dropcap">En modell \(m\) <span class="term" data-term="tilfredsstille">tilfredsstiller</span> \(\alpha\) hvis \(\alpha\) er sann i \(m\). \(M(\alpha)\) er mengden av alle modeller som tilfredsstiller \(\alpha\). <span class="term" data-term="entailment">Entailment</span> (logisk konsekvens) defineres med disse mengdene:</p>
       \[ \alpha \models \beta \quad\Longleftrightarrow\quad M(\alpha) \subseteq M(\beta) \quad\Longleftrightarrow\quad \alpha \Rightarrow \beta \text{ er sann i alle modeller.} \]
-      <p>Eksempel fra slidene: \(Rain \models Rain \lor Wind\), fordi begge modellene med \(Rain = true\) også gjør \(Rain \lor Wind\) sann. <span class="term" data-term="modellsjekking">Modellsjekking</span> betyr å gå gjennom alle \(2^n\) modellene og sjekke dette, altså å lage sannhetstabellen. Det er korrekt, men eksponentielt («infeasible in practice»).</p>
+      <p>Eksempel: \(Rain \models Rain \lor Wind\), fordi begge modellene med \(Rain = true\) også gjør \(Rain \lor Wind\) sann. <span class="term" data-term="modellsjekking">Modellsjekking</span> betyr å gå gjennom alle \(2^n\) modellene og sjekke dette, altså å lage sannhetstabellen. Det er korrekt, men eksponentielt («infeasible in practice»).</p>
 
       <div class="def-box">
-        <span class="def-label">Definisjoner (boka 7.5.1)</span>
+        <span class="def-label">Definisjoner</span>
         <p>\(\alpha\) er <span class="term" data-term="gyldig">gyldig</span> (tautologi) hvis den er sann i alle modeller, f.eks. \(\alpha \lor \lnot\alpha\). \(\alpha\) er <span class="term" data-term="tilfredsstillbar">tilfredsstillbar</span> hvis den er sann i minst én modell. \(\alpha \land \lnot\alpha\) er utilfredsstillbar (en selvmotsigelse).</p>
       </div>
       <p>Den viktigste omskrivingen er <span class="term" data-term="reductio">bevis ved selvmotsigelse</span> (reductio ad absurdum). Den er grunnlaget for resolusjon i <a href="resolusjon.html">6B</a>:</p>
       \[ \alpha \models \beta \quad\Longleftrightarrow\quad M(\alpha \land \lnot\beta) = \varnothing \quad\Longleftrightarrow\quad \alpha \land \lnot\beta \text{ er utilfredsstillbar.} \]
       <details>
-        <summary>Utdypning · lavere prioritet: ask og tell (slide 22)</summary>
+        <summary>Utdypning · lavere prioritet: ask og tell</summary>
         <p>En kunnskapsbasert agent svarer \(ask(KB, \alpha)\) = «yes» hvis \(KB \models \alpha\), «no» hvis \(KB \models \lnot\alpha\), ellers «I don't know». Med \(KB = \{Rain\}\): \(ask(KB, Rain \lor Wind)\) = yes, \(ask(KB, \lnot Rain)\) = no, \(ask(KB, Wind)\) = I don't know. \(tell\) svarer tilsvarende «I already know», «that can't be» eller legger setningen til.</p>
       </details>
 
@@ -170,7 +170,7 @@
             \[ S_2 = (M_1 \land \lnot M_2 \land \lnot M_3) \lor (\lnot M_1 \land M_2 \land \lnot M_3) \lor (\lnot M_1 \land \lnot M_2 \land M_3) \]
             <p>Sett inn og forenkle (dobbel negasjon, \(\alpha \land \lnot\alpha \equiv False\), \(\alpha \land \alpha \equiv \alpha\), distributivitet):</p>
             \[ \begin{aligned} S_2 &amp;= (\lnot B_1 \land \lnot\lnot B_2 \land \lnot B_2) \lor (\lnot\lnot B_1 \land \lnot B_2 \land \lnot B_2) \lor (\lnot\lnot B_1 \land \lnot\lnot B_2 \land B_2) \\ &amp;= (\lnot B_1 \land B_2 \land \lnot B_2) \lor (B_1 \land \lnot B_2) \lor (B_1 \land B_2) \\ &amp;= False \lor (B_1 \land \lnot B_2) \lor (B_1 \land B_2) \\ &amp;= B_1 \land (\lnot B_2 \lor B_2) = B_1 \land True = B_1 \end{aligned} \]
-            <p>Løsningsforslaget kaller den forenklede formen \(S_3 = (B_1 \land \lnot B_2) \lor (B_1 \land B_2)\), som er ekvivalent med \(B_1\).</p>
+            <p>Forenklet form: \(S_3 = (B_1 \land \lnot B_2) \lor (B_1 \land B_2)\), som er ekvivalent med \(B_1\).</p>
           </div>
         </div>
       </div>
@@ -251,7 +251,7 @@
       </div>
       <p>Utledbarhet skrives \(KB \vdash_i \alpha\): \(\alpha\) kan <span class="term" data-term="avledning">avledes</span> fra KB med algoritmen \(i\). To egenskaper vi vil ha:</p>
       \[ \text{Sunn: } KB \vdash_i \alpha \Rightarrow KB \models \alpha \qquad\qquad \text{Fullstendig: } KB \models \alpha \Rightarrow KB \vdash_i \alpha \]
-      <p>En algoritme som bare bruker Modus Ponens er <span class="term" data-term="sunnhet">sunn</span>, men ikke <span class="term" data-term="fullstendighet">fullstendig</span>: \(\{\alpha,\ \alpha \lor \beta \Rightarrow \gamma\} \models \gamma\), men Modus Ponens alene kan ikke utlede \(\gamma\), fordi premisset \(\alpha \lor \beta\) aldri står i KB (slide 22).</p>
+      <p>En algoritme som bare bruker Modus Ponens er <span class="term" data-term="sunnhet">sunn</span>, men ikke <span class="term" data-term="fullstendighet">fullstendig</span>: \(\{\alpha,\ \alpha \lor \beta \Rightarrow \gamma\} \models \gamma\), men Modus Ponens alene kan ikke utlede \(\gamma\), fordi premisset \(\alpha \lor \beta\) aldri står i KB.</p>
 
       <div class="oppgave" data-quiz id="oppg-o23-31">
         <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 3.1 (10 p)</span><span class="o-ref">O23 · 3.1</span></div>
@@ -267,7 +267,7 @@
             <div class="proof">1. \(R \Rightarrow \lnot K\)<br>2. \(A \Rightarrow K\)<br>3. \(R\)<br>4. \(A \lor F\)<br>5. \(P \Rightarrow G\)</div>
             <p>b)</p>
             <div class="proof">6. \(\lnot K\) · Modus Ponens på 1 og 3 · \(\dfrac{R \Rightarrow \lnot K,\ R}{\lnot K}\)<br>7. \(\lnot A\) · Modus Tollens på 2 og 6 · \(\dfrac{A \Rightarrow K,\ \lnot K}{\lnot A}\)<br>8. \(F\) · Disjunctive Syllogism på 4 og 7 · \(\dfrac{A \lor F,\ \lnot A}{F}\)</div>
-            <p><strong>Boka er under blomsterpotta.</strong> Hint 5 er en avledning: \(P\) er ukjent, så \(P \Rightarrow G\) gir ingenting. Selve regellista fra oppgavesettet er ikke med i løsningsforslaget vi har, men de tre reglene over er det som trengs.</p>
+            <p><strong>Boka er under blomsterpotta.</strong> Hint 5 er en avledning: \(P\) er ukjent, så \(P \Rightarrow G\) gir ingenting. De tre reglene over er det som trengs.</p>
           </div>
         </div>
       </div>
@@ -324,7 +324,7 @@
       <h2>Forward og backward <em>chaining</em></h2>
       <div class="source-note">Slides forelesning 5 · 37–42 · pseudokoden: Boka kap. 7.5.4, fig. 7.15</div>
       <span class="lm-pill">Deltema 6.2 · prio 1</span>
-      <p class="dropcap"><span class="term" data-term="forward-chaining">Forward chaining</span> starter i faktaene og bruker Modus Ponens på hver regel der alle premissene er kjent, til spørringen \(q\) er utledet eller ingenting nytt kommer. Boka holder en teller per regel: hvor mange premisser som ennå ikke er kjent. Når telleren blir 0, «fyrer» regelen.</p>
+      <p class="dropcap"><span class="term" data-term="forward-chaining">Forward chaining</span> starter i faktaene og bruker Modus Ponens på hver regel der alle premissene er kjent, til spørringen \(q\) er utledet eller ingenting nytt kommer. Algoritmen holder en teller per regel: hvor mange premisser som ennå ikke er kjent. Når telleren blir 0, «fyrer» regelen.</p>
 <pre><code>function PL-FC-ENTAILS?(KB, q) returns true or false
   count  ← a table, count[c] = number of symbols in c's premise
   inferred ← a table, inferred[s] = false for all symbols
@@ -340,7 +340,7 @@
   return false</code></pre>
       <p><span class="term" data-term="backward-chaining">Backward chaining</span> går motsatt vei: start i \(q\), finn regler med \(q\) som konklusjon, og prøv å vise alle premissene deres rekursivt. Den er målrettet og rører bare fakta som er relevante for \(q\). Begge bruker bare Modus Ponens.</p>
 
-      <div class="oppgave" data-quiz id="oppg-slide-traffic">
+      <div class="oppgave" data-quiz id="oppg-traffic">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 37–40</span></div>
         <div class="o-text"><p>Gitt \(KB = \{Rain,\ Weekday,\ Rain \Rightarrow Wet,\ Wet \land Weekday \Rightarrow Traffic,\ Traffic \land Careless \Rightarrow Accident\}\). Gjelder \(KB \models Traffic\)? Vis med Modus Ponens (forward chaining), med tellerne fra pseudokoden. Hva med \(Accident\)?</p></div>
         <div class="quiz-reveal">
@@ -349,7 +349,7 @@
             <span class="answer-src">Svar fra slidene (tellerne og Accident: forslag)</span>
             <p>Start: count\([Rain \Rightarrow Wet] = 1\), count\([Wet \land Weekday \Rightarrow Traffic] = 2\), count\([Traffic \land Careless \Rightarrow Accident] = 2\). Kø: \(Rain, Weekday\).</p>
             <div class="proof">Pop Rain: count[Rain ⇒ Wet] 1 → 0, legg Wet i køen.<br>Pop Weekday: count[Wet ∧ Weekday ⇒ Traffic] 2 → 1.<br>Pop Wet: Modus Ponens på Rain og Rain ⇒ Wet ga Wet; count[Wet ∧ Weekday ⇒ Traffic] 1 → 0, legg Traffic i køen.<br>Pop Traffic = q: returner true.</div>
-            <p>Slidene: «Apply Modus Ponens to Rain and Rain ⇒ Wet to derive Wet. Apply Modus Ponens to Wet ∧ Weekday and Wet ∧ Weekday ⇒ Traffic to derive Traffic.» Svar: ja, \(KB \vdash_{MPA} Traffic\), derfor \(KB \models Traffic\). (\(Wet \land Weekday\) får vi først fra \(Wet\) og \(Weekday\); boka bruker telleren til det.)</p>
+            <p>«Apply Modus Ponens to Rain and Rain ⇒ Wet to derive Wet. Apply Modus Ponens to Wet ∧ Weekday and Wet ∧ Weekday ⇒ Traffic to derive Traffic.» Svar: ja, \(KB \vdash_{MPA} Traffic\), derfor \(KB \models Traffic\). (\(Wet \land Weekday\) får vi først fra \(Wet\) og \(Weekday\); algoritmen bruker telleren til det.)</p>
             <p>\(Accident\): telleren til siste regel stopper på 1 fordi \(Careless\) aldri blir kjent. Køen tømmes og svaret er false. Siden Modus Ponens er fullstendig for definite clauses, betyr det \(KB \not\models Accident\).</p>
           </div>
         </div>
@@ -440,10 +440,10 @@
   var imp = function (a, b) { return !a || b; };
   var one = function (a, b, c) { return (a && !b && !c) || (!a && b && !c) || (!a && !b && c); };
   var P = [
-    { navn: 'Slidene: {Rain, Rain ⇒ Wet} ⊨ Wet ?', sym: ['Rain', 'Wet'],
+    { navn: '{Rain, Rain ⇒ Wet} ⊨ Wet ?', sym: ['Rain', 'Wet'],
       kb: [['Rain', function (m) { return m.Rain; }], ['Rain ⇒ Wet', function (m) { return imp(m.Rain, m.Wet); }]],
       a: ['Wet', function (m) { return m.Wet; }] },
-    { navn: 'Slidene: Rain ⊨ Rain ∨ Wind ?', sym: ['Rain', 'Wind'],
+    { navn: 'Rain ⊨ Rain ∨ Wind ?', sym: ['Rain', 'Wind'],
       kb: [['Rain', function (m) { return m.Rain; }]],
       a: ['Rain ∨ Wind', function (m) { return m.Rain || m.Wind; }] },
     { navn: 'Rain ∨ Wind ⊨ Rain ?', sym: ['Rain', 'Wind'],
@@ -455,7 +455,7 @@
     { navn: 'Feilslutning: {A ⇒ K, K} ⊨ A ?', sym: ['A', 'K'],
       kb: [['A ⇒ K', function (m) { return imp(m.A, m.K); }], ['K', function (m) { return m.K; }]],
       a: ['A', function (m) { return m.A; }] },
-    { navn: 'Slidene: {P, P ∨ Q ⇒ R} ⊨ R ?', sym: ['P', 'Q', 'R'],
+    { navn: '{P, P ∨ Q ⇒ R} ⊨ R ?', sym: ['P', 'Q', 'R'],
       kb: [['P', function (m) { return m.P; }], ['P ∨ Q ⇒ R', function (m) { return imp(m.P || m.Q, m.R); }]],
       a: ['R', function (m) { return m.R; }] },
     { navn: 'Gullkassene (O22 5): {S1, S2} ⊨ B1 ?', sym: ['B1', 'B2', 'B3'],

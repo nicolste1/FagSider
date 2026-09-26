@@ -1,11 +1,11 @@
 {
   "pdf": "TDT4172_forelesningsnotater.pdf",
-  "dato_i_pdf": "September 16, 2026",
-  "dato_norsk": "16. september 2026",
-  "sider": 32,
-  "sha256": "ebd3ea48734beebfd9bfe66fa88856c3d1936e3f6494e92367886206cafc425e",
-  "ekstrahert": "2026-09-16",
-  "antall_oppgaver": 32,
+  "dato_i_pdf": "September 22, 2026",
+  "dato_norsk": "22. september 2026",
+  "sider": 39,
+  "sha256": "87105d7872ea50f11bf0a410daf253d481df835f960c36d969ea36fab161eccd",
+  "ekstrahert": "2026-09-26",
+  "antall_oppgaver": 37,
   "seksjoner": [
     {
       "nummer": "1",
@@ -181,6 +181,55 @@
       "side": 30,
       "tegn": 5198,
       "oppgaver": 3
+    },
+    {
+      "nummer": "1.5",
+      "tittel": "Ensemble-modeller",
+      "side": 32,
+      "tegn": 2142,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.5.1",
+      "tittel": "Bagging",
+      "side": 33,
+      "tegn": 3055,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "1.5.2",
+      "tittel": "Boosting",
+      "side": 34,
+      "tegn": 2326,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "2",
+      "tittel": "Nevrale nettverk",
+      "side": 34,
+      "tegn": 833,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "2.1",
+      "tittel": "Perceptron",
+      "side": 35,
+      "tegn": 5110,
+      "oppgaver": 3
+    },
+    {
+      "nummer": "2.2",
+      "tittel": "Aktiveringsfunksjoner",
+      "side": 37,
+      "tegn": 2033,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "2.3",
+      "tittel": "Arkitektur",
+      "side": 37,
+      "tegn": 4273,
+      "oppgaver": 1
     }
   ]
 }

@@ -27,6 +27,12 @@
   .legend-row .l-w::before { background: var(--warm); }
   .legend-row .l-g::before { background: var(--green); }
   .strip-legend span::before { width: 10px; height: 10px; border-radius: 50%; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
 </style>
 </head>
 <body>
@@ -52,6 +58,7 @@
       <h1>Data og <em>logistisk regresjon</em></h1>
       <p class="lede">Fra rådata til en trent klassifikator: hva features og target er, hvordan sigmoid gjør en lineær modell om til sannsynligheter, hvorfor cross-entropy er tapsfunksjonen, hvordan gradient descent finner parametrene, og hvordan vi evaluerer resultatet ærlig.</p>
       <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#data"><span>01</span> Data</a>
         <a href="#modell"><span>02</span> Modellen</a>
         <a href="#tap"><span>03</span> Tapsfunksjon</a>
@@ -68,6 +75,31 @@
       </nav>
     </div>
   </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen 26. september 2026 (kilder/eksamensanalyse.md, forslag, ikke godkjent ennå) · deltema 1.1 og 1.2, prio 1 · 23 eksamensoppgaver på siden</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <p style="margin:0 0 0.5rem">Begge eksamenssettene er rene flervalgsprøver, og dette er deltemaet med flest spørsmål. Siden er lang; boksene under sier hvor poengene ligger.</p>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Preprosessering:</strong> kategoriske variabler må enkodes, og skalering tilpasses (<code>fit</code>) bare på treningsdata og brukes (<code>transform</code>) på testdata (Ord. 2025 del 1 spm. 1 og 4, del 10 spm. 1; Ord. 2024 spm. 4). Se <a href="#data">01</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Sigmoid-output</strong> er et tall i (0, 1) som tolkes som sannsynlighet, ikke en klasse (Ord. 2025 del 1 spm. 2, del 10 spm. 2). Se <a href="#modell">02</a>.</li>
+          <li><span class="tag regn">Kode</span><strong>Cross-entropy som kodelinje</strong>, og den vektede varianten med \(w_0\) på \(y = 0\)-leddet og \(w_1\) på \(y = 1\)-leddet (Ord. 2024 spm. 9 og 10). Se <a href="#tap">03</a> og <a href="#ubalanserte-data">12</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Læringsrate og konveksitet:</strong> oscillerende tap = for høy læringsrate; læringsraten er en hyperparameter; gradient descent finner globalt minimum bare for konvekse funksjoner (Ord. 2025 del 1 spm. 3; Ord. 2024 spm. 12 og 20). Se <a href="#gradient-descent">04</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Epoker og batch size:</strong> iterasjoner per epoke = datapunkter / batch size (Ord. 2024 spm. 13 og 14); <code>train_test_split</code> (Ord. 2025 del 10 spm. 3). Se <a href="#trening">05</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Confusion matrix → TPR og FPR → punkt på ROC-kurven</strong>, hva AUC = 0.9 betyr, og recall når falske negative er alvorlig / precision når falske positive er dyrt (Ord. 2024 spm. 5, 6 og 7). Se <a href="#evaluering">06</a> og <a href="#terskel">07</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Bayes:</strong> \(p(x)\) normaliserer posterior; naïv Bayes antar betinget uavhengighet selv om den ikke holder (Ord. 2025 del 2 spm. 1 og 2). Se <a href="#bayes">09</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Ubalanserte data:</strong> antall punkter etter under-/oversampling, vekter i vektet tap (\(w_A = 0.1, w_B = 1\) for 9000/1000), oversampling gir overfit, høy accuracy skjuler ubalanse (Ord. 2024 spm. 7, 8, 11; Ord. 2025 del 2 spm. 3). Se <a href="#ubalanserte-data">12</a>.</li>
+          <li><span class="tag">Lavere</span>Mitchell/Samuel-definisjonene, bar-plott vs histogram og bins (01), utledningen av de deriverte (17)–(25) i 04, forventningsformen av entropi (08), tabellestimatet i 10 og hele 11 Dimensjonsforbannelsen. Ingen spørsmål om dette i noen av settene.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
 
   <!-- ─────────────────────────── 01 DATA ─────────────────────────── -->
   <section id="data">
@@ -234,6 +266,86 @@
           <div class="answer">Kvalitativ (kategorisk): tallene er navn på tre klasser, ikke en mengde det gir mening å regne gjennomsnitt av. At den <em>tilfeldigvis</em> er lagret som tall, endrer ikke det. Notatene lister den som kategorisk.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-1-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 1 · spm. 1</span><span class="o-ref">1.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Du har et datasett med <em>Region</em> (kategorisk, 5 verdier), <em>Daily_usage</em> (kontinuerlig), <em>Paid_user</em> (kategorisk, {yes, no}) og target <em>Converted</em> ({0, 1}). Du skal trene logistisk regresjon. Hvilket preprosesseringssteg er korrekt og nødvendig?</p>
+          <ol class="mcq-list" type="A">
+            <li>Transformer de kategoriske variablene Region og Paid_user til numeriske verdier før trening</li>
+            <li>Normaliser Converted slik at gjennomsnittet er 0 før trening</li>
+            <li>Tilpass skaleringen av Daily_usage på hele datasettet for å sikre konsistent skalering</li>
+            <li>Fjern alle kategoriske variabler fordi logistisk regresjon kun støtter numeriske input</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Strenger må enkodes til tall (label encoding, som «female» → 0, «male» → 1) før modellen kan regne \(\mathbf{w}\mathbf{x} + b\). B er feil: target skal ikke normaliseres, den er 0/1. C er feil fordi skaleringen skal tilpasses bare på treningsdataene (neste boks). D kaster bort informasjon; kategoriske features er helt fine når de er enkodet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-1-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 1 · spm. 4</span><span class="o-ref">1.1 / 1.4.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Hvis du bruker min–maks-skalering på en feature \(x\), hva er riktig måte å utføre skaleringen på når du trener og evaluerer en modell?</p>
+          <ol class="mcq-list" type="A">
+            <li>Tilpass skaleringen på hele datasettet, og splitt deretter i trening og test</li>
+            <li>Tilpass skaleringen kun på testdatasettet, og bruk den deretter på treningsdatasettet</li>
+            <li>Splitt datasettet i trening og test, tilpass skaleringen kun på treningsdatasettet, og bruk den på testdatasettet</li>
+            <li>Tilpass separate skaleringer uavhengig på treningsdatasettet og testdatasettet</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Testdataene skal ikke røres før modellen er ferdig, heller ikke for å beregne min og maks. Tilpasses skaleringen på alt (A), lekker informasjon fra testsettet inn i treningen. Separate skaleringer (D) gjør at samme råverdi får ulik skalert verdi i de to settene, så modellen evalueres på data den ikke kjenner igjen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-4">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 4</span><span class="o-ref">1.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Du har laget en maskinlæringsmodell, og skal nå teste den. Hvilken av disse funksjonene vil du bruke til å preprosessere testdataene?</p>
+          <ol class="mcq-list" type="A">
+            <li><code>Scaler.transform(x_test)</code>, der Scaler-objektet først ble tilpasset på treningsdataene.</li>
+            <li><code>Scaler.fit(x_test)</code>, slik at Scaler-objektet kan gjenbrukes</li>
+            <li><code>Scaler().fit_transform(x_test)</code>, slik at preprosesseringen tilpasses til testdataene før disse transformeres</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> <code>fit</code> lærer parametrene (min/maks eller snitt/standardavvik) og skal bare se treningsdata; <code>transform</code> bruker dem. B gjør ingen transformasjon i det hele tatt, og C tilpasser på testdata, som er samme feil som forrige boks. Samme spørsmål kom igjen i 2025 (neste boks).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-10-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 10 · spm. 1</span><span class="o-ref">1.1 · kode, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Du har trent en modell med <code>scaler = StandardScaler(); scaler.fit(X_train); X_train_scaled = scaler.transform(X_train)</code>. Du ønsker nå å evaluere modellen på <code>X_test</code>. Hvilken kodelinje bruker samme skalering på testdataene?</p>
+          <ol class="mcq-list" type="A">
+            <li><code>X_test_scaled = StandardScaler().fit_transform(X_test)</code></li>
+            <li><code>X_test_scaled = X_test / X_train.mean(axis=0)</code></li>
+            <li><code>X_test_scaled = scaler.transform(X_test)</code></li>
+            <li><code>X_test_scaled = scaler.fit(X_test)</code></li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Det allerede tilpassede <code>scaler</code>-objektet brukes på testdataene. A lager en ny skalering fra testdataene, B er en annen (og feil) transformasjon, og D returnerer scaler-objektet, ikke data.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -291,6 +403,47 @@
           <div class="answer">\(\sigma(0) = 1/(1 + 1) = 0.5\). Når \(z \to -\infty\) går \(e^{-z} \to \infty\) og \(\sigma(z) \to 0\); når \(z \to +\infty\) går \(e^{-z} \to 0\) og \(\sigma(z) \to 1\). Derfor er utdata alltid strengt mellom 0 og 1, og \(z = 0\) er «tvil».</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-1-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 1 · spm. 2</span><span class="o-ref">1.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>En logistisk regresjonsmodell produserer prediksjoner med \(\hat{y} = \sigma(\mathbf{w}^T\mathbf{x} + b)\), der \(\sigma(z) = 1/(1 + e^{-z})\). Hvilket utsagn beskriver korrekt hva output \(\hat{y}\) er?</p>
+          <ol class="mcq-list" type="A">
+            <li>Outputen er alltid nøyaktig 0 eller 1</li>
+            <li>Outputen er garantert å være lik den sanne sannsynligheten for hendelsen</li>
+            <li>Outputen er en verdi i intervallet (0,1) og kan tolkes som modellens estimerte sannsynlighet</li>
+            <li>Outputen avhenger ikke av modellparametrene w og b etter trening</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Sigmoid mapper reelle tall til (0, 1), åpne intervaller: den blir aldri nøyaktig 0 eller 1 (A). Verdien er modellens <em>estimat</em>, ikke den sanne sannsynligheten (B); jf. at naïv Bayes-estimatet i 09 ikke er kalibrert. D er feil: \(\hat{y}\) er en funksjon av nettopp \(\mathbf{w}\) og \(b\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-10-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 10 · spm. 2</span><span class="o-ref">1.2 · kode, 2,5 p</span></div>
+        <div class="o-text">
+          <p><code>z = np.matmul(X, w); y_pred = 1 / (1 + np.exp(-z))</code>, der <code>X</code> har shape (n_samples, n_features) og <code>w</code> har shape (n_features,). Hva inneholder <code>y_pred</code>?</p>
+          <ol class="mcq-list" type="A">
+            <li>For hvert sample får vi score som kan anta hvilken som helst reell verdi</li>
+            <li>Logaritmen av de predikerte sannsynlighetene for hvert sample</li>
+            <li>Predikerte sannsynligheter i intervallet (0, 1) for hvert sample</li>
+            <li>Klasse-labels 0 eller 1 for hvert sample</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> <code>z</code> er \(\mathbf{w}\mathbf{x}\) for hver rad (A beskriver <code>z</code>, ikke <code>y_pred</code>), og den andre linja er sigmoid, likning (3). Klasse-labels (D) får vi først etter terskelen <code>[1 if _y &gt; 0.5 else 0 ...]</code> i 05.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -369,6 +522,27 @@
       <p>Modellen er definert av <span class="term" data-term="parameter">parametrene</span> \(\mathbf{w}\) og \(b\), kompakt \(\theta = (\mathbf{w}, b)\). Vi vil finne parametrene som minimerer tapet <em>i gjennomsnitt over alle datapunktene</em>. Det kalles å trene modellen. Mer formelt velger vi \(\theta\) som maksimerer log-likelihood for target-verdiene \(y\) for hvert datapunkt \(\mathbf{x}\), <span class="term" data-term="mle">conditional maximum likelihood estimation</span>:</p>
       \[ \hat{\theta} = \arg\min_{\theta} \frac{1}{N} \sum_{i=1}^{N} \mathcal{L}\bigl(f(\mathbf{x}^{(i)}; \theta),\, y^{(i)}\bigr). \tag{12} \]
       <p>For å løse dette skal vi bruke gradient descent, den samme metoden vi senere bruker til å trene nevrale nettverk.</p>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-9">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 9</span><span class="o-ref">1.2.1 · kode</span></div>
+        <div class="o-text">
+          <p>Hvilken av disse representerer en korrekt implementasjon av binary cross entropy loss?</p>
+          <ol class="mcq-list" type="A">
+            <li><code>-y*np.log(1-y_pred) - (1-y)*np.log(y_pred)</code></li>
+            <li><code>-y_pred*np.log(1-y) - (1-y_pred)*np.log(y)</code></li>
+            <li><code>-y*np.log(y_pred) - (1-y)*np.log(1-y_pred)</code></li>
+            <li><code>-y_pred*np.log(y) - (1-y_pred)*np.log(1-y)</code></li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Likning (11): \(-y \ln y_{\text{pred}} - (1 - y)\ln(1 - y_{\text{pred}})\). Huskeregel: \(y\) er alltid <em>utenfor</em> logaritmen (den velger hvilket ledd som teller), prediksjonen er alltid <em>inni</em>. A har byttet om innholdet i logaritmene, B og D har byttet roller på \(y\) og \(y_{\text{pred}}\) (og \(\ln 0\) ville gitt uendelig).</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -482,6 +656,67 @@
           <div class="answer">Læringsraten \(\eta\) er for høy: stegene hopper over minimumet og lander høyere opp på motsatt side, slik at tapet vokser i stedet for å minke (prøv \(\eta \gt 2\) på den konvekse funksjonen i widgeten over). Første grep er å senke \(\eta\). Siden tapsfunksjonen er konveks, kan ikke problemet være at vi sitter fast i et lokalt minimum.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-1-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 1 · spm. 3</span><span class="o-ref">1.2.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Under trening av en logistisk regresjonsmodell med gradient descent begynner trenings-losset å oscillere i stedet for å minke jevnt. Anta at implementasjonen er korrekt. Hva er den mest sannsynlige årsaken?</p>
+          <ol class="mcq-list" type="A">
+            <li>Modellen inneholder for mange parametere til at gradient descent kan brukes</li>
+            <li>Datasettet er perfekt lineært separerbart</li>
+            <li>Sigmoid-funksjonen σ(z) er ikke deriverbar</li>
+            <li>Læringsraten er for høy</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> En høy \(\eta\) gir store korrigeringer: steget hopper over minimumet, gradienten snur, og tapet pendler. Prøv stepperen over med stor læringsrate. A: gradient descent brukes på nettverk med milliarder av parametre. B ville gitt et tap som synker mot null. C er direkte feil, likning (15) gir den deriverte.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-12">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 12</span><span class="o-ref">1.2.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hvilken type parameter er læringsraten?</p>
+          <ol class="mcq-list" type="A">
+            <li>En testparameter</li>
+            <li>En modellparameter</li>
+            <li>En treningsparameter</li>
+            <li>En hyperparameter</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Læringsraten definerer læringsprosessen, ikke modellen: modellen er \(\theta = (\mathbf{w}, b)\), og \(\eta\) inngår ikke i prediksjonen. «Treningsparameter» er ikke et begrep i notatene, og var lokkealternativet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-20">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 20</span><span class="o-ref">1.2.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>I hvilket tilfelle vet vi at gradient descent vil finne et globalt minimum?</p>
+          <ol class="mcq-list" type="A">
+            <li>Lineær regresjon</li>
+            <li>Konvekse funksjoner</li>
+            <li>Nevrale nettverk</li>
+            <li>Monotone funksjoner</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> En konveks tapsfunksjon har bare ett optimum, så et minimum gradient descent finner er det globale. Lineær (og logistisk) regresjon har konvekst tap og er dermed <em>eksempler</em>, men det generelle svaret er egenskapen, ikke modellen. Nevrale nettverk har ikke-konvekse tap med mange lokale minima. Monotone funksjoner har ikke noe indre minimum i det hele tatt.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -569,6 +804,67 @@ predictions = log_reg.predict(X_test)</code></pre>
           <div class="answer">Parametrene er valgt nettopp for å minimere tapet på disse datapunktene, så modellen har «sett fasiten». God ytelse der sier lite om generalisering til nye data. Testdataene, som modellen aldri har sett, gir et ærlig estimat av hvordan den vil gjøre det i bruk.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-13">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 13</span><span class="o-ref">1.2.3 · flervalg · begrep utenfor notatene</span></div>
+        <div class="o-text">
+          <p>Hva angir batch size?</p>
+          <ol class="mcq-list" type="A">
+            <li>Antall ganger modellen oppdateres per epoke</li>
+            <li>Antall ganger modellen trenes på hele datasettet</li>
+            <li>Antall treningsdatapunkter som brukes per iterasjon av treningen</li>
+            <li>Antall egenskaper (features) som brukes i treningen</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag</span>
+            <p><strong>C.</strong> Koden i <code>fit</code> over bruker <em>alle</em> treningsdataene i hver oppdatering (én iterasjon per epoke). I praksis deles dataene i <span class="term" data-term="batch-size">batcher</span>, og parametrene oppdateres én gang per batch: én <span class="term" data-term="iterasjon">iterasjon</span>. B er definisjonen av en epoke; A er antall iterasjoner per epoke (neste boks), som følger av batch size men ikke er det samme.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-14">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 14</span><span class="o-ref">1.2.3 · regn</span></div>
+        <div class="o-text">
+          <p>Hvis du har et treningsdatasett bestående av 10 000 datapunkter og bruker en batch size på 500, hvor mange iterasjoner vil det være i én epoke?</p>
+          <ol class="mcq-list" type="A">
+            <li>20</li>
+            <li>50</li>
+            <li>100</li>
+            <li>5</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Én epoke går gjennom alle datapunktene én gang, 500 om gangen: \(10\,000 / 500 = 20\) iterasjoner (oppdateringer). Generelt: iterasjoner per epoke = \(N / \text{batch size}\), rundet opp om det ikke går opp.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-10-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 10 · spm. 3</span><span class="o-ref">1.2.3 · kode, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Du ønsker å splitte datasettet i en treningsdel og en testdel. Hvilken funksjon gjør dette?</p>
+          <ol class="mcq-list" type="A">
+            <li><code>numpy.random.separate(X, y)</code></li>
+            <li><code>sklearn.model_selection.train_test_split(X, y)</code></li>
+            <li><code>pandas.Series.split_dataset(X, y)</code></li>
+            <li><code>matplotlib.pyplot.partition(X, y)</code></li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> De tre andre finnes ikke. <code>train_test_split</code> returnerer <code>X_train, X_test, y_train, y_test</code>, og kalles to ganger om du også vil ha valideringsdata (1C).</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -675,6 +971,26 @@ plt.show()</code></pre>
           </div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-7-metrikker">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 7 (del 1 og 3)</span><span class="o-ref">1.2.4 · flervalg</span></div>
+        <div class="o-text">
+          <p><strong>(1)</strong> Du skal levere en modell til et sykehus som vil finne pasienter med en svært sjelden og dødelig sykdom. Det er alvorlig om modellen har mange falske negative. Hvilken metrikk er det viktigst at modellen skårer høyt på? <strong>(3)</strong> Politiet vil bruke en modell til å avgjøre om Twitter/X-meldinger er verdt en ressurskrevende utrykning; det er viktig å unngå mange falske positive. Hvilken metrikk da?</p>
+          <ol class="mcq-list" type="A">
+            <li>(1) Treffsikkerhet / accuracy · (3) Spesifisitet \(= TN/(TN + FP)\)</li>
+            <li>(1) Recall \(= TP/(TP + FN)\) · (3) Presisjon \(= TP/(TP + FP)\)</li>
+            <li>(1) Presisjon \(= TP/(TP + FP)\) · (3) Recall \(= TP/(TP + FN)\)</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Falske negative står i nevneren til <strong>recall</strong>; høy recall = få syke oversett. Falske positive står i nevneren til <strong>precision</strong>; høy precision = få falske alarmer. Spesifisitet måler også FP, men relativt til alle negative, og løsningsforslaget velger precision: «andel av alarmene som var ekte». Accuracy er ubrukelig ved sjelden sykdom (12). Dette er sykehus/rakett-oppgaven fra notatene i eksamensdrakt.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -758,6 +1074,48 @@ plt.show()</code></pre>
         </div>
         <div class="metric-grid" id="t-out"></div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-5">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 5</span><span class="o-ref">1.2.5 · regn</span></div>
+        <div class="o-text">
+          <p>En modell gir confusion matrix ved terskel 0.3: label positiv → predikert positiv 40, negativ 10; label negativ → predikert positiv 30, negativ 20. Ved terskel 0.7: label positiv → 25 / 25; label negativ → 10 / 40. ROC-kurven har punktene 1 (0.1, 0.4), 2 (0.2, 0.5), 3 (0.3, 0.6), 4 (0.6, 0.8) og 5 (0.8, 0.9) (FPR, TPR). Hvilke punkter svarer til de to tersklene, og hva svarer punkt 5 til?</p>
+          <ol class="mcq-list" type="A">
+            <li>Punkt 3 = 0.7 og punkt 1 = 0.3</li>
+            <li>Punkt 4 = 0.3 og punkt 2 = 0.7; punkt 5 er den laveste terskelen av alle</li>
+            <li>Punkt 5 = 0.3 og punkt 4 = 0.7; punkt 5 gir høy presisjon</li>
+            <li>Det er ikke mulig å si uten å vite terskelen for punkt 5</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> <strong>Terskel 0.3:</strong> \(TP = 40, FN = 10, FP = 30, TN = 20\). \(TPR = 40/50 = 0.8\), \(FPR = 30/50 = 0.6\) → punkt 4. <strong>Terskel 0.7:</strong> \(TP = 25, FN = 25, FP = 10, TN = 40\). \(TPR = 25/50 = 0.5\), \(FPR = 10/50 = 0.2\) → punkt 2. Lavere terskel gir flere predikert positive, altså både høyere TPR og høyere FPR: kurven går mot (1, 1) når terskelen synker. Punkt 5 ligger lengst opp til høyre og er derfor den <em>laveste</em> terskelen av de fem. Høy presisjon (C) hører til lav FPR, altså punktene nede til venstre.</p>
+          </div>
+        </div>
+      </div>
+
+    
+      <div class="oppgave" data-quiz id="oppg-o24-6">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 6</span><span class="o-ref">1.2.5 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva betyr det hvis en modell har en ROC AUC på 0.9?</p>
+          <ol class="mcq-list" type="A">
+            <li>Modellen predikerer riktig klasse i 90% av tilfellene.</li>
+            <li>Modellen har en 90% sannsynlighet for å korrekt predikere positive tilfeller for enhver klassifiseringsterskel.</li>
+            <li>Det er en 90% sannsynlighet for at modellen rangerer et tilfeldig valgt positivt tilfelle høyere enn et tilfeldig valgt negativt tilfelle.</li>
+            <li>Modellen har 90% nøyaktighet ved terskelen 0.5.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Ordrett fra notatene: ROC AUC er sannsynligheten for at modellen predikerer en høyere verdi for et tilfeldig valgt positivt datapunkt enn for et tilfeldig valgt negativt. AUC er uavhengig av terskel, så A og D (som handler om accuracy ved én terskel) er feil, og B blander AUC med TPR.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -865,6 +1223,47 @@ plt.show()</code></pre>
           <div class="answer">\(p(x)\) er en felles skaleringsfaktor for alle klassene, så den endrer ikke hvilken klasse som er størst i (38). Men uten den summerer ikke «sannsynlighetene» til 1, så tallverdien er ikke en ekte sannsynlighet. Vil vi si «72 % sjanse for å overleve», må vi normalisere med \(p(x)\), altså dele på summen over alle klassene.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-2-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 2 · spm. 1</span><span class="o-ref">1.2.7 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I en binær klassifikasjonssetting beregnes posterior som \(p(C = 1 \mid x) = p(C = 1)\,p(x \mid C = 1) / p(x)\). Hva er hensikten med leddet \(p(x)\)?</p>
+          <ol class="mcq-list" type="A">
+            <li>Det er avhengig av klasseverdien og må beregnes separat for hver klasse</li>
+            <li>Det representerer sannsynligheten for å observere \(x\) når klassen er \(C = 1\)</li>
+            <li>Det sikrer at posterior sannsynlighetene over alle klasser utgjør en gyldig sannsynlighetsfordeling</li>
+            <li>Det bestemmer hvilken klasse som har størst posterior sannsynlighet</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> \(p(x)\) er evidensen: fordelingen av dataene uavhengig av klasse. Den er lik for alle klassene og skalerer posteriorene så de summerer til 1. Nettopp fordi den er klasseuavhengig kan vi droppe den når vi bare skal finne <em>hvilken</em> klasse som er størst (D er derfor feil: det er telleren som avgjør). A og B beskriver likelihood \(p(x \mid C_k)\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-2-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 2 · spm. 2</span><span class="o-ref">1.2.7 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>En naïv Bayes-klassifikator brukes på e-poster med features \(x_1\) (antall «offer»), \(x_2\) (antall «free») og \(x_3\) (antall lenker). Likelihood beregnes som \(p(x_1, x_2, x_3 \mid \text{spam}) = p(x_1 \mid \text{spam})\,p(x_2 \mid \text{spam})\,p(x_3 \mid \text{spam})\). Hvilket utsagn er korrekt?</p>
+          <ol class="mcq-list" type="A">
+            <li>Uavhengighetsantakelsen kreves kun for numeriske features</li>
+            <li>Feature-ene må være statistisk uavhengige i det faktiske datasettet</li>
+            <li>Modellen antar betinget uavhengighet selv om den sanne datadistribusjonen bryter denne antakelsen</li>
+            <li>Hvis feature-ene er avhengige, kan klassifikatoren ikke beregne posterior</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Det er derfor den heter <em>naïv</em>: produktformen (37) er en antakelse vi gjør uansett, og den fungerer ofte i praksis selv når «offer» og «free» åpenbart er korrelerte. B og D gjør antakelsen til et krav, som den ikke er; A blander inn datatype.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1067,6 +1466,106 @@ plt.show()</code></pre>
           <div class="answer">\(w_1\) bør være størst, slik at hver oversett syk (falsk negativ) koster mye mer enn en falsk alarm. Vektingen endrer <em>gradienten</em> og dermed hvilke parametre modellen ender opp med: modellen blir faktisk en annen. Å senke terskelen rører ikke parametrene, det endrer bare tolkningen av de samme prediksjonene.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-7-ubalanse">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 7 (del 2)</span><span class="o-ref">1.2.10 · flervalg</span></div>
+        <div class="o-text">
+          <p>Sykehusmodellen har høy treffsikkerhet, men sykehuset vil likevel ikke kjøpe den. Du hadde det travelt, og hverken studerte fordelingen i treningsdataene eller brukte et valideringsdatasett. Hva har sannsynligvis gått galt under modelleringen?</p>
+          <ol class="mcq-list" type="A">
+            <li>Fordelingen mellom friske og syke pasienter i treningsdataene er ubalansert.</li>
+            <li>Modellen har for lav læringsrate, og uten bruk av valideringsdata har du ikke forsikret deg om at valg av hyperparametre er passende.</li>
+            <li>Modellen har overtilpasset på pasienter fra det aktuelle sykehuset, og uten valideringsdata klarte du ikke å fange opp overtilpasningen.</li>
+            <li>Du brukte cross entropy som tapsfunksjon, som kun bør brukes til lineær modellering.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Jobbintervju-oppgaven over: sykdommen er «svært sjelden», så en modell som svarer «frisk» på alle får høy accuracy og null nytte (prior probability shift). Valideringsdata (B, C) hjelper ikke mot det, og D er tull. Ledetråden i oppgaveteksten er «studerte ikke fordelingen».</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-8">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 8</span><span class="o-ref">1.2.10 · regn</span></div>
+        <div class="o-text">
+          <p>Et datasett har 2000 datapunkter, der 90 % tilhører klasse A og resten klasse B. (1) Du gjør undersampling for å få et balansert datasett: hvor mange datapunkter kan du beholde fra klasse A? (2) Du prøver heller oversampling: hvor mange datapunkter må legges til i klasse B?</p>
+          <ol class="mcq-list" type="A">
+            <li>(1) 1800 · (2) 200</li>
+            <li>(1) 200 · (2) 1600</li>
+            <li>(1) 900 · (2) 400</li>
+            <li>(1) 200 · (2) 1800</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Klasse A: \(0.9 \cdot 2000 = 1800\), klasse B: 200. <strong>Undersampling</strong> trekker like mange fra A som B har: behold 200 fra A, totalt 400. <strong>Oversampling</strong> kopierer B opp til A: \(1800 - 200 = 1600\) nye duplikater, totalt 3600. Fellen i D er å svare 1800 (størrelsen B skal <em>ende</em> på), ikke antallet som legges til.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-2-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 2 · spm. 3</span><span class="o-ref">1.2.10 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I et produksjonsdatasett med 10 000 enheter er 9 800 normale og 200 defekte. Random oversampling brukes ved å duplisere minoritetsklassen til begge klasser har lik størrelse. Hvilket utfall er mest sannsynlig?</p>
+          <ol class="mcq-list" type="A">
+            <li>Oversampling endrer den underliggende sannsynlighetsfordelingen til minoritetsklassen</li>
+            <li>Oversampling reduserer antall eksempler i majoritetsklassen</li>
+            <li>Klassifikatoren blir mindre tilbøyelig til å overtilpasse fordi klassene er numerisk balanserte</li>
+            <li>Klassifikatoren kan overtilpasse fordi identiske eksempler fra minoritetsklassen gjentas i treningsdataene</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> De 200 defekte kopieres 49 ganger hver. Modellen ser de samme punktene om og om igjen og lærer dem utenat: overfit, som notatene sier. B beskriver undersampling (som gir underfit). A: kopier endrer ikke fordelingen innad i klassen. C er det motsatte av D.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-10">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 10</span><span class="o-ref">1.2.10 · kode</span></div>
+        <div class="o-text">
+          <p>Hvilken av disse representerer en korrekt implementasjon av vektet cross entropy loss? Vekten \(w_0\) representerer klassen med target \(y = 0\), og \(w_1\) klassen med \(y = 1\).</p>
+          <ol class="mcq-list" type="A">
+            <li><code>-w_0*y*np.log(y_pred) - w_1*(1-y)*np.log(1-y_pred)</code></li>
+            <li><code>-w_0*y_pred*np.log(y) - w_1*(1-y_pred)*np.log(1-y)</code></li>
+            <li><code>-w_1*y_pred*np.log(1-y) - w_0*(1-y_pred)*np.log(y)</code></li>
+            <li><code>-w_1*y*np.log(y_pred) - w_0*(1-y)*np.log(1-y_pred)</code></li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Likning (43): leddet \(-y \ln y_{\text{pred}}\) er det eneste som bidrar når \(y = 1\), så det skal ha \(w_1\); leddet \(-(1-y)\ln(1 - y_{\text{pred}})\) bidrar bare når \(y = 0\), så det skal ha \(w_0\). A har vektene byttet om. B og C har \(y\) inni logaritmen, samme feil som i spm. 9.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-11">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 11</span><span class="o-ref">1.2.10 · regn</span></div>
+        <div class="o-text">
+          <p>Klasse A har 9000 datapunkter og klasse B har 1000. Hvilken kombinasjon av vekter bør du velge til en vektet cross entropy loss?</p>
+          <ol class="mcq-list" type="A">
+            <li>\(w_A = 0.0001,\ w_B = 0.009\)</li>
+            <li>\(w_A = 1,\ w_B = 0.1\)</li>
+            <li>\(w_A = 0.1,\ w_B = 1\)</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Den underrepresenterte klassen skal vektes <em>opp</em>, omvendt proporsjonalt med størrelsen: B er 9 ganger sjeldnere og får 10 ganger høyere vekt, så \(9000 \cdot 0.1 = 900 \approx 1000 \cdot 1\); begge klassene bidrar da omtrent like mye til det totale tapet. B-alternativet gjør skjevheten verre. A har riktig forhold, men absurde absoluttverdier som bare skalerer hele tapet ned (og var lokkealternativ).</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

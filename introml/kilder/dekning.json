@@ -98,5 +98,32 @@
   "1.4.6": {
     "side": "kap1/regresjon.html",
     "anker": "regresjonstraer"
+  },
+  "1.5": {
+    "side": "kap1/ensemble.html",
+    "anker": "ensemble"
+  },
+  "1.5.1": {
+    "side": "kap1/ensemble.html",
+    "anker": "bagging"
+  },
+  "1.5.2": {
+    "side": "kap1/ensemble.html",
+    "anker": "boosting"
+  },
+  "2": {
+    "side": "kap2/index.html"
+  },
+  "2.1": {
+    "side": "kap2/perceptron.html",
+    "anker": "perceptron"
+  },
+  "2.2": {
+    "side": "kap2/perceptron.html",
+    "anker": "aktivering"
+  },
+  "2.3": {
+    "side": "kap2/perceptron.html",
+    "anker": "arkitektur"
   }
 }

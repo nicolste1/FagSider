@@ -71,8 +71,8 @@
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
           <li><span class="tag regn">Regn</span><strong>4.3 Backtracking med MRV og LCV (prio 1):</strong> vis hver tildeling med domenene, bruk tie-break-regelen oppgaven gir (numerisk / alfanumerisk). Tidligere: <a href="#oppg-o22-42">Ord. 2022 oppg. 4.2</a>, <a href="#oppg-o23-43">Ord. 2023 oppg. 4.3</a> (7 p).</li>
-          <li><span class="tag">Forklar</span>Hva MRV, degree og LCV velger, og hvorfor (fail-first for variabel, fail-last for verdi). Assignment-forelesningen: «MRV+LCV mot tilfeldige valg».</li>
-          <li><span class="tag">Lavere</span>4.4 (prio 3): min-conflicts i én linje. Tre-strukturerte CSP og topologisk sortering (boka 5.5) er ute av pensum 2026. Backjumping og constraint learning (5.3.3–5.3.4) er ute.</li>
+          <li><span class="tag">Forklar</span>Hva MRV, degree og LCV velger, og hvorfor (fail-first for variabel, fail-last for verdi). Avsnitt 07: MRV+LCV mot tilfeldige valg.</li>
+          <li><span class="tag">Lavere</span>4.4 (prio 3): min-conflicts i én linje. Tre-strukturerte CSP og topologisk sortering er ute av pensum 2026. Backjumping og constraint learning (5.3.3–5.3.4) er ute.</li>
         </ul>
       </div>
     </div>
@@ -117,7 +117,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
         <p>Velg den utildelte variabelen med <strong>færrest gjenværende lovlige verdier</strong> (minste gjenværende domene). Kalles også «most constrained variable» eller «fail-first»: variabelen som mest sannsynlig feiler, tas først, så blindveier oppdages høyt i treet.</p>
       </div>
       <p><span class="term" data-term="mrv">MRV</span> hjelper ikke i starten når alle domener er like store. Da brukes <span class="term" data-term="degree-heuristikk">degree-heuristikken</span> som tie-breaker: velg variabelen som inngår i <strong>flest constraints med andre utildelte variabler</strong>. I Australia har SA grad 5 og velges først. Står det fortsatt likt, brukes tie-break-regelen i oppgaven (alfabetisk/numerisk).</p>
-      <div class="oppgave" data-quiz id="oppg-slide-mrv">
+      <div class="oppgave" data-quiz id="oppg-mrv">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 34–35</span></div>
         <div class="o-text"><p>Kartfarging med \(X_1 = \text{red}\), \(X_2 = \text{green}\), \(D_3 = \{\text{blue}\}\), \(D_4 = \{\text{red}, \text{blue}\}\). Velger MRV \(X_3\) eller \(X_4\)?</p></div>
         <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
@@ -139,9 +139,9 @@ function BACKTRACK(csp, assignment) returns a solution or failure
       <p>Regn <span class="term" data-term="lcv">LCV</span> slik: for hver verdi \(x\), tell hvor mange verdier som forsvinner fra domenene til utildelte naboer om \(X = x\). Minst tall først. Har variabelen ingen utildelte naboer, blir det uavgjort, og tie-break-regelen avgjør.</p>
       <div class="callout callout-warn">
         <span class="label">Ikke bland</span>
-        <p>MRV velger den <em>mest</em> begrensede variabelen, LCV den <em>minst</em> begrensende verdien. Løsningsforslaget for 2022 kaller dem «Max-conflicts» og «Min-conflicts». Det er ikke det samme som den lokale søkealgoritmen <a href="#lokalt-sok">MIN-CONFLICTS</a>.</p>
+        <p>MRV velger den <em>mest</em> begrensede variabelen, LCV den <em>minst</em> begrensende verdien. Eksamen 2022 kaller dem «Max-conflicts» og «Min-conflicts». Det er ikke det samme som den lokale søkealgoritmen <a href="#lokalt-sok">MIN-CONFLICTS</a>.</p>
       </div>
-      <div class="oppgave" data-quiz id="oppg-slide-lcv">
+      <div class="oppgave" data-quiz id="oppg-lcv">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 36–37</span></div>
         <div class="o-text"><p>Samme tilstand som over, men \(X_4\) er valgt. Velger LCV red eller blue?</p></div>
         <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
@@ -216,7 +216,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
               <li>Odde-sjekk: \(1345 \bmod 2 = 1\). Ingen backtracking.</li>
             </ol>
             <p>Løsning: \(x_1 = 1, x_2 = 3, x_3 = 4, x_4 = 5\), tallet <strong>1345</strong>.</p>
-            <p><strong>Om løsningsforslaget:</strong> det legger først til de implisitte constraintene \(x_4 \gt x_1, x_4 \gt x_2, \dots\) (strengt ordnet), så alle domener krymper etter \(x_4 = 5\), og ender på <strong>1245</strong>. I steg 3 sier det at \(x_2 = 2\) og \(x_2 = 3\) utelukker like mange verdier og velger 2 numerisk. Etter LCV-definisjonen fjerner \(x_2 = 3\) færre verdier fra \(D_1\) (\(\{1, 2\}\) blir igjen, mot \(\{1\}\)), så 3 er riktig LCV-valg. Begge tallene oppfyller alle constraints; på eksamen er det stegene med domener som gir poeng.</p>
+            <p><strong>Merk:</strong> den opprinnelige løsningen legger først til de implisitte constraintene \(x_4 \gt x_1, x_4 \gt x_2, \dots\) (strengt ordnet), så alle domener krymper etter \(x_4 = 5\), og ender på <strong>1245</strong>. I steg 3 sier det at \(x_2 = 2\) og \(x_2 = 3\) utelukker like mange verdier og velger 2 numerisk. Etter LCV-definisjonen fjerner \(x_2 = 3\) færre verdier fra \(D_1\) (\(\{1, 2\}\) blir igjen, mot \(\{1\}\)), så 3 er riktig LCV-valg. Begge tallene oppfyller alle constraints; på eksamen er det stegene med domener som gir poeng.</p>
           </div></div>
       </div>
     </div>
@@ -250,10 +250,10 @@ function BACKTRACK(csp, assignment) returns a solution or failure
 
   <section id="mrv-tilfeldig">
     <div class="container">
-      <div class="section-badge">07 · Assignment-forelesningen</div>
+      <div class="section-badge">07 · Sammenligning</div>
       <h2>MRV + LCV mot <em>tilfeldige</em> valg</h2>
       <div class="source-note">Assignment-forelesning 2 · slides 14–15 og 23</div>
-      <p>Kjeden A – B – C med domene {B, G, R} for alle og ulik farge på naboer. «Feil» betyr å prøve en verdi som bryter en constraint med det som alt er tildelt. Slidene regner uten inferens, så domenene krymper ikke.</p>
+      <p>Kjeden A – B – C med domene {B, G, R} for alle og ulik farge på naboer. «Feil» betyr å prøve en verdi som bryter en constraint med det som alt er tildelt. Vi regner uten inferens, så domenene krymper ikke.</p>
       <div class="oppgave" data-quiz id="oppg-kjede-mrv">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Assignment-forelesning 2 · slide 14–15</span></div>
         <div class="o-text"><p>Anta MRV for variabler og LCV for verdier, med alfabetisk tie-break. Er MRV + LCV bedre enn tilfeldige valg i snitt for grafen A – B – C?</p></div>
@@ -318,7 +318,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
       <h2>Min-conflicts og <em>tre-CSP</em></h2>
       <div class="source-note">Slides forelesning 4 · 40–43 · Boka kap. 5.4 (5.5 er ute av pensum 2026)</div>
       <span class="lm-pill">Deltema 4.4 · prio 3</span>
-      <p><span class="term" data-term="min-conflicts">MIN-CONFLICTS</span> er lokalt søk: start med en komplett (ofte ugyldig) tildeling, velg tilfeldig en variabel i konflikt, og gi den verdien som gir færrest brudd; gjenta til løsning eller <code>max_steps</code>. Løser millioner-dronningproblemet på rundt 50 steg i snitt (slide 42). <span class="term" data-term="tre-csp">Tre-strukturerte CSP</span> (topologisk sortering, lineær tid) er ute av pensum 2026.</p>
+      <p><span class="term" data-term="min-conflicts">MIN-CONFLICTS</span> er lokalt søk: start med en komplett (ofte ugyldig) tildeling, velg tilfeldig en variabel i konflikt, og gi den verdien som gir færrest brudd; gjenta til løsning eller <code>max_steps</code>. Løser millioner-dronningproblemet på rundt 50 steg i snitt. <span class="term" data-term="tre-csp">Tre-strukturerte CSP</span> (topologisk sortering, lineær tid) er ute av pensum 2026.</p>
     </div>
   </section>
 

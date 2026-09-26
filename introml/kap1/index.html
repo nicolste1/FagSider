@@ -37,9 +37,9 @@
 <main data-chapter="Kapittel 1: Veiledet læring">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · Notater 1.1–1.4 · s. 2–32</div>
+      <div class="eyebrow">Kapittel 1 · Notater 1.1–1.5 · s. 2–34 · 77 oppgaver, 39 fra eksamen</div>
       <h1>Veiledet <em>læring</em></h1>
-      <p class="lede">Hele grunnoppskriften i maskinlæring: logistisk regresjon som læres med gradient descent, beslutningstrær som bygges ved å splitte på den featuren som rydder mest, og regresjon, der target er et tall og bias–varians forklarer hvorfor mer kompleksitet ikke alltid hjelper.</p>
+      <p class="lede">Hele grunnoppskriften i maskinlæring: logistisk regresjon som læres med gradient descent, beslutningstrær som bygges ved å splitte på den featuren som rydder mest, regresjon, der target er et tall og bias–varians forklarer hvorfor mer kompleksitet ikke alltid hjelper, og ensembler, der mange modeller stemmer eller retter opp hverandre.</p>
     </div>
   </header>
 
@@ -71,11 +71,17 @@
         <li><strong>Sannsynlighet under panseret.</strong> Entropi og kryssentropi forklarer tapsfunksjonen; Bayes’ teorem og naïv Bayes forklarer hva vi egentlig estimerer, og dimensjonsforbannelsen forklarer hvorfor vi ikke bare regner det ut.</li>
         <li><strong>Beslutningstrær</strong> splitter på én feature om gangen, med Gini-urenhet eller entropi som mål på hvor mye en splitt rydder.</li>
         <li><strong>Regresjon</strong> bytter klasser mot kontinuerlige targets og cross-entropy mot MSE. Feature engineering, valideringsdata, kryssvalidering og bias–varians-dekomposisjonen forklarer hvorfor mer kompleksitet ikke alltid gir lavere tap, og regresjonstrær viser at trær også kan predikere tall.</li>
+        <li><strong>Ensembler</strong> kombinerer modeller: parallelt med bootstrap og aggregering (bagging, random forest) eller sekvensielt der hver modell retter feilen fra den forrige (AdaBoost, gradient boosting). Deltemaet med flest eksamensspørsmål per side.</li>
       </ul>
+
+      <div class="callout">
+        <span class="label">Eksamen</span>
+        <p>Begge de tilgjengelige settene (Ord. 2024 og 2025) er rene flervalgseksamener. Hver innholdsside åpner med en Eksamensfokus-boks, og alle spørsmålene fra settene som hører til kapittelet står som bokser på sidene, med fasit og begrunnelse. Analysen ligger i <code>kilder/eksamensanalyse.md</code>.</p>
+      </div>
 
       <div class="callout callout-warm">
         <span class="label">Kilde</span>
-        <p>Sidene bygger på Inga Strümkes <em>Forelesningsnotater Introduksjon til Maskinlæring</em>, kapittel 1 (avsnitt 1.1–1.4). Notatene utvikles gjennom semesteret; versjonen sidene bygger på står nederst på hver side. Alle «Oppgave:»-avsnitt fra notatene er tatt med som egne bokser, med svar fra notatene der de finnes og forslag til svar der de ikke gjør det.</p>
+        <p>Sidene bygger på Inga Strümkes <em>Forelesningsnotater Introduksjon til Maskinlæring</em>, kapittel 1 (avsnitt 1.1–1.5). Notatene utvikles gjennom semesteret; versjonen sidene bygger på står nederst på hver side. Alle «Oppgave:»-avsnitt fra notatene er tatt med som egne bokser, med svar fra notatene der de finnes og forslag til svar der de ikke gjør det.</p>
       </div>
     </div>
   </section>
@@ -104,6 +110,8 @@
         <div class="path-step"><div class="num">14</div><div><div class="title"><a href="regresjon.html#validering">Validering og kryssvalidering</a></div><div class="desc">Tre datasett, treningskurver, early stopping, LOOCV og k-fold.</div></div><div class="min">~12 min</div></div>
         <div class="path-step"><div class="num">15</div><div><div class="title"><a href="regresjon.html#bias-varians">Bias–varians</a></div><div class="desc">Dekomposisjonen MSE = Bias² + Var + σ². Se simuleringen.</div></div><div class="min">~15 min</div></div>
         <div class="path-step"><div class="num">16</div><div><div class="title"><a href="regresjon.html#regresjonstraer">Regresjonstrær</a></div><div class="desc">Én verdi per region, dybde som hyperparameter, trær mot regresjon.</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">17</div><div><div class="title"><a href="ensemble.html#bagging">Bagging og random forest</a></div><div class="desc">Bootstrap med tilbakelegging, aggregering, diverse og uavhengige trær. Prøv trekningen.</div></div><div class="min">~12 min</div></div>
+        <div class="path-step"><div class="num">18</div><div><div class="title"><a href="ensemble.html#boosting">Boosting</a></div><div class="desc">AdaBoost vekter opp feil, gradient boosting tilpasser residualer. Legg til ett tre om gangen.</div></div><div class="min">~12 min</div></div>
       </div>
     </div>
   </section>
@@ -118,7 +126,7 @@
           <span class="sp-icon">1A</span>
           <div class="sp-info">
             <div class="sp-title">Data og logistisk regresjon</div>
-            <div class="sp-desc">Notater 1.1–1.2: data, sigmoid, cross-entropy, gradient descent, trening, evaluering, terskel og ROC, entropi, Bayes, dimensjonsforbannelsen, ubalanserte data. 17 oppgaver, 7 interaktive widgeter.</div>
+            <div class="sp-desc">Notater 1.1–1.2: data, sigmoid, cross-entropy, gradient descent, trening, evaluering, terskel og ROC, entropi, Bayes, dimensjonsforbannelsen, ubalanserte data. 17 oppgaver fra notatene, 23 eksamensoppgaver, 7 interaktive widgeter.</div>
           </div>
           <span class="sp-arrow">&rarr;</span>
         </a>
@@ -126,7 +134,7 @@
           <span class="sp-icon">1B</span>
           <div class="sp-info">
             <div class="sp-title">Beslutningstrær</div>
-            <div class="sp-desc">Notater 1.3: noder og stumper, Gini-urenhet, entropi og informasjonsgevinst, stoppkriterier, pseudokode, Palmer Penguins. 5 oppgaver, 4 interaktive widgeter.</div>
+            <div class="sp-desc">Notater 1.3: noder og stumper, Gini-urenhet, entropi og informasjonsgevinst, stoppkriterier, pseudokode, Palmer Penguins. 5 oppgaver fra notatene, 2 eksamensoppgaver, 4 interaktive widgeter.</div>
           </div>
           <span class="sp-arrow">&rarr;</span>
         </a>
@@ -134,7 +142,15 @@
           <span class="sp-icon">1C</span>
           <div class="sp-info">
             <div class="sp-title">Regresjon</div>
-            <div class="sp-desc">Notater 1.4: lineær regresjon og MSE, polynomisk regresjon og feature engineering, trening/test/validering, kryssvalidering, bias–varians-dekomposisjonen, regresjonstrær. 15 oppgaver, 5 interaktive widgeter.</div>
+            <div class="sp-desc">Notater 1.4: lineær regresjon og MSE, polynomisk regresjon og feature engineering, trening/test/validering, kryssvalidering, bias–varians-dekomposisjonen, regresjonstrær. 15 oppgaver fra notatene, 7 eksamensoppgaver, 5 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="ensemble.html" class="subpage-card">
+          <span class="sp-icon">1D</span>
+          <div class="sp-info">
+            <div class="sp-title">Ensemble-modeller</div>
+            <div class="sp-desc">Notater 1.5: parallelt, sekvensielt og hierarkisk, bootstrap og bagging, random forest, AdaBoost og gradient boosting. 1 oppgave fra notatene, 7 eksamensoppgaver, 3 interaktive widgeter.</div>
           </div>
           <span class="sp-arrow">&rarr;</span>
         </a>
@@ -151,7 +167,7 @@
       <p class="section-intro">Grunnløypa i midten; teorien som forklarer hvorfor til venstre og høyre. Bruk det som sjekkliste.</p>
 
       <figure class="concept-map">
-        <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 1">
+        <svg viewBox="0 0 760 460" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 1">
           <defs>
             <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
               <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
@@ -235,6 +251,11 @@
           <text class="lbl" x="125" y="350" text-anchor="middle">Bias–varians · k-fold</text>
           <text class="cap" x="125" y="366" text-anchor="middle">MSE = Bias² + Var + σ² · validering</text>
           <path class="e-faded" d="M210 353 L290 353"/>
+          <!-- Ensemble (1D) -->
+          <rect class="bw" x="550" y="408" width="170" height="46" rx="6"/>
+          <text class="lbl" x="635" y="428" text-anchor="middle">Ensembler</text>
+          <text class="cap" x="635" y="444" text-anchor="middle">bagging · random forest · boosting</text>
+          <path class="e-faded" d="M635 220 L635 406"/>
         </svg>
         <figcaption>Heltrukne piler: rekkefølgen i løypa. Stiplede: teori som forklarer steget den peker på.</figcaption>
       </figure>
@@ -245,8 +266,8 @@
   <section id="oppgaver">
     <div class="container">
       <div class="section-badge">Oppgavene fra notatene</div>
-      <h2>Alle <em>«Oppgave:»</em>-avsnittene</h2>
-      <p class="section-intro">Notatene har åpne spørsmål underveis. Her er alle 37, inkludert spørsmålene notatene stiller uten «Oppgave:»-merke («tenk over dette før du leser videre»), lenket til stedet på siden der de står. Grønn status betyr at svaret er hentet fra notatene, gul at svaret er et forslag skrevet for denne siden.</p>
+      <h2>Alle <em>«Oppgave:»</em>-avsnittene og eksamensoppgavene</h2>
+      <p class="section-intro">Notatene har åpne spørsmål underveis. Her er alle 38, inkludert spørsmålene notatene stiller uten «Oppgave:»-merke («tenk over dette før du leser videre»), lenket til stedet på siden der de står. Nederst står de 39 spørsmålene fra Ord. 2024 og Ord. 2025 som hører til kapittelet. Grønn status betyr at svaret er hentet fra notatene eller fra løsningsforslaget, gul at svaret (eller begrunnelsen) er et forslag skrevet for denne siden.</p>
 
       <ul class="oppgave-index">
         <li><a href="logistisk-regresjon.html#oppg-titanic"><span class="oi-ref">1.1 · s. 2</span><span>Hvilke Titanic-variabler er kategoriske, binære, kontinuerlige, og hvilken bør vi ikke bruke?</span><span class="oi-status notes">Fra notatene</span></a></li>
@@ -286,6 +307,50 @@
         <li><a href="regresjon.html#oppg-floor-polynom"><span class="oi-ref">1.4.6 · s. 30</span><span>Generer floor-dataene selv og prøv å tilpasse et polynom.</span><span class="oi-status forslag">Forslag</span></a></li>
         <li><a href="regresjon.html#oppg-tre-dybde"><span class="oi-ref">1.4.6 · s. 31</span><span>Minste og optimale dybde for et regresjonstre på trappedataene?</span><span class="oi-status notes">Fra notatene</span></a></li>
         <li><a href="regresjon.html#oppg-traer-vs-regresjon"><span class="oi-ref">1.4.6 · s. 32</span><span>Ulikheter mellom beslutningstrær og lineær/logistisk regresjon (tabell 8).</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="ensemble.html#oppg-ensemble-navn"><span class="oi-ref">1.5.2 · s. 34</span><span>CatBoost, LightGBM, AdaBoost, XGBoost: bagging eller boosting?</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>Fra eksamen</h3>
+      <ul class="oppgave-index">
+        <li><a href="logistisk-regresjon.html#oppg-o25-1-1"><span class="oi-ref">Ord. 2025 · 1.1</span><span>Nødvendig preprosessering for logistisk regresjon med kategoriske variabler?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-1-4"><span class="oi-ref">Ord. 2025 · 1.4</span><span>Riktig måte å gjøre min–maks-skalering på trening og test?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-4"><span class="oi-ref">Ord. 2024 · 4</span><span>Hvilken Scaler-funksjon på testdataene?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-10-1"><span class="oi-ref">Ord. 2025 · 10.1</span><span>Kodelinjen som bruker samme skalering på X_test.</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-1-2"><span class="oi-ref">Ord. 2025 · 1.2</span><span>Hva er output \(\hat{y} = \sigma(\mathbf{w}^T\mathbf{x} + b)\)?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-10-2"><span class="oi-ref">Ord. 2025 · 10.2</span><span>Hva inneholder y_pred etter sigmoid i NumPy?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-9"><span class="oi-ref">Ord. 2024 · 9</span><span>Korrekt implementasjon av binary cross entropy?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-1-3"><span class="oi-ref">Ord. 2025 · 1.3</span><span>Tapet oscillerer under gradient descent: årsak?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-12"><span class="oi-ref">Ord. 2024 · 12</span><span>Hvilken type parameter er læringsraten?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-20"><span class="oi-ref">Ord. 2024 · 20</span><span>Når finner gradient descent garantert et globalt minimum?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-13"><span class="oi-ref">Ord. 2024 · 13</span><span>Hva angir batch size?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-14"><span class="oi-ref">Ord. 2024 · 14</span><span>10 000 datapunkter, batch 500: iterasjoner per epoke?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-10-3"><span class="oi-ref">Ord. 2025 · 10.3</span><span>Hvilken funksjon splitter i trening og test?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-7-metrikker"><span class="oi-ref">Ord. 2024 · 7</span><span>Sykehus (falske negative) og politi (falske positive): hvilken metrikk?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-5"><span class="oi-ref">Ord. 2024 · 5</span><span>Confusion matrix ved terskel 0.3 og 0.7: hvilke punkter på ROC-kurven?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-6"><span class="oi-ref">Ord. 2024 · 6</span><span>Hva betyr ROC AUC = 0.9?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-2-1"><span class="oi-ref">Ord. 2025 · 2.1</span><span>Hensikten med \(p(x)\) i Bayes’ teorem?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-2-2"><span class="oi-ref">Ord. 2025 · 2.2</span><span>Hva antar naïv Bayes om featurene?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-7-ubalanse"><span class="oi-ref">Ord. 2024 · 7</span><span>Høy treffsikkerhet, men sykehuset vil ikke kjøpe: hva gikk galt?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-8"><span class="oi-ref">Ord. 2024 · 8</span><span>2000 punkter, 90/10: antall ved undersampling og oversampling?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o25-2-3"><span class="oi-ref">Ord. 2025 · 2.3</span><span>Random oversampling av 200 defekte: mest sannsynlige utfall?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-10"><span class="oi-ref">Ord. 2024 · 10</span><span>Korrekt implementasjon av vektet cross entropy?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="logistisk-regresjon.html#oppg-o24-11"><span class="oi-ref">Ord. 2024 · 11</span><span>Vekter for klasser med 9000 og 1000 datapunkter?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-o24-15"><span class="oi-ref">Ord. 2024 · 15</span><span>Hvordan velger treet feature i en node?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="beslutningstraer.html#oppg-o25-2-4"><span class="oi-ref">Ord. 2025 · 2.4</span><span>Gini etter splitt 0.28 / 0.41 / 0.07: hvilken feature?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="regresjon.html#oppg-o24-1"><span class="oi-ref">Ord. 2024 · 1</span><span>Antakelsen i en lineær modell?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="regresjon.html#oppg-o24-2"><span class="oi-ref">Ord. 2024 · 2</span><span>Gradienter og oppdaterte \(w, b\) for \(x = 2, y = 4\), \(\alpha = 0.1\).</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="regresjon.html#oppg-o25-4-1"><span class="oi-ref">Ord. 2025 · 4.1</span><span>Hvorfor er MSE et naturlig valg for lineær regresjon?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="regresjon.html#oppg-o25-4-3"><span class="oi-ref">Ord. 2025 · 4.3</span><span>Trenings- og validerings-MSE for tre polynomgrader: hvilken overtilpasser?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="regresjon.html#oppg-o25-4-2"><span class="oi-ref">Ord. 2025 · 4.2</span><span>Liten treningsfeil, økende valideringsfeil, ustabile prediksjoner: bias eller varians?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="regresjon.html#oppg-o24-3"><span class="oi-ref">Ord. 2024 · 3</span><span>Hva er induktivt bias?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="regresjon.html#oppg-o25-4-4"><span class="oi-ref">Ord. 2025 · 4.4</span><span>Regresjonstre: varians etter splitt 2.4 eller 0.9?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o25-3-1"><span class="oi-ref">Ord. 2025 · 3.1</span><span>Primær effekt av bootstrap-samples i bagging?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o24-18"><span class="oi-ref">Ord. 2024 · 18</span><span>Hovedforskjell i datadeling mellom kryssvalidering og bootstrapping?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o24-16"><span class="oi-ref">Ord. 2024 · 16</span><span>Hva er viktig for en god random forest?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o25-3-2"><span class="oi-ref">Ord. 2025 · 3.2</span><span>Hensikten med to typer tilfeldighet i random forest?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o25-3-3"><span class="oi-ref">Ord. 2025 · 3.3</span><span>Hvilke datapunkter får økt vekt i AdaBoost?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o24-17"><span class="oi-ref">Ord. 2024 · 17</span><span>Riktig utsagn om gradient boosting?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="ensemble.html#oppg-o25-3-4"><span class="oi-ref">Ord. 2025 · 3.4</span><span>Hensikten med å tilpasse hver ny modell til pseudo-residualene?</span><span class="oi-status notes">Eksamen</span></a></li>
       </ul>
     </div>
   </section>
@@ -295,7 +360,7 @@
     <div class="container">
       <div class="section-badge">Test deg selv</div>
       <h2>På tvers av <em>kapittelet</em></h2>
-      <p class="section-intro">Spørsmål som krever at du ser 1A og 1B i sammenheng. Flere spørsmål finnes nederst på hver underside.</p>
+      <p class="section-intro">Spørsmål som krever at du ser 1A–1D i sammenheng. Flere spørsmål finnes nederst på hver underside.</p>
 
       <div class="quiz" data-quiz>
         <div class="q-label">Spørsmål 1 · Middels</div>

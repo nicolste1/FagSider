@@ -9,6 +9,9 @@ window.FAG = {
     'kap1/index.html',
     'kap1/logistisk-regresjon.html',
     'kap1/beslutningstraer.html',
-    'kap1/regresjon.html'
+    'kap1/regresjon.html',
+    'kap1/ensemble.html',
+    'kap2/index.html',
+    'kap2/perceptron.html'
   ]
 };

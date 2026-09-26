@@ -49,6 +49,12 @@
   .tree-svg .n-dec rect { fill: rgba(61,107,58,0.18); stroke: var(--green); }
   .tree-svg .n-leaf rect { fill: rgba(160,82,45,0.16); stroke: var(--warm); }
   .diff-table td:first-child { border-right: 1px solid var(--line-soft); }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
 </style>
 </head>
 <body>
@@ -74,6 +80,7 @@
       <h1>Regre<em>sjon</em></h1>
       <p class="lede">Når target er et tall og ikke en klasse. Lineær regresjon med MSE og gradient descent, feature engineering med polynomer, hvorfor vi trenger valideringsdata og kryssvalidering, hva bias og varians egentlig er, og hvordan et beslutningstre kan gjøre regresjon.</p>
       <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#data-tap"><span>01</span> Data og tapsfunksjon</a>
         <a href="#polynom"><span>02</span> Polynomisk regresjon</a>
         <a href="#validering"><span>03</span> Trening, test, validering</a>
@@ -84,6 +91,27 @@
       </nav>
     </div>
   </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen 26. september 2026 (kilder/eksamensanalyse.md, forslag, ikke godkjent ennå) · deltema 1.4, prio 1 · 7 eksamensoppgaver på siden</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Ett gradient descent-steg for hånd:</strong> \(f(x) = wx + b\), \(\mathcal{L} = \tfrac12 (y - f(x))^2\), gitt \(x, y, w, b, \alpha\): regn \(\partial\mathcal{L}/\partial w = -(y - f)x\), \(\partial\mathcal{L}/\partial b = -(y - f)\) og oppdater (Ord. 2024 spm. 2). Antakelsen i en lineær modell: ingen vekselvirkninger (Ord. 2024 spm. 1). Hvorfor MSE: maks likelihood under gaussisk støy (Ord. 2025 del 4 spm. 1). Se <a href="#data-tap">01</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Les over- og undertilpasning av en tabell</strong> med trenings- og validerings-MSE per polynomgrad: lav trening + høy validering = overfit (Ord. 2025 del 4 spm. 3). Polynomgraden er en hyperparameter. Se <a href="#polynom">02</a> og <a href="#validering">03</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Bias og varians som diagnose:</strong> liten treningsfeil, valideringsfeil som øker, prediksjoner som endrer seg med datasplitten = høy varians (Ord. 2025 del 4 spm. 2). Induktivt bias = antakelsene modellen gjør for å generalisere (Ord. 2024 spm. 3). Se <a href="#bias-varians">05</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Regresjonstre velger splitten med lavest varians</strong> i target etter splitt (Ord. 2025 del 4 spm. 4). Se <a href="#regresjonstraer">06</a>.</li>
+          <li><span class="tag">Forklar</span>Kryssvalidering vs bootstrap er spurt (Ord. 2024 spm. 18); boksen står i 1D der bootstrap defineres. k-fold vs LOOCV: kjenn forskjellen. Se <a href="#kryssvalidering">04</a>.</li>
+          <li><span class="tag">Lavere</span>Utledningen (72)–(88) av bias–varians-dekomposisjonen: bare resultatet \(\text{MSE} = \text{Bias}^2 + \text{Var} + \sigma^2\) og tolkningen er spurt. sklearn-koden i 06. Tabell 7-dataene.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
 
   <!-- ─────────────────────────── 01 DATA OG TAPSFUNKSJON ─────────────────────────── -->
   <section id="data-tap">
@@ -173,6 +201,67 @@
         <summary>Tabell 7 i notatene: de 40 datapunktene (x₁, y)</summary>
         <div class="table-wrap"><table id="tab7"><thead><tr><th>#</th><th>x₁</th><th>y</th><th>#</th><th>x₁</th><th>y</th></tr></thead><tbody></tbody></table></div>
       </details>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-1">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 1</span><span class="o-ref">1.4.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hvilken antakelse gjør en lineær modell på formen \(y = w_1 x_1 + w_2 x_2 + w_3 x_3 + b\) om dataene den modellerer?</p>
+          <ol class="mcq-list" type="A">
+            <li>Modellen antar at det ikke er vekselvirkninger mellom features.</li>
+            <li>Modellen antar at den har høy bias.</li>
+            <li>Modellen antar at den vil undertilpasse treningsdataene.</li>
+            <li>Modellen antar at effekten av hver inputvariabel er avhengig av andre inputvariabler.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Hver feature bidrar med sitt eget ledd \(w_i x_i\), uavhengig av verdien til de andre: effekten av \(x_1\) er \(w_1\) uansett hva \(x_2\) er. D er det motsatte (vekselvirkninger som \(x_1 x_2\)), og B/C er mulige <em>konsekvenser</em> av antakelsen, ikke antakelser. Jf. tabell 8: funksjonsformen er bestemt, og modellen kan ikke legge til ledd selv.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-2">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 2</span><span class="o-ref">1.4.1 · regn</span></div>
+        <div class="o-text">
+          <p>Du har en lineær modell \(f(x) = wx + b\) som trenes med gradient descent, oppdateringsregel \(\theta \leftarrow \theta - \alpha\,\partial\mathcal{L}/\partial\theta\), og tapsfunksjonen MSE \(\mathcal{L} = \tfrac12 (y - f(x))^2\). Du starter med \(w, b = 1, 0\). (1) Beregn gradientene \(\partial\mathcal{L}/\partial w\) og \(\partial\mathcal{L}/\partial b\) for datapunktet \(x = 2, y = 4\). (2) Bruk læringsraten \(\alpha = 0.1\) og beregn de oppdaterte verdiene av parametrene.</p>
+          <ol class="mcq-list" type="A">
+            <li>(1) \(\partial\mathcal{L}/\partial w = -4\), \(\partial\mathcal{L}/\partial b = -2\) · (2) \(w = 1.4\), \(b = 0.2\)</li>
+            <li>(1) \(\partial\mathcal{L}/\partial w = 4\), \(\partial\mathcal{L}/\partial b = 2\) · (2) \(w = 0.6\), \(b = -0.2\)</li>
+            <li>(1) \(\partial\mathcal{L}/\partial w = -6\), \(\partial\mathcal{L}/\partial b = -3\) · (2) \(w = 1.4\), \(b = 0.2\)</li>
+            <li>(1) \(\partial\mathcal{L}/\partial w = 2\), \(\partial\mathcal{L}/\partial b = 3\) · (2) \(w = 0.6\), \(b = 0.2\)</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> <strong>Prediksjon:</strong> \(f(2) = 1 \cdot 2 + 0 = 2\), avvik \(y - f = 4 - 2 = 2\). <strong>Gradienter</strong> (kjerneregelen på \(\tfrac12(y - f)^2\), faktoren ½ oppheves): \(\partial\mathcal{L}/\partial w = -(y - f)\,x = -2 \cdot 2 = -4\) og \(\partial\mathcal{L}/\partial b = -(y - f) = -2\). Negative gradienter: tapet minker når \(w\) og \(b\) øker, som gir mening siden modellen underestimerer. <strong>Oppdatering:</strong> \(w \leftarrow 1 - 0.1 \cdot (-4) = 1.4\), \(b \leftarrow 0 - 0.1 \cdot (-2) = 0.2\). Ny prediksjon \(1.4 \cdot 2 + 0.2 = 3.0\), nærmere 4. Dette er likning (55)–(57) med \(N = 1\); merk fortegnskonvensjonen \((f - y)\) der mot \(-(y - f)\) her, samme tall.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-4-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 4 · spm. 1</span><span class="o-ref">1.4.1 · flervalg, 2,5 p · begrunnelse utenfor notatene</span></div>
+        <div class="o-text">
+          <p>Lineær regresjon trenes ofte ved å minimere mean squared error (MSE). Hvorfor er MSE et naturlig valg under standardantakelsene for lineær regresjon?</p>
+          <ol class="mcq-list" type="A">
+            <li>Fordi det å minimere MSE tilsvarer å maksimere likelihood under Gaussisk støy</li>
+            <li>Fordi MSE gjør at man slipper å beregne deriverte</li>
+            <li>Fordi MSE alltid gir sparse parameterverdier (dvs mange verdier blir 0)</li>
+            <li>Fordi MSE garanterer at outliers har liten innflytelse</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag</span>
+            <p><strong>A.</strong> Samme resonnement som ga cross-entropy i 1A, men med \(y = F(x) + \varepsilon\) og normalfordelt støy (likning 60 i 05): likelihooden til ett datapunkt er \(\propto \exp\!\big(-(y - f(x))^2 / 2\sigma^2\big)\), log-likelihooden er \(-\sum (y - f)^2 / 2\sigma^2\) pluss konstant, og å maksimere den er å minimere summen av kvadrerte avvik. B er feil (vi deriverer MSE hele tiden), C beskriver L1-regularisering, og D er baklengs: kvadratet gjør outliers <em>mer</em> innflytelsesrike.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -335,6 +424,27 @@ for epoch in range(n_epochs):
           <div class="answer">Testdataene er brukt til å velge en hyperparameter, så de er ikke lenger usette: det laveste av 15 testtap er en optimistisk skjev måling, og du har ingen data igjen til en ærlig sluttrapport. Riktig er å velge graden med valideringsdata (eller kryssvalidering), og først deretter måle én gang på testdataene.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-4-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 4 · spm. 3</span><span class="o-ref">1.4.3 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Et regresjonsproblem modelleres med polynomer av ulike grader. Modell A (grad 1): trenings-MSE 34, validerings-MSE 34. Modell B (grad 3): 12 og 14. Modell C (grad 12): 0.02 og 110. Hvilken modell overtilpasser?</p>
+          <ol class="mcq-list" type="A">
+            <li>Modell B</li>
+            <li>Ingen</li>
+            <li>Modell A</li>
+            <li>Modell C</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Overtilpasning = svært lavt tap på trening og høyt på validering: C passer treningspunktene nesten perfekt (0.02) og generaliserer elendig (110), som figur 13c. A har høyt tap på begge, altså undertilpasning. B er den beste modellen: lavt tap på begge, liten forskjell.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -524,6 +634,47 @@ for epoch in range(n_epochs):
         </div>
       </div>
       <p>Husk at vi alltid ønsker at en modell tilpasset på treningsdata skal generalisere godt til testdata. Det er derfor det også kalles et bias-variance-<em>dilemma</em>.</p>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-4-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 4 · spm. 2</span><span class="o-ref">1.4.5 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>En regresjonsmodell trenes og evalueres på et treningssett og et separat valideringssett. Treningsfeilen blir svært liten, valideringsfeilen slutter å forbedre seg og øker deretter, og modellens prediksjoner endrer seg merkbart når den trenes på en annen tilfeldig datasplitt. Hva indikerer dette i henhold til definisjonene av bias og varians?</p>
+          <ol class="mcq-list" type="A">
+            <li>Lav varians, fordi modellen er stabil på tvers av ulike treningssett</li>
+            <li>Høy bias, fordi modellen er systematisk forskjøvet bort fra de sanne verdiene</li>
+            <li>Høy varians, fordi modellen overtilpasser seg treningsdataene og dermed generaliserer dårlig</li>
+            <li>Undertilpasning, fordi både trenings- og valideringsfeil forblir høye</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Tredje setning er definisjonen av varians (66): modellen varierer mye fra datasett til datasett. De to første er overfit-mønsteret fra figur 14a. Høy bias (B) ville gitt høy <em>treningsfeil</em>; her er den svært liten. A er motsatt av det som observeres, D krever høy feil på begge.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-3">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 3</span><span class="o-ref">1.4.5 · flervalg · begrep utenfor notatene</span></div>
+        <div class="o-text">
+          <p>Hva er induktivt bias?</p>
+          <ol class="mcq-list" type="A">
+            <li>Et resultat av vilkårlige prosesser som kan oppstå i treningsfasen og fører til bias i den resulterende modellen.</li>
+            <li>En fellesbetegnelse for over- og undertilpasningen en gitt modell gjør.</li>
+            <li>Antakelsene en modell gjør for å generalisere fra treningsdata til usette data.</li>
+            <li>En egenskap ved treningsdataene som gir en modell vi tilpasser til dataene en spesifikk type bias.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag</span>
+            <p><strong>C.</strong> <span class="term" data-term="induktivt-bias">Induktivt bias</span> er det som gjør generalisering mulig i det hele tatt: uten antakelser om hvordan \(F\) ser ut mellom datapunktene kan ingen modell si noe om nye \(x\). Lineær regresjon antar en rett linje (ingen vekselvirkninger), trær antar akseparallelle regioner, naïv Bayes antar uavhengige features. Høy bias i (65) er prisen når antakelsen er for enkel. A, B og D beskriver ikke antakelser.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -666,6 +817,27 @@ plt.show()</code></pre>
         <span class="label">Felles egenskap: tolkbarhet</span>
         <p>Både regresjonsmodeller og beslutningstrær er <span class="term" data-term="tolkbarhet">tolkbare</span>. For regresjonsmodeller angir størrelsen på parametrene viktigheten til hver variabel: er \(\beta_4\) (eller \(w_4\)) stor, har \(x_4\) stor innflytelse på prediksjonen. For trær er splittkriteriene forståelige for mennesker, og features som splittes tidlig er viktigere enn features som splittes senere. Det samme gjelder <em>ikke</em> for modelltypen vi skal se på i neste omgang.</p>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-4-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 4 · spm. 4</span><span class="o-ref">1.4.6 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Et regresjonstre skal splitte dataene i en gitt node. For hver mulig feature beregner treet hvor stor variansen i target-verdiene blir etter splitten: Feature X → varians etter splitt = 2.4, Feature Y → varians etter splitt = 0.9. Hvilken feature vil treet velge?</p>
+          <ol class="mcq-list" type="A">
+            <li>Det velger tilfeldig mellom de to</li>
+            <li>Feature X</li>
+            <li>Feature Y</li>
+            <li>Det velger splittet med høyest varians</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> For regresjon er «usikkerhet» i en node variansen (eller MSE) til target-verdiene der, siden løvnoden predikerer gjennomsnittet. Lavest varians etter splitt = regionene er mest homogene = beste splitt, nøyaktig som lavest Gini for klassifisering. D er baklengs.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -728,7 +900,7 @@ plt.show()</code></pre>
 
       <nav class="page-nav">
         <a href="beslutningstraer.html" class="prev"><div class="pn-label">← Forrige · 1B</div><div class="pn-title">Beslutningstrær</div></a>
-        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 1: oversikt →</div></a>
+        <a href="ensemble.html" class="next"><div class="pn-label">Neste · 1D</div><div class="pn-title">Ensemble-modeller →</div></a>
       </nav>
     </div>
   </section>

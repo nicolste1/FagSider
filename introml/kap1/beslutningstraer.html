@@ -32,6 +32,12 @@
   .split-box .sb-k { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.2rem; }
   .split-box.total { border-color: var(--accent); background: var(--accent-soft); }
   .gini-calc { font-family: var(--mono); font-size: 0.88rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
 </style>
 </head>
 <body>
@@ -57,6 +63,7 @@
       <h1>Beslutnings<em>trær</em></h1>
       <p class="lede">En modell som stiller ett enkelt spørsmål om gangen. Hvordan et tre er bygget opp av noder og stumper, hvordan Gini-urenhet og entropi måler «uorden», hvordan vi velger den splitten som rydder mest, og når vi skal slutte å splitte.</p>
       <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#noder"><span>01</span> Noder</a>
         <a href="#gini"><span>02</span> Gini-urenhet</a>
         <a href="#entropi"><span>03</span> Entropi</a>
@@ -65,6 +72,26 @@
       </nav>
     </div>
   </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen 26. september 2026 (kilder/eksamensanalyse.md, forslag, ikke godkjent ennå) · deltema 1.3, prio 2 · 2 eksamensoppgaver på siden</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Hvordan treet velger feature:</strong> den splitten som reduserer usikkerheten mest (Ord. 2024 spm. 15). Se <a href="#noder">01</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Velg splitt etter Gini:</strong> lavest Gini-urenhet etter splitt vinner (Ord. 2025 del 2 spm. 4, med tre tall gitt). Kunne regne \(1 - \sum p_i^2\) og det vektede gjennomsnittet (45). Se <a href="#gini">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Entropi og informasjonsgevinst</strong> som alternativ til Gini, og at de gir omtrent samme splitter. Ikke spurt direkte ennå, men samme spørsmål kan stilles med entropi i stedet for Gini. Se <a href="#entropi">03</a>.</li>
+          <li><span class="tag">Lavere</span>Pseudokoden for å bygge treet og Palmer Penguins-koden (04): notatene sier selv at dere ikke skal bygge trær. Stoppkriteriene og «uren løvnode» er lesestoff, ikke regnestoff.</li>
+        </ul>
+        <p style="margin:0.6rem 0 0">Ett spørsmål per sett. Regresjonstrær (velg splitten med lavest varians) står i 1C, og random forest i 1D.</p>
+      </div>
+    </div>
+  </section>
+
 
   <!-- ─────────────────────────── 01 NODER ─────────────────────────── -->
   <section id="noder">
@@ -159,6 +186,27 @@
           <div class="answer">En beslutningsnode har et splitt-kriterium og sender datapunktet videre til én av barnenodene. En løvnode splitter ikke; den inneholder prediksjonen (klassen) for alle datapunkter som havner der. Rotnoden er en spesiell beslutningsnode: den øverste, der alle data kommer inn.</div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o24-15">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 15</span><span class="o-ref">1.3.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hvordan bestemmer et beslutningstre hvilken egenskap (feature) det skal dele på i en gitt node?</p>
+          <ol class="mcq-list" type="A">
+            <li>Det velger egenskapen med færrest mulige verdier for å minimere entropi.</li>
+            <li>Det velger alltid den første egenskapen i datasettet.</li>
+            <li>Det velger egenskapen som maksimalt reduserer usikkerhet i datasettet.</li>
+            <li>Det velger tilfeldig en egenskap fra de tilgjengelige egenskapene.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Ordrett fra notatene: vi velger det splitt-kriteriet som reduserer usikkerheten mest, målt med log loss, Gini eller entropi. Tilfeldig valg (D) forekommer bare som feature-<em>utvalg</em> i random forest (1D), og selv der velges beste splitt blant de utvalgte.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -216,6 +264,27 @@
           </div>
         </div>
       </div>
+    
+      <div class="oppgave" data-quiz id="oppg-o25-2-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 2 · spm. 4</span><span class="o-ref">1.3.2 · regn, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Et beslutningstre vurderer tre mulige features for rotnoden. Gini-impuriteten \(G\) etter splitt er: Feature A: \(G = 0.28\), Feature B: \(G = 0.41\), Feature C: \(G = 0.07\). Hvilken feature bør velges for splitten?</p>
+          <ol class="mcq-list" type="A">
+            <li>Alle features gir gyldige split, så valget påvirker ikke impuriteten</li>
+            <li>Feature A</li>
+            <li>Feature C</li>
+            <li>Feature B</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Lavest Gini etter splitt = renest barn = størst reduksjon i usikkerhet. Samme logikk som tabell 6 over. Kommer spørsmålet med <em>informasjonsgevinst</em> i stedet, velges den <em>høyeste</em> verdien; med <em>entropi etter splitt</em> igjen den laveste. Les alltid om tallet er «etter splitt» eller «gevinst».</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

@@ -40,7 +40,7 @@
     <div class="container">
       <div class="eyebrow">Øvinger · Assignment 2 · Assignment-forelesning 2 · slides 1–23 · ~12 min</div>
       <h1>Assignment 2: <em>CSP på Sudoku</em></h1>
-      <p class="lede">Du skal programmere AC-3 og backtracking og kjøre dem på fire Sudoku-brett. Siden forklarer hva algoritmene skal gjøre og hvordan Sudoku blir en CSP, og går gjennom de små regneeksemplene fra assignment-forelesningen, siden det er dem eksamen likner på.</p>
+      <p class="lede">Du skal programmere AC-3 og backtracking og kjøre dem på fire Sudoku-brett. Siden forklarer hva algoritmene skal gjøre og hvordan Sudoku blir en CSP, og går gjennom små regneeksempler, siden det er dem eksamen likner på.</p>
       <nav class="toc">
         <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#oppgaven"><span>01</span> Hva du skal gjøre</a>
@@ -56,7 +56,7 @@
       <div class="section-badge">00 · Eksamensfokus</div>
       <h2>Hvorfor denne øvingen <em>teller</em></h2>
       <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026 · deltema 4.1, 4.2, 4.3</div>
-      <p>Læringsassistenten (slide 3): «Historically, there has usually been a problem covering this in exams.» Det pleier å komme en CSP-oppgave, men øvingen er ren programmering, og det er ikke eksamen. På eksamen kjører du AC-3 og backtracking <em>for hånd</em>. Derfor vekter siden regneeksemplene tyngst.</p>
+      <p>Læringsassistenten: «Historically, there has usually been a problem covering this in exams.» Det pleier å komme en CSP-oppgave, men øvingen er ren programmering, og det er ikke eksamen. På eksamen kjører du AC-3 og backtracking <em>for hånd</em>. Derfor vekter siden regneeksemplene tyngst.</p>
       <div class="callout callout-warm">
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
@@ -73,18 +73,18 @@
     <div class="container">
       <div class="section-badge">01 · Hva du skal gjøre</div>
       <h2>Oppgaven og <em>formuleringen</em></h2>
-      <div class="source-note">Assignment-forelesning 2 · slides 2–13, 16–22 · bygger på forelesning 4 og boka kap. 5</div>
+      <div class="source-note">Assignment-forelesning 2 · slides 2–13, 16–22 · bygger på forelesning 4 og boka kap. 5 · pseudokode: Boka s. 171 og 176</div>
 
-      <p>Du får <code>csp.py</code> (CSP-klassen), <code>map_coloring.py</code> (Australia-kartet, til testing) og <code>sudoku.py</code>. To metoder mangler: <code>ac_3()</code> etter pseudokoden på s. 171 i boka og <code>backtracking_search()</code> etter s. 176. Kjør først <span class="term" data-term="ac-3">AC-3</span> på hvert brett, så <span class="term" data-term="backtracking-sok">backtracking</span>. At AC-3 løser de enkle brettene alene er helt greit (slide 7).</p>
-      <p>Leveransen (slide 22): kode, og én PDF med løsningen for hvert av de fire brettene, domenene etter AC-3, hvor mange ganger <code>backtrack()</code> ble kalt og returnerte failure, kjøretider, og en kort diskusjon, f.eks. hvorfor AC-3 kutter kjøretiden kraftig på noen brett.</p>
+      <p>Du får <code>csp.py</code> (CSP-klassen), <code>map_coloring.py</code> (Australia-kartet, til testing) og <code>sudoku.py</code>. To metoder mangler: <code>ac_3()</code> og <code>backtracking_search()</code>, begge etter standard-pseudokoden. Kjør først <span class="term" data-term="ac-3">AC-3</span> på hvert brett, så <span class="term" data-term="backtracking-sok">backtracking</span>. At AC-3 løser de enkle brettene alene er helt greit.</p>
+      <p>Leveransen: kode, og én PDF med løsningen for hvert av de fire brettene, domenene etter AC-3, hvor mange ganger <code>backtrack()</code> ble kalt og returnerte failure, kjøretider, og en kort diskusjon, f.eks. hvorfor AC-3 kutter kjøretiden kraftig på noen brett.</p>
 
       <div class="def-box">
-        <span class="def-label">Sudoku som CSP (slides 16–17)</span>
+        <span class="def-label">Sudoku som CSP</span>
         <div class="def-term">81 variabler, domener 1–9, ≠ mellom naboer</div>
         <p><strong>Variabler:</strong> én per celle, \(X_{11}, \dots, X_{99}\) (rad, kolonne). <strong><span class="term" data-term="domene">Domener</span>:</strong> \(\{1, \dots, 9\}\) for tomme celler, \(\{v\}\) for celler med gitt tall \(v\). <strong><span class="term" data-term="constraint">Constraints</span>:</strong> Alldiff for hver rad, kolonne og 3×3-boks. Koden gjør hver Alldiff over 9 celler om til alle \(\binom{9}{2} = 36\) binære kanter \(X_i \ne X_j\). Hver celle får da 20 naboer (8 i raden, 8 i kolonnen, 4 til i boksen), altså \(81 \cdot 20 / 2 = 810\) ulike kanter (egen regning).</p>
       </div>
 
-      <p>Valgene i backtracking er fri (slide 13): SELECT-UNASSIGNED-VARIABLE kan være hva som helst, men <span class="term" data-term="mrv">MRV</span> er et godt valg. ORDER-DOMAIN-VALUES kan være hva som helst, gjerne <span class="term" data-term="lcv">LCV</span>. INFERENCE er der <span class="term" data-term="forward-checking">forward checking</span> ville vært; den kan hoppes over.</p>
+      <p>Valgene i backtracking er fri: SELECT-UNASSIGNED-VARIABLE kan være hva som helst, men <span class="term" data-term="mrv">MRV</span> er et godt valg. ORDER-DOMAIN-VALUES kan være hva som helst, gjerne <span class="term" data-term="lcv">LCV</span>. INFERENCE er der <span class="term" data-term="forward-checking">forward checking</span> ville vært; den kan hoppes over.</p>
 
 <pre><code>function AC-3(csp) returns false if an inconsistency is found and true otherwise
   queue ← a queue of arcs, initially all the arcs in csp
@@ -127,8 +127,8 @@ function BACKTRACK(csp, assignment) returns a solution or failure
   <section id="eksempel">
     <div class="container">
       <div class="section-badge">02 · Gjennomgåtte eksempler</div>
-      <h2>Regneeksemplene fra <em>forelesningen</em></h2>
-      <div class="source-note">Assignment-forelesning 2 · slides 5–6, 9–12, 14–15, 23</div>
+      <h2>Små <em>regneeksempler</em></h2>
+      <div class="source-note">Assignment-forelesning 2 · slides 5–6, 9–12, 14–15, 23 · min-conflicts: Boka kap. 5.4</div>
 
       <div class="oppgave" data-quiz id="oppg-a2-kart">
         <div class="o-label"><span>Oppgave fra assignment-forelesningen</span><span class="o-ref">slides 9–12</span></div>
@@ -143,7 +143,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
         </div>
       </div>
 
-      <p>De tre neste oppgavene bruker samme lille graf: tre variabler i en kjede, alle med domene {B, G, R} (blå, grønn, rød), og ≠ langs kantene. «Feil» betyr her at backtracking prøver en verdi som bryter med en variabel som allerede har verdi (egen tolkning av slidene, uten forward checking).</p>
+      <p>De tre neste oppgavene bruker samme lille graf: tre variabler i en kjede, alle med domene {B, G, R} (blå, grønn, rød), og ≠ langs kantene. «Feil» betyr her at backtracking prøver en verdi som bryter med en variabel som allerede har verdi (egen tolkning, uten forward checking).</p>
 
       <figure>
         <svg class="cg" viewBox="0 0 420 110" aria-label="Constraint graph A–B–C">
@@ -155,7 +155,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
           <text class="dom" x="210" y="28" text-anchor="middle">{B, G, R}</text>
           <text class="dom" x="350" y="28" text-anchor="middle">{B, G, R}</text>
         </svg>
-        <figcaption>Gjenskapt fra slide 14. Slidene tegner pilene A → B → C; constrainten er A ≠ B og B ≠ C.</figcaption>
+        <figcaption>Pilene A → B → C betyr constraintene A ≠ B og B ≠ C.</figcaption>
       </figure>
 
       <div class="oppgave" data-quiz id="oppg-a2-mrvlcv">
@@ -218,7 +218,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra assignment-forelesningen</span>
-            <p><strong>CSP-løseren.</strong> Problemet har en ren constraint-struktur: én variabel per kolonne (raden til dronningen), domene 1–8, og binære constraints «ikke samme rad, ikke samme diagonal». Backtracking med propagering (forward checking/AC-3) og MRV kutter bort ulovlige delløsninger tidlig, finner en løsning som garantert er gyldig, og kan bevise at ingen finnes. Lokalt søk med min-conflicts løser n-dronninger svært raskt selv for stor n (boka kap. 5.4).</p>
+            <p><strong>CSP-løseren.</strong> Problemet har en ren constraint-struktur: én variabel per kolonne (raden til dronningen), domene 1–8, og binære constraints «ikke samme rad, ikke samme diagonal». Backtracking med propagering (forward checking/AC-3) og MRV kutter bort ulovlige delløsninger tidlig, finner en løsning som garantert er gyldig, og kan bevise at ingen finnes. Lokalt søk med min-conflicts løser n-dronninger svært raskt selv for stor n.</p>
             <p>GA er stokastisk og bruker constraints bare indirekte via fitness (antall angrepspar). Crossover kan bryte gode delløsninger, den trenger mange evalueringer, og gir ingen garanti for å finne en løsning eller vite at den er optimal.</p>
           </div>
         </div>
@@ -241,7 +241,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
           <li><strong>MRV teller opprinnelig domene.</strong> Det er antall <em>lovlige</em> verdier gitt nåværende tilordning som teller.</li>
           <li><strong>Glemmer tie-break.</strong> Eksamen gir en regel (alfabetisk e.l.); vis den i hvert steg.</li>
           <li><strong>Angrer ikke ved backtracking.</strong> Fjern både {var = value} og inferensene før neste verdi prøves.</li>
-          <li><strong>Leser ikke boka.</strong> Assistenten advarer: i 2025 kom et tema som bare sto i boka (topologisk sortering, nå ute av pensum).</li>
+          <li><strong>Leser ikke læreboka.</strong> Assistenten advarer: i 2025 kom et tema som bare sto i læreboka (topologisk sortering, nå ute av pensum).</li>
         </ul>
       </div>
     </div>

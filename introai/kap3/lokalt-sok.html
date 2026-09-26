@@ -74,7 +74,7 @@
           <li><span class="tag">Forklar</span><strong>Inkrementelt vs lokalt søk:</strong> bygge en løsning bit for bit vs forbedre én komplett tilstand. <a href="#oppg-o22-1-4">Ord. 2022 · 1.4</a>.</li>
           <li><span class="tag">Forklar</span><strong>Genetiske algoritmer:</strong> seleksjon, crossover, mutasjon, og hvorfor vi har mutasjon. <a href="#oppg-o22-1-5">Ord. 2022 · 1.5</a>.</li>
           <li><span class="tag regn">Regn</span><strong>Ikke sett på eksamen, men lett å gi:</strong> kjøre hill climbing på en liten tabell, akseptsannsynlighet \(e^{-\Delta E/T}\) i simulated annealing, fitness for 8-queens.</li>
-          <li><span class="tag lav">Lavere</span>Local beam og stochastic beam search, gradient descent og maskinlæring (slide 75–78), Griewank-funksjonen, kontinuerlig vs diskret optimering.</li>
+          <li><span class="tag lav">Lavere</span>Local beam og stochastic beam search, gradient descent og maskinlæring, Griewank-funksjonen, kontinuerlig vs diskret optimering.</li>
         </ul>
       </div>
     </div>
@@ -88,7 +88,7 @@
       <div class="source-note">Slides forelesning 3 · 57–63 · Boka kap. 4.1</div>
       <span class="lm-pill">Deltema 3.1 · prio 2</span>
 
-      <p class="dropcap">BFS, UCS og A* fra kapittel 2 utforsker rommet systematisk: de holder stier i minnet og husker hvilke alternativer som er prøvd, og stien til målet <em>er</em> løsningen. I mange problemer bryr vi oss bare om sluttilstanden. Slidene: vi vil vite hvilke primtall som ganges til et stort tall, ikke alle tallene vi prøvde underveis.</p>
+      <p class="dropcap">BFS, UCS og A* fra kapittel 2 utforsker rommet systematisk: de holder stier i minnet og husker hvilke alternativer som er prøvd, og stien til målet <em>er</em> løsningen. I mange problemer bryr vi oss bare om sluttilstanden. Eksempel: vi vil vite hvilke primtall som ganges til et stort tall, ikke alle tallene vi prøvde underveis.</p>
       <p><span class="term" data-term="lokalt-sok">Lokalt søk</span> har én <em>current</em>-tilstand og flytter seg til nabotilstander. Det gir opp fullstendighet og optimalitet for å få bedre tids- og minnebruk: det bruker lite (ofte konstant) minne og finner ofte gode nok løsninger i svært store eller uendelige tilstandsrom.</p>
 
       <div class="compare-grid">
@@ -103,8 +103,8 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget (utvidet)</span>
-            <p>Løsningsforslaget: <em>inkrementelle</em> søkealgoritmer starter med en delvis løsning og bygger gradvis videre på den til en komplett løsning er funnet.</p>
-            <p>Den andre halvdelen (ikke med i løsningsforslaget, men forventet i et fullt svar): <em>lokalt</em> søk starter med en komplett tilstand og forbedrer den ved å flytte til nabotilstander. Det husker ikke stien, bruker lite minne, men er verken fullstendig eller optimalt.</p>
+            <p><em>Inkrementelle</em> søkealgoritmer starter med en delvis løsning og bygger gradvis videre på den til en komplett løsning er funnet.</p>
+            <p>Den andre halvdelen (lagt til her, forventet i et fullt svar): <em>lokalt</em> søk starter med en komplett tilstand og forbedrer den ved å flytte til nabotilstander. Det husker ikke stien, bruker lite minne, men er verken fullstendig eller optimalt.</p>
           </div>
         </div>
       </div>
@@ -119,11 +119,11 @@
       <div class="source-note">Slides forelesning 3 · 64–66 · Boka kap. 4.1 (figur 4.1)</div>
 
       <p class="dropcap">Tenk på tilstandsrommet som et <span class="term" data-term="tilstandslandskap">landskap</span>: hvert punkt er en tilstand, og høyden er verdien. Er høyden en <span class="term" data-term="objektfunksjon">objektfunksjon</span>, leter vi etter den høyeste toppen (<span class="term" data-term="globalt-maksimum">globalt maksimum</span>). Er høyden en kostnadsfunksjon, leter vi etter den dypeste dalen (globalt minimum). Begge er samme problem med motsatt fortegn.</p>
-      <p>Hvor vi kan gå, bestemmes av <span class="term" data-term="nabolag">nabolaget</span>: naboene til en tilstand er tilstandene vi når med én handling. I slidenes graf er A nabo til S, C og seg selv, så nabolaget til A er \(\{A, C, S\}\).</p>
+      <p>Hvor vi kan gå, bestemmes av <span class="term" data-term="nabolag">nabolaget</span>: naboene til en tilstand er tilstandene vi når med én handling. I eksempelgrafen er A nabo til S, C og seg selv, så nabolaget til A er \(\{A, C, S\}\).</p>
 
       <figure>
         <svg id="land-svg" viewBox="0 0 600 250" data-w="600" data-h="250" aria-label="Tilstandslandskap"></svg>
-        <figcaption>Etter figur 4.1 i boka (slide 65). Diskrete tilstander \(x = 0,\dots,40\), naboer \(x \pm 1\). Samme landskap brukes i widgeten under.</figcaption>
+        <figcaption>Diskrete tilstander \(x = 0,\dots,40\), naboer \(x \pm 1\). Samme landskap brukes i widgeten under.</figcaption>
       </figure>
 
       <table class="tbl-small">
@@ -144,7 +144,7 @@
       <h2>Gå til det beste stedet du <em>ser nå</em></h2>
       <div class="source-note">Slides forelesning 3 · 69–74 · Boka kap. 4.1.1 (figur 4.2)</div>
 
-      <p class="dropcap"><span class="term" data-term="hill-climbing">Hill climbing</span> (steepest ascent) ser på alle naboene og flytter til den beste, men bare hvis den er <em>strengt</em> bedre. Ellers returnerer den current. Den husker ingenting annet og ser ikke lenger enn nærmeste nabo; boka kaller det «å klatre Everest i tett tåke med hukommelsestap».</p>
+      <p class="dropcap"><span class="term" data-term="hill-climbing">Hill climbing</span> (steepest ascent) ser på alle naboene og flytter til den beste, men bare hvis den er <em>strengt</em> bedre. Ellers returnerer den current. Den husker ingenting annet og ser ikke lenger enn nærmeste nabo, som «å klatre Everest i tett tåke med hukommelsestap».</p>
 <pre><code>function HILL-CLIMBING(problem) returns a state that is a local maximum
     current ← problem.INITIAL
     while true do
@@ -190,7 +190,7 @@
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget</span>
             <p>«It may also be a local minimum or a plateau. Random start would be a good trick.»</p>
-            <p>Merk: vi maksimerer, så det løsningsforslaget kaller «local minimum» er et <strong>lokalt maksimum</strong>. Et fullt svar: tilstanden kan være et lokalt maksimum, et platå (flatt lokalt maksimum eller skulder) eller en del av en rygg. Triks: <strong>random restart</strong> (start på nytt fra en tilfeldig tilstand og behold den beste), eventuelt sidelengs trekk (hjelper på skulder) eller simulated annealing (tillater dårlige trekk).</p>
+            <p>Merk: vi maksimerer, så det svaret kaller «local minimum» er et <strong>lokalt maksimum</strong>. Et fullt svar: tilstanden kan være et lokalt maksimum, et platå (flatt lokalt maksimum eller skulder) eller en del av en rygg. Triks: <strong>random restart</strong> (start på nytt fra en tilfeldig tilstand og behold den beste), eventuelt sidelengs trekk (hjelper på skulder) eller simulated annealing (tillater dårlige trekk).</p>
           </div>
         </div>
       </div>
@@ -229,7 +229,7 @@
       <h2>Ta <em>dårlige</em> valg, men sjeldnere og sjeldnere</h2>
       <div class="source-note">Slides forelesning 3 · 71–74 · Boka kap. 4.1.2 (figur 4.5)</div>
 
-      <p class="dropcap">Slidene gir tre idéer for å komme seg ut av lokale optima. Idé 1: ta noen ikke-så-gode valg innimellom (<span class="term" data-term="stokastisk-lokalt-sok">stokastisk lokalt søk</span>). Idé 2: senk gradvis hvor ofte vi tar slike dårlige valg, som er <span class="term" data-term="simulated-annealing">simulated annealing</span>. Idé 3: søk flere stier samtidig (populasjonsbasert, avsnitt 05–06). Slike metoder kalles <span class="term" data-term="metaheuristikk">metaheuristikker</span>.</p>
+      <p class="dropcap">Det finnes tre idéer for å komme seg ut av lokale optima. Idé 1: ta noen ikke-så-gode valg innimellom (<span class="term" data-term="stokastisk-lokalt-sok">stokastisk lokalt søk</span>). Idé 2: senk gradvis hvor ofte vi tar slike dårlige valg, som er <span class="term" data-term="simulated-annealing">simulated annealing</span>. Idé 3: søk flere stier samtidig (populasjonsbasert, avsnitt 05–06). Slike metoder kalles <span class="term" data-term="metaheuristikk">metaheuristikker</span>.</p>
       <p>Simulated annealing velger en <em>tilfeldig</em> nabo. Er den bedre, flytter vi alltid. Er den dårligere med \(\Delta E \gt 0\) (hvor mye verre), flytter vi med sannsynlighet</p>
       \[ P(\text{aksepter}) = e^{-\Delta E / T} \]
       <p>der <span class="term" data-term="temperatur">temperaturen</span> \(T\) senkes over tid etter en <em>schedule</em>. Høy \(T\): nesten alt aksepteres (tilfeldig vandring). \(T \to 0\): ingen dårlige trekk aksepteres (ren hill climbing). Senkes \(T\) langsomt nok, går sannsynligheten for å finne globalt optimum mot 1. Bildet er metall som kjøles: atomene beveger seg mye når det er varmt og legger seg til ro når det kjøles.</p>
@@ -245,7 +245,7 @@
 
       <div class="callout callout-warn">
         <span class="label">Fortegn</span>
-        <p>Boka og slidene skriver formelen litt ulikt (maksimering med \(e^{\Delta E/T}\) der \(\Delta E \lt 0\), eller energi/kostnad med \(e^{-\Delta E/T}\) der \(\Delta E \gt 0\)). Innholdet er det samme: sannsynligheten er alltid mindre enn 1 for et dårligere trekk, faller når trekket er mye verre, og faller når \(T\) synker.</p>
+        <p>Formelen skrives på to måter (maksimering med \(e^{\Delta E/T}\) der \(\Delta E \lt 0\), eller energi/kostnad med \(e^{-\Delta E/T}\) der \(\Delta E \gt 0\)). Innholdet er det samme: sannsynligheten er alltid mindre enn 1 for et dårligere trekk, faller når trekket er mye verre, og faller når \(T\) synker.</p>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-sa-sannsynlighet">
@@ -292,7 +292,7 @@
       <h2>En <em>populasjon</em> som utvikler seg</h2>
       <div class="source-note">Slides forelesning 3 · 79–88 · Boka kap. 4.1.4 (figur 4.6–4.8)</div>
 
-      <p>En <span class="term" data-term="genetisk-algoritme">genetisk algoritme</span> (GA) er en populasjonsbasert metaheuristikk. Slidene: «If you have no signal on where to go, this can be very powerful.» Stegene:</p>
+      <p>En <span class="term" data-term="genetisk-algoritme">genetisk algoritme</span> (GA) er en populasjonsbasert metaheuristikk. «If you have no signal on where to go, this can be very powerful.» Stegene:</p>
       <ol class="steps">
         <li>Start med en <span class="term" data-term="populasjon">populasjon</span> av \(k\) tilfeldig genererte tilstander.</li>
         <li>Velg tilfeldig to foreldre, vektet etter <span class="term" data-term="fitness">fitness</span> (objektfunksjonen). Dette er <span class="term" data-term="seleksjon">seleksjon</span>.</li>
@@ -304,7 +304,7 @@
       \[ P(\text{velg } i) = \frac{\text{fitness}(i)}{\sum_j \text{fitness}(j)} \]
 
       <h3>8-queens</h3>
-      <p><span class="term" data-term="atta-dronninger">8-queens</span>: plasser 8 dronninger på et sjakkbrett så ingen truer hverandre. Boka koder en tilstand som 8 sifre, der siffer nummer \(i\) er raden til dronningen i kolonne \(i\). Fitness er antall par som <em>ikke</em> angriper hverandre; en løsning har \(\binom{8}{2} = 28\).</p>
+      <p><span class="term" data-term="atta-dronninger">8-queens</span>: plasser 8 dronninger på et sjakkbrett så ingen truer hverandre. En tilstand kodes som 8 sifre, der siffer nummer \(i\) er raden til dronningen i kolonne \(i\). Fitness er antall par som <em>ikke</em> angriper hverandre; en løsning har \(\binom{8}{2} = 28\).</p>
 
       <figure>
         <svg class="board-svg" viewBox="0 0 256 256" style="max-width:260px" aria-label="8-queens-tilstanden 24748552">
@@ -445,7 +445,7 @@
 
       <p class="dropcap">Minimerer vi i stedet for å maksimere, kalles hill climbing <span class="term" data-term="gradient-descent">gradient descent</span>: vi flytter i retningen der «høyden» synker mest. I flere dimensjoner peker gradienten \(\nabla f\) dit funksjonen vokser mest, så vi går motsatt vei:</p>
       \[ \theta \leftarrow \theta - \alpha \, \nabla_\theta f(\theta) \]
-      <p>Slidene kobler dette til maskinlæring: en tapsfunksjon over en milliard parametre er et milliard-dimensjonalt landskap, og treningen er lokalt søk der stien ikke betyr noe, bare bunnen.</p>
+      <p>Koblingen til maskinlæring: en tapsfunksjon over en milliard parametre er et milliard-dimensjonalt landskap, og treningen er lokalt søk der stien ikke betyr noe, bare bunnen.</p>
 
       <div class="oppgave" data-quiz id="oppg-wake-up">
         <div class="o-label"><span>Tenk over · fra slidene</span><span class="o-ref">slide 89–90 «Wake up problem»</span></div>

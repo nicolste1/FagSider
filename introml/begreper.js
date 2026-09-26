@@ -18,6 +18,8 @@
   var LR = 'kap1/logistisk-regresjon.html';
   var BT = 'kap1/beslutningstraer.html';
   var RG = 'kap1/regresjon.html';
+  var EN = 'kap1/ensemble.html';
+  var NN = 'kap2/perceptron.html';
 
   window.GLOSSARY = {
     /* ── 1.1 Data ── */
@@ -644,6 +646,224 @@
       term: 'Tolkbarhet',
       def: '<p>At mennesker kan forstå hvordan modellen kommer fram til prediksjonen. Regresjonsmodeller: størrelsen på parametrene angir viktigheten av hver variabel. Trær: splittkriteriene er forståelige, og tidlige splitter er viktigere enn sene. Gjelder ikke nevrale nettverk.</p>',
       more: RG + '#regresjonstraer'
+    }    ,
+    /* ── Eksamensbegreper utenfor notatene (1A/1C) ── */
+    'batch-size': {
+      term: 'Batch size',
+      alias: 'minibatch',
+      def: '<p>Antall treningsdatapunkter som brukes per iterasjon (parameteroppdatering) av treningen. Koden i notatene bruker hele datasettet per oppdatering; i praksis deles dataene i batcher. Iterasjoner per epoke = antall datapunkter / batch size. Ikke i notatene, men spurt på eksamen 2024.</p>',
+      more: LR + '#trening'
+    },
+    'iterasjon': {
+      term: 'Iterasjon',
+      def: '<p>Én parameteroppdatering med gradient descent, basert på én batch. En epoke består av (antall datapunkter / batch size) iterasjoner. 10 000 datapunkter og batch size 500 gir 20 iterasjoner per epoke.</p>',
+      more: LR + '#trening'
+    },
+    'induktivt-bias': {
+      term: 'Induktivt bias',
+      def: '<p>Antakelsene en modell gjør for å kunne generalisere fra treningsdata til usette data: lineær regresjon antar en rett linje uten vekselvirkninger, trær antar akseparallelle regioner, naïv Bayes antar uavhengige features. Uten slike antakelser er generalisering umulig. Ikke i notatene, men spurt på eksamen 2024.</p>',
+      more: RG + '#bias-varians'
+    },
+
+    /* ── 1.5 Ensemble-modeller ── */
+    'ensemble': {
+      term: 'Ensemble',
+      alias: 'ensemble learning',
+      def: '<p>En samling modeller som kombineres slik at de kompenserer for hverandres svakheter. Som en gruppe eksperter der gruppens beslutning tar alle vurderingene med, men forkaster den som ikke deles av majoriteten. Kan settes sammen parallelt, sekvensielt eller hierarkisk.</p>',
+      more: EN + '#ensemble'
+    },
+    'parallelt-ensemble': {
+      term: 'Parallelt ensemble',
+      def: '<p>Flere modeller trenes uavhengig av hverandre, og prediksjonene kombineres (aggregeres) til én. Diversitet fra ulike modelltyper, hyperparametre, random seeds, feature engineering eller utvalg av treningsdata. Bagging og random forest.</p>',
+      more: EN + '#ensemble'
+    },
+    'sekvensielt-ensemble': {
+      term: 'Sekvensielt ensemble',
+      def: '<p>Modellene kommer etter hverandre, og hver modell opphever feilen begått av den foregående. Rekken kommer til sammen frem til én prediksjon. Boosting (AdaBoost, gradient boosting).</p>',
+      more: EN + '#ensemble'
+    },
+    'hierarkisk-ensemble': {
+      term: 'Hierarkisk ensemble',
+      def: '<p>En eller flere modeller brukes til å kombinere prediksjonen fra en foregående parallellkombinasjon av flere modeller.</p>',
+      more: EN + '#ensemble'
+    },
+    'inferens': {
+      term: 'Inferens',
+      def: '<p>Å bruke en trent modell til å gjøre prediksjoner. Skillet mellom trening og inferens er viktig, og særlig synlig i ensemble learning, der treningen kan være sekvensiell mens inferensen kjører hele ensemblet på ett datapunkt.</p>',
+      more: EN + '#ensemble'
+    },
+    'aggregering': {
+      term: 'Aggregering',
+      def: '<p>Å slå sammen enkeltmodellenes prediksjoner til ensemblets prediksjon. Regresjon: gjennomsnittet. Klassifisering: klassen flertallet predikerer (direkte avstemning), eller en vektet avstemning.</p>',
+      more: EN + '#bagging'
+    },
+    'bootstrapping': {
+      term: 'Bootstrapping',
+      alias: 'bootstrap',
+      def: '<p>Å trekke datapunkter fra det samme datasettet <em>med tilbakelegging</em>, slik at samme punkt kan komme flere ganger, og slik lage flere ulike datasett av det ene vi har. Gir en fordeling av estimater, altså et mål på spredning, uten å samle mer data. Ikke det samme som kryssvalidering, som deler i ikke-overlappende delsett.</p>',
+      more: EN + '#bagging'
+    },
+    'bagging': {
+      term: 'Bagging',
+      def: '<p><strong>B</strong>ootstrap + <strong>agg</strong>reger<strong>ing</strong>: tren én modell per bootstrap-trekning av treningsdataene, og aggreger prediksjonene ved gjennomsnitt eller avstemning. Modellene trenes på ulike data og blir forskjellige, og ensemblet får lavere varians.</p>',
+      more: EN + '#bagging'
+    },
+    'random-forest': {
+      term: 'Random forest',
+      alias: 'tilfeldig skog',
+      def: '<p>Bagging med beslutningstrær (eventuelt stumper). Trærne må være diverse og uavhengige: hvert tre trenes på sin bootstrap-trekning og på et tilfeldig utvalg av features, så korrelasjonen mellom trærne reduseres. Prediksjonene aggregeres.</p>',
+      more: EN + '#random-forest'
+    },
+    'boosting': {
+      term: 'Boosting',
+      def: '<p>Algoritmer som iterativt trener svake modeller (for eksempel trestumper) og kombinerer dem sekvensielt til en sterk modell. Feilene begått av én modell gjør den påfølgende bedre («booster» den). AdaBoost og gradient boosting.</p>',
+      more: EN + '#boosting'
+    },
+    'svak-modell': {
+      term: 'Svak modell',
+      alias: 'weak learner',
+      def: '<p>En modell hvis prediksjoner bare er svakt korrelert med target, for eksempel en trestump. En sterk modell er vilkårlig sterkt korrelert med target. Boosting setter sammen svake modeller til en sterk.</p>',
+      more: EN + '#boosting'
+    },
+    'adaboost': {
+      term: 'AdaBoost',
+      def: '<p>Boosting basert på vekting av datapunkter: alle starter med samme vekt, en modell trenes, og vektene økes for datapunktene modellen har størst tap på (feilklassifiserte), før neste modell trenes.</p>',
+      more: EN + '#boosting'
+    },
+    'gradient-boosting': {
+      term: 'Gradient boosting',
+      alias: 'XGBoost, LightGBM, CatBoost',
+      def: '<p>Boosting der hver ny modell predikerer pseudo-residualene, forskjellen mellom targets og ensemblets nåværende prediksjon: <code>new_ensemble = previous_ensemble - learning_rate * new_tree</code>. Gradient descent i rommet av trær, med gradient −(label − prediction).</p>',
+      more: EN + '#boosting'
+    },
+    'pseudo-residual': {
+      term: 'Pseudo-residualer',
+      def: '<p>Forskjellen mellom targets og den forrige modellens (ensemblets) prediksjon, y − F(x). Det hvert nytt tre i gradient boosting tilpasses, slik at det modellerer den gjenværende feilen.</p>',
+      more: EN + '#boosting'
+    },
+    'tabulaere-data': {
+      term: 'Tabulære data',
+      def: '<p>Data i tabellform med rader (datapunkter) og kolonner (features), den typen data dette kurset bruker. På tabulære data er det en god regel å alltid bruke en ensemble-modell som referanseverdi for hvor godt en modell kan gjøre det.</p>',
+      more: EN + '#boosting'
+    },
+
+    /* ── 2 Nevrale nettverk ── */
+    'parametrisk': {
+      term: 'Parametrisk modellering',
+      def: '<p>Funksjonsformen til f er gitt, og treningen tilpasser parametrene i funksjonen. Lineær og logistisk regresjon, og nevrale nettverk.</p>',
+      more: NN + '#intro'
+    },
+    'ikke-parametrisk': {
+      term: 'Ikke-parametrisk modellering',
+      def: '<p>Formen til f er ikke gitt; treningen bygger modellen, for eksempel et tre med splittkriterier som deler opp datarommet. Dataene flyter gjennom uten å transformeres.</p>',
+      more: NN + '#intro'
+    },
+    'nevralt-nettverk': {
+      term: 'Nevralt nettverk',
+      def: '<p>En parametrisk, ikke-lineær modell bygget av lag med noder, der hvert lag gjør en ikke-lineær transformasjon av dataene: a = g(W a). Trenes med gradient descent på en deriverbar tapsfunksjon, som logistisk regresjon.</p>',
+      more: NN + '#arkitektur'
+    },
+    'perceptron': {
+      term: 'Perceptron',
+      alias: 'perseptron',
+      def: '<p>Forgjengeren til moderne nevrale nettverk: én eller flere noder (TLU-er) som gir binær output f(x) = H(wx + b). Trenes med regelen w<sub>i</sub> ← w<sub>i</sub> + η(y<sub>i</sub> − ŷ<sub>i</sub>) siden Heaviside ikke kan deriveres. Kan lære AND, OR og NOT, men ikke XOR.</p>',
+      more: NN + '#perceptron'
+    },
+    'node': {
+      term: 'Node',
+      alias: 'nevron',
+      def: '<p>En beregningsenhet i et nevralt nettverk: vektet sum av inputene pluss bias, sendt gjennom en aktiveringsfunksjon. Noder i samme lag mottar ikke input fra hverandre.</p>',
+      more: NN + '#perceptron'
+    },
+    'tlu': {
+      term: 'Threshold logic unit (TLU)',
+      def: '<p>Den opprinnelige noden i perceptronet: aktiv (output 1) hvis wx + b ≥ 0, ellers ikke aktiv (output 0). Heaviside-funksjonen som aktiveringsfunksjon.</p>',
+      more: NN + '#perceptron'
+    },
+    'heaviside': {
+      term: 'Heaviside-funksjonen',
+      alias: 'stegfunksjon, step function',
+      def: '<p>H(z) = 0 for z &lt; 0 og 1 for z ≥ 0. Den deriverte er 0 overalt og udefinert i ett punkt, så en tapsfunksjon som inneholder H kan ikke deriveres. Derfor kan ikke perceptronet trenes med gradient descent, og derfor byttes H mot sigmoid i moderne nettverk.</p>',
+      more: NN + '#perceptron'
+    },
+    'vektmatrise': {
+      term: 'Vektmatrise',
+      def: '<p>Når et lag har flere noder, er vektene en matrise w<sub>ij</sub> (input i til node j) i stedet for en vektor. To features og tre klasser gir en 3 × 2-matrise (6 vekter) og 3 bias. Oppdateringen blir w<sub>ij</sub> ← w<sub>ij</sub> + η(y<sub>j</sub> − ŷ<sub>j</sub>)x<sub>i</sub>.</p>',
+      more: NN + '#perceptron'
+    },
+    'logiske-operasjoner': {
+      term: 'Logiske operasjoner',
+      def: '<p>NOT, AND og OR kan gjøres av ett perceptron med riktige vekter: NOT (w, b) = (−1, 0.5); AND (1, 1, −1.5); OR (1, 1, −0.5). XOR krever to lag: OR og NAND i første, AND i andre.</p>',
+      more: NN + '#logikk'
+    },
+    'lineaert-separerbar': {
+      term: 'Lineært separerbar',
+      def: '<p>At klassene kan skilles av én rett linje (et hyperplan) w·x + b = 0. Det er alt ett perceptron kan uttrykke. XOR er ikke lineært separerbart, og krever et skjult lag.</p>',
+      more: NN + '#logikk'
+    },
+    'softmax': {
+      term: 'Softmax',
+      def: '<p>Aktiveringsfunksjon i output-laget for ikke-binær klassifisering: softmax(x)<sub>i</sub> = e<sup>x<sub>i</sub></sup> / Σ<sub>j</sub> e<sup>x<sub>j</sub></sup>. Sikrer at aktiveringene summerer til 1, så hver output-node (én per klasse) er predikert tilhørighet til sin klasse.</p>',
+      more: NN + '#aktivering'
+    },
+    'relu': {
+      term: 'ReLU',
+      alias: 'rectified linear unit',
+      def: '<p>ReLU(x) = max(0, x). Aktiveringsfunksjonen vi bruker i de skjulte lagene i dette kurset. Deriverbar overalt unntatt i 0, og billig å regne ut.</p>',
+      more: NN + '#aktivering'
+    },
+    'mlp': {
+      term: 'Multi layer perceptron (MLP)',
+      alias: 'fully connected feed-forward nettverk',
+      def: '<p>Nevralt nettverk med flere lag mellom input og output, der alle noder i et lag er koblet til alle noder i nabolagene (fully connected) og informasjon bare går fremover (feed-forward). Sigmoid/softmax ut for klassifisering, lineær ut for regresjon, ReLU i skjulte lag.</p>',
+      more: NN + '#aktivering'
+    },
+    'arkitektur': {
+      term: 'Arkitektur',
+      def: '<p>Hvordan nodene i et nevralt nettverk er satt sammen: antall lag, noder per lag, forbindelser og aktiveringsfunksjoner. Konvolusjonslag for bilder og transformer-blokker for sekvenser er andre arkitekturer enn MLP.</p>',
+      more: NN + '#arkitektur'
+    },
+    'lag': {
+      term: 'Lag',
+      alias: 'layer',
+      def: '<p>Noder stablet i høyden som ikke mottar input fra hverandre. Informasjon går bare mellom noder i ulike lag. Hvert lag transformerer dataene til et nytt rom med like mange dimensjoner som laget har noder.</p>',
+      more: NN + '#arkitektur'
+    },
+    'input-lag': {
+      term: 'Input-lag',
+      def: '<p>Det første laget, som mottar og sender data inn i nettverket. Må ha samme antall noder som dataene har features.</p>',
+      more: NN + '#arkitektur'
+    },
+    'skjult-lag': {
+      term: 'Skjult lag',
+      alias: 'indre lag, hidden layer',
+      def: '<p>Alle lagene mellom input- og output-laget. Vi står fritt til å velge antall lag, noder og aktiveringsfunksjoner (her ReLU).</p>',
+      more: NN + '#arkitektur'
+    },
+    'output-lag': {
+      term: 'Output-lag',
+      def: '<p>Det siste laget, som representerer prediksjonen. I veiledet læring må det ha samme antall noder som targets: én node med sigmoid for binær klassifisering, én per klasse med softmax for flere klasser, lineær for regresjon.</p>',
+      more: NN + '#arkitektur'
+    },
+    'fully-connected': {
+      term: 'Fully connected',
+      def: '<p>At alle nodene i hvert lag er koblet til alle nodene i det foregående og neste laget. Et lag med n inn og m ut har n · m vekter og m bias.</p>',
+      more: NN + '#arkitektur'
+    },
+    'feed-forward': {
+      term: 'Feed-forward',
+      def: '<p>At informasjon bare sendes fremover i nettverket, fra input mot output, uten løkker tilbake.</p>',
+      more: NN + '#arkitektur'
+    },
+    'aktivering': {
+      term: 'Aktivering',
+      def: '<p>Verdien a<sup>l</sup><sub>j</sub> = g(Σ<sub>i</sub> w<sup>l</sup><sub>ij</sub> a<sup>l−1</sup><sub>i</sub>) en node sender videre: den vektede summen av forrige lags aktiveringer, gjennom aktiveringsfunksjonen g. For input-laget er a<sup>0</sup><sub>i</sub> = x<sub>i</sub>. På matriseform for et helt lag: a = g(W a<sup>l−1</sup>).</p>',
+      more: NN + '#arkitektur'
+    },
+    'backpropagation': {
+      term: 'Backpropagation',
+      def: '<p>Algoritmen som beregner hvordan hver vekt i nettverket påvirker tapet, ved å bruke kjerneregelen bakover fra output mot input, slik at gradient descent kan justere vektene for å minimere feilen. Kommer i notatene senere; spurt på eksamen både 2024 og 2025.</p>',
+      more: NN + '#arkitektur'
     }
   };
 })();

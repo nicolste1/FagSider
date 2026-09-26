@@ -70,7 +70,7 @@
           <li><span class="tag regn">Regn</span><strong>Konverter til CNF for hånd</strong> med de fire stegene, og skriv hvert mellomsteg. Samme ferdighet trengs i FOL-resolusjonen i kap. 7 (Ord. 2023 oppg. 3.2b, 10 p).</li>
           <li><span class="tag regn">Regn</span><strong>Resolusjonsrefutasjon:</strong> nummerer klausulene, legg til \(\lnot\alpha\), oppgi hvilke to klausuler hver resolvent kommer fra, stopp ved tom klausul.</li>
           <li><span class="tag">Forklar</span>Hvordan KB og α defineres, og hva som må oppnås for å vise \(KB \models \alpha\) (Ord. 2022 oppg. <a href="#oppg-o22-53">5.3</a>).</li>
-          <li><span class="tag">Lavere</span>CSP løst med resolusjon (slides 72–76) og unit preference-heuristikken: kjenn ideen. Kuttet: Z3-koden (not curriculum).</li>
+          <li><span class="tag">Lavere</span>CSP løst med resolusjon og unit preference-heuristikken: kjenn ideen. Kuttet: Z3-koden (not curriculum).</li>
         </ul>
       </div>
     </div>
@@ -80,13 +80,13 @@
     <div class="container">
       <div class="section-badge">01 · Resolusjonsregelen</div>
       <h2>Literaler, klausuler og <em>resolvent</em></h2>
-      <div class="source-note">Slides forelesning 5 · 44–48</div>
+      <div class="source-note">Slides forelesning 5 · 44–48 · to regler for hånd: Boka kap. 7.5.2</div>
       <span class="lm-pill">Deltema 6.3 · prio 1</span>
       <p class="dropcap">En <span class="term" data-term="literal">literal</span> er et symbol eller et negert symbol (\(P\), \(\lnot Q\)). En <span class="term" data-term="klausul">klausul</span> er en disjunksjon av literaler, f.eks. \(\lnot P \lor Q \lor \lnot R\). <span class="term" data-term="resolusjonsregel">Resolusjonsregelen</span> tar to klausuler der den ene har \(c\) og den andre \(\lnot c\), stryker paret og slår sammen resten:</p>
       \[ \frac{a_1 \lor \dots \lor a_k \lor c, \qquad \lnot c \lor b_1 \lor \dots \lor b_m}{a_1 \lor \dots \lor a_k \lor b_1 \lor \dots \lor b_m} \]
-      <p>Eksempel fra slidene: \(\dfrac{Rain \lor Snow,\ \ \lnot Snow \lor Traffic}{Rain \lor Traffic}\). Modus Ponens er et spesialtilfelle: \(\dfrac{Rain,\ \ \lnot Rain \lor Wet}{Wet}\), fordi \(Rain \Rightarrow Wet \equiv \lnot Rain \lor Wet\). Det samme er Disjunctive Syllogism og <span class="term" data-term="unit-resolution">unit resolution</span> (én av klausulene er én literal).</p>
+      <p>Eksempel: \(\dfrac{Rain \lor Snow,\ \ \lnot Snow \lor Traffic}{Rain \lor Traffic}\). Modus Ponens er et spesialtilfelle: \(\dfrac{Rain,\ \ \lnot Rain \lor Wet}{Wet}\), fordi \(Rain \Rightarrow Wet \equiv \lnot Rain \lor Wet\). Det samme er Disjunctive Syllogism og <span class="term" data-term="unit-resolution">unit resolution</span> (én av klausulene er én literal).</p>
       <div class="callout callout-warn">
-        <span class="label">To regler for hånd (boka 7.5.2)</span>
+        <span class="label">To regler for hånd</span>
         <p>(1) Stryk bare <strong>ett</strong> komplementært par om gangen. \(A \lor B\) og \(\lnot A \lor \lnot B\) gir \(B \lor \lnot B\) eller \(A \lor \lnot A\), som er tautologier og ubrukelige, aldri den tomme klausulen. (2) Like literaler slås sammen (<span class="term" data-term="faktorisering">faktorisering</span>): \(A \lor A \equiv A\).</p>
       </div>
       <p><span class="term" data-term="resolusjonsalgoritmen">Resolusjonsalgoritmen</span> er sunn og fullstendig for <em>all</em> proposisjonell logikk (\(KB \models \alpha \Leftrightarrow KB \vdash_{RA} \alpha\)), men eksponentiell i størrelsen på KB. Sammenlikn med chaining, som bare virker for Horn-klausuler, men er lineær.</p>
@@ -108,7 +108,7 @@
       </ol>
       <p>Til slutt deles konjunksjonen opp i en mengde klausuler: \(\{(P \lor Q) \land R\}\) blir \(\{P \lor Q,\ R\}\).</p>
 
-      <div class="oppgave" data-quiz id="oppg-slide-cnf">
+      <div class="oppgave" data-quiz id="oppg-cnf">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 53–58</span></div>
         <div class="o-text"><p>Gitt \(KB = \{P,\ P \lor Q \Rightarrow R\}\). Vi vil avgjøre om \(KB \models R\). Legg \(\lnot R\) til KB og gjør alle setningene om til klausuler.</p></div>
         <div class="quiz-reveal">
@@ -146,7 +146,7 @@
       <h2>Resolusjons<em>refutasjon</em></h2>
       <div class="source-note">Slides forelesning 5 · 52, eksempel 59–63, heuristikk 64–70 · pseudokode: Boka kap. 7.5.2, fig. 7.13</div>
       <span class="lm-pill">Deltema 6.3 · prio 1</span>
-      <p class="dropcap"><span class="term" data-term="resolusjonsrefutasjon">Resolusjonsrefutasjon</span> er bevis ved selvmotsigelse: \(KB \models \alpha\) hvis og bare hvis \(KB \land \lnot\alpha\) er utilfredsstillbar. Algoritmen fra slidene:</p>
+      <p class="dropcap"><span class="term" data-term="resolusjonsrefutasjon">Resolusjonsrefutasjon</span> er bevis ved selvmotsigelse: \(KB \models \alpha\) hvis og bare hvis \(KB \land \lnot\alpha\) er utilfredsstillbar. Algoritmen:</p>
       <ol class="steps">
         <li>Legg \(\lnot\alpha\) til KB, og konverter alle setningene til CNF.</li>
         <li>Del konjunksjonene opp i klausuler.</li>
@@ -163,15 +163,15 @@
     if new ⊆ clauses then return false
     clauses ← clauses ∪ new</code></pre>
 
-      <div class="oppgave" data-quiz id="oppg-slide-res">
+      <div class="oppgave" data-quiz id="oppg-res">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">Slide 59–70</span></div>
         <div class="o-text"><p>Fortsett eksemplet: klausulene er \(\{P,\ \lnot P \lor R,\ \lnot Q \lor R,\ \lnot R\}\). Utled den tomme klausulen. Hvordan blir beviset kortere med <span class="term" data-term="unit-preference">unit preference</span>?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra slidene</span>
-            <div class="proof">1. P&nbsp;&nbsp;2. ¬P ∨ R&nbsp;&nbsp;3. ¬Q ∨ R&nbsp;&nbsp;4. ¬R (negert spørring)<br>Uten heuristikk (slide 64–67):<br>5. R · resolusjon på 1 og 2<br>6. ¬Q · resolusjon på 3 og 4<br>7. □ · resolusjon på 4 og 5 (R og ¬R)</div>
-            <p>Den tomme klausulen er utledet, så \(KB \models R\). Uten heuristikk kaster vi bort steg 6 (\(\lnot Q\) er irrelevant). Med <em>unit preference</em> (slide 68–70) velges par der minst én klausul er én literal først: \(P\) og \(\lnot P \lor R\) gir \(R\), så \(R\) og \(\lnot R\) gir □ med en gang.</p>
+            <div class="proof">1. P&nbsp;&nbsp;2. ¬P ∨ R&nbsp;&nbsp;3. ¬Q ∨ R&nbsp;&nbsp;4. ¬R (negert spørring)<br>Uten heuristikk:<br>5. R · resolusjon på 1 og 2<br>6. ¬Q · resolusjon på 3 og 4<br>7. □ · resolusjon på 4 og 5 (R og ¬R)</div>
+            <p>Den tomme klausulen er utledet, så \(KB \models R\). Uten heuristikk kaster vi bort steg 6 (\(\lnot Q\) er irrelevant). Med <em>unit preference</em> velges par der minst én klausul er én literal først: \(P\) og \(\lnot P \lor R\) gir \(R\), så \(R\) og \(\lnot R\) gir □ med en gang.</p>
           </div>
         </div>
       </div>
@@ -210,7 +210,7 @@
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget</span>
             <p>KB består av utsagnene vi vet er sanne: \(S_1\) og \(S_2\) (eller den forenklede \(S_3\)). Spørringen er hvilken kasse som har gullet, f.eks. \(\alpha = B_1\) (tilsvarende \(B_2\) eller \(B_3\)). For refutasjon legges den negerte spørringen \(\lnot B_1\) til KB, og resolusjonsregelen brukes til det utledes en selvmotsigelse, altså den tomme klausulen. Da var antakelsen \(\lnot B_1\) feil, og \(KB \models B_1\).</p>
-            <p><em>Merknad, egen tolkning:</em> løsningsforslaget sier at \(S_1\) og \(S_3\) allerede er på CNF, men de er disjunksjoner av konjunksjoner (DNF). På CNF er «nøyaktig én kasse» \((B_1 \lor B_2 \lor B_3) \land (\lnot B_1 \lor \lnot B_2) \land (\lnot B_1 \lor \lnot B_3) \land (\lnot B_2 \lor \lnot B_3)\), og \(S_3 \equiv B_1\). Beviset blir da \(B_1\) og \(\lnot B_1\) gir □. Vil du vise \(\lnot B_2\): legg til \(B_2\), resolver med \(\lnot B_1 \lor \lnot B_2\) til \(\lnot B_1\), og med \(B_1\) til □ (problemet finnes i widgeten).</p>
+            <p><em>Merk:</em> den opprinnelige løsningen sier at \(S_1\) og \(S_3\) allerede er på CNF, men de er disjunksjoner av konjunksjoner (DNF). På CNF er «nøyaktig én kasse» \((B_1 \lor B_2 \lor B_3) \land (\lnot B_1 \lor \lnot B_2) \land (\lnot B_1 \lor \lnot B_3) \land (\lnot B_2 \lor \lnot B_3)\), og \(S_3 \equiv B_1\). Beviset blir da \(B_1\) og \(\lnot B_1\) gir □. Vil du vise \(\lnot B_2\): legg til \(B_2\), resolver med \(\lnot B_1 \lor \lnot B_2\) til \(\lnot B_1\), og med \(B_1\) til □ (problemet finnes i widgeten).</p>
           </div>
         </div>
       </div>
@@ -232,7 +232,7 @@
           <circle class="bl" cx="140" cy="105" r="18"/><text x="140" y="110" text-anchor="middle">3 b</text>
           <circle class="r" cx="230" cy="65" r="18"/><text x="230" y="70" text-anchor="middle">4 r</text>
         </svg>
-        <figcaption>Nabogrensene slik de står i KB-en på slide 72, med løsningen slidene finner.</figcaption>
+        <figcaption>Nabogrensene slik de står i KB-en, med løsningen resolusjonen finner.</figcaption>
       </figure>
       <p>Framgangsmåten: prøv en verdi og spør om den gir en selvmotsigelse. \(M(KB \cup \{X_{1r}\}) = \varnothing\)? Nei, så \(X_{1r}\) legges til, og resolusjon utleder også \(\lnot X_{1g}, \lnot X_{1b}, \lnot X_{2r}, \lnot X_{3r}\). Deretter \(M(KB \cup \{X_{2g}\}) = \varnothing\)? Nei, og nå følger resten: \(\lnot X_{2b}, \lnot X_{3g}, X_{3b}, X_{4r}, \lnot X_{4g}, \lnot X_{4b}\). Løsning: 1 rød, 2 grønn, 3 blå, 4 rød. Legg merke til at \(X_{3b}\) og \(X_{4r}\) kommer av seg selv, som forward checking i kap. 4.</p>
     </div>
@@ -306,7 +306,7 @@
   /* ─── Widget: resolusjon stegvis. Klausul = sortert liste av literaler, '-X' betyr ¬X ─── */
   var root = document.getElementById('w-res'); if (!root) return;
   var P = [
-    { navn: 'Slidene: {P, P ∨ Q ⇒ R} ⊨ R ?', cl: [['P'], ['-P', 'R'], ['-Q', 'R']], neg: [['-R']] },
+    { navn: '{P, P ∨ Q ⇒ R} ⊨ R ?', cl: [['P'], ['-P', 'R'], ['-Q', 'R']], neg: [['-R']] },
     { navn: 'Egen: {A ∨ B, A ⇒ C, B ⇒ C} ⊨ C ?', cl: [['A', 'B'], ['-A', 'C'], ['-B', 'C']], neg: [['-C']] },
     { navn: 'Gullkassene: {nøyaktig én, B1} ⊨ ¬B2 ?', cl: [['B1', 'B2', 'B3'], ['-B1', '-B2'], ['-B1', '-B3'], ['-B2', '-B3'], ['B1']], neg: [['B2']] },
     { navn: 'Følger ikke: {A ∨ B, A ⇒ C} ⊨ C ?', cl: [['A', 'B'], ['-A', 'C']], neg: [['-C']] }

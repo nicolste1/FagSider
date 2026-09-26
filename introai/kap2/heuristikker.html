@@ -110,7 +110,7 @@
       <p class="dropcap"><span class="term" data-term="a-stjerne">A*</span> er <span class="term" data-term="kostnadsoptimalitet">kostnadsoptimal</span> når (1) alle kantkostnader er positive, (2) det finnes en løsning og (3) <span class="term" data-term="heuristikk">heuristikken</span> er <span class="term" data-term="admissibel">admissibel</span>: den overestimerer aldri kostnaden fra en node til målet.</p>
       \[ h(n) \le h^*(n) \quad \text{for alle } n, \]
       <p>der \(h^*(n)\) er den <span class="term" data-term="h-stjerne">faktiske (optimale) kostnaden</span> fra \(n\) til nærmeste mål. En admissibel heuristikk er <em>optimistisk</em>. Er alle \(h = 0\), blir A* til UCS, som er optimal.</p>
-      <p>Eksempelet fra slidene: fra A til G er den optimale veien A–B–C–G (kostnad 3), men \(h(B) = 1000 \gt h^*(B) = 2\).</p>
+      <p>Eksempel: fra A til G er den optimale veien A–B–C–G (kostnad 3), men \(h(B) = 1000 \gt h^*(B) = 2\).</p>
       <svg class="gsvg" viewBox="0 -10 430 130" role="img" aria-label="Eksempel der h(B) overestimerer">
 <path class="ed" d="M52 58 Q160 -18 268 58"/>
 <text class="cost" x="160" y="10">999</text>
@@ -131,7 +131,7 @@
 </svg>
       <p>A* ekspanderer A og får B: \(1 + 1000 = 1001\) og C: \(999 + 1 = 1000\). C poppes, G genereres med \(f = 1000 + 0 = 1000 \lt 1001\), og G poppes med kostnad 1000 i stedet for 3. Overestimatet i B skjøv den optimale stien bakerst i køen.</p>
       <details>
-        <summary>Utdypning · lavere prioritet: negative heuristikker (slide 19–20)</summary>
+        <summary>Utdypning · lavere prioritet: negative heuristikker</summary>
         <p>Kan \(h\) være negativ? Tillater vi \(h(\text{mål}) \ne 0\), mister A* optimaliteten. En negativ «gjenværende kostnad» betyr ingenting fornuftig når alle kostnader er positive. Trekker man en stor konstant fra alle \(h\), endres ikke rekkefølgen; UCS er i snitt mer informativ enn tilfeldige negative verdier.</p>
       </details>
     </div>
@@ -245,9 +245,9 @@
             <p>Kantene med B gir kravene:</p>
             \[ \begin{aligned} \text{A→B}&amp;: \; 5 \le 1 + h(B) &amp;&amp;\Rightarrow h(B) \ge 4 \\ \text{B→C}&amp;: \; h(B) \le 2 + 4 &amp;&amp;\Rightarrow h(B) \le 6 \\ \text{B→D}&amp;: \; h(B) \le 3 + 3 &amp;&amp;\Rightarrow h(B) \le 6 \end{aligned} \]
             <div class="svar-format">\(4 \le h(B) \le 6\)</div>
-            <p class="note-sm">Løsningsforslaget skriver B→C-kravet som \(h(B) \le (2+1) + 4 = 7\). Kanten B→C koster 2, så riktig krav er \(\le 6\); svaret blir det samme fordi B→D også gir 6.</p>
+            <p class="note-sm">Merk: den opprinnelige løsningen skriver B→C-kravet som \(h(B) \le (2+1) + 4 = 7\). Kanten B→C koster 2, så riktig krav er \(\le 6\); svaret blir det samme fordi B→D også gir 6.</p>
             <p><strong>2) Rekkefølgen A, C, B.</strong> Etter A: \(f(B) = 1 + h(B)\) og \(f(C) = 4 + 4 = 8\). C før B krever \(1 + h(B) \gt 8\) (ved likhet vinner B alfabetisk), altså \(h(B) \gt 7\). Å ekspandere C gir E med \(g = 9\), \(f = 9 + 3 = 12\). B før E krever \(1 + h(B) \le 12\).</p>
-            <div class="svar-format">Løsningsforslaget: \(7 \lt h(B) \lt 11\)</div>
+            <div class="svar-format">\(7 \lt h(B) \lt 11\)</div>
             <p class="note-sm">Med alfabetisk tie-break gir også \(h(B) = 11\) rekkefølgen A, C, B (B og E har da begge \(f = 12\), og B vinner). Skriv forutsetningen din om tie-break.</p>
             <p><strong>3) Suboptimal sti.</strong> Optimal kostnad er 7 via A B D F G (\(1 + 3 + 2 + 1\)). A* returnerer noe annet bare hvis den går A → C → E → G uten å ekspandere B: C før B (\(h(B) \gt 7\)), E før B og G (\(g = 12\), \(f = 12\)) før B, dvs. \(1 + h(B) \gt 12\).</p>
             <div class="svar-format">\(h(B) \gt 11\) · da returneres A C E G med kostnad 12</div>
@@ -280,10 +280,10 @@
           </div>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
-            <p>Konklusjonene stemmer, men begrunnelsen på sliden bør skrives mer presist. Faktiske kostnader til E: \(h^*(E)=0\), \(h^*(D)=3\), \(h^*(B)=4\), \(h^*(C)=\min(3+3,\ 2+3+4)=6\).</p>
+            <p>Merk: konklusjonene stemmer, men begrunnelsen i den opprinnelige løsningen er upresis. Faktiske kostnader til E: \(h^*(E)=0\), \(h^*(D)=3\), \(h^*(B)=4\), \(h^*(C)=\min(3+3,\ 2+3+4)=6\).</p>
             <ul>
               <li><strong>Admissibel?</strong> Nei: \(h(E) = 5 \gt h^*(E) = 0\) (målet må ha \(h = 0\)), og \(h(C) = 7 \gt h^*(C) = 6\).</li>
-              <li><strong>Konsistent?</strong> Nei: kanten C→D gir \(h(C) = 7 \le 3 + h(D) = 5\), som er usant. Ulikheten \(2 \le 3 + 5\) på sliden er derimot sann, så den viser ingenting.</li>
+              <li><strong>Konsistent?</strong> Nei: kanten C→D gir \(h(C) = 7 \le 3 + h(D) = 5\), som er usant. Ulikheten \(2 \le 3 + 5\) er derimot sann, så den viser ingenting.</li>
               <li>«Konsistent ⇒ admissibel» forutsetter \(h(\text{mål}) = 0\). Her er \(h(E) = 5\), så argumentet holder bare med den forutsetningen.</li>
             </ul>
           </div>
@@ -320,7 +320,7 @@
       <div class="section-badge">06 · Lage heuristikker</div>
       <h2>Løs et <em>enklere</em> problem</h2>
       <div class="source-note">Slides forelesning 3 · 47–53 · tallene for 8-puzzle-eksempelet: Boka kap. 3.6.1 (ikke i slidene)</div>
-      <p class="dropcap">For glidebrikkespillet foreslår slidene to heuristikker: \(h_1\) = antall <span class="term" data-term="feilplasserte-brikker">feilplasserte brikker</span>, og \(h_2\) = summen av <span class="term" data-term="manhattan-avstand">Manhattan-avstandene</span> (hvor mange ruter hver brikke er fra sin målplass, vannrett + loddrett). Begge er løsninger av et <span class="term" data-term="relaksert-problem">relaksert problem</span>, der noen regler er fjernet.</p>
+      <p class="dropcap">For glidebrikkespillet finnes to klassiske heuristikker: \(h_1\) = antall <span class="term" data-term="feilplasserte-brikker">feilplasserte brikker</span>, og \(h_2\) = summen av <span class="term" data-term="manhattan-avstand">Manhattan-avstandene</span> (hvor mange ruter hver brikke er fra sin målplass, vannrett + loddrett). Begge er løsninger av et <span class="term" data-term="relaksert-problem">relaksert problem</span>, der noen regler er fjernet.</p>
       <div class="def-box">
         <span class="def-label">Regelen i 8-puzzle</span>
         <p>En brikke kan flyttes fra rute X til rute Y hvis X er nabo til Y <strong>og</strong> Y er tom.</p>
@@ -358,7 +358,7 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget</span>
-            <p>Svaret avhenger av konvensjonen studenten har valgt. Løsningsforslaget: tell antall nuller, siden hver null betyr at én vare allerede er på andre siden. Den er admissibel fordi den aldri overestimerer kostnaden til målet, og konsistent fordi handlinger nærmere målet har flere nuller.</p>
+            <p>Svaret avhenger av konvensjonen studenten har valgt. Ett godt valg: tell antall nuller, siden hver null betyr at én vare allerede er på andre siden. Den er admissibel fordi den aldri overestimerer kostnaden til målet, og konsistent fordi handlinger nærmere målet har flere nuller.</p>
           </div>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra løsningsforslaget</span>

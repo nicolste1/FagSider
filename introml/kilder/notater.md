@@ -1,6 +1,6 @@
-# Forelesningsnotater TDT4172 — tekstuttrekk
+# Tekstuttrekk av kilden
 
-Kilde: `TDT4172_forelesningsnotater.pdf` · datert September 16, 2026 · 32 sider · sha256 `ebd3ea48734b…`
+Kilde: `TDT4172_forelesningsnotater.pdf` · datert September 22, 2026 · 39 sider · sha256 `87105d7872ea…`
 
 > Generert av `tools/pdf_til_tekst.py`. Formler er uleselige her; filen brukes til å diffe versjoner.
 
@@ -1467,3 +1467,320 @@ regresjonsmodeller vet vi at størrelsen til modellparametrene angir viktigheten
 4 4 4
 forståelige for mennesker, og vi skjønner at features som splittes tidlig er viktigere enn features som
 splittes senere. Det samme gjelder ikke for modelltypen vi skal se på i neste omgang.
+
+## 1.5 Ensemble-modeller
+<!-- side 32 -->
+
+Det kan være vanskelig å velge riktig modell for et gitt datasettet og problem. Generelt har alle
+modellersineantakelserogsvakheter,foreksempelantarlineærregresjonatforholdetmellomfeatures
+og target(s) er lineært, og beslutningstrær antar at datarommet kan separeres ved bruk av vertikale
+beslutningsflater (splitter). Tanken bak ensemble learning er at flere modeller kan kombineres, slik at
+de kompenserer for hverandres svakheter, og til sammen utgjør en samling, et ensemble, som benytter
+seg av hver enkelt modells styrke. Intuitivt kan vi se for oss en gruppe bestående av eksperter, der
+gruppensendeligebeslutningtaralleekspertenesvurderingmediberegning,menforkastervurderingen
+som ikke deles av majoriteten.
+For å lage et ensemble av modeller, kombineres flere modeller. Dette kan gjøres på ulike måter.
+Konseptuelt har vi tre ulike måter:
+• Parallellt: Fleremodellertrenesuavhengigavhverandre, ogprediksjonenedereskombinerestil
+en enkelt prediksjon
+• Sekvensielt: Flere modeller kommer etter hverandre, og hver modell opphever feilen begått
+av foregående modell. Til sammen kommer rekken av modeller frem til én prediksjon, der hver
+modell har minimert feilen gjort av modellen før.
+• Hierarkisk: Vi bruker en (eller flere) modell(er) tilå kombinere prediksjonen fra en foregående
+parallellkombinasjon av flere modeller.
+Nårvibrukerentrentmodelltilågjøreprediksjoner,sierviatvigjørinferens. Skilletmellomtrening
+og inferens er viktig, og særlig synlig i ensemble learning.
+Vi kan lage et parallellt ensemble på flere måter: Vi kan trene samme type modell (for eksempel
+et beslutningstre) med n ulike valg av hyperparametre. Da ender vi opp med n ulike modeller av
+samme type. På ett datapunkt gir disse modellene oss n ulike prediksjoner, som vi aggregerer til
+en endelig prediksjon. Alternativt kan vi trene n ulike modeller (for eksempel et beslutningstre, en
+lineær regresjonsmodell og et nevralt nettverk), som igjen gir oss n ulike prediksjoner vi aggregerer til
+ensembletsendeligeprediksjon. Viderekanvi,itilleggtilåbrukeulikemodellerogulikehyerparametre,
+trene de ulike modellene i ensemblet på ulike deler av treningsdataene.
+
+## 1.5.1 Bagging
+<!-- side 33 -->
+
+Når vi lager et ensemble bestående av ulike modeller trent på ulike deler av de tilgjengelige trenings-
+dataene og kombinerer prediksjonene fra disse til én prediksjon, må vi ta stilling til to spørsmål:
+1. Hvordan bør vi aggregere de ulike modellenes prediksjoner?
+2. Hvordan bør vi velge ut hvilke deler av treningsdataene vi trener hver enkelt modell på?
+Aggregering av prediksjoner for regresjon gjøres oftest i form av et gjennomsnitt av alle modellenes
+prediksjoner. Forklassifiseringgjøresdetoftestgjennomåpredikereklassensomsvarertilflertalletav
+enkeltmodellenes prediksjoner, altså en direkte avstemning, ellerå gjøre en vektet avstemning mellom
+modellene.
+Når det gjeler utvalg av treningsdata, er bootstrapping et sentralt konsept. Den underliggende tanken
+bak bootstrapping er at vi vet at vi ikke kan samle nok data til å representere den underliggende
+fordelingen bak et fenomen perfekt, men gitt et stort nok datasett kan vi få til et tilstrekkelig repre-
+sentativt utvalg. Likevel vil et representativt utvalg ikke uten videre fortelle oss om usikkerheten
+i estimatene vi gjør basert på disse dataene, altså hvor stor spredning det har. Gitt datasettet
+vi har samlet kan vi dog lage et estimat av spredning, eller usikkerhet, ved hjelp av teknikken
+bootstrapping. Dette går ut på å trekke flere datapunkter fra det samme datasettet med tilbake-
+legging (dette er viktig: det samme datapunktet kan finnes flere ganger i resulterende datasett),
+og slik ende opp med flere ulike datasett fra det éne datasettet vi startet med. Vi bruker disse
+ulike datasettene tilå estimere den samme størrelsen flere ganger, og slik ende opp med en fordel-
+ing av estimatene. Denne fordelingen kan vi bruke til å beregne en spredning, eller usikkerhet, i
+estimatet vårt. Vi startet altså med ett datasett som vi kunne lage ett estimat fra, men har ved
+hjelp av bootstrapping skaffet oss en fordeling – uten å ha fått tilgang til flere datapunkter eller
+datasett. Vi har laget mer utenå måtte samle mer data, altså “pulled us up by our own bootstraps”.
+Begrepet bagging er satt sammen av b fra bootstrap, og agging fra aggregering.
+En enkel type ensemblemodell som bruker bagging er random forest (tilfeldig skog). Denne lages ved
+å sette sammen ulike beslutningstrær, eventuelt stumper. For at ensemblemodellen skal bli god, må
+de ulike trærne være diverse og uavhengige. Dette oppnår vi gjennomå trene trærne på ulike deler av
+dataene (bootstrapp-teknikken), og dessuten ulike utvalg av data-features, slik at trærne modellerer
+ulikesammenhenger. Tilsluttaggregesprediksjonenefraalletrærnetilénprediksjon–ogbagging har
+skjedd.
+Generelt har parallelle ensemblemodeller til felles at de består av modeller som trenes uavhengig av
+hverandre. Denendeligeprediksjonenlagesvedatdeindividuelleprediksjoneneaggregeres,gjennomen
+type gjennosnitt eller avstemning. De individuelle modellene kan lages vedå bruke ulike modelltyper,
+ulike hyperparametre, ulike random seeds av samme læringsalgoritme, ulik feature engineering, ulike
+utvalg av treningsdataene, med mer.
+
+## 1.5.2 Boosting
+<!-- side 34 -->
+
+Innen maskinlæring refererer begrepet boosting til algoritmer som iterativt trener svake modeller (for
+eksempel trestumper) på en datafordeling, og kombinerer disse til en sterk modell (ensemblet). Kon-
+septet stammer fra en samling publikasjoner av Kearns og Valiant (1988, 1989), og Schapire (1990),
+som undersøkte muligheten for at flere svake modeller, altså modeller hvis prediksjoner er kun svakt
+korellertmedtargetidataene,kansettessammentilensterkmodell,altsåenmodellhvisprediksjoner
+er vilkårlig sterkt korellert med targets i dataene. Begrepet boosting handler om at feilene begått av
+én modell gjør den påfølgende modellen i iterasjonen bedre (“booster” den). I stedet forå kombinere
+flere modeller parallelt, organiseres de altså sekvensielt, og hver modell forholder seg til den forrige på
+enmåtesomgjørensembletsterkereennhverenkeltmodellerforsegselv. Viskalsepåtoalgoritmer
+som gjør dette.
+AdaBoost-algoritmen bygger et ensemble av modeller som korrigerer hverandres feil, gjennom en
+iterativ treningsprosedyre. I starten av prosedyren har alle punktene i treningsdataene samme vekt,
+ogvitrenerénmodellsompredikererpådissedataene. Basertpåtargetsserviforhvilkedatapunkter
+modellen har størst tap, og i neste iterasjon økes vektene for disse datapunktene. Deretter trenes en
+ny modell, som igjen predikerer på et datasett, før vektene igjen justeres.
+Gradient boosting er, til forskjell fra AdaBoost, ikke basert på vekting av observasjoner. I stedet
+predikerer hver modell forskjellen mellom targets og den forrige modellens prediksjon, såkalte pseudo-
+residuals. Det nye ensemblet lages vedå følge læringsregelen
+new_ensemble = previous_ensemble - learning_rate * new_tree
+Dette uttrykket bør minne deg om gradient descent, som er opphavet til navnet gradient boosting. Vi
+gjør altså ikke gradient descent i rommet over alle mulige parameterverdier, men i rommet over alle
+mulige trær ensemblet vårt kan bestå av. Gradienten i dette tilfellet er altså -(label-prediction).
+Oppgave: Trebaserteensemblemodellerdubørhahørtom,oghelstbruktpåetdatasett,erCatBoost,
+LightGBM, AdaBoost, og XGBoost.
+Det er en god regelå alltid bruke en ensemble-modell som referanseverdi for hvor godt en modell kan
+gjøre det, når du jobber med et maskinlæringsproblem med tabulære data (altså den typen data vi
+bruker i dette kurset).
+
+## 2 Nevrale nettverk
+<!-- side 34 -->
+
+Nårvigjørmaskinlæringønskerviåtilpasseenfunksjonf somgirossetestimatbasertpåx,iveiledet
+læring et estimat av target y, altså yˆ=f(x). Vi har sett på flere måterå modellere f på:
+• Med lineær/logistisk regresjon er funksjonsformen til f gitt, og treningen går ut påå tilpasse
+parametrene i funksjonen. Dette er eksempler på parametrisk modellering.
+• Med beslutningstrær er ikke formen til f gitt, og treningen går ut på å bygge treet og velge
+splittkriterier,forådeleoppdatarommet. Detteereteksempelpåikke-parametrisk modellering.
+I en regresjonsmodell multipliseres dataene med parametre og adderes deretter (linearitet). I beslut-
+ningstrær flyter dataene gjennom modellen uten å transformeres; hver node splitter dataene, men
+transformerer dem ikke. Vårt neste steg innebærerå lage ikke-lineære modeller som transformerer
+dataene.
+
+## 2.1 Perceptron
+<!-- side 35 -->
+
+Perseptronet er forgjengeren til moderne nevrale nettverk, og ble introdusert av McCulloch og Pitts
+(1943). Den første implementasjonen ble bygget, i hardware, av Rosenblatt (1957). Tanken var at
+perseptronet skulle være en maskin; ikke et program (denne setningen er verdt å dvele ved). Et
+perseptronbeståravénellerflereberegningsenheter, oftekaltnoder, ogidenopprinneligeformulerin-
+gen var nodene threshold logic units (TLU). Disse mapper inputen x til en output f(x) som tar en
+binær verdi,
+f(x)=H(wx+b), (89)
+hvorH erHeavisidestegfunksjonen, sefigur18a, ogivårkontekstkallesenaktiveringsfunksjon. Både
+x og w er vektorer i det generelle tilfellet. En TLU, beskrevet av likningen over, er enten aktiv, altså
+har output = 1, eller ikke aktiv, altså har output = 0. Hvilke data x som gir hvilken aktivering av
+noden er avhengig av vektene (w,b). Siden output er binær, gjør denne en klassifiseringsoppgave,
+og for at perseptronet skal ha høy treffsikkerhet i klassifiseringen må vektene justeres til riktig verdi.
+Dette gjøres gjennom veiledet læring.
+Som før sendes instanser fra treningsdataene enkeltvis gjennom modellen, denne gjør en prediksjon
+yˆ og tapet beregnes basert på target y. Parametrene i modellen oppdateres forå redusere tapet per
+treningsinstans. Dette gjentas for alle instansene i treningsdataene, hvilket utgjør én epoke (epoch),
+og hele prosessen gjentas flere ganger (epochs). Vi kan implementere et perseptron vedå gjenbruke
+koden fra logistisk regresjon, med likning 89 som modell, altså:
+activation = sum(weight_i * x_i) + bias
+prediction = 1.0 if activation >= 0.0 else 0.0
+Igjen er treningsprosessen en loop over treningsdataene med egnet tapsfunksjon L, og parametrene
+oppdateres etter regelen i likning 13, gjentatt under:
+∂
+θt+1 =θt−η L(f(x;θ),y). (90)
+∂θ
+Oppgave: Hva er problemet med denne prosedyren? Ikke les videre før du har prøvdå besvare dette
+spørsmålet. Hint: Hva skjer hvis du prøverå derivere tapsfunksjonen med f(x) fra likning 89?
+Når vi skal derivere tapsfunksjonen, som inneholder prediksjonen, er vi nødt tilå derivere Heaviside-
+funksjonen. Denneer0overalt,og∞iettpunkt,ogdermedikkedefinert. Somderegaranterthusker,
+må tapsfunksjonen være deriverbar forå finne gradienten til parameteroppdateringen. I den opprin-
+nelige formuleringen av perseptronet (Rosenblatt) er leddet med den deriverte utelatt, så følgende
+uttrykk kan brukes
+w ←w +η(y −yˆ) . (91)
+i i i i
+I kode er det vanligå utvide x med et første element med verdi 1, og w har et tilsvarende ledd som
+representerer b, slik at vi får den mer kompakte operasjonen under.
+w = w + learning_rate * (expected - predicted) * x
+Sepådataeneifigur17a. Disserepresenterertofeaturesx ogx ,ogfargenangirdetomuligeklassene
+1 2
+y. De er generert ved hjelp av sklearn.datasets.make blobs, og forå tilpasse et perseptron som
+løser klassifiseringsoppgaven de representerer, kan vi bruke sklearn.linear model.Perceptron, se
+under.
+perceptron = Perceptron().fit(X_train, y_train)
+y_pred = perceptron.predict(X_test)
+TilinfoerdetteenwrapperrundtSGDClassifiersomviharbrukttidligere,medloss="perceptron"
+og learning rate="constant". Vi finner de tilpassede parameterverdiene tilsvarende som for lineær
+regresjon:
+ws = perceptron.coef_
+bs = perceptron.intercept_
+Sepådataeneifigur17b. Oppgave: Hvormangefeaturesogklasserhardataene? Hvormangevekter
+trenger et perseptron forå tilpasse dem? Det kan være nyttigå tegne en figur.
+(a) (b)
+Figure 17: Klassifiseringsdatasett med (a) to klasser, generert av sklearn.datasets.make blobs, og
+(b) tre klasser, generert av sklearn.datasets.make classification.
+Forå gjøre denne klassifiseringsoppgaven, kan vi gjenbruke koden fra tidligere, og treningsprosedyren
+forblir den samme. Hvis man har implementert .fit() og .predict() selv, må koden eventuelt
+tilpasses forå håndtere en vektmatrise (i stedet for en -vektor), da parameteroppdateringen nå følger:
+w ←w +η(y −yˆ )x . (92)
+i,j i,j j j i
+Her er
+• w vekten på forbindelsen mellom input i og node j,
+i,j
+• η læringsraten,
+• yˆ og y henholdsvis output og target for klasse j,
+j j
+• x feature-verdi i for det aktuelle datapunktet.
+i
+Vigjenbrukerkodenfratidligere,ogkanfinneuthvormangeklasserogfeaturesvihar(somvistrengt
+tatt bør ha kontroll på før vi tilpasser modellen), og hvor mange vekter modellen har, ved hjelp av
+følgende kode.
+perceptron = Perceptron().fit(X_train, y_train)
+ws = perceptron.coef_
+bs = perceptron.intercept_
+print("Features:", X.shape[1])
+print("Classes:", len(list(set(y))))
+print("Weights:", ws.shape)
+print("Biases:", bs.shape)
+Harvitofeaturesogtreklasser, måmodellenhatoinput-nodermedforbindelsertiltreoutput-noder.
+Da får vi seks vekter i w og tre bias-verdier i b.
+Logiske operasjoner
+Perseptronerkanbrukestilågjørelogiskeoperasjoner,medriktigvalgavvekter. Hvisviharénvariabel
+x ,kanetperseptrongjøredenlogiskeoperasjonenNOTmed(w1,b)=(−1,0.5). Fortovariablerx ,x
+1 1 2
+får vi den logiske operasjonen AND med (w ,w ,b)=(1,1,−1.5), og OR med (w ,w ,b)=(1,1,−0.5).
+1 2 1 2
+Oppgave: Kan kan et perseptron gjøre XOR? Hvordan? Hint: Det holder ikke med én TLU; sett
+sammen en kombinasjon av AND, NOT og OR.
+
+## 2.2 Aktiveringsfunksjoner
+<!-- side 37 -->
+
+En ulempe ved perseptronet er at en liten endring i input kan føre til en stor endring i output. Dette
+skyldes Heaviside-funksjonen, som sender funksjonsverdien til enten 0 eller 1, se figur 18a. Et bedre
+alternativhaddeværtåginodenemulighetentilåreturnerekontinuerligeverdier,eventueltiintervallet
+[0,1]. OmvierstatterHeaviside-funksjonenmedenfunksjonsomreturnererkontinuerligeverdier, har
+vilagetdentypennodevifinnerimodernenevralenettverk. Vanligeaktiveringsfunksjonerersigmoid-
+funksjonen (som vi brukte for logistisk regresjon), se figur 18b, softmax, og ReLU, se figur 18c. Disse
+aktiveringsfunksjonene brukes til ulike formål: Hvis modellen skal gjøre binær klassifisering, er det
+vanlig å ha en sigmoid-aktiveringsfunksjon i noden i nettverkets siste lag, for å sikre at modellens
+prediksjon havner i intervallet [0,1]. Sigmoid-funksjonen er den samme som tidligere, men gjentatt
+her for enklere sammenlikning med de andre aktiveringsfunksjonene:
+σ(x)= . (93)
+1+e−x
+I en modell som gjør ikke-binær klassifisering er det vanligå bruke en softmax-aktiveringsfunksjon i
+output-nodene:
+exi
+softmax(x) = , (94)
+i (cid:80) exj
+j
+som sikrer at aktiveringene summerer til 1. Da representerer hver av output-nodene datapunktets
+predikerte tilhørighet til de respektive klassene, og vi må ha én output-node per klasse.
+Modernenevralenettverkharsomregelflerelag,mellominput-ogoutput-lagene,seavsnitt2.3. Slike
+modeller kalles multi layer perceptrons (MLP), da de har multiple lag. Vi står relativt fritt tilå velge
+aktiveringsfunksjoner til disse lagenes noder, og i dette kurset vil vi holde oss til den såkalte rectified
+linear unit (ReLU) aktiveringsfunksjonen:
+ReLU(x)=max(0,x). (95)
+MLP-modeller som ikke gjør klassifisering men regresjon, må ha output-noder som kan returnere
+kontinuerlige tallverdier som ikke er begrenset til et intervall (som [0,1] i klassifisering). Som regel
+brukes da en lineær aktiveringsfunksjon i output-laget.
+(a) (b) (c)
+Figure 18: De tre aktiveringsfunksjonene (a) Heaviside, (b) sigmoid, og (c) ReLU.
+
+## 2.3 Arkitektur
+<!-- side 37 -->
+
+Somnevntoverkanvisettesammennoderpåulikemåterforålagenevralenettverk. Hvordannodene
+ersattsammenkallesnettverketsarkitektur. Nevralenettverkbeståravlag,somigjenbeståravnoder
+stablet i høyden, altså noder som ikke mottar input fra hverandre. Informasjon går kun mellom noder
+iulikelag, altsåikkemellomnoderisammelag. Allenevralenettverkbeståravinput-lag, output-lag,
+og indre/skjulte lag:
+• Input-laget er det første laget i det nevrale nettverket. Dette mottar og sender data inn i
+nettverket. Det må derfor ha samme dimensjonalitet, dvs samme antall noder, som dataene har
+features.
+• Output-lageterdetsistelagetidetnevralenettverket. Detterepresentererdetnevralenettver-
+kets prediksjon. I tilfellet veiledet læring må dette laget ha samme dimensjonalitet, dvs samme
+antall noder, som targtets i dataene.
+Figure 19: Skisse av et nevralt nettverk, som vist i forelesning.
+• Indre lag er alle lagene mellom input- og output-lagene. Disse omtales også som skjulte lag.
+Akkurat som med valg av aktiveringsfunksjon, står vi fritt tilå sette sammen nevrale nettverk med
+arkitekturen vi ønsker. Dette betyr ikke at hvilken som helst arkitektur er egnet forå løse problemet
+dataene våre beskriver. Ulike arkitekturer er bedre og dårligere egnet til ulike oppgaver, for eksempel
+erdetvanligåbrukekonvolusjonslagtilbildegjenkjenning,ogtransformer-blokkettilsekvensielledata
+(somspråk). Viskalikkesepåslikearkitektureridettekurset,menholderosstilarkitekturerderalle
+nodeneihvertlagerkoblettilallenodeneidetforegåendeognestelaget. Slikenevralenettverkkalles
+som nevnt MLP’er, eller fully connected feed-forward nettverk. Her kommer fully connected nettop av
+at alle nodene i nabolag har forbindelser vil hverandre, og feed forward av at informasjon sendes kun
+fremover i nettverket, hvor fremover er definert som retningen fra input til output. La oss se nærmere
+på hva som skjer med dataene på veien fra input- til output-laget.
+Bruk gjerne skissen i figur 19 til hjelp, eller lag din egen. Generelt har vi følgende uttrykk for ak-
+tiveringen a til en gitt node med indeks j i lag l av det nevrale nettverket
+(cid:32) n (cid:33)
+(cid:88)
+al =g wl al−1 . (96)
+j ij i
+i=0
+Her er
+• l indeks for lag, hvor indeks 0 angir input-laget
+• i indeks for node i forrige lag
+• j indeks for node i det aktuelle laget
+• al−1 aktivering av node i i forrige lag l−1
+i
+• g aktiveringsfunksjonen i det aktuelle laget.
+Forbedreintuisjonkandetværelurtåtaforsegénnodeoggåstegvisgjennomindekseneilikning96.
+Oppgave: Se på første (øverste) node i det første laget etter input-laget og skriv ned aktiveringen til
+denne noden. Du bør komme frem til følgende uttrykk:
+(cid:32) n (cid:33)
+a(1) =g (cid:88) w(1)x . (97)
+1 i1 i
+i=0
+Vi tar for oss tilfellet der vi har to input-features, og har bygget et skjult lag bestående av tre noder.
+Nettverkets videre arkitektur er uten betydning for den aktuelle diskusjonen. Vi har altså i ∈ {1,2}
+og j ∈{1,2,3}. Vi kan skrive aktiveringene i nettverkets første indre lag som
+(cid:16) (cid:17)
+a =g w(1)x +w(1)x (98)
+1 11 1 21 2
+(cid:16) (cid:17)
+a =g w(1)x +w(1)x (99)
+2 12 1 22 2
+(cid:16) (cid:17)
+a =g w(1)x +w(1)x (100)
+3 13 1 23 2
+etterå ha skrevet ut summen over input-laget. De tre likningene over kan skrives på matriseform som
+følger
+    
+a(1) w(1) w(1)
+1 11 21 (cid:20) x (cid:21)
+a(1)=gw(1) w(1) 1  . (101)
+ 2   12 22  x 
+a(1) w(1) w(1) 2
+3 13 23
+Kontroller at matrisemultiplikasjonen på høyre side skjer mellom to matriser med dimensjoner hen-
+holdsvis 3×2 og 2×1, hvilket resulterer i en matrise av dimensjon 3×1, som er det vi har på venstre
+side av likhetstegnet.
+Genereltbestårdetførstelagetinettverketavnnoder,ogdetførsteindrelagetavmnoder. Overgan-
+gen fra input-laget til det første indre laget innebærer altså en transformasjon fra n input features til
+mnyeverdier. Dettegjelderforallelageneietnevraltnettverk: Degjørentransformasjonavdataene
+demottar, tiletnyttdataromavsammedimensjonsomantallnoderidetaktuellelaget. Pågrunnav
+ikke-lineariteten til aktiveringsfunksjonen g, er transformasjonen ikke-lineær. Oppsummert gjør hvert
+lag i det nevrale nettverket en egen ikke-lineær transformasjon av dataene. Dette kan vi tolke som en
+automatisk feature-transformasjon som utvikles i takt med at det nevrale nettverket lærer fra data.

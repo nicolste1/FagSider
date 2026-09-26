@@ -28,7 +28,7 @@
   .env-tab td, .env-tab th {vertical-align:top}
   .env-tab .opt {font-family:var(--sans);font-size:0.8rem;padding:3px 9px;margin:2px;border-radius:12px;border:1px solid var(--line);background:transparent;cursor:pointer;color:var(--ink-soft)}
   .env-tab .opt.on {background:var(--accent);color:var(--paper);border-color:var(--accent)}
-  .env-tab .opt.fasit {outline:2px solid var(--green)}
+  .env-tab .opt.riktig {outline:2px solid var(--green)}
   .env-tab .opt.feil {background:var(--red);border-color:var(--red);color:var(--paper)}
   .env-tab .why {font-size:0.85rem;color:var(--ink-faded)}
 </style>
@@ -107,7 +107,7 @@
 
       <div class="table-wrap">
         <table>
-          <caption>Delvis tabulering av agentfunksjonen (slide 10)</caption>
+          <caption>Delvis tabulering av agentfunksjonen</caption>
           <tr><th>Perseptsekvens</th><th>Handling</th></tr>
           <tr><td><code>[A, Clean]</code></td><td>Right</td></tr>
           <tr><td><code>[A, Dirty]</code></td><td>Suck</td></tr>
@@ -133,12 +133,12 @@
       <p class="dropcap">AI dømmer agenter etter <em>konsekvensene</em> av atferden, ikke intensjonene. Handlingene fører miljøet gjennom en sekvens av tilstander; er sekvensen ønskelig, har agenten gjort det bra. Et <span class="term" data-term="ytelsesmal">ytelsesmål</span> er en objektiv funksjon som evaluerer en sekvens av <em>miljøtilstander</em>, og den ligger hos designeren, ikke nødvendigvis inni agenten. Mål det du faktisk vil ha: belønner du «mengde skitt sugd opp», kan agenten suge, tømme skitten ut igjen og suge på nytt.</p>
 
       <div class="def-box">
-        <span class="def-label">Definisjon · slide 15</span>
+        <span class="def-label">Definisjon</span>
         <div class="def-term">Rasjonell agent</div>
         <p>For hver mulig perseptsekvens skal en <span class="term" data-term="rasjonell-agent">rasjonell agent</span> velge en handling som <strong>forventes</strong> å maksimere ytelsesmålet, gitt evidensen i perseptsekvensen og den innebygde kunnskapen agenten har.</p>
       </div>
 
-      <p>Hva som er rasjonelt avhenger av fire ting (slide 14), og det er disse fire PEAS senere spesifiserer:</p>
+      <p>Hva som er rasjonelt avhenger av fire ting, og det er disse fire PEAS senere spesifiserer:</p>
       <ol class="steps">
         <li><strong>Ytelsesmålet</strong> som definerer suksess (P).</li>
         <li><strong>Forkunnskapen</strong> agenten har om miljøet (E).</li>
@@ -258,7 +258,7 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget</span>
-            <p><strong>Sekvensielt</strong> (løsningsforslaget sier også fullt observerbart). Begrunnelse: «korrigerende beslutninger» betyr at hver ansettelse vurderes opp mot tidligere beslutninger og skjevheten de har skapt. Beslutningen nå endrer sammensetningen framover, og dermed hva som er rettferdig i neste runde. Beslutningen nå påvirker altså framtidige beslutninger, som er definisjonen på sekvensielt.</p>
+            <p><strong>Sekvensielt</strong> (og fullt observerbart). Begrunnelse: «korrigerende beslutninger» betyr at hver ansettelse vurderes opp mot tidligere beslutninger og skjevheten de har skapt. Beslutningen nå endrer sammensetningen framover, og dermed hva som er rettferdig i neste runde. Beslutningen nå påvirker altså framtidige beslutninger, som er definisjonen på sekvensielt.</p>
             <p>Uten det korrigerende kravet kunne hver søknadsbunke vært en uavhengig episode, altså episodisk.</p>
           </div>
         </div>
@@ -266,10 +266,10 @@
 
       <div class="widget" id="w-env">
         <div class="widget-label">Prøv selv · Miljøklassifisering</div>
-        <p class="widget-intro">Velg et scenario og klikk ditt svar i hver rad. Trykk «Vis fasit» for å se klassifiseringen og begrunnelsen. Kjent/ukjent er stort sett vår tolkning.</p>
+        <p class="widget-intro">Velg et scenario og klikk ditt svar i hver rad. Trykk «Vis svar» for å se klassifiseringen og begrunnelsen. Kjent/ukjent er stort sett vår tolkning.</p>
         <div class="w-row">
           <div class="w-ctl"><label for="env-sel">Scenario</label><select id="env-sel"></select></div>
-          <button class="w-btn" id="env-show" type="button">Vis fasit</button>
+          <button class="w-btn" id="env-show" type="button">Vis svar</button>
           <button class="w-btn secondary" id="env-reset" type="button">Nullstill</button>
         </div>
         <div class="table-wrap"><table class="env-tab"><tbody id="env-body"></tbody></table></div>
@@ -292,11 +292,11 @@
             <ul>
               <li><strong>Delvis observerbart:</strong> sensorene ser bare noen meter fram og ikke bak hyller og reoler.</li>
               <li><strong>Én agent:</strong> kunder og ansatte kan modelleres som del av miljøet; de maksimerer ikke et mål som avhenger av robotens atferd.</li>
-              <li><strong>Deterministisk</strong> (løsningsforslaget): ingen stokastikk i handlingene eller tilstandsovergangene. Man kan også argumentere for ikke-deterministisk fordi mennesker beveger seg uforutsigbart; begrunnelsen er det som gir poeng.</li>
+              <li><strong>Deterministisk:</strong> ingen stokastikk i handlingene eller tilstandsovergangene. Man kan også argumentere for ikke-deterministisk fordi mennesker beveger seg uforutsigbart; begrunnelsen er det som gir poeng.</li>
               <li><strong>Sekvensielt:</strong> hvor roboten er og hva den har skannet avhenger av tidligere valg.</li>
               <li><strong>Dynamisk:</strong> kunder flytter seg og varer tas ut mens roboten tenker.</li>
               <li><strong>Kontinuerlig:</strong> ekte verden, med kontinuerlig posisjon, bevegelse og persepsjon.</li>
-              <li><strong>Kjent</strong> (ikke med i løsningsforslaget, forslag): butikkens planløsning og hva hjulene gjør er gitt.</li>
+              <li><strong>Kjent</strong> (forslag): butikkens planløsning og hva hjulene gjør er gitt.</li>
             </ul>
           </div>
         </div>
@@ -329,7 +329,7 @@
     <div class="container">
       <div class="section-badge">05 · Agenttyper</div>
       <h2>Fra tabell til <em>læring</em></h2>
-      <div class="source-note">Slides forelesning 1 del 3 · 29–37 · pseudokode og figur etter boka fig. 2.10–2.12</div>
+      <div class="source-note">Slides forelesning 1 del 3 · 29–37 · pseudokode og figur etter boka fig. 2.10–2.12 · forventet nytte: boka kap. 2.4</div>
       <span class="lm-pill">Deltema 1.3 · prio 1</span>
       <ul class="lm-list">
         <li>Eksamen: «Hvilken agenttype passer best? Forklar hvorfor. Tegn hovedkomponentene og beskriv samspillet.»</li>
@@ -354,7 +354,7 @@
     if status = Dirty then return Suck
     else if location = A then return Right
     else if location = B then return Left</code></pre>
-      <p>Mye mindre enn tabellen, men den ser bare nåværende persept. Uten lokasjonssensor ser den bare <code>[Clean]</code> og vet ikke om den skal gå til venstre eller høyre. Velger den alltid samme retning, kan den løkke for alltid. <strong>Randomisering</strong> (myntkast mellom Left og Right) når den andre ruta på to steg i snitt; i enkeltagentmiljøer er det sjelden optimalt, men et nyttig triks (slide 32).</p>
+      <p>Mye mindre enn tabellen, men den ser bare nåværende persept. Uten lokasjonssensor ser den bare <code>[Clean]</code> og vet ikke om den skal gå til venstre eller høyre. Velger den alltid samme retning, kan den løkke for alltid. <strong>Randomisering</strong> (myntkast mellom Left og Right) når den andre ruta på to steg i snitt; i enkeltagentmiljøer er det sjelden optimalt, men et nyttig triks.</p>
 
       <h3>Modellbasert refleksagent</h3>
       <p>Hovedideen: hold en intern tilstand som sporer de delene av verden agenten ikke ser nå. Det krever to typer innebygd kunnskap: en <span class="term" data-term="overgangsmodell">overgangsmodell</span> (hvordan verden utvikler seg av seg selv og hva agentens egne handlinger gjør) og en <span class="term" data-term="sensormodell">sensormodell</span> (hvordan verdens tilstand viser seg i perseptene). Tilstanden er agentens beste gjetning; full sikkerhet er sjelden mulig.</p>
@@ -367,7 +367,7 @@
 
       <div class="widget" id="w-vac">
         <div class="widget-label">Prøv selv · Støvsugerverdenen</div>
-        <p class="widget-intro">Velg agentprogram og trykk «Ett steg». Poeng: 1 per ren rute per tidssteg (slide 16). Sammenlikn «poeng − flytt» for refleks og modellbasert, se blindagenten løkke, og slå på «skitt kommer tilbake» for å se modellen feile når den antar at rent forblir rent.</p>
+        <p class="widget-intro">Velg agentprogram og trykk «Ett steg». Poeng: 1 per ren rute per tidssteg. Sammenlikn «poeng − flytt» for refleks og modellbasert, se blindagenten løkke, og slå på «skitt kommer tilbake» for å se modellen feile når den antar at rent forblir rent.</p>
         <svg class="vw-svg" viewBox="0 0 420 150" aria-label="Støvsugerverden med to ruter">
           <rect class="sq" x="20" y="20" width="180" height="110" rx="6"/><rect class="sq" x="220" y="20" width="180" height="110" rx="6"/>
           <text x="30" y="40">A</text><text x="230" y="40">B</text>
@@ -423,10 +423,9 @@
       <h3>Målbasert og nyttebasert</h3>
       <p>Å kjenne tilstanden er ikke nok når det finnes mange veier: agenten trenger et <span class="term" data-term="mal">mål</span>, eksplisitt informasjon om ønskede situasjoner. Den målbaserte agenten spør «hva skjer om jeg gjør dette?» og «når jeg målet da?», og er fleksibel: nytt reisemål er én linje, ikke nye regler. Dette er det søk (kap. 3–4) og planlegging løser. Mål gir bare to verdier (glad/ulykkelig). Nyttefunksjonen er en internalisering av ytelsesmålet: den avbilder en tilstand (eller en sekvens av tilstander) til et reelt tall, og agenten velger handlingen med størst <span class="term" data-term="forventet-nytte">forventet nytte</span>, snittet over mulige utfall vektet med sannsynlighet:</p>
       \[ a^* = \arg\max_{a} \sum_{s'} P(s' \mid s, a)\, U(s') \]
-      <p class="eq-note">Boka kap. 2.4 (formelen står ikke i slidene; slide 35 sier det samme med ord).</p>
 
       <h3>Lærende agent</h3>
-      <p>Alle typene over kan bygges som lærende agenter med fire komponenter (slide 36):</p>
+      <p>Alle typene over kan bygges som lærende agenter med fire komponenter:</p>
       <ul>
         <li><span class="term" data-term="ytelseselement">Ytelseselementet</span>: det vi før kalte hele agenten; velger ytre handlinger.</li>
         <li><span class="term" data-term="kritiker">Kritikeren</span>: forteller læringselementet hvor godt agenten gjør det, målt mot en fast ytre ytelsesstandard.</li>
@@ -458,7 +457,7 @@
                 <path class="ar" d="M220 41 L258 62"/><path class="ar" d="M220 93 L258 76"/><path class="ar" d="M220 151 L258 90"/>
                 <path class="ar" d="M345 96 L345 226"/><path class="ar" d="M220 251 L258 251"/>
               </svg>
-              <figcaption>Etter boka fig. 2.11 og slide 33. Sensorene mater perseptet inn; tilstanden oppdateres med overgangs- og sensormodellen; reglene velger handling ut fra den oppdaterte tilstanden; aktuatorene utfører den.</figcaption>
+              <figcaption>Sensorene mater perseptet inn; tilstanden oppdateres med overgangs- og sensormodellen; reglene velger handling ut fra den oppdaterte tilstanden; aktuatorene utfører den.</figcaption>
             </figure>
             <ul>
               <li><strong>Sensorer</strong> (kamera, ultralyd, kollisjon, skanner): persepter om hyller, hindringer og produkter.</li>
@@ -466,7 +465,7 @@
               <li><strong>Regler:</strong> velger handling fra tilstanden, f.eks. «hindring nær → stopp».</li>
               <li><strong>Aktuatorer</strong> (hjul, skjerm): utfører handlingen, som gir nye persepter.</li>
             </ul>
-            <p>Merk: løsningsforslaget sier at agenten velger handling «inspirert av målene sine». Da er den strengt tatt målbasert (modell + mål). Begge svar kan forsvares; det som gir poeng er begrunnelsen med delvis observerbarhet og at tegningen viser tilstanden og modellen.</p>
+            <p>Merk: den opprinnelige løsningen sier at agenten velger handling «inspirert av målene sine». Da er den strengt tatt målbasert (modell + mål). Begge svar kan forsvares; det som gir poeng er begrunnelsen med delvis observerbarhet og at tegningen viser tilstanden og modellen.</p>
           </div>
         </div>
       </div>
@@ -495,7 +494,7 @@
 
       <div class="oppgave" data-quiz id="oppg-robotstovsuger">
         <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">Deltema 1.2–1.3</span></div>
-        <div class="o-text"><p>En ekte robotstøvsuger i en leilighet har støtsensor, skittsensor og hjul, men ikke kamera. Møbler flyttes, og folk går rundt. Hvilke av de sju egenskapene er annerledes enn i to-rute-verdenen fra slide 16, og hvilken agenttype bør den ha?</p></div>
+        <div class="o-text"><p>En ekte robotstøvsuger i en leilighet har støtsensor, skittsensor og hjul, men ikke kamera. Møbler flyttes, og folk går rundt. Hvilke av de sju egenskapene er annerledes enn i to-rute-verdenen, og hvilken agenttype bør den ha?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
@@ -522,7 +521,7 @@
       <h2>Fire definisjoner og <em>litt historie</em></h2>
       <div class="source-note">Slides forelesning 1 del 3 · 3 · Newell og Simon: boka kap. 1 (ikke i slidene)</div>
       <span class="lm-pill">Deltema 12.1 · prio 3</span>
-      <p>Kurset og boka følger <strong>handle rasjonelt</strong>: agenten handler for å oppnå best forventet utfall gitt det den vet. Resten er lav prioritet.</p>
+      <p>Kurset følger <strong>handle rasjonelt</strong>: agenten handler for å oppnå best forventet utfall gitt det den vet. Resten er lav prioritet.</p>
       <details>
         <summary>Utdypning · lavere prioritet</summary>
         <div class="table-wrap"><table>
@@ -538,7 +537,7 @@
             <button class="reveal-btn">Se svar</button>
             <div class="answer">
               <span class="answer-src">Svar fra løsningsforslaget</span>
-              <p><strong>Allen Newell og Herbert Simon</strong>, programmet <strong>General Problem Solver (GPS)</strong>. (Løsningsforslaget skriver «Herbert and Simon», men det er samme person; riktig er Newell og Simon.) GPS resonnerte fra mål til handling ved å redusere forskjellen mellom nåværende tilstand og målet (boka kap. 1).</p>
+              <p><strong>Allen Newell og Herbert Simon</strong>, programmet <strong>General Problem Solver (GPS)</strong>. (Den opprinnelige løsningen skriver «Herbert and Simon», men det er samme person; riktig er Newell og Simon.) GPS resonnerte fra mål til handling ved å redusere forskjellen mellom nåværende tilstand og målet.</p>
             </div>
           </div>
         </div>
@@ -620,12 +619,12 @@
     var DIMS = [['Observerbar', ['Fullt', 'Delvis']], ['Agenter', ['Én', 'Fler']], ['Determinisme', ['Deterministisk', 'Ikke-det./stokastisk']],
       ['Episoder', ['Episodisk', 'Sekvensiell']], ['Endring', ['Statisk', 'Semidynamisk', 'Dynamisk']], ['Verdier', ['Diskret', 'Kontinuerlig']], ['Regler', ['Kjent', 'Ukjent']]];
     var SC = [
-      ['To-rute-støvsugeren', [0, 0, 0, 1, 0, 0, 0], ['sensorene gir lokasjon og skitt, altså hele tilstanden', 'ingen andre agenter', 'Suck renser alltid, flytt lykkes alltid', 'posisjonen nå avhenger av tidligere flytt', 'rent forblir rent, ingenting endres mens den tenker', 'to ruter, fire handlinger', 'geografi og handlingers effekt er gitt'], 'Antakelsene på slide 16; klassifiseringen er vår tolkning.'],
-      ['Sjakk med klokke', [0, 1, 0, 1, 1, 0, 0], ['hele brettet er synlig', 'to konkurrerende agenter', 'neste stilling bestemt av stilling og trekk', 'hvert trekk påvirker resten av partiet', 'brettet står stille, men klokka går', 'endelig mange stillinger og trekk', 'reglene er kjent'], 'Slide 22–27, boka fig. 2.6.'],
-      ['Poker', [1, 1, 1, 1, 0, 0, 0], ['motstanderens kort er skjult', 'motspillere', 'kortstokkingen er tilfeldig', 'innsatser nå påvirker senere runder', 'ingenting skjer mens du tenker', 'endelig mange kort og innsatser', 'reglene er kjent'], 'Slide 22, 24, boka fig. 2.6.'],
-      ['Kryssord', [0, 0, 0, 1, 0, 0, 0], ['hele rutenettet og hintene er synlige', 'løses alene', 'et ord skrives inn som bestemt', 'et ord begrenser kryssende ord senere', 'endres ikke mens du tenker', 'endelig mange bokstaver', 'reglene er kjent'], 'Slide 23, 26, boka fig. 2.6.'],
-      ['Deleplukkende robot', [1, 0, 1, 0, 2, 1, 0], ['kamera ser ikke alt', 'ingen motspiller', 'grep kan glippe', 'hver del er en egen episode', 'båndet går mens roboten tenker', 'leddvinkler og posisjoner', 'oppgaven er gitt (tolkning)'], 'Slide 25, boka fig. 2.6; kjent er tolkning.'],
-      ['Butikkrobot (Ord. 2022)', [1, 0, 0, 1, 2, 1, 0], ['ser ikke bak hyller', 'kunder modelleres som miljø', 'løsningsforslaget: ingen stokastikk (kan diskuteres)', 'tidligere valg bestemmer hvor den er', 'kunder flytter seg', 'ekte verden', 'planløsningen er gitt (tolkning)'], 'Løsningsforslaget Ord. 2022 oppg. 2.1; kjent er tolkning.']
+      ['To-rute-støvsugeren', [0, 0, 0, 1, 0, 0, 0], ['sensorene gir lokasjon og skitt, altså hele tilstanden', 'ingen andre agenter', 'Suck renser alltid, flytt lykkes alltid', 'posisjonen nå avhenger av tidligere flytt', 'rent forblir rent, ingenting endres mens den tenker', 'to ruter, fire handlinger', 'geografi og handlingers effekt er gitt'], 'Klassifiseringen bygger på antakelsene for to-rute-verdenen og er vår tolkning.'],
+      ['Sjakk med klokke', [0, 1, 0, 1, 1, 0, 0], ['hele brettet er synlig', 'to konkurrerende agenter', 'neste stilling bestemt av stilling og trekk', 'hvert trekk påvirker resten av partiet', 'brettet står stille, men klokka går', 'endelig mange stillinger og trekk', 'reglene er kjent'], ''],
+      ['Poker', [1, 1, 1, 1, 0, 0, 0], ['motstanderens kort er skjult', 'motspillere', 'kortstokkingen er tilfeldig', 'innsatser nå påvirker senere runder', 'ingenting skjer mens du tenker', 'endelig mange kort og innsatser', 'reglene er kjent'], ''],
+      ['Kryssord', [0, 0, 0, 1, 0, 0, 0], ['hele rutenettet og hintene er synlige', 'løses alene', 'et ord skrives inn som bestemt', 'et ord begrenser kryssende ord senere', 'endres ikke mens du tenker', 'endelig mange bokstaver', 'reglene er kjent'], ''],
+      ['Deleplukkende robot', [1, 0, 1, 0, 2, 1, 0], ['kamera ser ikke alt', 'ingen motspiller', 'grep kan glippe', 'hver del er en egen episode', 'båndet går mens roboten tenker', 'leddvinkler og posisjoner', 'oppgaven er gitt (tolkning)'], 'Kjent er tolkning.'],
+      ['Butikkrobot (Ord. 2022)', [1, 0, 0, 1, 2, 1, 0], ['ser ikke bak hyller', 'kunder modelleres som miljø', 'ingen stokastikk antatt (kan diskuteres)', 'tidligere valg bestemmer hvor den er', 'kunder flytter seg', 'ekte verden', 'planløsningen er gitt (tolkning)'], 'Eksamen Ord. 2022 oppg. 2.1; kjent er tolkning.']
     ];
     var sel = document.getElementById('env-sel'), body = document.getElementById('env-body'), out = document.getElementById('env-out');
     var guess = [], shown = false;
@@ -634,13 +633,13 @@
       var s = SC[+sel.value], ok = 0;
       body.innerHTML = DIMS.map(function (d, r) {
         var btns = d[1].map(function (lbl, k) {
-          var c = 'opt' + (guess[r] === k ? ' on' : '') + (shown && s[1][r] === k ? ' fasit' : '') + (shown && guess[r] === k && s[1][r] !== k ? ' feil' : '');
+          var c = 'opt' + (guess[r] === k ? ' on' : '') + (shown && s[1][r] === k ? ' riktig' : '') + (shown && guess[r] === k && s[1][r] !== k ? ' feil' : '');
           return '<button type="button" class="' + c + '" data-r="' + r + '" data-k="' + k + '">' + lbl + '</button>';
         }).join('');
         if (shown && guess[r] === s[1][r]) ok++;
         return '<tr><th>' + d[0] + '</th><td>' + btns + (shown ? '<div class="why">' + d[1][s[1][r]] + ': ' + s[2][r] + '</div>' : '') + '</td></tr>';
       }).join('');
-      out.innerHTML = shown ? (guess.filter(function (g) { return g !== undefined; }).length ? 'Du hadde <span class="hl">' + ok + ' av 7</span> riktig. ' : '') + 'Kilde: ' + s[3] : 'Klikk ditt svar i hver rad, så «Vis fasit».';
+      out.innerHTML = shown ? (guess.filter(function (g) { return g !== undefined; }).length ? 'Du hadde <span class="hl">' + ok + ' av 7</span> riktig. ' : '') + (s[3] ? 'Merk: ' + s[3] : '') : 'Klikk ditt svar i hver rad, så «Vis svar».';
     }
     body.addEventListener('click', function (e) { var b = e.target.closest('.opt'); if (!b || shown) return; guess[+b.dataset.r] = +b.dataset.k; render(); });
     document.getElementById('env-show').addEventListener('click', function () { shown = true; render(); });

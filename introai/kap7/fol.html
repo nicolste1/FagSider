@@ -79,8 +79,8 @@
           <li><span class="tag regn">Regn</span><strong>Oversett naturlig språk til FOL</strong> (7.1, prio 1): del 1 av en logikkoppgave er nesten alltid «represent this information as FOL sentences». Tidligere: <a href="#oppg-o23-3-2a">Ord. 2023 oppg. 3.2a</a> (Fido/Snowy). Kunne \(\forall\) med \(\Rightarrow\), \(\exists\) med \(\land\), nestede kvantorer og likhet.</li>
           <li><span class="tag">Forklar</span><strong>Hvorfor FOL:</strong> ulempen med proposisjonell logikk og hva FOL legger til. Tidligere: <a href="#oppg-o22-1-10">Ord. 2022 oppg. 1.10</a>.</li>
           <li><span class="tag">Forklar</span>Modeller i FOL (domene, konstanter, predikater, funksjoner) og entailment; spørringer med variabler der svaret er en substitusjon.</li>
-          <li><span class="tag">Lavere</span>Prolog, Z3, SMT, Alive2 og «by hand»-bevisene (slides 5, 41–45, 49–59) er merket «not curriculum» og er kuttet. Peano-aksiomene ligger i en utdypning.</li>
-          <li><span class="tag snart">Kommer</span><strong>7.2</strong> unifikasjon og forward/backward chaining i FOL (prio 2) og <strong>7.3</strong> CNF, skolemisering og resolusjon i FOL (prio 1, Ord. 2023 oppg. 3.2b, 10 p). Lages når slidene kommer.</li>
+          <li><span class="tag">Lavere</span>Prolog, Z3, SMT, Alive2 og «by hand»-bevisene er merket «not curriculum» og er kuttet. Peano-aksiomene ligger i en utdypning.</li>
+          <li><span class="tag snart">Kommer</span><strong>7.2</strong> unifikasjon og forward/backward chaining i FOL (prio 2) og <strong>7.3</strong> CNF, skolemisering og resolusjon i FOL (prio 1, Ord. 2023 oppg. 3.2b, 10 p). Lages når temaet er forelest.</li>
         </ul>
       </div>
     </div>
@@ -104,7 +104,7 @@
       &amp;\qquad \forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\}
       \end{aligned}
       \]
-      <p>Begge gir svaret ja på «kan Alice aritmetikk?», fordi \(KB \models \text{AliceKnowsArithmetic}\) og \(KB \models \text{Knows}(\text{Alice}, \text{Arithmetic})\). Men FOL-varianten vokser ikke med antall studenter. PL er et spesialtilfelle: \(\{\text{Rain}, \text{Rain} \Rightarrow \text{Wet}\}\) kan skrives \(\{\text{Is}(\text{Rain}), \text{Is}(\text{Rain}) \Rightarrow \text{Is}(\text{Wet})\}\) (slide 6).</p>
+      <p>Begge gir svaret ja på «kan Alice aritmetikk?», fordi \(KB \models \text{AliceKnowsArithmetic}\) og \(KB \models \text{Knows}(\text{Alice}, \text{Arithmetic})\). Men FOL-varianten vokser ikke med antall studenter. PL er et spesialtilfelle: \(\{\text{Rain}, \text{Rain} \Rightarrow \text{Wet}\}\) kan skrives \(\{\text{Is}(\text{Rain}), \text{Is}(\text{Rain}) \Rightarrow \text{Is}(\text{Wet})\}\).</p>
 
       <div class="oppgave" data-quiz id="oppg-o22-1-10">
         <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.10</span><span class="o-ref">kort spørsmål</span></div>
@@ -131,7 +131,7 @@
       <p class="dropcap">En <span class="term" data-term="term">term</span> peker på et objekt. En setning er sann eller usann. Alt i FOL er bygget av disse to lagene: termer settes inn i <span class="term" data-term="predikat">predikater</span> og gir <span class="term" data-term="atomaer-setning">atomære setninger</span>, som kombineres med <span class="term" data-term="konnektiv">konnektiver</span> og <span class="term" data-term="kvantor">kvantorer</span> til <span class="term" data-term="kompleks-setning">komplekse setninger</span>.</p>
 
       <div class="table-wrap"><table>
-        <thead><tr><th>Element</th><th>Hva det er</th><th>Eksempel fra slidene</th></tr></thead>
+        <thead><tr><th>Element</th><th>Hva det er</th><th>Eksempel</th></tr></thead>
         <tbody>
           <tr><td><span class="term" data-term="konstant">Konstant</span> (term)</td><td>et bestemt objekt</td><td>Alice, Bob, Arithmetic</td></tr>
           <tr><td><span class="term" data-term="variabel">Variabel</span> (term)</td><td>et uspesifisert objekt</td><td>\(x \in \{\text{Alice}, \text{Bob}, \text{Arithmetic}\}\)</td></tr>
@@ -148,7 +148,7 @@
         <p>\(\text{Mother}(\text{Alice})\) er en <em>term</em> (et objekt, Carrie), ikke en setning. Du kan ikke skrive \(\text{Mother}(\text{Alice}) \land \ldots\). Et predikat som \(\text{Mother}(\text{Alice}, \text{Carrie})\) er derimot en setning.</p>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-mother">
+      <div class="oppgave" data-quiz id="oppg-mother">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 11</span></div>
         <div class="o-text"><p>Uttrykk: «Alices mor er Carrie, Bobs mor er Denise, og alle mødre elsker barna sine», (a) uten funksjoner, (b) med en funksjon Mother.</p></div>
         <div class="quiz-reveal">
@@ -199,7 +199,7 @@
         </tbody>
       </table></div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-iskrem">
+      <div class="oppgave" data-quiz id="oppg-iskrem">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 14</span></div>
         <div class="o-text"><p>Skriv «alle liker iskrem» på to måter: med \(\forall\), og med \(\exists\).</p></div>
         <div class="quiz-reveal">
@@ -212,7 +212,7 @@
         </div>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-elsker">
+      <div class="oppgave" data-quiz id="oppg-elsker">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 12–13</span></div>
         <div class="o-text"><p>Oversett (a) «alle brødre er søsken», (b) «alle elsker noen» og (c) «det finnes noen som er elsket av alle».</p></div>
         <div class="quiz-reveal">
@@ -259,11 +259,11 @@
       <div class="source-note">Slides forelesning 6 · 15–28 · Eksamen Ord. 2023 oppg. 3.2a</div>
       <span class="lm-pill">Deltema 7.1 · prio 1 · regn</span>
 
-      <p class="dropcap">Tommelfingerregelen fra slidene (15–20) er den viktigste på siden: <strong>\(\forall\) går sammen med \(\Rightarrow\), \(\exists\) går sammen med \(\land\).</strong> Slidene viser begge feilene før de viser riktig svar.</p>
+      <p class="dropcap">Tommelfingerregelen er den viktigste på siden: <strong>\(\forall\) går sammen med \(\Rightarrow\), \(\exists\) går sammen med \(\land\).</strong> Oppgaven under viser begge feilene før riktig svar.</p>
 
-      <div class="oppgave" data-quiz id="oppg-slide-aritmetikk">
+      <div class="oppgave" data-quiz id="oppg-aritmetikk">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 15–20</span></div>
-        <div class="o-text"><p>Oversett (a) «Every student knows arithmetic» og (b) «Some students know arithmetic». Slidene viser først \(\forall x\, \text{Student}(x) \land \text{Knows}(x, \text{Arithmetic})\) og \(\exists x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\). Hva er galt med dem?</p></div>
+        <div class="o-text"><p>Oversett (a) «Every student knows arithmetic» og (b) «Some students know arithmetic». Et første forsøk gir \(\forall x\, \text{Student}(x) \land \text{Knows}(x, \text{Arithmetic})\) og \(\exists x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\). Hva er galt med dem?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
@@ -285,7 +285,7 @@
         </ol>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-kurs">
+      <div class="oppgave" data-quiz id="oppg-kurs">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 21–26</span></div>
         <div class="o-text"><p>Oversett: «There is some course that every student takes.»</p></div>
         <div class="quiz-reveal">
@@ -298,7 +298,7 @@
         </div>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-goldbach">
+      <div class="oppgave" data-quiz id="oppg-goldbach">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 21–26</span></div>
         <div class="o-text"><p>Oversett Goldbachs formodning: «Every even integer greater than 2 is the sum of two primes.»</p></div>
         <div class="quiz-reveal">
@@ -311,7 +311,7 @@
         </div>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-konsept">
+      <div class="oppgave" data-quiz id="oppg-konsept">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 21–26</span></div>
         <div class="o-text"><p>Oversett: «If a student takes a course and the course covers a concept, then the student knows that concept.»</p></div>
         <div class="quiz-reveal">
@@ -324,7 +324,7 @@
         </div>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-to-brodre">
+      <div class="oppgave" data-quiz id="oppg-to-brodre">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 27–28</span></div>
         <div class="o-text"><p>Oversett: «Bob has at least two brothers.» Hva er galt med \(\exists x, y\, \text{Brother}(\text{Bob}, x) \land \text{Brother}(\text{Bob}, y)\)?</p></div>
         <div class="quiz-reveal">
@@ -357,7 +357,7 @@
             &amp;Q:\ \ \exists x\ \text{Older}(x, \text{Snowy})
             \end{aligned}
             \]
-            <p>\(\text{Father}(x, y)\) = «\(x\) er far til \(y\)». «And vice versa» gir \(\Leftrightarrow\) i setning 3. Løsningsforslaget skriver setning 3 og 4 uten kvantorer og sier at de gjelder for alle \(x\) og \(y\); skriv \(\forall\) eksplisitt på eksamen. Spørsmålet «is there anybody …» er en \(\exists\). I b-delen negeres \(Q\) til \(\forall x\, \neg \text{Older}(x, \text{Snowy})\), og svaret blir Fido.</p>
+            <p>\(\text{Father}(x, y)\) = «\(x\) er far til \(y\)». «And vice versa» gir \(\Leftrightarrow\) i setning 3. Den opprinnelige løsningen skriver setning 3 og 4 uten kvantorer og sier at de gjelder for alle \(x\) og \(y\); skriv \(\forall\) eksplisitt på eksamen. Spørsmålet «is there anybody …» er en \(\exists\). I b-delen negeres \(Q\) til \(\forall x\, \neg \text{Older}(x, \text{Snowy})\), og svaret blir Fido.</p>
           </div>
         </div>
       </div>
@@ -458,10 +458,10 @@
 
       <div class="callout">
         <span class="label">Entailment i FOL</span>
-        <p><span class="term" data-term="entailment">\(KB \models \alpha\)</span> betyr det samme som i PL: \(\alpha\) er sann i <em>alle</em> modeller der KB er sann. Det finnes mange, ofte overraskende modeller (slide 35: alle konstanter kan vise til samme objekt), men entailment kan likevel avgjøres. For å vise \(KB \not\models \alpha\) holder det med én modell av KB der \(\alpha\) er usann.</p>
+        <p><span class="term" data-term="entailment">\(KB \models \alpha\)</span> betyr det samme som i PL: \(\alpha\) er sann i <em>alle</em> modeller der KB er sann. Det finnes mange, ofte overraskende modeller (for eksempel kan alle konstanter vise til samme objekt), men entailment kan likevel avgjøres. For å vise \(KB \not\models \alpha\) holder det med én modell av KB der \(\alpha\) er usann.</p>
       </div>
 
-      <div class="oppgave" data-quiz id="oppg-slide-entailment">
+      <div class="oppgave" data-quiz id="oppg-entailment">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 35–38</span></div>
         <div class="o-text"><p>La \(KB = \{\text{Mother}(\text{Alice}, \text{Carrie}),\ \text{Mother}(\text{Carrie}, \text{Denise}),\ \forall x, y\, \text{Mother}(x, y) \Rightarrow \text{Loves}(y, x)\}\). Avgjør om KB medfører (a) \(\text{Loves}(\text{Carrie}, \text{Alice})\), (b) \(\text{Loves}(\text{Alice}, \text{Carrie})\), (c) \(\text{Loves}(\text{Denise}, \text{Carrie})\), (d) \(\text{Loves}(\text{Carrie}, \text{Denise})\).</p></div>
         <div class="quiz-reveal">
@@ -470,13 +470,13 @@
             <span class="answer-src">Svar fra slidene (begrunnelse og motmodell er vårt tillegg)</span>
             <p>(a) \(KB \models\): sett \(x = \text{Alice}, y = \text{Carrie}\) i regelen; premisset er sant, så \(\text{Loves}(\text{Carrie}, \text{Alice})\) er sann i alle modeller av KB. (c) \(KB \models\) på samme måte med \(x = \text{Carrie}, y = \text{Denise}\).</p>
             <p>(b) og (d) \(KB \not\models\). Motmodell: \(\{\text{Alice} = A, \text{Carrie} = C, \text{Denise} = D\}\), \(\text{Mother} = \{(A, C), (C, D)\}\), \(\text{Loves} = \{(C, A), (D, C)\}\), alt annet usant. Den oppfyller alle tre setningene i KB, men \(\text{Loves}(\text{Alice}, \text{Carrie})\) og \(\text{Loves}(\text{Carrie}, \text{Denise})\) er usanne. Regelen sier bare at mødre elsker barna, ikke omvendt.</p>
-            <p>Samme svar med funksjonsvarianten \(\{\text{Mother}(\text{Alice}) = \text{Carrie}, \text{Mother}(\text{Carrie}) = \text{Denise}, \forall x\, \text{Loves}(\text{Mother}(x), x)\}\) (slide 37–38).</p>
+            <p>Samme svar med funksjonsvarianten \(\{\text{Mother}(\text{Alice}) = \text{Carrie}, \text{Mother}(\text{Carrie}) = \text{Denise}, \forall x\, \text{Loves}(\text{Mother}(x), x)\}\).</p>
           </div>
         </div>
       </div>
 
       <details>
-        <summary>Utdypning · lavere prioritet: uendelige modeller (Peano, slide 39)</summary>
+        <summary>Utdypning · lavere prioritet: uendelige modeller (Peano)</summary>
         <p>\(KB = \{\text{NatNum}(0),\ \forall x\, \text{NatNum}(x) \Rightarrow \text{NatNum}(\text{Successor}(x)),\ \forall x\, \neg(\text{Successor}(x) = 0),\ \forall x, y\, \neg(x = y) \Rightarrow \neg(\text{Successor}(x) = \text{Successor}(y))\}\) tvinger fram en uendelig følge av forskjellige objekter \(0, \text{Successor}(0), \ldots\). En modell: \(\{0 = A\}\), \(\text{NatNum} = \{\text{else} = \text{true}\}\), \(\text{Successor} = \{A = C, C = B, B = D, \ldots\}\). Et <span class="term" data-term="aksiom">aksiom</span> er en setning som tas som sann uten å utledes fra andre.</p>
       </details>
 
@@ -500,7 +500,7 @@
 
       <p class="dropcap">I PL kan vi bare spørre ja/nei. I FOL kan vi spørre «hvem?»: hvilke verdier av \(x\) gjør at \(KB \models \text{Knows}(x, \text{Arithmetic})\)? Svaret er en liste av <span class="term" data-term="substitusjon">substitusjoner</span>, skrevet \(\theta = \{x/\text{Alice}\}\): «bytt \(x\) med Alice».</p>
 
-      <div class="oppgave" data-quiz id="oppg-slide-hvem">
+      <div class="oppgave" data-quiz id="oppg-hvem">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">slide 47–48</span></div>
         <div class="o-text"><p>La \(KB = \{\text{Student}(\text{Alice}),\ \text{Student}(\text{Bob}),\ \forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\}\). Hvem kan aritmetikk, dvs. hvilke \(x\) gir \(KB \models \text{Knows}(x, \text{Arithmetic})\)?</p></div>
         <div class="quiz-reveal">

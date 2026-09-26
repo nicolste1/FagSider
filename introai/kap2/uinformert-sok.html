@@ -129,7 +129,7 @@ function EXPAND(problem, node) yields nodes
     yield NODE(STATE=s', PARENT=node, ACTION=action, PATH-COST=cost)</code></pre>
       <div class="table-wrap">
         <table>
-          <caption>Cheatsheet fra slidene: samme BEST-FIRST-SEARCH, ulik f</caption>
+          <caption>Cheatsheet: samme BEST-FIRST-SEARCH, ulik f</caption>
           <thead><tr><th>Algoritme</th><th>\(f(n)\)</th><th>Frontier oppfører seg som</th></tr></thead>
           <tbody>
             <tr><td>Depth-first search</td><td>\(-\text{depth}(n)\)</td><td><span class="term" data-term="lifo-ko">LIFO-kø</span> (stakk): dypeste først</td></tr>
@@ -153,13 +153,13 @@ function EXPAND(problem, node) yields nodes
       <div class="section-badge">02 · Fallgruver</div>
       <h2>Tre detaljer som endrer <em>svaret</em></h2>
       <div class="source-note">Slides forelesning 2 · 112–115 og 201 · Forelesning 3 · 5–10 · Assignment-forelesning 1 · 2–7</div>
-      <p class="dropcap">Assignment-forelesningen sier det rett ut: små detaljer gir store forskjeller, og «A*» på nettet er sjelden kursets A*. Har du tatt TDT4120, er dette stedet du lettest går i fella.</p>
+      <p class="dropcap">Små detaljer gir store forskjeller, og «A*» på nettet er sjelden kursets A*. Har du tatt TDT4120, er dette stedet du lettest går i fella.</p>
       <ol class="steps">
         <li><strong>Graph search eller <span class="term" data-term="tree-like-search">tree-like search</span>?</strong> <span class="term" data-term="graph-search">Graph search</span> bruker <span class="term" data-term="reached">reached</span> og legger ikke inn en tilstand på nytt med dårligere kostnad (<span class="term" data-term="redundant-sti">redundante stier</span>). Tree-like search er samme pseudokode <em>uten</em> reached-testen: alle barn legges i frontier, også løkker. Står det «tree-like» i oppgaven, er det dette.</li>
         <li><strong>Når sjekkes målet?</strong> BFS har <span class="term" data-term="tidlig-malsjekk">tidlig måltest</span>: målet sjekkes når en node <em>genereres</em>, og søket stopper før målet legges i frontier. Alle best-first-variantene (DFS, UCS, greedy, A*) har <span class="term" data-term="sen-malsjekk">sen måltest</span>: målet sjekkes når noden <em>poppes</em> for ekspansjon.</li>
         <li><strong>Uavgjort?</strong> Behandle etterfølgere i alfabetisk rekkefølge, og ved likt \(f\) i prioritetskøen: velg alfabetisk (eller «venstre til høyre» om oppgaven sier det).</li>
       </ol>
-      <p>Svarformatet fra assignment-forelesningen og eksamen. Målet står i parentes fordi det ikke ekspanderes, bare oppdages:</p>
+      <p>Svarformatet på assignment og eksamen. Målet står i parentes fordi det ikke ekspanderes, bare oppdages:</p>
       <div class="svar-format">Order of expansion: S, A, B, (G)<br>Found path: S B G<br>Path cost: 4</div>
       <div class="callout callout-warn">
         <span class="label">Vanlig feil</span>
@@ -173,7 +173,7 @@ function EXPAND(problem, node) yields nodes
       <div class="section-badge">03 · BFS</div>
       <h2>Bredde først, mål <em>tidlig</em></h2>
       <div class="source-note">Slides forelesning 2 · 116–129 · Boka kap. 3.4.1 · s. 95</div>
-      <p class="dropcap"><span class="term" data-term="bfs">Breadth-first search</span> ekspanderer de eldste nodene først: frontier er en FIFO-kø. Kursets offisielle versjon er bokas s. 95:</p>
+      <p class="dropcap"><span class="term" data-term="bfs">Breadth-first search</span> ekspanderer de eldste nodene først: frontier er en FIFO-kø. Kursets offisielle versjon:</p>
 <pre><code>function BREADTH-FIRST-SEARCH(problem) returns a solution node or failure
   node ← NODE(problem.INITIAL)
   if problem.IS-GOAL(node.STATE) then return node
@@ -188,8 +188,8 @@ function EXPAND(problem, node) yields nodes
         add s to reached
         add child to frontier
   return failure</code></pre>
-      <p>Grafen under er slidenes gjennomgående eksempel for BFS, DFS og UCS (start A, mål G).</p>
-      <svg class="gsvg" viewBox="0 0 360 310" role="img" aria-label="Eksempelgraf fra forelesning 2">
+      <p>Grafen under er det gjennomgående eksempelet for BFS, DFS og UCS (start A, mål G).</p>
+      <svg class="gsvg" viewBox="0 0 360 310" role="img" aria-label="Eksempelgraf fra A til G">
 <defs><marker id="ar-lec" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="ah"/></marker></defs>
 <line class="ed" x1="188" y1="42" x2="153" y2="81" marker-end="url(#ar-lec)"/>
 <text class="cost" x="160" y="54">5</text>
@@ -215,7 +215,7 @@ function EXPAND(problem, node) yields nodes
 </svg>
       <div class="table-wrap">
         <table class="trace">
-          <caption>BFS på slidegrafen (slides 116–124)</caption>
+          <caption>BFS på eksempelgrafen</caption>
           <thead><tr><th>Ekspanderer</th><th>Genererer</th><th>Frontier etterpå</th></tr></thead>
           <tbody>
             <tr><td>A</td><td>B, C (ikke mål)</td><td>⟨B, C⟩</td></tr>
@@ -238,7 +238,7 @@ function EXPAND(problem, node) yields nodes
       <p class="dropcap"><span class="term" data-term="dfs">Depth-first search</span> ekspanderer den nyeste (dypeste) noden først: best-first med \(f(n) = -\text{depth}(n)\), altså en stakk. Etterfølgerne legges på stakken i omvendt rekkefølge, slik at den alfabetisk første havner øverst.</p>
       <div class="table-wrap">
         <table class="trace">
-          <caption>DFS på slidegrafen (slides 130–137); toppen av stakken står først</caption>
+          <caption>DFS på eksempelgrafen; toppen av stakken står først</caption>
           <thead><tr><th>Ekspanderer</th><th>Frontier etterpå</th></tr></thead>
           <tbody>
             <tr><td>A</td><td>⟨B, C⟩</td></tr>
@@ -274,10 +274,10 @@ function DEPTH-LIMITED-SEARCH(problem, ℓ) returns a node or failure or cutoff
     else if not IS-CYCLE(node) do
       for each child in EXPAND(problem, node) do add child to frontier
   return result</code></pre>
-      <p>IDS er fullstendig når rommet er endelig, kostnadsoptimal bare når alle kostnader er like (som BFS), med tid \(O(b^d)\) og plass \(O(bd)\) (som DFS). Slidene: «slightly better than both DFS and BFS».</p>
+      <p>IDS er fullstendig når rommet er endelig, kostnadsoptimal bare når alle kostnader er like (som BFS), med tid \(O(b^d)\) og plass \(O(bd)\) (som DFS). Kort sagt: «slightly better than both DFS and BFS».</p>
       <div class="callout callout-warn">
         <span class="label">Hvor går grensen?</span>
-        <p>Slideteksten sier at noder <em>på</em> dybde \(\ell\) ikke får etterfølgere. Bokas pseudokode (og løsningsforslaget under) kutter først noder med dybde \(\gt \ell\), så nodene på dybde \(\ell\) blir ekspandert. Skriv hvilken konvensjon du bruker på eksamen.</p>
+        <p>Én formulering er at noder <em>på</em> dybde \(\ell\) ikke får etterfølgere. Den offisielle pseudokoden (og løsningen under) kutter først noder med dybde \(\gt \ell\), så nodene på dybde \(\ell\) blir ekspandert. Skriv hvilken konvensjon du bruker på eksamen.</p>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-o22-3-2">
@@ -287,7 +287,7 @@ function DEPTH-LIMITED-SEARCH(problem, ℓ) returns a node or failure or cutoff
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget</span>
-            <p>Løsningsforslaget velger alltid det minste tallet først og går videre til neste dybde ved første cutoff:</p>
+            <p>Løsningen velger alltid det minste tallet først og går videre til neste dybde ved første cutoff:</p>
 <pre><code>depth=0  111-i (barn 011-o, 101-o, 110-o, 111-o) → 011-o på nivå 1: cutoff
 depth=1  111-i → 011-o (ingen barn) → 101-o (barn 101-i) → 101-i på nivå 2: cutoff
 depth=2  111-i → 011-o → 101-o → 101-i (barn 001-o, 100-o) → 001-o på nivå 3: cutoff
@@ -296,7 +296,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
           </div>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra løsningsforslaget</span>
-            <p>Bokas DLS stopper ikke ved første cutoff; den popper resten av stakken også. Med samme konvensjoner (minste først, dybde \(\gt \ell\) gir cutoff, forfedre genereres ikke) blir den fullstendige ekspansjonsrekkefølgen:</p>
+            <p>DLS i den offisielle pseudokoden stopper ikke ved første cutoff; den popper resten av stakken også. Med samme konvensjoner (minste først, dybde \(\gt \ell\) gir cutoff, forfedre genereres ikke) blir den fullstendige ekspansjonsrekkefølgen:</p>
             <div class="table-wrap">
               <table class="trace">
                 <thead><tr><th>\(\ell\)</th><th>Ekspandert (i rekkefølge)</th><th>Cutoff (poppet, ikke ekspandert)</th></tr></thead>
@@ -308,7 +308,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
                 </tbody>
               </table>
             </div>
-            <p>Resultatet er <em>cutoff</em>: målet 000-o ligger på dybde 7. Bruker du slidenes definisjon (dybde \(\ell\) får ingen barn), blir listen for \(\ell\) lik listen for \(\ell - 1\) i tabellen.</p>
+            <p>Resultatet er <em>cutoff</em>: målet 000-o ligger på dybde 7. Bruker du den andre konvensjonen (dybde \(\ell\) får ingen barn), blir listen for \(\ell\) lik listen for \(\ell - 1\) i tabellen.</p>
           </div>
         </div>
       </div>
@@ -323,7 +323,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
       <p class="dropcap"><span class="term" data-term="ucs">Uniform-cost search</span> (Dijkstra) ekspanderer alltid noden med lavest stikostnad: \(f(n) = g(n)\). Måltesten er <em>sen</em>: G kan ligge i frontier lenge før den poppes, og en billigere vei kan erstatte den.</p>
       <div class="table-wrap">
         <table class="trace">
-          <caption>UCS på slidegrafen (slides 146–156)</caption>
+          <caption>UCS på eksempelgrafen</caption>
           <thead><tr><th>Ekspanderer</th><th>Frontier etterpå</th><th>Kommentar</th></tr></thead>
           <tbody>
             <tr><td>A (0)</td><td>{B:5, C:7}</td><td></td></tr>
@@ -340,7 +340,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
 
       <div class="oppgave" data-quiz id="oppg-l2-bfs-dfs-ucs">
         <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">forelesning 2 · 116–159</span></div>
-        <div class="o-text"><p>Kjør BFS, DFS og UCS på slidegrafen i <a href="#bfs">seksjon 03</a> (start A, mål G, alfabetisk rekkefølge). Gi ekspansjonsrekkefølge, sti og kostnad for hver.</p></div>
+        <div class="o-text"><p>Kjør BFS, DFS og UCS på eksempelgrafen i <a href="#bfs">seksjon 03</a> (start A, mål G, alfabetisk rekkefølge). Gi ekspansjonsrekkefølge, sti og kostnad for hver.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
@@ -448,7 +448,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
               </table>
             </div>
             <div class="svar-format">Order of expansion: S, A, B, C, (G) · Path: S A C G · Cost: 4 + 4 + 4 = 12</div>
-            <p>Løsningsforslaget godtok også svar som sjekket besøkte noder. Med graph search (reached) avvises løkka A→A fordi 17 &gt; 4, og DFS gir da S, A, C, (G), sti S A C G, kostnad 12.</p>
+            <p>Svar som sjekket besøkte noder ble også godtatt. Med graph search (reached) avvises løkka A→A fordi 17 &gt; 4, og DFS gir da S, A, C, (G), sti S A C G, kostnad 12.</p>
           </div>
         </div>
       </div>
@@ -459,7 +459,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
         <div class="w-row">
           <select class="w-sel" id="u-graph" aria-label="Graf">
             <option value="o23">Eksamen 2023 (S → G)</option>
-            <option value="lec">Slidegrafen (A → G)</option>
+            <option value="lec">Eksempelgraf (A → G)</option>
             <option value="al1">Assignment-eksempel (A → E)</option>
           </select>
           <div class="w-toggle" id="u-algo"><button type="button" data-v="bfs" class="active">BFS</button><button type="button" data-v="dfs">DFS</button><button type="button" data-v="ucs">UCS</button></div>
@@ -495,7 +495,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
         <div class="q-text">Kjør BFS (graph search) på assignment-eksempelgrafen: kanter A–B 3, A–C 2, C–D 3, D–E 3, B–E 4 (urettet), start A, mål E.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Ekspander A: genererer B, C. Ekspander B: genererer A (allerede i reached) og E, som er målet. Order of expansion: A, B, (E) · Path: A B E · Cost: 3 + 4 = 7. Samme som på assignment-slidene.</div>
+          <div class="answer">Ekspander A: genererer B, C. Ekspander B: genererer A (allerede i reached) og E, som er målet. Order of expansion: A, B, (E) · Path: A B E · Cost: 3 + 4 = 7.</div>
         </div>
       </div>
       <div class="quiz" data-quiz>
@@ -511,7 +511,7 @@ depth=3  111-i → 011-o → 101-o → 101-i → 001-o (barn 001-i, 011-i) → 0
         <div class="q-text">Ville BFS gitt et annet svar på eksamensgrafen om den hadde sen måltest?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Ja. Med sen måltest legges G i frontier etter B: ⟨A, C, G⟩. Så ekspanderes A (løkke) og C, og G poppes: S, A, B, A, C, (G). Stien er fortsatt S B G (17), men ekspansjonsrekkefølgen blir feil. Det er nettopp denne forskjellen løsningsforslaget sier mange bommet på.</div>
+          <div class="answer">Ja. Med sen måltest legges G i frontier etter B: ⟨A, C, G⟩. Så ekspanderes A (løkke) og C, og G poppes: S, A, B, A, C, (G). Stien er fortsatt S B G (17), men ekspansjonsrekkefølgen blir feil. Det er nettopp denne forskjellen mange bommet på.</div>
         </div>
       </div>
       <nav class="page-nav">

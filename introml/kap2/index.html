@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 2 — Nevrale nettverk</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Nevrale nettverk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · Notater 2.1–2.3 · s. 34–39 · under arbeid</div>
+      <h1>Nevrale <em>nettverk</em></h1>
+      <p class="lede">Ikke-lineære modeller som transformerer dataene lag for lag. Perceptronet som utgangspunkt, aktiveringsfunksjonene som gjør det trenbart, og arkitekturen som bestemmer hva nettverket kan lære. Notatene dekker foreløpig bare 2.1–2.3; trening av nettverk (backpropagation) kommer.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgaver</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ─────────── Helhetsbilde ─────────── -->
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 1 ga to modelltyper: parametriske (lineær og logistisk regresjon, der funksjonsformen er gitt) og ikke-parametriske (trær, der dataene flyter gjennom uten å endres). <span class="term" data-term="nevralt-nettverk">Nevrale nettverk</span> er det tredje: parametriske modeller som <em>transformerer</em> dataene ikke-lineært, lag for lag, og lærer transformasjonen selv.</p>
+
+      <ul>
+        <li><strong>Perceptronet</strong> er én node: \(\mathrm{H}(\mathbf{w}\mathbf{x} + b)\). Det kan lære AND, OR og NOT, men ikke XOR, og det kan ikke trenes med gradient descent fordi Heaviside ikke er deriverbar.</li>
+        <li><strong>Aktiveringsfunksjonene</strong> løser det: sigmoid (binær klassifisering), softmax (flere klasser), ReLU (skjulte lag), lineær (regresjon). Deriverbar aktivering = trenbart nevron.</li>
+        <li><strong>Arkitekturen</strong> er input-lag (én node per feature), skjulte lag og output-lag (én node per target), fully connected og feed-forward. Hvert lag er \(\mathbf{a}^{l} = g(W^{l} \mathbf{a}^{l-1})\), en ikke-lineær transformasjon.</li>
+        <li><strong>Eksamen</strong> spør «hvorfor» (Heaviside, XOR, sigmoid, backpropagation) og «hvor mange» (noder, vekter). Fem spørsmål i 2025, ett i 2024.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Status</span>
+        <p>Siden bygger på notatene datert 22. september 2026, som slutter etter avsnitt 2.3. Trening av nettverk, backpropagation og alt som kommer etter, legges til når notatene utvides. Backpropagation er likevel nevnt i 2A fordi begge eksamenssettene spør om det.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Læringssti ─────────── -->
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Les 1A (sigmoid, gradient descent) først om det er lenge siden. Alt i 2A bygger på den oppskriften.</p>
+
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="perceptron.html#intro">Hvorfor nettverk</a></div><div class="desc">Parametrisk vs ikke-parametrisk, og hva som mangler: ikke-lineær transformasjon.</div></div><div class="min">~3 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="perceptron.html#perceptron">Perceptron</a></div><div class="desc">TLU, Heaviside, hvorfor gradienten forsvinner, Rosenblatts regel. Prøv stepperen.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="perceptron.html#logikk">Logiske operasjoner</a></div><div class="desc">AND, OR, NOT med tre tall. Hvorfor XOR trenger to lag. Bygg porten selv.</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="perceptron.html#aktivering">Aktiveringsfunksjoner</a></div><div class="desc">Sigmoid, softmax, ReLU, lineær: hvilken hvor, og hvorfor.</div></div><div class="min">~6 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="perceptron.html#arkitektur">Arkitektur</a></div><div class="desc">Lag, (96), matriseform (101), telle vekter, hva backpropagation gjør.</div></div><div class="min">~10 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Deler ─────────── -->
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="perceptron.html" class="subpage-card">
+          <span class="sp-icon">2A</span>
+          <div class="sp-info">
+            <div class="sp-title">Perceptron, aktivering og arkitektur</div>
+            <div class="sp-desc">Notater 2–2.3: parametrisk vs ikke-parametrisk, TLU og Heaviside, perceptron-regelen, logiske porter og XOR, sigmoid/softmax/ReLU, lag og matriseform. 5 eksamensoppgaver, 4 oppgaver fra notatene, 4 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <!-- ─────────── Begrepskart ─────────── -->
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Fra perceptron til MLP i tre steg; teorien som forklarer hvert steg til venstre.</p>
+
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 2">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
+            </marker>
+          </defs>
+
+          <rect class="bh" x="290" y="18" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="38" text-anchor="middle">Perceptron (TLU)</text>
+          <text class="cap" x="380" y="54" text-anchor="middle">H(w·x + b) · binær output</text>
+
+          <rect class="bh" x="290" y="112" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="132" text-anchor="middle">Nevron med g(z)</text>
+          <text class="cap" x="380" y="148" text-anchor="middle">sigmoid · softmax · ReLU</text>
+
+          <rect class="bh" x="290" y="206" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="226" text-anchor="middle">MLP: lag av nevroner</text>
+          <text class="cap" x="380" y="242" text-anchor="middle">a = g(W a) · fully connected</text>
+
+          <path class="e" d="M380 64 L380 110"/>
+          <path class="e" d="M380 158 L380 204"/>
+
+          <rect class="b" x="40" y="18" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="38" text-anchor="middle">Heaviside ikke deriverbar</text>
+          <text class="cap" x="135" y="54" text-anchor="middle">regel: w ← w + η(y − ŷ)x</text>
+          <path class="e-faded" d="M230 41 L290 41"/>
+
+          <rect class="b" x="40" y="112" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="132" text-anchor="middle">Deriverbar → gradient descent</text>
+          <text class="cap" x="135" y="148" text-anchor="middle">σ′ = σ(1 − σ)</text>
+          <path class="e-faded" d="M230 135 L290 135"/>
+
+          <rect class="b" x="40" y="206" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="226" text-anchor="middle">Ikke-lineær transformasjon</text>
+          <text class="cap" x="135" y="242" text-anchor="middle">automatisk feature engineering</text>
+          <path class="e-faded" d="M230 229 L290 229"/>
+
+          <rect class="bw" x="530" y="18" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="38" text-anchor="middle">AND · OR · NOT, ikke XOR</text>
+          <text class="cap" x="625" y="54" text-anchor="middle">lineært separerbart</text>
+          <path class="e-faded" d="M470 41 L530 41"/>
+
+          <rect class="bw" x="530" y="112" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="132" text-anchor="middle">Output-lag etter oppgave</text>
+          <text class="cap" x="625" y="148" text-anchor="middle">binær · flerklasse · regresjon</text>
+          <path class="e-faded" d="M470 135 L530 135"/>
+
+          <rect class="bw" x="530" y="206" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="226" text-anchor="middle">Telle noder og vekter</text>
+          <text class="cap" x="625" y="242" text-anchor="middle">n·m vekter + m bias per lag</text>
+          <path class="e-faded" d="M470 229 L530 229"/>
+
+          <rect class="b" x="290" y="282" width="180" height="40" rx="6" stroke-dasharray="4 3"/>
+          <text class="lbl" x="380" y="300" text-anchor="middle">Backpropagation</text>
+          <text class="cap" x="380" y="314" text-anchor="middle">kommer i notatene · spurt på eksamen</text>
+          <path class="e-faded" d="M380 252 L380 280"/>
+        </svg>
+        <figcaption>Heltrukne piler: utviklingen fra én terskel-enhet til et nettverk. Stiplede: begrunnelsen for hvert steg.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────── Oppgaver ─────────── -->
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgaver</div>
+      <h2>Eksamensoppgaver og <em>«Oppgave:»</em>-avsnitt</h2>
+      <p class="section-intro">Alle boksene på 2A, lenket til stedet de står. Grønn status: svaret er fra notatene eller fra løsningsforslaget til eksamen. Gul: forslag skrevet for denne siden.</p>
+
+      <ul class="oppgave-index">
+        <li><a href="perceptron.html#oppg-heaviside-problem"><span class="oi-ref">2.1 · s. 35</span><span>Hva er problemet med å trene perceptronet med gradient descent?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="perceptron.html#oppg-o25-5-1"><span class="oi-ref">Ord. 2025 · 5.1</span><span>Hvilken egenskap ved Heaviside gjør den uegnet for gradientbasert optimalisering?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="perceptron.html#oppg-vekter-tre-klasser"><span class="oi-ref">2.1 · s. 36</span><span>To features, tre klasser: hvor mange vekter trenger perceptronet?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="perceptron.html#oppg-xor"><span class="oi-ref">2.1 · s. 36</span><span>Kan et perceptron gjøre XOR? Hvordan?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="perceptron.html#oppg-o25-5-2"><span class="oi-ref">Ord. 2025 · 5.2</span><span>Hvorfor kan ikke ett perceptron lære XOR-tabellen?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="perceptron.html#oppg-o25-5-3"><span class="oi-ref">Ord. 2025 · 5.3</span><span>Viktigste konsekvens av sigmoid i stedet for step-funksjonen?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="perceptron.html#oppg-forste-node"><span class="oi-ref">2.3 · s. 38</span><span>Skriv ned aktiveringen til første node i første lag etter input.</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="perceptron.html#oppg-o24-19"><span class="oi-ref">Ord. 2024 · 19</span><span>Hovedformålet med backpropagation?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="perceptron.html#oppg-o25-5-4"><span class="oi-ref">Ord. 2025 · 5.4</span><span>Hovedformålet med backpropagation-algoritmen (kjerneregelen bakover)?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────── Quiz ─────────── -->
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapitlene</em></h2>
+      <p class="section-intro">Spørsmål som kobler kapittel 2 til kapittel 1.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Perceptron-regelen \(w_i \leftarrow w_i + \eta(y_i - \hat{y}_i)x_i\) og gradient descent for logistisk regresjon \(w_j \leftarrow w_j - \eta(y_{\text{pred}} - y)x_j\) ser nesten like ut. Hva er likheten, og hva er forskjellen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Begge flytter vekten i retning \((y - \hat{y})x\): opp hvis prediksjonen var for lav, ned hvis for høy, proporsjonalt med input. Forskjellen er hvor \(\hat{y}\) kommer fra. I logistisk regresjon er \(\hat{y} = \sigma(z) \in (0,1)\), og regelen er en ekte gradient av cross-entropy (likning 22 i 1A). I perceptronet er \(\hat{y} = \mathrm{H}(z) \in \{0, 1\}\), og regelen er en heuristikk som utelater den deriverte, fordi den ikke finnes. Bytter man H med σ, blir perceptronet logistisk regresjon.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">I 1C laget vi featuren \(x^2\) for hånd for å tilpasse en parabel med lineær regresjon. Hva gjør et nevralt nettverk med det problemet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">De skjulte lagene gjør en ikke-lineær transformasjon \(\mathbf{a} = g(W\mathbf{x})\) som læres fra data, og output-laget gjør lineær regresjon (lineær aktivering) på de transformerte verdiene. Nettverket finner altså sin egen versjon av «\(x^2\)», uten at vi må se på plottet og gjette funksjonsformen. Det er det notatene kaller automatisk feature-transformasjon.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Random forest (1D) og et nevralt nettverk er begge «mange enkle enheter satt sammen». Hva er den prinsipielle forskjellen i hvordan enhetene kombineres?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I en random forest trenes trærne <em>uavhengig</em> (parallelt) på ulike data, og prediksjonene aggregeres etterpå ved avstemning; ingen tre vet om de andre. I et nevralt nettverk er nodene koblet <em>i serie</em>: output fra ett lag er input til neste, alle vektene trenes samtidig mot ett felles tap, og hver node bidrar til en transformasjon i stedet for en egen prediksjon. Trærne er også tolkbare hver for seg; det er nodene i et nettverk ikke.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap1/ensemble.html" class="prev"><div class="pn-label">← Forrige · 1D</div><div class="pn-title">Ensemble-modeller</div></a>
+        <a href="perceptron.html" class="next"><div class="pn-label">Start · 2A</div><div class="pn-title">Perceptron, aktivering og arkitektur →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

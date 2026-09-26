@@ -116,7 +116,7 @@
       </ol>
       <details>
         <summary>Utdypning · lavere prioritet</summary>
-        <p>Slidene skiller mellom <em>standardiserte problemer</em> (grid world, glidebrikkespill) som brukes til å øve og sammenlikne metoder, og <em>virkelige problemer</em> (ruteplanlegging, robotnavigasjon, VLSI-utlegg). Eksempler på det siste: Travelling Salesperson Problem (korteste rundtur som besøker alle steder én gang) og monteringsproblemer (finn rekkefølgen delene settes sammen i). Virkeligheten er vanskeligere: begrensede ressurser, restriksjoner og krav om raske svar.</p>
+        <p>Man skiller mellom <em>standardiserte problemer</em> (grid world, glidebrikkespill) som brukes til å øve og sammenlikne metoder, og <em>virkelige problemer</em> (ruteplanlegging, robotnavigasjon, VLSI-utlegg). Eksempler på det siste: Travelling Salesperson Problem (korteste rundtur som besøker alle steder én gang) og monteringsproblemer (finn rekkefølgen delene settes sammen i). Virkeligheten er vanskeligere: begrensede ressurser, restriksjoner og krav om raske svar.</p>
       </details>
     </div>
   </section>
@@ -194,7 +194,7 @@
         <div class="q-text">Hvor mange tilstander har vacuum world med \(n\) ruter på rad?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Agenten kan stå i \(n\) ruter, og hver rute er skitten eller ren: \(n \cdot 2^n\). For \(n = 2\) gir det 8, som på slidene.</div>
+          <div class="answer">Agenten kan stå i \(n\) ruter, og hver rute er skitten eller ren: \(n \cdot 2^n\). For \(n = 2\) gir det 8.</div>
         </div>
       </div>
     </div>
@@ -232,7 +232,7 @@
       </div>
       <details>
         <summary>Utdypning · lavere prioritet</summary>
-        <p>Boka har et tredje nivå, <em>strukturert representasjon</em>, der tilstanden består av objekter og relasjoner mellom dem. Det brukes i logikk og planlegging (kap. 6–9).</p>
+        <p>Det finnes også et tredje nivå, <em>strukturert representasjon</em>, der tilstanden består av objekter og relasjoner mellom dem. Det brukes i logikk og planlegging (kap. 6–9).</p>
       </details>
     </div>
   </section>
@@ -277,7 +277,7 @@
       <div class="section-badge">06 · Ulv, geit og kål</div>
       <h2>Tegn <em>tilstandsgrafen</em></h2>
       <div class="source-note">Eksamen Ord. 2022 · oppg. 3.1 · notasjonen er løsningsforslagets</div>
-      <p class="dropcap">En bonde skal ro en ulv, en geit og en kål over en elv. Båten tar bonden og høyst én av dem. Står ulv og geit alene sammen, spiser ulven geita; står geit og kål alene sammen, spiser geita kålen. Løsningsforslaget bruker en faktorisert tilstand: tre biter for (ulv, geit, kål), der <strong>1 = fortsatt på startsiden</strong> og 0 = på andre siden, pluss hvilken side bonden er på (<code>i</code> = initial, <code>o</code> = other).</p>
+      <p class="dropcap">En bonde skal ro en ulv, en geit og en kål over en elv. Båten tar bonden og høyst én av dem. Står ulv og geit alene sammen, spiser ulven geita; står geit og kål alene sammen, spiser geita kålen. Vi bruker en faktorisert tilstand: tre biter for (ulv, geit, kål), der <strong>1 = fortsatt på startsiden</strong> og 0 = på andre siden, pluss hvilken side bonden er på (<code>i</code> = initial, <code>o</code> = other).</p>
       <div class="svar-format">Start: 111-i &nbsp;·&nbsp; Mål: 000-o &nbsp;·&nbsp; Handling: bonden ror over, alene eller med én vare på sin side &nbsp;·&nbsp; Kostnad: 1 per tur</div>
 
       <div class="oppgave" data-quiz id="oppg-o22-3-1">
@@ -287,7 +287,7 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget · figuren tegnet på nytt i samme notasjon</span>
-            <p>Løsningsforslaget viser hele grafen og sier at det holder å vise de fire første nivåene (0–3 kanter fra start, skyggelagt under).</p>
+            <p>Hele grafen står under, men det holder å vise de fire første nivåene (0–3 kanter fra start, skyggelagt).</p>
             <svg class="gsvg wgc" viewBox="0 0 760 318" role="img" aria-label="Tilstandsgraf for ulv, geit og kål">
 <rect class="zone" x="8" y="8" width="382" height="304" rx="10"/>
 <text class="hv" x="195" y="22">maks 3 kanter fra start (det oppgaven spør om)</text>
@@ -342,7 +342,7 @@
               <li><strong>Noder</strong> er tilstander: hvilke varer som er på startsiden (bit = 1) og hvilken side bonden er på.</li>
               <li><strong>Kanter</strong> er handlinger: én overfart, merket med hva bonden tar med. Alle overfarter kan reverseres, så grafen er urettet.</li>
               <li><strong>Start</strong> er 111-i, <strong>mål</strong> er 000-o (merket med tykk ramme).</li>
-              <li>Røde, stiplede noder er tilstander der noe blir spist. Løsningsforslaget tar dem med som blindveier (ingen etterfølgere), og det gjør også IDS-oppgaven i <a href="uinformert-sok.html#oppg-o22-3-2">2B</a>.</li>
+              <li>Røde, stiplede noder er tilstander der noe blir spist. De er tatt med som blindveier (ingen etterfølgere), og det gjør også IDS-oppgaven i <a href="uinformert-sok.html#oppg-o22-3-2">2B</a>.</li>
             </ul>
             <p>Korteste løsning har 7 overfarter: geit over, tilbake alene, ulv (eller kål) over, geit tilbake, kål (eller ulv) over, tilbake alene, geit over.</p>
           </div>
@@ -351,7 +351,7 @@
 
       <div class="widget" id="w-wgc">
         <div class="widget-label">Prøv selv · Gå i tilstandsgrafen</div>
-        <p class="widget-intro">Klikk hva bonden skal ta med over. Du ser tilstanden i løsningsforslagets notasjon og stien du har gått. Havner du i en ulovlig tilstand, er det en blindvei: nullstill eller angre.</p>
+        <p class="widget-intro">Klikk hva bonden skal ta med over. Du ser tilstanden i notasjonen over og stien du har gått. Havner du i en ulovlig tilstand, er det en blindvei: nullstill eller angre.</p>
         <div class="bank">
           <div class="side" id="wgc-i"></div>
           <div class="river">elv</div>
@@ -401,7 +401,7 @@
       </div>
       <div class="quiz" data-quiz>
         <div class="q-label">Spørsmål 3 · Middels</div>
-        <div class="q-text">Hvorfor sier slidene at «a node is not a state, but a step in the search»?</div>
+        <div class="q-text">Hvorfor sies det at «a node is not a state, but a step in the search»?</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">Noden husker også hvordan vi kom dit (forelder, handling) og hva det kostet (stikostnad). To noder kan ha samme tilstand men ulik sti og kostnad, f.eks. Arad som rot og Arad via Sibiu.</div>
