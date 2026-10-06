@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 3 — Enkeltsykelprosessor</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
+  .lm-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; }
+  .lm-card .lm-k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+  .lm-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; color: var(--ink-soft); }
+  .lm-card .lm-src { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-ghost); margin-top: 0.4rem; }
+  .lm-card .tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-left: 6px; background: var(--accent-soft); color: var(--accent); }
+  .lm-card .tag.regn { background: var(--warm-soft); color: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Enkeltsykelprosessor">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · Tema T3 · Boka kap. 3, 4.1–4.4, appendiks A.1–A.5 · Kompendiet kap. 3–4, appendiks A · Forelesning 4–6 · Teoriøving 2–3 · ~2,5 t totalt</div>
+      <h1>Enkeltsykel<em>prosessor</em></h1>
+      <p class="lede">Fra porter til prosessor: logikken som bygger en ALU, ALU-en som regner, ganger, deler og håndterer flyttall, og datastien med kontrollenhet som utfører én RISC-V-instruksjon per klokkesykel. Tre av åtte deler på eksamen, 39 poeng i Ord. 2025.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringsmaal">Læringsmål og prioritet</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">05</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 2 var språket. Kapittel 3 er maskinen som snakker det. Boka bygger den nedenfra: <span class="term" data-term="kombinatorisk-element">kombinatorisk logikk</span> (porter, sannhetstabeller, mux og dekoder) gir en <span class="term" data-term="alu">ALU</span>; ALU-en pluss registre, minner og tre muxer gir en <span class="term" data-term="datasti">datasti</span>; en <span class="term" data-term="kontrollenhet">kontrollenhet</span> som leser opcoden og setter syv signaler gjør datastien til en <span class="term" data-term="enkeltsykelprosessor">enkeltsykelprosessor</span>. Eksamen ber deg lese nettopp disse figurene: hvilke signalverdier får ALU-en til å trekke fra, får prosessoren til å utføre slt, og hva inneholder multiplikatorens registre etter hver runde.</p>
+
+      <ul>
+        <li><strong>Logikk (3A).</strong> AND, OR, NOT, NAND, NOR, XOR; sannhetstabell ↔ sum av produkter; mux (velger) og dekoder (peker ut); buss-notasjon. Prio 2: kom i hvert sett til og med Kont 2024.</li>
+        <li><strong>ALU og aritmetikk (3B).</strong> Addisjon og overflyt; 1-bits ALU med Ainvert, Bnegate og Operation; 32-bits ALU med ripple carry, Set og Zero; multiplikasjon og divisjon med skift og addisjon, register for register; IEEE 754 begge veier; SIMD og fastpunkt. Prio 1: tre deler i Ord. 2025.</li>
+        <li><strong>Enkeltsykelprosessoren (3C).</strong> Kantstyrt klokking; de syv enhetene og tre muxene i figur 4.21; ALU-kontroll og hovedkontroll; kontrollordet for R, lw, sw og beq med X; instruksjonene steg for steg; hvorfor lw bestemmer klokka. Prio 1: oppgave 2 på hver eksamen.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilder og utvalg</span>
+        <p>Sidene følger læringsutbyttebeskrivelsen tema T3 (T3.1–T3.3) og bygger på boka kapittel 4.1–4.4, 3.1–3.6 og appendiks A.1–A.3, A.5, pluss kompendiets kapittel 3–4 og appendiks A. Alle bokoppgavene beskrivelsen lister (4.1, 4.3, 4.5, 4.7; A.5, A.7, A.8, A.10, A.11; 3.3, 3.6–3.8, 3.12, 3.18, 3.20–3.23) er med, sammen med alle sju eksamensoppgavene fra Ord. 2025 (del 2–5), bokas eksempler og kompendiets eksempler. Eksamensanalysen (godkjent 2. oktober 2026) gir T3.1 og T3.3 prio 1 og T3.2 prio 2. Rekkefølgen 3A → 3B → 3C er bokas oppbygging nedenfra; kan du logikk fra før, start på 3C og gå tilbake til 3B.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringsmaal">
+    <div class="container">
+      <div class="section-badge">Læringsmål og prioritet</div>
+      <h2>Fra <em>læringsutbyttebeskrivelsen</em></h2>
+      <p class="section-intro">Tema T3 dekker K1–K4 (konstruksjon og virkemåte, instruksjonssettet, prosessorens oppbygging, logikk og aritmetikk), F2 og F3 (analysere og konstruere enkle digitale kretser og prosessorer) og G1.</p>
+      <div class="lm-grid">
+        <div class="lm-card">
+          <div class="lm-k">T3.1 · Enkeltsykelprosessor <span class="tag regn">Regn</span><span class="tag">Forklar</span><span class="tag">Tegn</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare begrepene datasti og kontrollenhet.</li>
+            <li>Studenten skal kunne forklare mikroarkitekturen til enkeltsykelprosessoren (kunne gjengi og forklare figur 4.21).</li>
+            <li>Studenten skal kunne sette opp rett kontrollord for en instruksjon, inkludert korrekt bruk av «don't care».</li>
+            <li>Studenten skal kunne identifisere instruksjonstype fra et kontrollord.</li>
+          </ul>
+          <div class="lm-src">Prio 1 · Forelesning 4 · Teoriøving 2 · Boka 4.1–4.4 · Oppgaver 4.1, 4.3, 4.5, 4.7 · Eksamen: Ord. 25 oppg. 2 (16 p, på siden), Kont 26 oppg. 2, Kont 25 oppg. 2, Ord. 24 oppg. 2, Ord. 23 oppg. 5, Kont 23 oppg. 3 · <a href="enkeltsykel.html">3C</a> · ~60 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T3.2 · Kombinatorisk logikk <span class="tag regn">Regn</span><span class="tag">Tegn</span></div>
+          <ul>
+            <li>Studenten skal kjenne til de logiske portene AND, OR og inverter og deres symboler samt kunne beskrive oppførselen deres med sannhetstabeller.</li>
+            <li>Studenten skal kjenne til symbolene og kunne gjengi sannhetstabellene for kombinerte logiske porter (NAND og NOR) og mer avanserte kretser (multiplekser og dekoder).</li>
+            <li>Studenten skal kunne oversette mellom boolske uttrykk på sum-av-produkt form og sannhetstabeller.</li>
+            <li>Studenten skal kjenne til konseptet buss og notasjonen for adressering av enkeltlinjer i busser.</li>
+          </ul>
+          <div class="lm-src">Prio 2 · Ekstraforelesning 1 · Boka A.1–A.3 · Oppgaver A.5, A.7, A.8, A.10, A.11 · Eksamen: Kont 24 oppg. 2, Ord. 23 oppg. 3, Kont 23 oppg. 2, Ord. 22 oppg. 4–5, Kont 22 oppg. 3 · <a href="logikk.html">3A</a> · ~30 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T3.3 · Aritmetisk-logisk enhet <span class="tag regn">Regn</span><span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal kunne konstruere en 32-bit aritmetisk-logisk enhet (ALU) som kan gjøre addisjon og subtraksjon samt logisk AND og OR og nulldeteksjon (gjengi og forklare figurene A.5.7, A.5.8, og A.5.12).</li>
+            <li>Studenten skal kunne utføre multiplikasjon og divisjon av binære tall og beskrive hvordan disse implementeres i maskinvare.</li>
+            <li>Studenten skal kunne oppgi fordeler og ulemper med å representere tall i et «fixed-point» format.</li>
+            <li>Studenten skal kunne motivere for hvorfor vi trenger flyttall og beskrive prinsippene for hvordan addisjon og multiplikasjon med flyttallsverdier utføres i maskinvare.</li>
+            <li>Studenten skal kunne konvertere fra desimaltall til flyttall og motsatt.</li>
+            <li>Studenten skal kjenne til hvordan man implementerer SIMD-instruksjoner og hva de brukes til.</li>
+          </ul>
+          <div class="lm-src">Prio 1 · Forelesning 5 og 6 · Teoriøving 3 · Boka 3.1–3.6, A.5 · Oppgaver 3.3, 3.6–3.8, 3.12, 3.18, 3.20–3.23 · Eksamen: Ord. 25 oppg. 3, 4 og 5 (23 p, på siden), Kont 26 oppg. 3, Ord. 22 oppg. 6–7 · <a href="alu.html">3B</a> · ~70 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="logikk.html" class="subpage-card">
+          <span class="sp-icon">3A</span>
+          <div class="sp-info">
+            <div class="sp-title">Kombinatorisk logikk</div>
+            <div class="sp-desc">T3.2 · Boka A.1–A.3: porter og sannhetstabeller, De Morgan, sum av produkter, mux, dekoder, buss. 6 oppgaver, 1 widget (sannhetstabell → sum av produkter). ~30 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="alu.html" class="subpage-card">
+          <span class="sp-icon">3B</span>
+          <div class="sp-info">
+            <div class="sp-title">ALU, multiplikasjon og flyttall</div>
+            <div class="sp-desc">T3.3 · Boka 3.1–3.6, A.5: overflyt, 1-bits og 32-bits ALU med tre kontrollsignaler, multiplikator og divisjon register for register, IEEE 754, SIMD, fastpunkt. 10 oppgaver (3 fra eksamen), 4 widgeter. ~70 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="enkeltsykel.html" class="subpage-card">
+          <span class="sp-icon">3C</span>
+          <div class="sp-info">
+            <div class="sp-title">Enkeltsykelprosessoren: datasti og kontroll</div>
+            <div class="sp-desc">T3.1 · Boka 4.1–4.4: klokking, de syv enhetene, figur 4.21 som SVG, ALU-kontroll og kontrollordet med X, instruksjonene steg for steg, klokkeperioden. 9 oppgaver (2 fra eksamen), 1 widget (velg instruksjon → signaler og aktiv sti, med testmodus). ~60 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">24 bokser: de sju eksamensoppgavene fra Ord. 2025 (del 2–5, med studentsvar kontrollert mot boka), bokoppgavene læringsutbyttebeskrivelsen lister, og bokas og kompendiets eksempler. Grønn status: svar fra boka eller kompendiet. Gul: forslag skrevet for denne siden, eller studentsvar kontrollert mot boka.</p>
+
+      <h3>3A · Kombinatorisk logikk</h3>
+      <ul class="oppgave-index">
+        <li><a href="logikk.html#oppg-a-5"><span class="oi-ref">A.5 · s. A-79</span><span>NOR er universell: bygg AND, OR og NOT.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logikk.html#oppg-komp-sop"><span class="oi-ref">Komp. eks. 1</span><span>Sum av produkter for F(A, B, C) med to 1-rader.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="logikk.html#oppg-a-7"><span class="oi-ref">A.7, A.8 · s. A-79</span><span>Fireinngangs oddetallsparitet: tabell og porter.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logikk.html#oppg-a-11"><span class="oi-ref">A.11 · s. A-80</span><span>Fire funksjoner av 3-bits X (én 0, partall 0-er, &lt; 4, negativ).</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="logikk.html#oppg-a-10"><span class="oi-ref">A.10 · s. A-80</span><span>Muxen er universell: bygg NAND.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>3B · ALU, multiplikasjon og flyttall</h3>
+      <ul class="oppgave-index">
+        <li><a href="alu.html#oppg-komp-5-3"><span class="oi-ref">Komp. eks. 1</span><span>5 − 3 i 4-bits tokomplement.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="alu.html#oppg-3-6"><span class="oi-ref">3.6–3.8 · s. 247</span><span>185 og 122 som 8-bits tall: overflyt usignert og fortegn-og-størrelse.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="alu.html#oppg-eks-o25-3"><span class="oi-ref">Ord. 25 · 3</span><span>Eksamen: Ainvert, Bnegate, Operation for a − b, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="alu.html#oppg-eks-o25-4"><span class="oi-ref">Ord. 25 · 4</span><span>Eksamen: Product etter hver iterasjon for 1010 × 1001, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="alu.html#oppg-3-12"><span class="oi-ref">3.12 · s. 247</span><span>62<sub>8</sub> × 12<sub>8</sub> med første multiplikator, alle registre per steg.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="alu.html#oppg-3-18"><span class="oi-ref">3.18 · s. 247</span><span>74 ÷ 21 med første divisjonsmaskinvare, 6 bit.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="alu.html#oppg-eks-o25-5"><span class="oi-ref">Ord. 25 · 5</span><span>Eksamen: 0x40980000 som desimaltall, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="alu.html#oppg-eks-fp-075"><span class="oi-ref">Eks. · s. 213</span><span>−0,75 til IEEE 754, og 1 10000001 010… til desimaltall.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="alu.html#oppg-komp-ieee"><span class="oi-ref">Komp. eks. 2</span><span>−7,5 i IEEE 754.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="alu.html#oppg-3-20"><span class="oi-ref">3.20–3.23 · s. 247</span><span>0x0C000000 som heltall og flyttall; 0x0000006F som instruksjon; 63,25 i IEEE 754.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>3C · Enkeltsykelprosessoren</h3>
+      <ul class="oppgave-index">
+        <li><a href="enkeltsykel.html#oppg-4-1"><span class="oi-ref">4.1 · s. 369</span><span>and rd, rs1, rs2: signaler, nyttige enheter, ubrukte utganger.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-4-3"><span class="oi-ref">4.3 · s. 370</span><span>Instruksjonsmiks: andel som bruker dataminne, instruksjonsminne, fortegnsutvider.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-eks-o25-2-1"><span class="oi-ref">Ord. 25 · 2.1–2.2</span><span>Eksamen: kontrollsignalene for slt, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-eks-o25-2-3"><span class="oi-ref">Ord. 25 · 2.3–2.4</span><span>Eksamen: kontrollsignalene for sb med X, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-4-2"><span class="oi-ref">4.2 · s. 370</span><span>Forklar hver don't care i figur 4.22.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-4-6"><span class="oi-ref">4.6 · s. 371</span><span>Legg til addi: nye blokker og kontrollsignaler.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-4-5"><span class="oi-ref">4.5 · s. 370</span><span>Instruksjonsordet 0x00c6ba23 gjennom datastien: ALU-kontroll, PC, muxer, addere, registerfil.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-cy-4-4"><span class="oi-ref">§4.4 · s. 282</span><span>Kan kontrollsignaler slås sammen eller erstattes av inversen?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="enkeltsykel.html#oppg-4-7"><span class="oi-ref">4.7 · s. 371</span><span>Latens per instruksjonsklasse og minste klokkeperiode.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">Bokas oppgave 3.3 (5ED4 til binært; samme som kapittel 2B), 4.4 (stuck-at-0, tatt som quiz nederst på 3C), selvstudiene i 3.12 og 4.18, og Check Yourself-spørsmålene i A.2–A.3 og 3.5 som ikke likner eksamensoppgavene.</p>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever 3A, 3B og 3C i sammenheng. Flere finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Prosessoren utfører <code>sub x5, x6, x7</code>. Gi hovedkontrollens signaler, ALUOp, og ALU-kontrollens fire bit, og si hva hvert av de fire bitene gjør inne i ALU-en.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">R-type: ALUSrc 0, MemtoReg 0, RegWrite 1, MemRead 0, MemWrite 0, Branch 0, ALUOp 10. ALU-kontrollen ser funct7 = 0100000, funct3 = 000 og gir 0110: Ainvert = 0 (a uendret), Bnegate = 1 (b inverteres i alle celler og CarryIn0 = 1), Operation = 10 (muxen velger adderen). Resultatet er x6 + ¬x7 + 1 = x6 − x7, skrevet til x5.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvorfor trenger beq at ALU-en har en Zero-utgang, og hvordan lages Zero av porter?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">beq lar ALU-en regne rs1 − rs2 og trenger ett signal som sier «lik», altså «differansen er 0». Zero er NOR av alle 32 resultatbitene: en 32-inngangs OR-port (eller et tre av OR-porter) fulgt av en inverter. Zero AND Branch gir PCSrc, som velger hoppmålet inn i PC.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et flyttall skal adderes til et annet i maskinvare. Hvilke deler fra 3A og 3B gjenbrukes, og hvilke nye trengs?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Gjenbrukt: en liten ALU for å trekke eksponentene fra hverandre (differansen sier hvor mye den minste signifikanden skal skiftes), en stor ALU for å addere signifikandene, muxer for å velge største eksponent og justert operand, og en inkrementer/dekrementer for eksponenten under normalisering. Nytt: skifteregistre for justering og normalisering, avrundingsmaskinvare med guard/round/sticky, og kontroll som styrer stegene juster → adder → normaliser → avrund.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Kontrollordet (ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch) = (1, X, 0, 0, 1, 0). Hvilken instruksjonsklasse, og hvorfor er nettopp det signalet X? Skriv kontrollenhetens RegWrite som sum av produkter over opcodebitene for de fire klassene.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Store (sw/sb/sh): skriver minnet, leser ikke, skriver ikke register. MemtoReg er X fordi RegWrite = 0 gjør registerfilens Skriv data-inngang uvesentlig. RegWrite = 1 for R-type (opcode 0110011) og lw (0000011): RegWrite = Op6̄·Op5·Op4·Op3̄·Op2̄·Op1·Op0 + Op6̄·Op5̄·Op4̄·Op3̄·Op2̄·Op1·Op0; med don't cares for de ubrukte opcodene kan det forenkles (f.eks. Op5̄·Op4̄ + Op5·Op4 gitt bare de fire klassene).</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap2/" class="prev"><div class="pn-label">← Forrige</div><div class="pn-title">Kapittel 2: Instruksjonssett</div></a>
+        <a href="logikk.html" class="next"><div class="pn-label">Start · 3A</div><div class="pn-title">Kombinatorisk logikk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Enkeltsykelprosessoren — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 12px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); }
+  .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; rx: 6; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.4; fill: none; marker-end: url(#ah); }
+  /* Datasti-figuren (felles for figur og widget) */
+  .cpu text { font-family: var(--sans); font-size: 10.5px; fill: var(--ink); }
+  .cpu .cap { font-family: var(--mono); font-size: 8.5px; fill: var(--ink-faded); }
+  .cpu .sig { font-family: var(--mono); font-size: 8.5px; fill: var(--accent); }
+  .cpu .u { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .cpu .u.on { fill: rgba(160,82,45,0.16); stroke: var(--warm); stroke-width: 1.6; }
+  .cpu .w { stroke: var(--ink-ghost); stroke-width: 1.2; fill: none; }
+  .cpu .w.on { stroke: var(--warm); stroke-width: 2.4; }
+  .cpu .c { stroke: var(--accent); stroke-width: 1; fill: none; stroke-dasharray: 3 2; opacity: 0.55; }
+  .cpu .c.on { stroke-width: 2.2; stroke-dasharray: none; opacity: 1; }
+  .cpu .pt { fill: var(--ink-ghost); }
+  .cpu .pt.on { fill: var(--warm); }
+  .sigtab { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.8rem; }
+  .sigtab .s { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .sigtab .s b { color: var(--accent); font-weight: 600; }
+  .sigtab .s .v { font-weight: 600; color: var(--ink); min-width: 1.6em; text-align: right; }
+  .sigtab .s.on { border-color: var(--warm); background: var(--warm-soft); }
+  .sigtab .s input { width: 2.4em; font-family: var(--mono); font-size: 0.85rem; text-align: center; padding: 2px 3px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); }
+  .sigtab .s.ok { border-color: var(--green); background: rgba(61,107,58,0.08); }
+  .sigtab .s.bad { border-color: var(--red); background: rgba(179,38,30,0.08); }
+  .steps { margin: 0.6rem 0 0; padding-left: 1.3rem; font-size: 0.92rem; color: var(--ink-soft); }
+  .steps li { margin-bottom: 0.25rem; }
+  .w-ctl select { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  table.ctrl td, table.ctrl th { text-align: center; font-family: var(--mono); font-size: 0.85rem; }
+  table.ctrl td:first-child, table.ctrl th:first-child { text-align: left; font-family: var(--sans); }
+  table.ctrl.tett th, table.ctrl.tett td { padding-left: 5px; padding-right: 5px; letter-spacing: 0; font-size: 0.78rem; }
+  table.ctrl td.x { color: var(--ink-ghost); }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Enkeltsykelprosessor">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3C · Læringsmål T3.1 · Boka kap. 4.1–4.4 · Kompendiet kap. 4 · ~60 min</div>
+      <h1>Enkeltsykel<em>prosessoren</em>: datasti og kontroll</h1>
+      <p class="lede">Hele prosessoren på én figur: hent instruksjonen, les registrene, regn i ALU-en, bruk minnet, skriv tilbake. Syv kontrollsignaler fra opcoden bestemmer hva som skjer. Dette er figuren eksamen legger ved og ber deg lese: hvilke signalverdier gjør at <code>slt</code> eller <code>sb</code> utføres riktig, og hvorfor.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#overblikk"><span>01</span> Overblikk og klokking</a>
+        <a href="#datasti"><span>02</span> Datastien</a>
+        <a href="#kontroll"><span>03</span> Kontrollsignalene</a>
+        <a href="#utforing"><span>04</span> Instruksjon for instruksjon</a>
+        <a href="#klokke"><span>05</span> Klokkeperioden</a>
+        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T3.1: prio 1 · oppgave 2 i Ord. 25 (16 p), Kont 26, Kont 25, Ord. 24; Ord. 23 oppg. 5; Kont 23 oppg. 3</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Kontrollordet for en gitt instruksjon</strong>, med «don't care» (X) der signalet ikke betyr noe: RegWrite, ALUSrc, PCSrc (eller Branch), MemWrite, MemRead, MemtoReg. Eksamen gir figur 4.21 og en instruksjon (slt og sb i Ord. 25, 3 p hver) og trekker 0,25 p per feil. Også omvendt: hvilken instruksjonstype gir dette kontrollordet?</li>
+          <li><span class="tag">Forklar</span><strong>Signal for signal, hvorfor</strong> verdiene gjør at instruksjonen utføres riktig (5 p per instruksjon i Ord. 25). Modellsvaret står i avsnitt 04: hva hver mux velger, hva som skrives og ikke, hvorfor X er trygt.</li>
+          <li><span class="tag">Forklar</span><strong>Figur 4.21 fra hukommelsen</strong>: datasti og kontrollenhet som begreper, de syv enhetene og hvordan de henger sammen, hva Imm Gen og de tre muxene gjør, hvorfor PCSrc = Branch AND Zero.</li>
+          <li><span class="tag regn">Regn</span><strong>Lengste sti og klokkeperiode</strong> (oppgave 4.7): lw bruker fem enheter i serie, så klokka må være lang nok for lw selv om add er ferdig for lengst. Derfor brukes ikke enkeltsykel i praksis.</li>
+          <li><span class="tag">Lavere</span>Verilog (4.14), MIPS-sammenlikningen (figur 4.15) og detaljene i immediate-generatoren for SB/UJ (figur 4.17–4.18) er nevnt kort eller tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 OVERBLIKK ─────────────────────────── -->
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">01 · Overblikk og klokking</div>
+      <h2>Alle instruksjoner starter <em>likt</em></h2>
+      <div class="source-note">Boka · kap. 4.1–4.2 · s. 254–261 · Kompendiet · kap. 4 «Enkeltsyklisk prosessor»</div>
+      <span class="lm-pill">Læringsmål T3.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare begrepene datasti og kontrollenhet.</li>
+      </ul>
+
+      <p class="dropcap">Prosessoren er <span class="term" data-term="datasti">datastien</span> pluss <span class="term" data-term="kontrollenhet">kontrollenheten</span>. Datastien er enhetene som flytter og regner på data: PC, minner, registerfil, ALU og muxer. Kontrollenheten leser opcoden og setter signalene som sier hva datastien skal gjøre i denne klokkesykelen. Vi bygger en <span class="term" data-term="enkeltsykelprosessor">enkeltsykelprosessor</span> for en liten delmengde av RISC-V: <code>lw</code>, <code>sw</code>, <code>beq</code> og R-instruksjonene <code>add</code>, <code>sub</code>, <code>and</code>, <code>or</code>. Alt en instruksjon trenger skjer i én klokkesykel.</p>
+
+      <p>De to første stegene er like for alle instruksjoner: (1) send PC til <span class="term" data-term="instruksjonsminne">instruksjonsminnet</span> og hent instruksjonen, (2) les ett eller to registre ut fra feltene rs1 og rs2. Etter det skiller klassene seg, men alle bruker ALU-en: R-typen til selve operasjonen, lw/sw til å regne ut minneadressen, beq til sammenlikningen. Så skriver R-typen og lw et register, sw skriver minnet, og beq velger neste PC.</p>
+
+      <div class="def-box">
+        <span class="def-label">To slags byggeklosser</span>
+        <div class="def-term">Kombinatorisk logikk og tilstandselementer</div>
+        <p>En <span class="term" data-term="kombinatorisk-element">kombinatorisk</span> enhet (ALU, adder, mux) har utgang som bare avhenger av inngangene nå. Et <span class="term" data-term="tilstandselement">tilstandselement</span> (PC, registerfil, minner) husker: det har minst to innganger, data og klokke, og klokka sier når det skal huske noe nytt. Alt som er lagret i tilstandselementene bestemmer prosessorens tilstand; slå av klokka, og tilstanden er bevart.</p>
+      </div>
+
+      <p>Boka bruker <span class="term" data-term="kantstyrt-klokking">kantstyrt klokking</span>: tilstandselementene oppdateres bare på klokkeflanken. I løpet av sykelen leser kombinatorisk logikk fra tilstandselementer, regner, og legger resultatet på inngangen til et tilstandselement, som tar imot det på neste flanke. Derfor kan samme register både leses og skrives i én sykel: lesningen får den gamle verdien, skrivingen trer i kraft på flanken. Klokkeperioden må være lang nok til at det lengste signalet rekker fram før flanken.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 150" aria-label="Kantstyrt klokking: tilstandselement, kombinatorisk logikk, tilstandselement">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <rect class="box box-a" x="40" y="45" width="110" height="60"/>
+          <text x="95" y="72" text-anchor="middle" style="font-weight:600">Tilstands-</text><text x="95" y="88" text-anchor="middle" style="font-weight:600">element 1</text>
+          <rect class="box box-g" x="250" y="45" width="140" height="60"/>
+          <text x="320" y="72" text-anchor="middle" style="font-weight:600">Kombinatorisk</text><text x="320" y="88" text-anchor="middle" style="font-weight:600">logikk</text>
+          <rect class="box box-a" x="490" y="45" width="110" height="60"/>
+          <text x="545" y="72" text-anchor="middle" style="font-weight:600">Tilstands-</text><text x="545" y="88" text-anchor="middle" style="font-weight:600">element 2</text>
+          <path class="arr" d="M152 75 L248 75"/><path class="arr" d="M392 75 L488 75"/>
+          <path d="M20 130 L95 130 L95 112" stroke="#3d3832" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+          <path d="M95 130 L545 130 L545 112" stroke="#3d3832" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+          <text class="cap" x="20" y="125">klokke</text>
+          <text class="cap" x="320" y="30" text-anchor="middle">leses på flanke n · regnes i sykelen · lagres på flanke n+1</text>
+        </svg>
+        <figcaption>Etter figur 4.3 i boka. Mellom to klokkeflanker flyter data fra ett tilstandselement gjennom kombinatorisk logikk til et annet. Klokkeperioden ≥ den lengste slike stien.</figcaption>
+      </figure>
+
+      <p>Noen enheter har eksplisitt skrivesignal (RegWrite, MemWrite): de skriver bare på flanken når signalet er 1. PC trenger ikke det, den skrives hver sykel. En <span class="term" data-term="mux">multiplekser</span> plasseres overalt der to kilder vil inn på samme inngang; muxens kontrollsignal velger. Et <span class="term" data-term="buss">bussymbol</span> med tall (32) på en strek betyr at streken er 32 ledninger.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hvorfor kan <code>add x5, x5, x6</code> lese x5 og skrive x5 i samme klokkesykel uten konflikt?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Registerfilen er kantstyrt. Gjennom hele sykelen leverer lesporten den gamle verdien av x5 (den som ble lagret på forrige flanke). Summen regnes i ALU-en og ligger klar på skriveinngangen; først på neste klokkeflanke, når RegWrite er 1, lagres den. Lesing og skriving skjer aldri i samme øyeblikk.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 DATASTI ─────────────────────────── -->
+  <section id="datasti">
+    <div class="container">
+      <div class="section-badge">02 · Datastien</div>
+      <h2>Syv enheter og <em>tre muxer</em></h2>
+      <div class="source-note">Boka · kap. 4.3 · s. 261–269 · figur 4.5–4.11</div>
+      <span class="lm-pill">Læringsmål T3.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare mikroarkitekturen til enkeltsykelprosessoren (kunne gjengi og forklare figur 4.21).</li>
+      </ul>
+
+      <p class="dropcap">Boka bygger datastien enhet for enhet og limer så delene sammen. Lær enhetene som en liste med innganger og utganger; da kan du tegne figuren selv.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Enhet</th><th>Innganger</th><th>Utganger</th><th>Rolle</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="pc">PC</span></td><td>neste PC (fra PCSrc-muxen), klokke</td><td>adressen til instruksjonen</td><td>32-bits register. Skrives hver sykel, trenger ikke skrivesignal.</td></tr>
+            <tr><td>Instruksjonsminne</td><td>Les adresse</td><td>Instruksjon [31:0]</td><td>Bare lest i denne datastien; ingen skrivesignal.</td></tr>
+            <tr><td>Adder (PC + 4)</td><td>PC, 4</td><td>PC + 4</td><td>Neste instruksjon ligger 4 byte videre. Egen adder, så ALU-en er fri.</td></tr>
+            <tr><td><span class="term" data-term="registerfil">Registerfil</span></td><td>Les register 1 (rs1), Les register 2 (rs2), Skriv register (rd), Skriv data, RegWrite</td><td>Les data 1, Les data 2</td><td>32 registre. Leser alltid; skriver bare når RegWrite = 1.</td></tr>
+            <tr><td><span class="term" data-term="alu">ALU</span></td><td>a = Les data 1, b = Les data 2 eller immediate, 4-bits ALU-kontroll</td><td>ALU-resultat, Zero</td><td>Regner, adresserer eller sammenlikner. Zero = 1 når resultatet er 0.</td></tr>
+            <tr><td>Dataminne</td><td>Adresse, Skriv data, MemRead, MemWrite</td><td>Les data</td><td>Les når MemRead = 1, skriv på flanken når MemWrite = 1.</td></tr>
+            <tr><td><span class="term" data-term="imm-gen">Imm Gen</span></td><td>Instruksjon [31:0]</td><td>32-bits immediate</td><td>Plukker ut 12-bits feltet (I-, S- eller SB-plassering) og fortegnsutvider til 32 bit.</td></tr>
+            <tr><td>Adder (hoppmål) + skift</td><td>PC, immediate × 2</td><td><span class="term" data-term="hoppmaal">hoppmål</span></td><td>Immediaten teller halvord, derfor skift ett steg til venstre før den legges til PC.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Tre steder vil to kilder inn på samme inngang, så der står en mux: <strong>ALUSrc</strong> (ALU-ens andre operand: register eller immediate), <strong>MemtoReg</strong> (hva som skrives til registeret: ALU-resultat eller minnedata) og <strong>PCSrc</strong> (neste PC: PC + 4 eller hoppmålet). Hele datastien med kontroll ser slik ut; det er figur 4.21, tegnet på nytt. Klikk i widgeten under for å se den i drift.</p>
+
+      <figure>
+        <svg class="cpu" id="cpu-fig" viewBox="0 0 760 430" aria-label="Figur 4.21: enkeltsykeldatastien med kontrollenhet"></svg>
+        <figcaption>Etter figur 4.21 i boka. Grå streker er datalinjer, stiplede blå er kontrollsignaler fra kontrollenheten (opcode inn, syv signaler ut) og ALU-kontrollen (ALUOp + funct inn, 4 bit ut). PCSrc lages av AND-porten: Branch fra kontrollen og Zero fra ALU-en.</figcaption>
+      </figure>
+
+      <div class="callout">
+        <span class="label">Hvorfor feltene ligger fast</span>
+        <p>Opcoden er alltid bit 6:0, rs1 alltid 19:15, rs2 alltid 24:20, rd alltid 11:7. Derfor kan registerfilens tre registerinnganger kobles rett til instruksjonsbitene uten mux, og kontrollen trenger bare opcoden. Det er designprinsipp 1 fra kapittel 2 som betaler seg: S-formatet deler immediaten i to nettopp for at rd-feltet skal kunne ligge fast. Immediate-generatoren betaler prisen; den vet ut fra opcoden hvilke bit som utgjør immediaten.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-1">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.1 · s. 369</span></div>
+        <div class="o-text"><p>Instruksjonen <code>and rd, rs1, rs2</code> (Reg[rd] = Reg[rs1] AND Reg[rs2]) utføres på datastien i figur 4.10 (datasti uten kontrollenhet, med signalene RegWrite, ALUSrc, ALU-operasjon, MemWrite, MemRead og MemtoReg). 1. Hvilke verdier har kontrollsignalene? 2. Hvilke enheter gjør nyttig arbeid? 3. Hvilke enheter gir ingen utgang, og hvilke gir utgang som ikke brukes?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. RegWrite = 1, ALUSrc = 0 (andre operand fra register), ALU-operasjon = AND (0000), MemWrite = 0, MemRead = 0, MemtoReg = 0 (skriv ALU-resultatet).</p>
+            <p>2. Nyttige: PC, instruksjonsminnet, PC + 4-adderen, registerfilen (to lesninger og én skriving), ALUSrc-muxen, ALU-en og MemtoReg-muxen.</p>
+            <p>3. Ingen utgang: dataminnet (MemRead = 0, det leser ikke). Utgang som ikke brukes: Imm Gen (fortegnsutvider instruksjonsbit uansett, men ALUSrc velger den bort) og hoppmål-adderen med skiftet (regner PC + 2·imm, men PCSrc velger PC + 4).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-3">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.3 · s. 370</span></div>
+        <div class="o-text"><p>Instruksjonsmiks: R-type 24 %, I-type (ikke lw) 28 %, load 25 %, store 10 %, hopp (branch) 11 %, jump 2 %. 1. Hvor stor andel av instruksjonene bruker dataminnet? 2. Instruksjonsminnet? 3. Fortegnsutvideren (Imm Gen)? 4. Hva gjør fortegnsutvideren i sykler der utgangen ikke trengs?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Load og store: 25 + 10 = 35 %. 2. Alle: 100 %. 3. Alle med immediate: I-type, load, store, branch og jump: 28 + 25 + 10 + 11 + 2 = 76 %. 4. Den er kombinatorisk og regner uansett: den fortegnsutvider bitene som ligger i immediate-feltet, selv om de er rs2/funct7 i en R-instruksjon. Utgangen ignoreres fordi ALUSrc = 0 og PCSrc = 0.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 KONTROLL ─────────────────────────── -->
+  <section id="kontroll">
+    <div class="container">
+      <div class="section-badge">03 · Kontrollsignalene</div>
+      <h2>Opcoden inn, <em>syv signaler</em> ut</h2>
+      <div class="source-note">Boka · kap. 4.4 · s. 269–278 · figur 4.12, 4.13, 4.20, 4.22 · Eksamen: Ord. 25 oppg. 2, Kont 26 oppg. 2, Kont 25 oppg. 2, Ord. 24 oppg. 2</div>
+      <span class="lm-pill">Læringsmål T3.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne sette opp rett kontrollord for en instruksjon, inkludert korrekt bruk av «don't care».</li>
+        <li>Studenten skal kunne identifisere instruksjonstype fra et kontrollord.</li>
+      </ul>
+
+      <p class="dropcap">Kontrollen er to nivåer. <span class="term" data-term="hovedkontroll">Hovedkontrollen</span> ser bare på opcoden (bit 6:0) og setter seks 1-bits signaler pluss det 2-bits <span class="term" data-term="aluop">ALUOp</span>. <span class="term" data-term="alu-kontroll">ALU-kontrollen</span> tar ALUOp og funct-feltene (bit 30 og 14:12) og lager de 4 bitene ALU-en faktisk styres av. To nivåer gjør hovedkontrollen liten og rask.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl">
+          <caption>ALU-kontrollen (figur 4.12). ALUOp sier klassen; funct-feltene brukes bare for R-type. X = don't care.</caption>
+          <thead><tr><th>Instruksjon</th><th>ALUOp</th><th>funct7</th><th>funct3</th><th>ALU-handling</th><th>ALU-kontroll</th></tr></thead>
+          <tbody>
+            <tr><td>lw, sw</td><td>00</td><td class="x">X</td><td class="x">X</td><td>add (adresse)</td><td>0010</td></tr>
+            <tr><td>beq</td><td>01</td><td class="x">X</td><td class="x">X</td><td>subtract (test = 0)</td><td>0110</td></tr>
+            <tr><td>add</td><td>10</td><td>0000000</td><td>000</td><td>add</td><td>0010</td></tr>
+            <tr><td>sub</td><td>10</td><td>0100000</td><td>000</td><td>subtract</td><td>0110</td></tr>
+            <tr><td>and</td><td>10</td><td>0000000</td><td>111</td><td>AND</td><td>0000</td></tr>
+            <tr><td>or</td><td>10</td><td>0000000</td><td>110</td><td>OR</td><td>0001</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>De fire ALU-kontrollbitene er Ainvert, Bnegate og Operation (2 bit) fra ALU-siden (3B): 0010 = add, 0110 = subtract, 0000 = AND, 0001 = OR, 0111 = slt. Bare bit 30, 14, 13 og 12 av funct-feltene skiller de fire R-instruksjonene, så ALU-kontrollen trenger bare dem.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>De seks 1-bits signalene (figur 4.20). «Deassertert» = 0, «assertert» = 1.</caption>
+          <thead><tr><th>Signal</th><th>= 0</th><th>= 1</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="regwrite">RegWrite</span></td><td>ingenting skrives i registerfilen</td><td>registeret i Skriv register (rd) får verdien på Skriv data på flanken</td></tr>
+            <tr><td><span class="term" data-term="alusrc">ALUSrc</span></td><td>ALU-ens andre operand er Les data 2 (rs2)</td><td>ALU-ens andre operand er den fortegnsutvidede immediaten</td></tr>
+            <tr><td><span class="term" data-term="pcsrc">PCSrc</span> (= Branch AND Zero)</td><td>PC får PC + 4</td><td>PC får hoppmålet</td></tr>
+            <tr><td><span class="term" data-term="memread">MemRead</span></td><td>—</td><td>dataminnet leser adressen og legger innholdet på Les data</td></tr>
+            <tr><td><span class="term" data-term="memwrite">MemWrite</span></td><td>—</td><td>dataminnet skriver Skriv data til adressen på flanken</td></tr>
+            <tr><td><span class="term" data-term="memtoreg">MemtoReg</span></td><td>Skriv data til registerfilen kommer fra ALU-resultatet</td><td>Skriv data kommer fra dataminnets Les data</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Kontrollenheten lager ikke PCSrc selv: den vet at instruksjonen er beq (<span class="term" data-term="branch-signal">Branch</span> = 1), men om hoppet tas avhenger av Zero fra ALU-en. En AND-port slår dem sammen. I eksamensoppgaven heter signalet PCSrc; for alle andre instruksjoner enn hopp er det 0, og for beq er det «1 hvis Zero, ellers 0», det vil si Branch = 1.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl tett">
+          <caption>Kontrollordet per instruksjonsklasse (figur 4.22). Dette er tabellen du må kunne utenat, med X-ene.</caption>
+          <thead><tr><th>Instruksjon</th><th>ALUSrc</th><th>MemtoReg</th><th>RegWrite</th><th>MemRead</th><th>MemWrite</th><th>Branch</th><th>ALUOp</th></tr></thead>
+          <tbody>
+            <tr><td>R-type</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>10</td></tr>
+            <tr><td>lw</td><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>00</td></tr>
+            <tr><td>sw, sb</td><td>1</td><td class="x">X</td><td>0</td><td>0</td><td>1</td><td>0</td><td>00</td></tr>
+            <tr><td>beq</td><td>0</td><td class="x">X</td><td>0</td><td>0</td><td>0</td><td>1</td><td>01</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="def-box">
+        <span class="def-label">Regelen for X</span>
+        <div class="def-term"><span class="term" data-term="dont-care">Don't care</span>: signalet påvirker ikke resultatet</div>
+        <p>MemtoReg velger hva som ligger på Skriv data inn til registerfilen. Når RegWrite = 0 skrives ingenting, så det spiller ingen rolle hva muxen velger: MemtoReg = X for sw og beq. Denne X-en må designeren legge til selv, for den krever at du vet hvordan datastien virker. Tilsvarende i ALU-kontrollen: når ALUOp er 00 eller 01 er funct-feltene X. På eksamen teller riktig X som riktig svar, og 0 eller 1 der det skulle vært X trekker. Men ikke sett X der signalet faktisk må ha en verdi: MemRead = 0 for sw er ikke X, for minnet skal ikke lese.</p>
+      </div>
+
+      <div class="widget" id="w-cpu">
+        <div class="widget-label">Prøv selv · Kontrollsignaler og aktiv sti for en instruksjon</div>
+        <p class="widget-intro">Velg instruksjon. Figuren lyser opp enhetene og linjene som brukes, tabellen viser alle signalene, og lista under sier steg for steg hva som skjer. Slå på «Test deg selv» for å fylle inn de seks signalene som på eksamen (0, 1 eller X) og rette. slt og sb er Ord. 2025 oppgave 2; addi er bokas oppgave 4.6.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="cpu-ins">instruksjon</label>
+            <select id="cpu-ins">
+              <option value="add">add x1, x2, x3</option><option value="sub">sub x1, x2, x3</option><option value="and">and x1, x2, x3</option><option value="or">or x1, x2, x3</option>
+              <option value="slt">slt x10, x15, x20</option><option value="addi">addi x5, x6, 10</option>
+              <option value="lw">lw x1, 8(x2)</option><option value="sw">sw x1, 8(x2)</option><option value="sb">sb x1, 8(x2)</option>
+              <option value="beq">beq x1, x2, Mål</option>
+            </select>
+          </div>
+          <div class="w-ctl"><label><input type="checkbox" id="cpu-test"> Test deg selv</label></div>
+          <button class="w-btn" id="cpu-check" type="button" style="display:none">Rett</button>
+        </div>
+        <svg class="cpu" id="cpu-w" viewBox="0 0 760 430" aria-label="Datastien i drift"></svg>
+        <div class="sigtab" id="cpu-sig"></div>
+        <ol class="steps" id="cpu-steps"></ol>
+        <div class="w-out" id="cpu-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-2-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 2.1 og 2.2</span><span class="o-ref">Enkeltsykelprosessor · 3 + 5 p</span></div>
+        <div class="o-text"><p>Prosessoren i figur 4.21 skal utføre instruksjonen <code>slt</code>. Hvilke verdier skal RegWrite, ALUSrc, PCSrc, MemWrite, MemRead og MemtoReg ha? Bruk «don't care» (X) når du kan. (2.2) Forklar hvordan signalene gjør at slt utføres korrekt.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (figur 4.22) · ikke offisielt løsningsforslag</span>
+            <p>RegWrite = 1, ALUSrc = 0, PCSrc = 0, MemWrite = 0, MemRead = 0, MemtoReg = 0. Ingen X: slt skriver et register, så MemtoReg må peke på ALU-resultatet.</p>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>slt er en R-type-instruksjon: rd = 1 hvis rs1 &lt; rs2, ellers 0. Begge operandene er registre, og resultatet lages i ALU-en. <strong>ALUSrc = 0</strong> gjør at muxen foran ALU-ens andre inngang velger Les data 2 (rs2) og ikke immediaten. ALU-kontrollen får ALUOp = 10 og funct3 = 010 og setter ALU-en til slt (Bnegate = 1, Operation = 11), så ALU-resultatet er 0 eller 1. <strong>MemtoReg = 0</strong> gjør at muxen foran registerfilens Skriv data velger ALU-resultatet, og <strong>RegWrite = 1</strong> gjør at verdien lagres i registeret rd på klokkeflanken. <strong>MemRead = 0 og MemWrite = 0</strong>: slt bruker ikke dataminnet, og ingenting må skrives dit ved et uhell. <strong>PCSrc = 0</strong> (Branch = 0): neste PC er PC + 4 uansett hva Zero sier, for slt er ikke et hopp.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-2-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 2.3 og 2.4</span><span class="o-ref">Enkeltsykelprosessor · 3 + 5 p</span></div>
+        <div class="o-text"><p>Samme prosessor skal utføre <code>sb</code> (store byte). Hvilke verdier skal de seks signalene ha? (2.4) Forklar hvordan de gjør at sb utføres korrekt.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (figur 4.22) · ikke offisielt løsningsforslag</span>
+            <p>RegWrite = 0, ALUSrc = 1, PCSrc = 0, MemWrite = 1, MemRead = 0, MemtoReg = X.</p>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>sb er en S-type-instruksjon: én byte fra rs2 skal lagres på adressen rs1 + immediate. <strong>ALUSrc = 1</strong> gjør at ALU-en får den fortegnsutvidede immediaten som andre operand, og med ALUOp = 00 adderer den: ALU-resultatet er minneadressen. <strong>MemWrite = 1</strong> gjør at dataminnet på klokkeflanken skriver verdien på Skriv data, som er Les data 2 (rs2), til den adressen; <strong>MemRead = 0</strong> fordi ingenting skal leses. <strong>RegWrite = 0</strong>: sb endrer ikke noe register, så registerfilen må ikke skrive. Dermed er <strong>MemtoReg = X</strong>: hva muxen legger på Skriv data er likegyldig når det ikke skrives. <strong>PCSrc = 0</strong>: ikke et hopp, PC får PC + 4. (Forskjellen fra sw ligger i funct3, som styrer minnets bytevelger, ikke i kontrollordet.)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-2">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.2 · s. 370</span></div>
+        <div class="o-text"><p>Forklar hver «don't care» i figur 4.22.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Figur 4.22 har to X-er, begge i MemtoReg-kolonnen: for sw og for beq. Begge har RegWrite = 0. MemtoReg bestemmer bare hvilken verdi som ligger på registerfilens Skriv data-inngang; når ingen skriving skjer, påvirker verdien ingenting, og kontrollen kan sette signalet til det som gir enklest logikk. (I ALU-kontrollens tabell, figur 4.12, er funct-feltene X når ALUOp er 00 eller 01, fordi handlingen da er gitt av ALUOp alene.)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-6">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.6 · s. 371</span></div>
+        <div class="o-text"><p>Avsnitt 4.4 behandler ikke I-type-instruksjoner som addi og andi. 1. Hvilke nye logikkblokker trengs, om noen, for å legge dem til prosessoren i figur 4.21? 2. List kontrollsignalene for addi, og begrunn eventuelle X.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Ingen nye blokker for addi: Imm Gen fortegnsutvider allerede I-immediaten, ALUSrc-muxen kan velge den, og rd ligger i bit 11:7 som for R-type. Kontrollenheten må kjenne opcoden 0010011. For andi/ori må ALU-kontrollen i tillegg kunne velge AND/OR ut fra funct3 alene (funct7 finnes ikke, bitene er immediate), for eksempel med en ny ALUOp-kode 11.</p>
+            <p>2. addi: ALUSrc = 1 (immediate), MemtoReg = 0 (ALU-resultat), RegWrite = 1, MemRead = 0, MemWrite = 0, Branch = 0, ALUOp = 00 (add, som for lw/sw). Ingen X: registeret skrives, så MemtoReg må være 0; minnet skal verken leses eller skrives.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Et kontrollord har RegWrite = 1, ALUSrc = 1, MemRead = 1, MemtoReg = 1, MemWrite = 0, Branch = 0. Hvilken instruksjonsklasse? Og hva om MemtoReg i stedet var 0 og MemRead 0?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Leser minnet (MemRead) og skriver det leste til et register (MemtoReg = 1, RegWrite = 1) med adresse fra register + immediate (ALUSrc = 1): lw. Med MemtoReg = 0 og MemRead = 0 skrives ALU-resultatet av register + immediate: en I-type aritmetisk instruksjon som addi.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 UTFØRING ─────────────────────────── -->
+  <section id="utforing">
+    <div class="container">
+      <div class="section-badge">04 · Instruksjon for instruksjon</div>
+      <h2>Fire steg for R, <em>fem for lw</em></h2>
+      <div class="source-note">Boka · kap. 4.4 · s. 276–281 · figur 4.23–4.25</div>
+
+      <p class="dropcap">Alt skjer i én sykel, men det hjelper å tenke i steg ordnet etter dataflyten. Skriv forklaringen på eksamen i denne rekkefølgen: hent, les registre, ALU, minne, skriv tilbake, neste PC. Nevn hvert signal der det brukes.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Steg</th><th>R-type (add x1, x2, x3)</th><th>lw x1, imm(x2)</th><th>beq x1, x2, imm</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td colspan="3">Instruksjonen hentes fra instruksjonsminnet på adressen i PC; adderen regner PC + 4.</td></tr>
+            <tr><td>2</td><td>x2 og x3 leses (Les data 1 og 2). Kontrollen setter signalene fra opcoden.</td><td>x2 leses. Imm Gen fortegnsutvider forskyvningen.</td><td>x1 og x2 leses. Imm Gen fortegnsutvider forskyvningen.</td></tr>
+            <tr><td>3</td><td>ALU-en regner på de to registerverdiene (ALUSrc = 0), funksjon fra funct via ALUOp = 10.</td><td>ALU-en adderer x2 og immediaten (ALUSrc = 1, ALUOp = 00): adressen.</td><td>ALU-en subtraherer (ALUOp = 01), Zero = 1 hvis like. Samtidig regner hoppadderen PC + 2·imm.</td></tr>
+            <tr><td>4</td><td>ALU-resultatet går via MemtoReg = 0 til Skriv data og lagres i x1 (RegWrite = 1).</td><td>Dataminnet leser adressen (MemRead = 1).</td><td>PCSrc = Branch AND Zero velger hoppmålet eller PC + 4 inn i PC.</td></tr>
+            <tr><td>5</td><td></td><td>Det leste går via MemtoReg = 1 til x1 (RegWrite = 1).</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>sw er lw uten det siste steget: minnet skriver (MemWrite = 1) verdien fra Les data 2, og RegWrite = 0. Alle instruksjonene ender med at PC får ny verdi på flanken.</p>
+
+      <div class="oppgave" data-quiz id="oppg-4-5">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.5 · s. 370</span></div>
+        <div class="o-text"><p>I en klokkesykel henter prosessoren instruksjonsordet 0x00c6ba23. 1. Hva er inngangene til ALU-kontrollen? 2. Hva blir ny PC, og langs hvilken sti? 3. For hver mux: inngangsverdiene og utgangen (bruk Reg[xn] for registerverdier). 4. Inngangene til ALU-en og de to adderne? 5. Alle inngangene til registerfilen?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Dekod først: 0x00c6ba23 = 0000000 01100 01101 011 10100 0100011. Opcode 0100011 = store, rs2 = 12, rs1 = 13, funct3 = 011, imm = 0000000 10100 = 20. Det er <code>sd x12, 20(x13)</code> (funct3 011 er doubleword i RV64; kontrollen behandler den som en store).</p>
+            <p>1. ALUOp = 00, funct7 = 0000000 og funct3 = 011 (don't care siden ALUOp = 00). 2. PC + 4, via PC + 4-adderen og PCSrc-muxens inngang 0 (Branch = 0). 3. ALUSrc-mux: inngang 0 = Reg[x12], inngang 1 = 20, ut = 20. MemtoReg-mux: inngang 0 = Reg[x13] + 20, inngang 1 = det minnet leverer, ut = likegyldig (RegWrite = 0). PCSrc-mux: inngang 0 = PC + 4, inngang 1 = PC + 40, ut = PC + 4. 4. ALU: Reg[x13] og 20. PC-adder: PC og 4. Hoppadder: PC og 40 (20 skiftet ett steg). 5. Les register 1 = 13, Les register 2 = 12, Skriv register = 20 (bit 11:7, som her er imm[4:0]), Skriv data = utgangen fra MemtoReg-muxen, RegWrite = 0.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-4-4">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§4.4 · s. 282</span></div>
+        <div class="o-text"><p>Se på kontrollsignalene i figur 4.26 (sannhetstabellen for kontrollenheten). Kan noen av dem slås sammen? Kan et signal erstattes av inversen av et annet, og i så fall uten inverter?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Med X-ene tatt i betraktning er MemtoReg (0, 1, X, X) forenlig med MemRead (0, 1, 0, 0): sett MemtoReg = MemRead, så kan ett signal dekke begge. ALUSrc (0, 1, 1, 0) er inversen av ALUOp1 (1, 0, 0, 0) bare for de tre første radene, så det krever at beq-raden tåler det, og det gjør den ikke (ALUSrc må være 0). RegWrite (1, 1, 0, 0) er inversen av (MemWrite OR Branch); det er to signaler, ikke ett. Svar: MemtoReg kan erstattes av MemRead direkte, uten inverter.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 KLOKKE ─────────────────────────── -->
+  <section id="klokke">
+    <div class="container">
+      <div class="section-badge">05 · Klokkeperioden</div>
+      <h2>Den lengste stien <em>bestemmer klokka</em></h2>
+      <div class="source-note">Boka · kap. 4.4 «Why a single-cycle implementation is not used today» · s. 282 · oppgave 4.7</div>
+      <span class="lm-pill">Læringsmål T3.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare mikroarkitekturen til enkeltsykelprosessoren.</li>
+      </ul>
+
+      <p class="dropcap">Klokkeperioden er den samme for alle instruksjoner, så den må være lang nok for den tregeste. Det er lw, som bruker fem enheter i serie: instruksjonsminne, registerfil, ALU, dataminne, registerfil (skriving). <span class="term" data-term="cpi">CPI</span> er 1, men perioden er lang, så ytelsen blir dårlig. Enkeltsykel bryter den store ideen «gjør det vanlige tilfellet raskt»: add må vente like lenge som lw. Derfor flersykel (kapittel 4) og samlebånd (kapittel 5).</p>
+
+      <div class="oppgave" data-quiz id="oppg-4-7">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.7 · s. 371</span></div>
+        <div class="o-text"><p>Forsinkelser: I-mem og D-mem 250 ps, registerfil 150 ps, mux 25 ps, ALU 200 ps, adder 150 ps, enkeltport 5 ps, registerlesning (PC) 30 ps, registeroppsett (setup, PC og registerfil) 20 ps, fortegnsutvider 50 ps, kontroll 50 ps. Hva er latensen (minste klokkeperiode) for 1. R-type, 2. lw, 3. sw, 4. beq, 5. I-type uten load, og 6. hva er minste klokkeperiode for prosessoren?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Regn langs den lengste serien av enheter; ting som skjer parallelt (kontroll, Imm Gen, PC + 4-adderen) teller ikke så lenge de er raskere enn det de går parallelt med.</p>
+            <ol>
+              <li>R-type: PC-lesning 30 + I-mem 250 + registerfil 150 + ALUSrc-mux 25 + ALU 200 + MemtoReg-mux 25 + setup 20 = <strong>700 ps</strong>.</li>
+              <li>lw: 30 + 250 + 150 + 25 + 200 + D-mem 250 + 25 + 20 = <strong>950 ps</strong>.</li>
+              <li>sw: 30 + 250 + 150 + 25 + 200 + 250 = <strong>905 ps</strong> (skrivingen i minnet avslutter stien; ingen mux etter).</li>
+              <li>beq: 30 + 250 + 150 + 200 (ALU, ALUSrc = 0 så muxen er likevel på stien: 25) + AND 5 + PCSrc-mux 25 + setup 20 = <strong>705 ps</strong>; uten mux-leddet foran ALU-en 680 ps. Hoppadderen (Imm Gen 50 + adder 150) er raskere enn ALU-stien og teller ikke.</li>
+              <li>I-type: samme sti som R-type (Imm Gen går parallelt med registerfilen) = <strong>700 ps</strong>.</li>
+              <li>Minste periode = den tregeste instruksjonen: <strong>950 ps</strong> (lw).</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Et program består av 50 % R-type, 25 % lw, 15 % sw og 10 % beq. Med tallene fra oppgave 4.7: hvor mye raskere ville en prosessor med variabel klokkeperiode per instruksjon vært enn enkeltsykelprosessoren?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Enkeltsykel: 950 ps per instruksjon. Variabel: 0,5·700 + 0,25·950 + 0,15·905 + 0,10·705 = 350 + 237,5 + 135,75 + 70,5 = 793,75 ps. Speedup 950/793,75 ≈ 1,20. (Variabel klokke er upraktisk, men samlebåndet oppnår noe liknende ved å dele arbeidet i steg.)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">06 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Datasti + kontroll</strong>Datastien flytter og regner (PC, I-mem, registerfil, ALU, D-mem, Imm Gen, addere, muxer). Kontrollen leser opcoden og styrer.</div>
+        <div class="recap-pill"><strong>Kantstyrt klokking</strong>Tilstandselementer oppdateres på flanken; samme register kan leses og skrives i én sykel.</div>
+        <div class="recap-pill"><strong>Tre muxer</strong>ALUSrc (register/immediate), MemtoReg (ALU/minne), PCSrc (PC + 4/hoppmål).</div>
+        <div class="recap-pill"><strong>Kontrollordet</strong>R: 0 0 1 0 0 0 10 · lw: 1 1 1 1 0 0 00 · sw: 1 X 0 0 1 0 00 · beq: 0 X 0 0 0 1 01 (ALUSrc MemtoReg RegWrite MemRead MemWrite Branch ALUOp).</div>
+        <div class="recap-pill"><strong>X</strong>MemtoReg er X når RegWrite = 0. funct er X når ALUOp ≠ 10.</div>
+        <div class="recap-pill"><strong>PCSrc</strong>= Branch AND Zero. 0 for alt som ikke er hopp.</div>
+        <div class="recap-pill"><strong>ALU-kontroll</strong>ALUOp 00 → add, 01 → sub, 10 → funct bestemmer (add 0010, sub 0110, and 0000, or 0001, slt 0111).</div>
+        <div class="recap-pill"><strong>Klokka</strong>Lengste sti (lw) bestemmer perioden; CPI = 1 men lang sykel. Derfor flersykel og samlebånd.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Kontrollord for <code>lw x7, 12(x3)</code>: RegWrite, ALUSrc, PCSrc, MemWrite, MemRead, MemtoReg?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">1, 1, 0, 0, 1, 1. Ingen X: alt må ha en verdi fordi både minne og register brukes.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Forklar hvorfor beq har ALUSrc = 0 selv om instruksjonen inneholder en immediate.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">ALU-en skal sammenlikne de to registrene rs1 og rs2 (subtrahere og teste Zero), så dens andre operand må være Les data 2. Immediaten brukes et annet sted: i hoppadderen, der den skiftes ett steg og legges til PC for å gi hoppmålet. To separate stier, derfor ingen konflikt.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">En ledning er «stuck-at-0» (alltid 0). Hvilke instruksjoner feiler hvis det er MemtoReg? Hvis det er ALUSrc? (Bokas oppgave 4.4.)</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">MemtoReg fast på 0: bare lw feiler (den trenger 1 for å skrive minnedata; R-type vil ha 0, sw og beq bryr seg ikke). ALUSrc fast på 0: lw, sw og alle I-type feiler (de trenger immediaten inn i ALU-en); R-type og beq vil ha 0 og virker.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="alu.html" class="prev"><div class="pn-label">← Forrige · 3B</div><div class="pn-title">ALU, multiplikasjon og flyttall</div></a>
+        <a href="../kap5/" class="next"><div class="pn-label">Neste ferdige · Kapittel 5</div><div class="pn-title">Samlebåndsprosessorer →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(x, y, s, cls, anchor, parent) { var t = el('text', { x: x, y: y, 'class': cls || '', 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; }
+
+  /* ───── Tegn datastien (figur 4.21) i et gitt SVG. Returnerer oppslag id → element. ───── */
+  function drawCPU(svg) {
+    var g = {};
+    function unit(id, x, y, w, h, lines, rx) { var r = el('rect', { x: x, y: y, width: w, height: h, rx: rx == null ? 4 : rx, 'class': 'u', id: id }, svg); g[id] = r; lines.forEach(function (s, i) { txt(x + w / 2, y + h / 2 + (i - (lines.length - 1) / 2) * 12 + 4, s, '', 'middle', svg); }); return r; }
+    function mux(id, x, y, lbl0, lbl1) { var p = el('path', { d: 'M' + x + ' ' + y + ' L' + (x + 18) + ' ' + (y + 8) + ' L' + (x + 18) + ' ' + (y + 36) + ' L' + x + ' ' + (y + 44) + ' Z', 'class': 'u', id: id }, svg); g[id] = p; txt(x + 9, y + 15, lbl0 == null ? '0' : lbl0, 'cap', 'middle', svg); txt(x + 9, y + 37, lbl1 == null ? '1' : lbl1, 'cap', 'middle', svg); txt(x + 9, y + 26, 'M', 'cap', 'middle', svg); return p; }
+    function wire(id, d, cls) { var p = el('path', { d: d, 'class': cls || 'w', id: id }, svg); g[id] = p; return p; }
+    function dot(id, x, y) { var c = el('circle', { cx: x, cy: y, r: 2.4, 'class': 'pt', id: id }, svg); g[id] = c; return c; }
+
+    /* enheter */
+    unit('pc', 28, 215, 30, 44, ['PC']);
+    unit('imem', 82, 195, 92, 84, ['Instruksjons-', 'minne']);
+    txt(88, 215, 'Les adr.', 'cap', 'start', svg); txt(198, 228, 'Instr. [31:0]', 'cap', 'middle', svg);
+    unit('add4', 112, 70, 38, 44, ['Add'], 10); txt(104, 108, '4', '', 'end', svg);
+    unit('regs', 262, 180, 118, 124, [], 4);
+    txt(268, 196, 'Les reg 1', 'cap', 'start', svg); txt(268, 221, 'Les reg 2', 'cap', 'start', svg); txt(268, 251, 'Skriv reg', 'cap', 'start', svg); txt(268, 283, 'Skriv data', 'cap', 'start', svg);
+    txt(374, 206, 'Les data 1', 'cap', 'end', svg); txt(374, 258, 'Les data 2', 'cap', 'end', svg); txt(321, 300, 'Registre', 'cap', 'middle', svg);
+    var ig = el('ellipse', { cx: 321, cy: 350, rx: 34, ry: 17, 'class': 'u', id: 'immgen' }, svg); g.immgen = ig; txt(321, 348, 'Imm', '', 'middle', svg); txt(321, 359, 'Gen', '', 'middle', svg);
+    mux('mux-alusrc', 410, 232);
+    var alu = el('path', { d: 'M448 185 L448 225 L462 240 L448 255 L448 295 L506 272 L506 208 Z', 'class': 'u', id: 'alu' }, svg); g.alu = alu; txt(486, 243, 'ALU', '', 'middle', svg);
+    txt(504, 222, 'Zero', 'cap', 'end', svg); txt(504, 262, 'Resultat', 'cap', 'end', svg);
+    var ac = el('ellipse', { cx: 477, cy: 350, rx: 30, ry: 17, 'class': 'u', id: 'aluctl' }, svg); g.aluctl = ac; txt(477, 348, 'ALU-', '', 'middle', svg); txt(477, 359, 'kontroll', '', 'middle', svg);
+    unit('dmem', 556, 205, 96, 100, [], 4);
+    txt(561, 226, 'Adresse', 'cap', 'start', svg); txt(561, 288, 'Skriv data', 'cap', 'start', svg); txt(648, 246, 'Les data', 'cap', 'end', svg); txt(604, 262, 'Dataminne', 'cap', 'middle', svg);
+    mux('mux-memtoreg', 684, 228, '1', '0');
+    var sh = el('circle', { cx: 400, cy: 118, r: 12, 'class': 'u', id: 'shift' }, svg); g.shift = sh; txt(400, 122, '<<1', 'cap', 'middle', svg);
+    unit('addb', 440, 92, 40, 46, ['Add'], 10);
+    mux('mux-pcsrc', 560, 82);
+    var andg = el('path', { d: 'M512 128 L526 128 A10 10 0 0 1 526 148 L512 148 Z', 'class': 'u', id: 'and' }, svg); g.and = andg;
+    var ctl = el('ellipse', { cx: 300, cy: 92, rx: 36, ry: 30, 'class': 'u', id: 'ctl' }, svg); g.ctl = ctl; txt(300, 96, 'Kontroll', '', 'middle', svg);
+
+    /* datalinjer */
+    wire('w-pc-imem', 'M58 237 L82 237');
+    dot('d-pc', 70, 237);
+    wire('w-pc-add4', 'M70 237 L70 82 L112 82');
+    wire('w-pc-addb', 'M70 82 L70 60 L425 60 L425 104 L440 104');
+    wire('w-add4-mux', 'M150 92 L560 92');
+    wire('w-mux-pc', 'M578 104 L600 104 L600 30 L14 30 L14 237 L28 237');
+    wire('w-instr', 'M174 237 L222 237');
+    dot('d-instr', 222, 237);
+    wire('w-i-rs1', 'M222 237 L222 192 L262 192');
+    wire('w-i-rs2', 'M222 237 L222 217 L262 217');
+    wire('w-i-rd', 'M222 237 L222 247 L262 247');
+    wire('w-i-imm', 'M222 237 L222 350 L287 350');
+    wire('w-i-ctl', 'M222 192 L222 92 L264 92');
+    wire('w-i-aluctl', 'M222 350 L222 390 L449 390 L449 367');
+    wire('w-rd1', 'M380 202 L448 202');
+    wire('w-rd2', 'M380 254 L410 254');
+    dot('d-rd2', 395, 254);
+    wire('w-rd2-mem', 'M395 254 L395 318 L540 318 L540 284 L556 284');
+    wire('w-imm-mux', 'M355 350 L395 350 L395 264 L410 264');
+    dot('d-imm', 395, 350);
+    wire('w-imm-sh', 'M395 350 L400 350 L400 130');
+    wire('w-sh-addb', 'M400 106 L400 100 L420 100 L420 126 L440 126');
+    wire('w-mux-alu', 'M428 254 L448 254');
+    wire('w-addb-mux', 'M480 115 L540 115 L540 116 L560 116');
+    wire('w-alu-mem', 'M506 240 L556 240');
+    dot('d-res', 530, 240);
+    wire('w-alu-wb', 'M530 240 L530 330 L672 330 L672 264 L684 264');
+    wire('w-zero', 'M506 218 L512 218 L512 143');
+    wire('w-mem-wb', 'M652 243 L684 243');
+    wire('w-wb', 'M702 250 L720 250 L720 410 L250 410 L250 278 L262 278');
+    wire('w-and-pcsrc', 'M536 138 L569 138 L569 126');
+
+    /* kontrollsignaler */
+    wire('c-branch', 'M336 80 L500 80 L500 134 L512 134', 'c'); txt(340, 76, 'Branch', 'sig', 'start', svg);
+    wire('c-memread', 'M336 100 L380 100 L380 160 L612 160 L612 205', 'c'); txt(384, 157, 'MemRead', 'sig', 'start', svg);
+    wire('c-memtoreg', 'M330 112 L360 112 L360 170 L693 170 L693 228', 'c'); txt(640, 167, 'MemtoReg', 'sig', 'start', svg);
+    wire('c-aluop', 'M300 122 L300 150 L240 150 L240 405 L477 405 L477 367', 'c'); txt(330, 416, 'ALUOp', 'sig', 'middle', svg);
+    wire('c-memwrite', 'M336 104 L370 104 L370 165 L596 165 L596 205', 'c'); txt(540, 177, 'MemWrite', 'sig', 'start', svg);
+    wire('c-alusrc', 'M322 118 L345 118 L345 178 L419 178 L419 232', 'c'); txt(421, 190, 'ALUSrc', 'sig', 'start', svg);
+    wire('c-regwrite', 'M272 110 L272 160 L321 160 L321 180', 'c'); txt(276, 157, 'RegWrite', 'sig', 'start', svg);
+    wire('c-aluctl', 'M477 333 L477 296', 'c'); txt(482, 316, '4', 'sig', 'start', svg);
+    txt(540, 132, 'PCSrc', 'sig', 'start', svg);
+    txt(243, 87, 'Instr. [6:0]', 'cap', 'middle', svg);
+    txt(330, 386, 'Instr. [30, 14:12]', 'cap', 'middle', svg);
+    txt(131, 64, 'PC + 4', 'cap', 'middle', svg);
+    txt(26, 212, 'neste PC', 'cap', 'start', svg);
+    return g;
+  }
+
+  /* ───── Instruksjonsdata ───── */
+  var INS = {
+    add:  { fmt: 'R', sig: { RegWrite: 1, ALUSrc: 0, PCSrc: 0, MemWrite: 0, MemRead: 0, MemtoReg: 0, Branch: 0, ALUOp: '10', ALUctl: '0010 (add)' } },
+    sub:  { fmt: 'R', sig: { RegWrite: 1, ALUSrc: 0, PCSrc: 0, MemWrite: 0, MemRead: 0, MemtoReg: 0, Branch: 0, ALUOp: '10', ALUctl: '0110 (sub)' } },
+    and:  { fmt: 'R', sig: { RegWrite: 1, ALUSrc: 0, PCSrc: 0, MemWrite: 0, MemRead: 0, MemtoReg: 0, Branch: 0, ALUOp: '10', ALUctl: '0000 (AND)' } },
+    or:   { fmt: 'R', sig: { RegWrite: 1, ALUSrc: 0, PCSrc: 0, MemWrite: 0, MemRead: 0, MemtoReg: 0, Branch: 0, ALUOp: '10', ALUctl: '0001 (OR)' } },
+    slt:  { fmt: 'R', sig: { RegWrite: 1, ALUSrc: 0, PCSrc: 0, MemWrite: 0, MemRead: 0, MemtoReg: 0, Branch: 0, ALUOp: '10', ALUctl: '0111 (slt)' } },
+    addi: { fmt: 'I', sig: { RegWrite: 1, ALUSrc: 1, PCSrc: 0, MemWrite: 0, MemRead: 0, MemtoReg: 0, Branch: 0, ALUOp: '00', ALUctl: '0010 (add)' } },
+    lw:   { fmt: 'L', sig: { RegWrite: 1, ALUSrc: 1, PCSrc: 0, MemWrite: 0, MemRead: 1, MemtoReg: 1, Branch: 0, ALUOp: '00', ALUctl: '0010 (add)' } },
+    sw:   { fmt: 'S', sig: { RegWrite: 0, ALUSrc: 1, PCSrc: 0, MemWrite: 1, MemRead: 0, MemtoReg: 'X', Branch: 0, ALUOp: '00', ALUctl: '0010 (add)' } },
+    sb:   { fmt: 'S', sig: { RegWrite: 0, ALUSrc: 1, PCSrc: 0, MemWrite: 1, MemRead: 0, MemtoReg: 'X', Branch: 0, ALUOp: '00', ALUctl: '0010 (add)' } },
+    beq:  { fmt: 'B', sig: { RegWrite: 0, ALUSrc: 0, PCSrc: 'Zero', MemWrite: 0, MemRead: 0, MemtoReg: 'X', Branch: 1, ALUOp: '01', ALUctl: '0110 (sub)' } }
+  };
+  var COMMON = ['pc', 'imem', 'add4', 'mux-pcsrc', 'ctl', 'w-pc-imem', 'd-pc', 'w-pc-add4', 'w-add4-mux', 'w-mux-pc', 'w-instr', 'd-instr', 'w-i-ctl', 'w-i-rs1', 'regs', 'w-rd1', 'alu', 'aluctl', 'c-aluop', 'c-aluctl', 'w-i-aluctl'];
+  var PATHS = {
+    R: ['w-i-rs2', 'w-i-rd', 'w-rd2', 'd-rd2', 'mux-alusrc', 'w-mux-alu', 'w-alu-mem', 'd-res', 'w-alu-wb', 'mux-memtoreg', 'w-wb', 'c-regwrite'],
+    I: ['w-i-rd', 'w-i-imm', 'immgen', 'w-imm-mux', 'd-imm', 'mux-alusrc', 'w-mux-alu', 'w-alu-mem', 'd-res', 'w-alu-wb', 'mux-memtoreg', 'w-wb', 'c-regwrite', 'c-alusrc'],
+    L: ['w-i-rd', 'w-i-imm', 'immgen', 'w-imm-mux', 'd-imm', 'mux-alusrc', 'w-mux-alu', 'w-alu-mem', 'd-res', 'dmem', 'w-mem-wb', 'mux-memtoreg', 'w-wb', 'c-regwrite', 'c-alusrc', 'c-memread', 'c-memtoreg'],
+    S: ['w-i-rs2', 'w-i-imm', 'immgen', 'w-imm-mux', 'd-imm', 'mux-alusrc', 'w-mux-alu', 'w-alu-mem', 'd-res', 'w-rd2', 'd-rd2', 'w-rd2-mem', 'dmem', 'c-alusrc', 'c-memwrite'],
+    B: ['w-i-rs2', 'w-rd2', 'd-rd2', 'mux-alusrc', 'w-mux-alu', 'w-zero', 'and', 'c-branch', 'w-and-pcsrc', 'w-i-imm', 'immgen', 'd-imm', 'w-imm-sh', 'shift', 'w-sh-addb', 'addb', 'w-pc-addb', 'w-addb-mux']
+  };
+  var STEPS = {
+    R: ['Instruksjonen hentes fra instruksjonsminnet (adresse = PC); adderen regner PC + 4.', 'rs1 og rs2 leses fra registerfilen. Kontrollen setter signalene fra opcoden (R-type): ALUOp = 10.', 'ALUSrc = 0: muxen sender Les data 2 til ALU-en. ALU-kontrollen leser funct3/funct7 og velger operasjonen.', 'MemtoReg = 0: ALU-resultatet går til Skriv data. RegWrite = 1: lagres i rd på klokkeflanken.', 'MemRead = MemWrite = 0: dataminnet er uberørt. Branch = 0, så PCSrc = 0: PC får PC + 4.'],
+    I: ['Instruksjonen hentes; PC + 4 regnes.', 'rs1 leses. Imm Gen fortegnsutvider immediaten (bit 31:20) til 32 bit.', 'ALUSrc = 1: muxen sender immediaten til ALU-en. ALUOp = 00 gir add.', 'MemtoReg = 0 og RegWrite = 1: summen lagres i rd.', 'Minnet uberørt; PCSrc = 0: PC får PC + 4.'],
+    L: ['Instruksjonen hentes; PC + 4 regnes.', 'rs1 (basisregisteret) leses. Imm Gen fortegnsutvider forskyvningen.', 'ALUSrc = 1 og ALUOp = 00: ALU-en adderer basis + forskyvning = adressen.', 'MemRead = 1: dataminnet leser adressen og legger ordet på Les data.', 'MemtoReg = 1: det leste går til Skriv data. RegWrite = 1: lagres i rd. PCSrc = 0: PC + 4.'],
+    S: ['Instruksjonen hentes; PC + 4 regnes.', 'rs1 (basis) og rs2 (verdien som skal lagres) leses. Imm Gen setter sammen imm[11:5] og imm[4:0] og fortegnsutvider.', 'ALUSrc = 1 og ALUOp = 00: ALU-en regner adressen basis + forskyvning.', 'MemWrite = 1: dataminnet skriver Les data 2 til adressen på klokkeflanken. MemRead = 0.', 'RegWrite = 0: ingen registerskriving, derfor MemtoReg = X. PCSrc = 0: PC + 4.'],
+    B: ['Instruksjonen hentes; PC + 4 regnes.', 'rs1 og rs2 leses. Imm Gen fortegnsutvider SB-immediaten; den skiftes ett steg og legges til PC i hoppadderen: hoppmålet.', 'ALUSrc = 0 og ALUOp = 01: ALU-en subtraherer rs1 − rs2; Zero = 1 hvis de er like.', 'Branch = 1 og Zero inn i AND-porten gir PCSrc: 1 → PC får hoppmålet, 0 → PC + 4.', 'RegWrite = 0 (MemtoReg = X), MemRead = MemWrite = 0: verken register eller minne endres.']
+  };
+  var SIX = ['RegWrite', 'ALUSrc', 'PCSrc', 'MemWrite', 'MemRead', 'MemtoReg'];
+
+  /* statisk figur */
+  var fig = document.getElementById('cpu-fig'); if (fig) drawCPU(fig);
+
+  /* widget */
+  (function () {
+    var svg = document.getElementById('cpu-w'); if (!svg) return;
+    var g = drawCPU(svg);
+    var sel = document.getElementById('cpu-ins'), test = document.getElementById('cpu-test'), chk = document.getElementById('cpu-check');
+    var sigDiv = document.getElementById('cpu-sig'), steps = document.getElementById('cpu-steps'), out = document.getElementById('cpu-out');
+    function clear() { for (var k in g) g[k].classList.remove('on'); }
+    function light(ins) { var d = INS[ins]; COMMON.concat(PATHS[d.fmt]).forEach(function (id) { if (g[id]) g[id].classList.add('on'); }); }
+    function draw() {
+      var ins = sel.value, d = INS[ins];
+      clear(); light(ins);
+      var html = '';
+      SIX.forEach(function (s) {
+        var v = d.sig[s];
+        if (test.checked) html += '<div class="s" data-sig="' + s + '"><b>' + s + '</b><input type="text" maxlength="4" placeholder="?"></div>';
+        else html += '<div class="s' + (v === 1 || v === 'Zero' ? ' on' : '') + '"><b>' + s + '</b><span class="v">' + v + '</span></div>';
+      });
+      html += '<div class="s' + (d.sig.Branch ? ' on' : '') + '"><b>Branch</b><span class="v">' + d.sig.Branch + '</span></div>';
+      html += '<div class="s on"><b>ALUOp</b><span class="v">' + d.sig.ALUOp + '</span></div>';
+      html += '<div class="s on"><b>ALU-kontroll</b><span class="v">' + d.sig.ALUctl + '</span></div>';
+      sigDiv.innerHTML = html;
+      steps.innerHTML = STEPS[d.fmt].map(function (s) { return '<li>' + s + '</li>'; }).join('');
+      chk.style.display = test.checked ? '' : 'none';
+      out.innerHTML = test.checked ? 'Fyll inn 0, 1 eller X for de seks signalene (for beq: skriv 1 eller Zero på PCSrc) og trykk Rett.' : '<span class="hl">' + sel.options[sel.selectedIndex].text + '</span>  (' + ({ R: 'R-type', I: 'I-type aritmetisk', L: 'load', S: 'store', B: 'betinget hopp' })[d.fmt] + ')';
+    }
+    function check() {
+      var d = INS[sel.value], right = 0;
+      sigDiv.querySelectorAll('.s[data-sig]').forEach(function (box) {
+        var s = box.getAttribute('data-sig'), want = String(d.sig[s]), got = box.querySelector('input').value.trim().toUpperCase();
+        var ok = (want === 'Zero') ? (got === '1' || got === 'ZERO' || got === 'Z') : (got === want.toUpperCase());
+        box.classList.remove('ok', 'bad'); box.classList.add(ok ? 'ok' : 'bad'); if (ok) right++;
+        if (!ok) { var sp = document.createElement('span'); sp.className = 'v'; sp.textContent = '→ ' + want; box.appendChild(sp); }
+      });
+      out.innerHTML = (right === 6 ? '<span class="ok">6 av 6 riktige.</span>' : '<span class="bad">' + right + ' av 6 riktige.</span>') + ' Eksamen gir 0,5 p per riktig og −0,25 per feil; ubesvart gir 0.';
+    }
+    sel.addEventListener('change', draw); test.addEventListener('change', draw); chk.addEventListener('click', check);
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

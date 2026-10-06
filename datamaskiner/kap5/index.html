@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 5 — Samlebåndsprosessorer</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
+  .lm-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; }
+  .lm-card .lm-k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+  .lm-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; color: var(--ink-soft); }
+  .lm-card .lm-src { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-ghost); margin-top: 0.4rem; }
+  .lm-card .tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-left: 6px; background: var(--accent-soft); color: var(--accent); }
+  .lm-card .tag.regn { background: var(--warm-soft); color: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 5: Samlebåndsprosessorer">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 5 · Tema T5 · Boka kap. 4.6–4.11 · Kompendiet kap. 4 og 6 · Forelesning 7–9 · Teoriøving 5 · ~2 t totalt</div>
+      <h1>Samlebånds<em>prosessorer</em></h1>
+      <p class="lede">Prosessoren fra kapittel 3 delt i fem steg, med én instruksjon i hvert: kortere klokkeperiode og høyere gjennomstrømning, mot prisen av farer som må håndteres med videresending, stans og prediksjon. Så hva som skal til for å komme forbi én instruksjon per sykel. Fast eksamensdel hvert år, 16 poeng i Ord. 2025, pluss 4 for register renaming.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringsmaal">Læringsmål og prioritet</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">05</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Enkeltsykelprosessoren kaster bort tid: klokka må romme den tregeste instruksjonen, og bare én instruksjon er i arbeid om gangen. <span class="term" data-term="samlebaand">Samlebåndet</span> deler datastien i fem steg med <span class="term" data-term="samlebaandsregister">samlebåndsregistre</span> mellom, og starter en ny instruksjon hver sykel. Kontrollsignalene lages én gang og reiser med instruksjonen gjennom registrene. Det nye problemet er <span class="term" data-term="fare">farer</span>: instruksjoner som overlapper i tid, kan trenge resultater som ikke er skrevet ennå, eller må hentes før et hopp er avgjort.</p>
+
+      <ul>
+        <li><strong>Samlebåndet (5A).</strong> Fem steg og ytelsen de gir; samlebåndsregistrene og hva de bærer; kontrollsignalene gruppert per steg; struktur-, data- og kontrollfarer; videresendingsenheten og kodene 00, 10, 01; load-use-stans og faredeteksjonsenheten; hopp avgjort i MEM eller ID, statisk og dynamisk prediksjon. Prio 1: egen del på hver eksamen.</li>
+        <li><strong>Unntak og høyere ytelse (5B).</strong> Unntak, avbrudd og presise unntak (prio 3, kort). Parallellitet i tid og rom, statisk og dynamisk multiple issue, RAW/WAW/WAR, register renaming, spekulasjon, utføring ut av rekkefølge (prio 2: register renaming var oppgave 8.1 i Ord. 2025).</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilder og utvalg</span>
+        <p>Sidene følger læringsutbyttebeskrivelsen tema T5 (T5.1–T5.3) og bygger på boka kapittel 4.6–4.11 og kompendiets kapittel 4 og 6. Alle bokoppgavene beskrivelsen lister (4.16, 4.17, 4.18, 4.22–4.25, 4.27, 4.28.1–2, 4.30, 4.31) er med, sammen med de tre eksamensoppgavene fra Ord. 2025 (6.1–6.2, 6.3 og 8.1) og kompendiets eksempler. Eksamensanalysen (godkjent 2. oktober 2026) gir T5.1 prio 1, T5.3 prio 2 og T5.2 prio 3. Av de store bokoppgavene er bare delene som likner eksamen tatt med (4.27.1–3, 4.30.1–3, 4.31.1–2); resten står under «Ekstra».</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringsmaal">
+    <div class="container">
+      <div class="section-badge">Læringsmål og prioritet</div>
+      <h2>Fra <em>læringsutbyttebeskrivelsen</em></h2>
+      <p class="section-intro">Tema T5 dekker K1–K3 (konstruksjon og virkemåte, instruksjonssettet, prosessorens oppbygging), F2 og F3 og G1.</p>
+      <div class="lm-grid">
+        <div class="lm-card">
+          <div class="lm-k">T5.1 · Samlebåndsprosessor med 5 steg <span class="tag regn">Regn</span><span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal kunne beskrive fordeler og ulemper ved samlebåndsprosessoren sammenliknet med flersykelprosessoren og enkeltsykelprosessoren.</li>
+            <li>Studenten skal kunne forklare hvordan oppstartskostnad og balanse mellom steg i samlebåndet påvirker ytelse.</li>
+            <li>Studenten skal kunne beskrive forskjellen mellom avhengigheter og farer samt gjengi de tre hovedgruppene av farer (strukturfarer, datafarer, og kontrollfarer).</li>
+            <li>Studenten skal kjenne til de fire overordnede strategiene for å håndtere farer (unngåelse, videresending, stans, og prediksjon).</li>
+            <li>Studenten skal kunne forklare den grunnleggende mikroarkitekturen til 5-stegs samlebåndsprosessoren (kunne gjengi og forklare figur 4.43).</li>
+            <li>Studenten skal kunne forklare hvordan kontroll implementeres i 5-stegs samlebåndsprosessoren.</li>
+            <li>Studenten skal kunne forklare hvordan videresending og stans kan brukes til å håndtere datafarer samt kunne analysere hvordan strategiene påvirker prosessorens ytelse.</li>
+            <li>Studenten skal kunne forklare hvordan kontrollfarer kan håndteres med stans og prediksjon samt analysere hvordan strategiene påvirker prosessorens ytelse.</li>
+          </ul>
+          <div class="lm-src">Prio 1 · Forelesning 7 og 8 · Teoriøving 5 · Boka 4.6–4.9 · Oppgaver 4.16–4.18, 4.22–4.25, 4.27, 4.28.1–2 · Eksamen: Ord. 25 oppg. 6 (16 p, på siden), Kont 26 oppg. 5, Kont 25 oppg. 3, Ord. 24 oppg. 4, Kont 24 oppg. 3, Ord. 23 oppg. 4, Kont 23 oppg. 4, Ord. 22 og Kont 22 oppg. 10 · <a href="samleband.html">5A</a> · ~75 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T5.2 · Unntak og avbrudd <span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare begrepene unntak og avbrudd, inkludert presise unntak.</li>
+            <li>Studenten skal kunne beskrive hvordan presise unntak kan implementeres i 5-stegssamlebåndet.</li>
+            <li>Studenten skal kjenne til prinsippene bak hvordan presise unntak implementeres i prosessorer som utfører instruksjoner ut-av-rekkefølge.</li>
+          </ul>
+          <div class="lm-src">Prio 3 · Forelesning 8 og 9 · Boka 4.10–4.11 · Oppgave 4.30 · Eksamen: Ord. 22 oppg. 10 (litt relevant) · <a href="unntak-ytelse.html#unntak">5B avsnitt 01</a> · ~8 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T5.3 · Prosessorer med høyere ytelse <span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal kunne beskrive hvordan en prosessor utnytter parallellitet i tid og parallellitet i rom.</li>
+            <li>Studenten skal kunne gjenkjenne og beskrive RAW, WAW og WAR farer og avhengighetene som skaper dem.</li>
+            <li>Studenten skal forstå prinsippene bak hvordan «register renaming» fjerner WAW og WAR farer.</li>
+            <li>Studenten skal kjenne til fordeler og ulemper med «static multi-issue» prosessorer.</li>
+            <li>Studenten skal kjenne til prinsippene bak hvordan prosessorer som utfører instruksjoner ut av rekkefølge («out of order») implementeres («dynamic multi-issue»).</li>
+            <li>Studenten skal kunne forklare begrepet «speculation».</li>
+          </ul>
+          <div class="lm-src">Prio 2 · Forelesning 9 · Boka 4.11 · Oppgave 4.31 · Eksamen: Ord. 25 oppg. 8.1 (4 p, på siden) · <a href="unntak-ytelse.html#ilp">5B avsnitt 02–04</a> · ~25 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="samleband.html" class="subpage-card">
+          <span class="sp-icon">5A</span>
+          <div class="sp-info">
+            <div class="sp-title">Samlebåndsprosessoren med fem steg</div>
+            <div class="sp-desc">T5.1 · Boka 4.6–4.9: steg og ytelse, samlebåndsregistre, kontroll per steg, farer, videresending, load-use-stans, hopprediksjon. 14 oppgaver (2 fra eksamen), 1 stor widget (program og sykel → steg, kontrollsignaler, videresending, stans, diagram; testmodus som eksamen). ~75 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="unntak-ytelse.html" class="subpage-card">
+          <span class="sp-icon">5B</span>
+          <div class="sp-info">
+            <div class="sp-title">Unntak og prosessorer med høyere ytelse</div>
+            <div class="sp-desc">T5.2 og T5.3 · Boka 4.10–4.11: unntak og presise unntak, parallellitet i tid og rom, statisk og dynamisk multiple issue, RAW/WAW/WAR, register renaming, spekulasjon, ut av rekkefølge. 3 oppgaver (1 fra eksamen), 1 widget (farer og omdøping). ~35 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">17 bokser: de tre eksamensoppgavene fra Ord. 2025 (modellsvar skrevet fra boka), bokoppgavene læringsutbyttebeskrivelsen lister, og kompendiets eksempler. Grønn status: svar fra kompendiet. Gul: forslag skrevet for denne siden, eller modellsvar kontrollert mot boka.</p>
+
+      <h3>5A · Samlebåndsprosessoren</h3>
+      <ul class="oppgave-index">
+        <li><a href="samleband.html#oppg-4-16"><span class="oi-ref">4.16 · s. 374</span><span>Stegtider: klokkeperiode, latens for lw, hvilket steg deles, utnyttelse.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-4-17"><span class="oi-ref">4.17 · s. 374</span><span>Sykler for n instruksjoner på k steg.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-komp-pipe-ytelse"><span class="oi-ref">Komp. kap. 6</span><span>10 ns uten samlebånd, 2 ns per steg: ideell speedup.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="samleband.html#oppg-eks-o25-6-1"><span class="oi-ref">Ord. 25 · 6.1–6.2</span><span>Eksamen: kontrollsignaler i ID/EX, EX/MEM, MEM/WB for sw/lw/addi/beq, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="samleband.html#oppg-4-18"><span class="oi-ref">4.18 · s. 374</span><span>Tre instruksjoner uten farehåndtering: hva blir x13 og x14?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-4-22"><span class="oi-ref">4.22 · s. 375</span><span>Ett felles minne: strukturfare, diagram, nop, antall stans.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-4-23"><span class="oi-ref">4.23 · s. 375</span><span>Fire steg uten forskyvning i lw/sw: klokke, gevinst, tap.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-eks-o25-6-3"><span class="oi-ref">Ord. 25 · 6.3</span><span>Eksamen: fire add i kjede, hvordan utføres I3 korrekt (videresending).</span><span class="oi-status forslag">Modellsvar</span></a></li>
+        <li><a href="samleband.html#oppg-komp-fwd"><span class="oi-ref">Komp. eks.</span><span>add/sub med videresending; lw/add med stans.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="samleband.html#oppg-4-24"><span class="oi-ref">4.24 · s. 376</span><span>Hvilket diagram beskriver faredeteksjonsenheten?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-4-25"><span class="oi-ref">4.25 · s. 376</span><span>Løkke med to lw: diagram for to iterasjoner, nyttige steg.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-4-27"><span class="oi-ref">4.27.1–3 · s. 377</span><span>Fem instruksjoner: nop uten videresending, omstokking, uten faredeteksjon.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-4-28"><span class="oi-ref">4.28.1–2 · s. 378</span><span>CPI-tillegg fra feilpredikerte hopp: alltid tatt, alltid ikke tatt, 2-bit.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="samleband.html#oppg-komp-branch"><span class="oi-ref">Komp. eks.</span><span>beq: kontrollfare og hopprediksjon.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+      </ul>
+
+      <h3>5B · Unntak og høyere ytelse</h3>
+      <ul class="oppgave-index">
+        <li><a href="unntak-ytelse.html#oppg-4-30"><span class="oi-ref">4.30.1–3 · s. 379</span><span>Unntak for beqz og lw: hvilke, i hvilket steg, hva skjer i samlebåndet.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="unntak-ytelse.html#oppg-4-31"><span class="oi-ref">4.31.1–2 · s. 380</span><span>Løkke på statisk 2-issue-prosessor: pakker og speedup.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="unntak-ytelse.html#oppg-eks-o25-8-1"><span class="oi-ref">Ord. 25 · 8.1</span><span>Eksamen: hva gjør register renaming, og hvorfor brukes det?</span><span class="oi-status forslag">Modellsvar</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">Bokoppgave 4.27.4–4.27.6 (signalene i figur 4.76 sykel for sykel; samme type som eksamensoppgave 6.1 og widgeten), 4.28.3–4.28.6 (flere prediktorregnestykker), 4.30.4–4.30.5 (vektoriserte unntak) og 4.31.3–4.31.10 (omstokking og utrulling av løkka for 2-issue). Bokas eksempler om stans på hopp (CPI 1,17) og løkkehoppet med 1 og 2 bits prediktor er regnet i teksten på 5A.</p>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever 5A og 5B i sammenheng, og kapittel 3. Flere finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Programmet er <code>I1: lw x5, 0(x6)</code>, <code>I2: add x7, x5, x8</code>, <code>I3: sw x7, 4(x6)</code>. Tegn samlebåndsdiagrammet, og gi EX/MEM.MemRead, MEM/WB.RegWrite og ForwardA i sykelen der I2 er i EX.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Load-use mellom I1 og I2: én boble. I1: IF ID EX MEM WB (sykel 1–5). I2: IF ID ** EX MEM WB (EX i sykel 5). I3: IF ** ID EX MEM WB. I sykel 5 er I2 i EX, boblen i MEM og I1 i WB. EX/MEM holder boblen: MemRead = 0. MEM/WB holder lw: RegWrite = 1 (MemtoReg = 1). x5 videresendes fra MEM/WB: ForwardA = 01. I sykel 6 får I3 x7 fra EX/MEM (ForwardB = 10, verdien som skal lagres).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Enkeltsykelprosessoren har klokkeperiode 950 ps (oppgave 4.7 i kapittel 3). Samlebåndet har steg på høyst 250 ps pluss 20 ps i hvert samlebåndsregister. Hva er speedup for et langt program med CPI 1,15 i samlebåndet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Tid per instruksjon: enkeltsykel 950 ps × 1 = 950 ps. Samlebånd: 270 ps × 1,15 = 310,5 ps. Speedup 950/310,5 ≈ 3,1. Ikke 5: stegene er ubalanserte, registrene koster, og farene gir stans.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Videresending i 5-stegssamlebåndet og register renaming i en prosessor som utfører ut av rekkefølge løser ulike problemer. Hvilke farer tar hver av dem seg av, og hvorfor trenger 5-stegssamlebåndet ikke renaming?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Videresending løser RAW-farer: verdien finnes, men er ikke skrevet til registerfilen ennå, så den hentes fra et samlebåndsregister. Renaming løser WAW og WAR: navnekollisjoner som bare er et problem når skrive- og leserekkefølgen kan avvike fra programmets. I 5-stegssamlebåndet leses og skrives alt i programrekkefølge, så WAW og WAR kan ikke oppstå. En prosessor ute av rekkefølge trenger begge: renaming for navnene, og videresending (resultater sendt rett til ventende reservasjonsstasjoner) for de ekte avhengighetene.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">En beq er i EX og blir feilpredikert (hoppet avgjøres i MEM). Samtidig får instruksjonen etter den, som er i ID, et unntak for udefinert instruksjon. Hva skal skje?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Instruksjonen i ID skulle aldri vært utført: den ligger på feil vei etter hoppet. Når hoppet avgjøres, tømmes instruksjonene bak, og unntaket deres forsvinner med dem. Et unntak må derfor ikke slå til før det er sikkert at instruksjonen virkelig skal utføres; det er samme regel som for spekulasjon, og grunnen til at presise unntak knyttes til programrekkefølgen (den tidligste instruksjonen først).</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap3/" class="prev"><div class="pn-label">← Forrige ferdige</div><div class="pn-title">Kapittel 3: Enkeltsykelprosessor</div></a>
+        <a href="samleband.html" class="next"><div class="pn-label">Start · 5A</div><div class="pn-title">Samlebåndsprosessoren med fem steg →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

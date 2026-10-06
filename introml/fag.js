@@ -11,7 +11,9 @@ window.FAG = {
     'kap1/beslutningstraer.html',
     'kap1/regresjon.html',
     'kap1/ensemble.html',
+    'kap1/koding.html',
     'kap2/index.html',
-    'kap2/perceptron.html'
+    'kap2/perceptron.html',
+    'kap2/koding.html'
   ]
 };

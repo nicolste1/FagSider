@@ -12,6 +12,13 @@ window.FAG = {
     'kap2/index.html',
     'kap2/instruksjoner.html',
     'kap2/tall.html',
-    'kap2/prosedyrer.html'
+    'kap2/prosedyrer.html',
+    'kap3/index.html',
+    'kap3/logikk.html',
+    'kap3/alu.html',
+    'kap3/enkeltsykel.html',
+    'kap5/index.html',
+    'kap5/samleband.html',
+    'kap5/unntak-ytelse.html'
   ]
 };

@@ -1,70 +1,35 @@
 {
-  "_kommentar": "UTKAST fra læringsutbyttebeskrivelsen, ikke godkjent. Nøkkel = deltema som i dekning.json. prio 1–3, type regn/forklar/tegn/kode/flervalg, oppgaver = tidligere eksamensoppgaver (O24-5.4 = Ord. 2024 oppg. 5.4). Se eksamensanalyse.md.",
-  "status": "utkast",
-  "sett": [
-    "O24",
-    "K26"
-  ],
-  "1.1": {
-    "prio": 2,
-    "type": [
-      "forklar"
-    ],
-    "oppgaver": []
+  "_kommentar": "Godkjent 2. okt 2026. Nøkkel = deltema som i dekning.json. prio 1–3, type regn/forklar/tegn/kode/flervalg, oppgaver = tidligere eksamensoppgaver (O25-2 = Ord. 2025 oppg. 2). Bygger på Ord. 25 (eksamen.pdf, studentsvar) og læringsutbyttebeskrivelsens liste. Se eksamensanalyse.md.",
+  "status": "godkjent",
+  "form": {
+    "type": "digital skriftlig (Inspera)",
+    "varighet_timer": 4,
+    "poeng": 100,
+    "hjelpemidler": "ikke oppgitt i settet, antatt ingen ut over enkel kalkulator",
+    "oppgaveformer": ["fyll inn tekst/tall (autorettet, X for don't care)", "langsvar: forklar svaret"]
   },
-  "1.2": {
-    "prio": 2,
-    "type": [
-      "forklar",
-      "regn"
-    ],
-    "oppgaver": []
-  },
-  "1.3": {
-    "prio": 1,
-    "type": [
-      "regn"
-    ],
-    "oppgaver": [
-      "O24-5.4",
-      "K26-5.5"
-    ]
-  },
-  "1.4": {
-    "prio": 1,
-    "type": [
-      "regn"
-    ],
-    "oppgaver": []
-  },
-  "2.1": {
-    "prio": 1,
-    "type": [
-      "kode",
-      "forklar"
-    ],
-    "oppgaver": []
-  },
-  "2.2": {
-    "prio": 2,
-    "type": [
-      "regn"
-    ],
-    "oppgaver": []
-  },
-  "2.3": {
-    "prio": 1,
-    "type": [
-      "kode"
-    ],
-    "oppgaver": []
-  },
-  "2.4": {
-    "prio": 2,
-    "type": [
-      "forklar",
-      "kode"
-    ],
-    "oppgaver": []
-  }
+  "sett": ["O21", "O22", "K22", "O23", "K23", "O24", "K24", "O25", "K25", "K26"],
+  "sett_i_repo": ["O25"],
+  "1.1": { "prio": 3, "type": ["forklar"], "oppgaver": [] },
+  "1.2": { "prio": 3, "type": ["forklar"], "oppgaver": [] },
+  "1.3": { "prio": 2, "type": ["regn"], "oppgaver": ["O24-5.4", "K26-5.5"] },
+  "1.4": { "prio": 2, "type": ["regn"], "oppgaver": ["K25-5.1"] },
+  "2.1": { "prio": 1, "type": ["regn", "forklar"], "oppgaver": ["O25-1", "K26-1", "K25-1", "O24-1", "K24-1", "O22-11"] },
+  "2.2": { "prio": 2, "type": ["regn"], "oppgaver": ["O25-1", "K26-1"] },
+  "2.3": { "prio": 3, "type": ["kode"], "oppgaver": [] },
+  "2.4": { "prio": 3, "type": ["forklar"], "oppgaver": [] },
+  "3.1": { "prio": 1, "type": ["regn", "forklar", "tegn"], "oppgaver": ["O25-2", "K26-2", "K25-2", "O24-2", "O23-5", "K23-3"] },
+  "3.2": { "prio": 2, "type": ["regn", "tegn"], "oppgaver": ["K24-2", "O23-3", "K23-2", "O22-4", "O22-5", "K22-3"] },
+  "3.3": { "prio": 1, "type": ["regn", "forklar"], "oppgaver": ["O25-3", "O25-4", "O25-5", "K26-3", "O22-6", "O22-7"] },
+  "4.1": { "prio": 2, "type": ["forklar", "tegn"], "oppgaver": ["K26-4", "O24-3"] },
+  "4.2": { "prio": 3, "type": ["forklar", "tegn"], "oppgaver": ["O23-2", "O22-2", "O22-3", "K22-2"] },
+  "5.1": { "prio": 1, "type": ["regn", "forklar"], "oppgaver": ["O25-6", "K26-5", "K25-3", "O24-4", "K24-3", "O23-4", "K23-4", "O22-10", "K22-10"] },
+  "5.2": { "prio": 3, "type": ["forklar"], "oppgaver": ["O22-10"] },
+  "5.3": { "prio": 2, "type": ["forklar"], "oppgaver": ["O25-8.1"] },
+  "6.1": { "prio": 1, "type": ["regn", "forklar"], "oppgaver": ["O25-7.1", "O25-7.3", "K26-6", "K25-4", "O24-5", "K24-4", "O23-6", "O22-8", "K22-4", "O21-2", "O21-3", "O21-6"] },
+  "6.2": { "prio": 3, "type": ["forklar"], "oppgaver": [] },
+  "6.3": { "prio": 2, "type": ["forklar"], "oppgaver": ["O25-7.5", "O24-5.5", "K23-5", "K23-6", "O21-4"] },
+  "7.1": { "prio": 2, "type": ["forklar", "regn"], "oppgaver": ["O25-8.2", "K25-5.1"] },
+  "7.2": { "prio": 3, "type": ["forklar"], "oppgaver": ["K25-5.2"] },
+  "7.3": { "prio": 3, "type": ["forklar"], "oppgaver": ["K25-5.3", "K25-5.4", "K24-5"] }
 }

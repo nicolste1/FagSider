@@ -4,8 +4,8 @@
   "dato_norsk": "26. august 2026",
   "sider": 0,
   "ekstrahert": "2026-09-22",
-  "antall_oppgaver": 71,
-  "_kommentar": "Skrevet for hånd. seksjoner lister bare temaene som er dekket på siden, slik at tools/valider.py sjekker dekning.json mot dem. Legg til 2, 2.1, … når kap 2 lages.",
+  "antall_oppgaver": 113,
+  "_kommentar": "Skrevet for hånd. seksjoner lister bare temaene som er dekket på siden, slik at tools/valider.py sjekker dekning.json mot dem. Legg til 4, 4.1, … når kapitlene lages.",
   "seksjoner": [
     {
       "nummer": "1",
@@ -46,6 +46,38 @@
     {
       "nummer": "2.4",
       "tittel": "T2.4 Instruksjoner, diverse"
+    },
+    {
+      "nummer": "3",
+      "tittel": "T3 Enkeltsykelprosessor (inkl. kombinatorisk logikk og ALU)"
+    },
+    {
+      "nummer": "3.1",
+      "tittel": "T3.1 Enkeltsykelprosessor"
+    },
+    {
+      "nummer": "3.2",
+      "tittel": "T3.2 Kombinatorisk logikk"
+    },
+    {
+      "nummer": "3.3",
+      "tittel": "T3.3 Aritmetisk-logisk enhet"
+    },
+    {
+      "nummer": "5",
+      "tittel": "T5 Samlebåndsprosessorer"
+    },
+    {
+      "nummer": "5.1",
+      "tittel": "T5.1 Samlebåndsprosessor med 5 steg"
+    },
+    {
+      "nummer": "5.2",
+      "tittel": "T5.2 Unntak og avbrudd"
+    },
+    {
+      "nummer": "5.3",
+      "tittel": "T5.3 Prosessorer med høyere ytelse"
     }
   ]
 }

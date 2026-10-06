@@ -18,6 +18,10 @@ Sidene bygger på tre kilder, i denne prioriteringen:
    brukeren har den lokalt. Sidetall på sidene («Boka · kap. 1.6 · s. 29–39») er bokas trykte sidetall.
    PDF-side = trykt side + 22 for kapittel 1.
 
+4. **Eksamen** (`eksamen.pdf`): Ord. desember 2025, Inspera-utskrift av en tidligere students besvarelse (kandidat 10686).
+   Oppgavetekstene og figurene er som gitt; svarene er studentens, ikke løsningsforslag, og er kontrollert mot boka i
+   `eksamensanalyse.md`. PDF-en er skannet uten tekstlag; les den som bilder.
+
 ## Hva som er oversatt hvordan
 
 Boka er på engelsk. Sidene bruker norske fagord der læringsutbyttebeskrivelsen eller kompendiet har dem

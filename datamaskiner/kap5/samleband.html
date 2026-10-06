@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Samlebåndsprosessoren — Kap 5</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text, .cpu text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap, .cpu .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .sig, .cpu .sig { font-family: var(--mono); font-size: 9px; fill: var(--accent); }
+  .fig-svg .box, .cpu .u { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .wire, .cpu .w { stroke: var(--ink-ghost); stroke-width: 1.2; fill: none; }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+  .fig-svg .fw { stroke: var(--warm); stroke-width: 1.8; fill: none; marker-end: url(#ahw); }
+  .fig-svg .ctl { stroke: var(--accent); stroke-width: 1; fill: none; stroke-dasharray: 3 2; }
+  .cpu .preg { fill: rgba(27,94,90,0.12); stroke: var(--accent); stroke-width: 1.2; }
+  .cpu .stage { fill: none; stroke: var(--line); stroke-dasharray: 4 3; }
+  .cpu .ins { font-family: var(--mono); font-size: 11px; fill: var(--warm); font-weight: 600; }
+  .cpu .ins.bub { fill: var(--ink-ghost); font-weight: 400; }
+  .cpu .u.on { fill: rgba(160,82,45,0.16); stroke: var(--warm); stroke-width: 1.6; }
+  .cpu .w.fwd { stroke: var(--warm); stroke-width: 2.4; }
+  .cpu .c { stroke: var(--accent); stroke-width: 1; fill: none; stroke-dasharray: 3 2; opacity: 0.6; }
+  .sigtab { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.78rem; }
+  .sigtab .s { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .sigtab .s b { color: var(--accent); font-weight: 600; }
+  .sigtab .s .v { font-weight: 600; min-width: 1.4em; text-align: right; }
+  .sigtab .s.on { border-color: var(--warm); background: var(--warm-soft); }
+  .sigtab .s input { width: 2.4em; font-family: var(--mono); font-size: 0.85rem; text-align: center; padding: 2px 3px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); }
+  .sigtab .s.ok { border-color: var(--green); background: rgba(61,107,58,0.08); }
+  .sigtab .s.bad { border-color: var(--red); background: rgba(179,38,30,0.08); }
+  .sigtab .grp { grid-column: 1 / -1; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faded); margin-top: 0.3rem; }
+  .w-ctl select, .w-ctl input[type=text], #pp-code { font-family: var(--mono); font-size: 0.88rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  #pp-code { width: 100%; min-height: 6.5em; line-height: 1.5; display: none; margin-top: 0.4rem; }
+  table.ctrl td, table.ctrl th { text-align: center; font-family: var(--mono); font-size: 0.82rem; padding-left: 6px; padding-right: 6px; letter-spacing: 0; }
+  table.ctrl td:first-child, table.ctrl th:first-child { text-align: left; font-family: var(--sans); }
+  table.ctrl td.x { color: var(--ink-ghost); }
+  table.pd { width: auto; font-family: var(--mono); font-size: 0.78rem; }
+  table.pd td, table.pd th { padding: 3px 7px; text-align: center; border: 1px solid var(--line-soft); letter-spacing: 0; }
+  table.pd td:first-child { text-align: left; white-space: nowrap; }
+  table.pd td.IF { background: rgba(27,94,90,0.10); } table.pd td.ID { background: rgba(27,94,90,0.18); } table.pd td.EX { background: rgba(160,82,45,0.16); } table.pd td.MEM { background: rgba(61,107,58,0.16); } table.pd td.WB { background: rgba(184,134,11,0.16); }
+  table.pd td.st { color: var(--red); } table.pd th.now, table.pd td.now { outline: 2px solid var(--warm); outline-offset: -2px; }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+  .asm { font-family: var(--mono); font-size: 0.88rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 5</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 5: Samlebåndsprosessorer">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 5 · 5A · Læringsmål T5.1 · Boka kap. 4.6–4.9 · Kompendiet kap. 4 og 6 · ~75 min</div>
+      <h1>Samlebånds<em>prosessoren</em> med fem steg</h1>
+      <p class="lede">Fem instruksjoner i arbeid samtidig, én i hvert steg. Samme datasti som i kapittel 3, delt av fire samlebåndsregistre som bærer både data og kontrollsignaler videre. Prisen er farer: en instruksjon trenger et resultat som ikke er skrevet ennå, eller et hopp som ikke er avgjort. Eksamen gir deg figuren med fire instruksjoner i hvert sitt steg og spør hva signalene er, og hvordan prosessoren får riktig svar likevel.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#ide"><span>01</span> Ideen og ytelsen</a>
+        <a href="#datasti"><span>02</span> Datasti og registre</a>
+        <a href="#kontroll"><span>03</span> Kontroll i samlebåndet</a>
+        <a href="#farer"><span>04</span> Farer</a>
+        <a href="#videresending"><span>05</span> Videresending og stans</a>
+        <a href="#kontrollfarer"><span>06</span> Kontrollfarer</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T5.1: prio 1 · Ord. 25 oppg. 6 (16 p), Kont 26 oppg. 5, Kont 25 oppg. 3, Ord. 24 oppg. 4, Kont 24 oppg. 3, Ord. 23 oppg. 4, Kont 23 oppg. 4, Ord. 22 og Kont 22 oppg. 10</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Kontrollsignalene i samlebåndsregistrene i en gitt klokkesykel</strong>: finn hvilken instruksjon som er i hvert steg, og les av ALUSrc, MemRead, MemWrite, RegWrite og MemtoReg i ID/EX, EX/MEM og MEM/WB, med X der det passer (Ord. 25 oppg. 6.1, 5 p, −0,25 per feil). Regelen: registeret foran et steg holder signalene til instruksjonen som er i steget.</li>
+          <li><span class="tag">Forklar</span><strong>Hvordan signalene følger instruksjonen</strong> gjennom registrene og brukes i EX, MEM og WB (6.2, 6 p), og <strong>hvordan videresending og stans</strong> gjør at en instruksjon får riktige operander (6.3, 5 p): hvilke registernumre sammenliknes, hvilken mux velger hva, kodene ForwardA/B = 00, 10, 01.</li>
+          <li><span class="tag regn">Regn</span><strong>Samlebåndsdiagram</strong> for en kodesnutt med bobler der det trengs (oppgave 4.22, 4.25, 4.27); <strong>klokkeperiode og ytelse</strong> fra stegtider (4.16), sykler for n instruksjoner (4.17), CPI-tillegg fra feilpredikerte hopp (4.28).</li>
+          <li><span class="tag">Forklar</span>Fordeler og ulemper mot enkeltsykel og flersykel; avhengighet mot fare; de tre faretypene og de fire strategiene (unngåelse, videresending, stans, prediksjon); 1-bits og 2-bits prediksjon.</li>
+          <li><span class="tag">Lavere</span>Forsinket hopp, korrelerende og turneringsprediktorer, Verilog-modellen og detaljene i figur 4.66 er nevnt kort eller tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 IDEEN ─────────────────────────── -->
+  <section id="ide">
+    <div class="container">
+      <div class="section-badge">01 · Ideen og ytelsen</div>
+      <h2>Ikke raskere per instruksjon, <em>flere per sekund</em></h2>
+      <div class="source-note">Boka · kap. 4.6 · s. 283–288 · figur 4.27–4.29 · Kompendiet · kap. 4 «Pipelining», kap. 6 «Ytelse i samlebåndsprosessorer»</div>
+      <span class="lm-pill">Læringsmål T5.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne beskrive fordeler og ulemper ved samlebåndsprosessoren sammenliknet med flersykelprosessoren og enkeltsykelprosessoren.</li>
+        <li>Studenten skal kunne forklare hvordan oppstartskostnad og balanse mellom steg i samlebåndet påvirker ytelse.</li>
+      </ul>
+
+      <p class="dropcap"><span class="term" data-term="samlebaand">Samlebånd</span> (pipelining) overlapper utføringen av instruksjoner, som en klesvask der vaskemaskin, tørketrommel, bretting og rydding går samtidig på hvert sitt lass. Ingen enkeltinstruksjon blir raskere; den går fortsatt gjennom alle stegene. Gevinsten er <span class="term" data-term="gjennomstromning">gjennomstrømning</span>: en ny instruksjon startes hver klokkesykel. RISC-V-instruksjoner deles i fem <span class="term" data-term="samlebaandssteg">steg</span>:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Steg</th><th>Navn</th><th>Hva som skjer</th></tr></thead>
+          <tbody>
+            <tr><td>IF</td><td>Instruction fetch</td><td>Hent instruksjonen fra instruksjonsminnet; PC + 4.</td></tr>
+            <tr><td>ID</td><td>Instruction decode</td><td>Dekod og les registrene; Imm Gen fortegnsutvider.</td></tr>
+            <tr><td>EX</td><td>Execute</td><td>ALU-en regner resultat eller adresse; hoppmålet regnes.</td></tr>
+            <tr><td>MEM</td><td>Memory access</td><td>Les eller skriv dataminnet (bare lw og sw).</td></tr>
+            <tr><td>WB</td><td>Write back</td><td>Skriv resultatet til registerfilen.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Klokkeperioden må romme det tregeste <em>steget</em>, ikke hele instruksjonen. Med bokas tider (minne 200 ps, registerlesning 100 ps, ALU 200 ps, registerskriving 100 ps) bruker lw 800 ps i enkeltsykel, så klokka der er 800 ps. Samlebåndet får klokke 200 ps, det tregeste steget. Er stegene perfekt <span class="term" data-term="balanserte-steg">balansert</span>, er tiden mellom instruksjoner enkeltsykeltiden delt på antall steg, altså fem ganger raskere. Her er stegene ubalanserte (to tar 100 ps, men må vente 200), så gevinsten blir 800/200 = 4, og bare for lange programmer:</p>
+
+      \[ \text{tid mellom instruksjoner}_{\text{samlebånd}} = \frac{\text{tid mellom instruksjoner}_{\text{uten samlebånd}}}{\text{antall steg}} \quad \text{(ideelt, balanserte steg)} \]
+
+      <p>Tre instruksjoner tar 3 × 800 = 2400 ps i enkeltsykel og 1400 ps i samlebåndet (den første trenger 5 × 200 ps, de neste kommer ut 200 ps etter hverandre): bare 1,7 ganger raskere. Det er <span class="term" data-term="oppstartskostnad">oppstartskostnaden</span>: båndet må fylles først. n instruksjoner på k steg tar n + k − 1 sykler, og gevinsten nærmer seg k (eller 4 her) når n blir stor. RISC-V er laget for samlebånd: alle instruksjoner er like lange (lett å hente), registerfeltene ligger fast (les registre mens du dekoder), og minneoperander finnes bare i lw og sw (ALU-en regner adressen i EX, minnet brukes i MEM).</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>De tre implementasjonene.</caption>
+          <thead><tr><th></th><th>Enkeltsykel</th><th>Flersykel</th><th>Samlebånd</th></tr></thead>
+          <tbody>
+            <tr><td>Klokkeperiode</td><td>lang (tregeste instruksjon)</td><td>kort (tregeste steg)</td><td>kort (tregeste steg + register)</td></tr>
+            <tr><td>CPI</td><td>1</td><td>3–5</td><td>≈ 1 (pluss stans)</td></tr>
+            <tr><td>Maskinvare</td><td>egne addere, to minner</td><td>deler ALU og minne, tilstandsmaskin</td><td>som enkeltsykel + samlebåndsregistre, videresending og faredeteksjon</td></tr>
+            <tr><td>Ulempe</td><td>alle venter på lw</td><td>én instruksjon om gangen</td><td>farer; mer kompleks kontroll; latens per instruksjon øker litt</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-16">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.16 · s. 374</span></div>
+        <div class="o-text"><p>Stegene har latens IF 250 ps, ID 350 ps, EX 150 ps, MEM 300 ps, WB 200 ps. Instruksjonsmiks: ALU/logikk 45 %, hopp 20 %, load 20 %, store 15 %. 1. Klokkeperiode med og uten samlebånd? 2. Total latens for en lw med og uten samlebånd? 3. Du kan dele ett steg i to med halv latens hver. Hvilket, og hva blir klokkeperioden? 4. Utnyttelsen av dataminnet (uten stans)? 5. Utnyttelsen av skriveporten på registerfilen?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <ol>
+              <li>Samlebånd: tregeste steg = 350 ps. Uten (enkeltsykel): summen 250 + 350 + 150 + 300 + 200 = 1250 ps.</li>
+              <li>Samlebånd: 5 sykler × 350 = 1750 ps. Uten: 1250 ps. Enkeltinstruksjonen blir tregere; gjennomstrømningen bedre (én instruksjon per 350 ps mot én per 1250 ps).</li>
+              <li>ID (350 ps) deles i to steg på 175 ps. Nå er MEM tregest: klokkeperiode 300 ps.</li>
+              <li>Dataminnet brukes av load og store: 20 + 15 = 35 % av syklene.</li>
+              <li>Registerfilen skrives av ALU/logikk og load: 45 + 20 = 65 %.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-17">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.17 · s. 374</span></div>
+        <div class="o-text"><p>Hva er det minste antall sykler som trengs for å utføre n instruksjoner fullstendig på en prosessor med k samlebåndssteg? Begrunn formelen.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>n + k − 1. Den første instruksjonen trenger k sykler for å komme gjennom alle stegene. Hver av de n − 1 neste er ett steg bak den foran og blir ferdig én sykel senere: k + (n − 1). Uten stans; hver boble legger til én sykel.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-pipe-ytelse">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 6 · «Ytelsesberegning i pipeline»</span></div>
+        <div class="o-text"><p>En instruksjon tar 10 ns uten samlebånd. Med et 5-stegs samlebånd tar hvert steg 2 ns. Hva er den ideelle hastighetsøkningen, og hvorfor når man den ikke i praksis?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet · begrunnelse skrevet for denne siden</span>
+            <p>Én instruksjon ferdig hvert 2. ns mot hvert 10. ns: speedup 10/2 = 5, lik antall steg. I praksis lavere fordi stegene ikke er perfekt balansert, samlebåndsregistrene legger til forsinkelse i hvert steg, og farer gir bobler (stans).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 DATASTI ─────────────────────────── -->
+  <section id="datasti">
+    <div class="container">
+      <div class="section-badge">02 · Datasti og registre</div>
+      <h2>Fire registre <em>deler datastien i fem</em></h2>
+      <div class="source-note">Boka · kap. 4.7 · s. 296–305 · figur 4.35–4.47</div>
+      <span class="lm-pill">Læringsmål T5.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare den grunnleggende mikroarkitekturen til 5-stegs samlebåndsprosessoren (kunne gjengi og forklare figur 4.43).</li>
+      </ul>
+
+      <p class="dropcap">Ta enkeltsykeldatastien og del den med fire <span class="term" data-term="samlebaandsregister">samlebåndsregistre</span>, navngitt etter stegene de skiller: IF/ID, ID/EX, EX/MEM og MEM/WB. Hver klokkeflanke flytter alt ett steg til høyre: registeret fanger det steget til venstre nettopp regnet ut, og holder det stabilt for steget til høyre i neste sykel. Alt en instruksjon trenger senere må bæres med i registrene, fordi neste instruksjon overskriver stegets innganger på neste flanke.</p>
+
+      <figure>
+        <svg class="cpu" id="pipe-fig" viewBox="0 0 760 330" aria-label="Samlebåndsdatastien med samlebåndsregistre"></svg>
+        <figcaption>Etter figur 4.43 og 4.50 i boka, forenklet: de fem stegene, de fire samlebåndsregistrene, og kontrollfeltene WB, M og EX som bæres med. Dataene flyter fra venstre mot høyre, med to unntak: tilbakeskrivingen til registerfilen (fra WB) og valget av neste PC (fra MEM).</figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Hva hvert samlebåndsregister bærer (datafeltene).</caption>
+          <thead><tr><th>Register</th><th>Innhold</th><th>Brukes av</th></tr></thead>
+          <tbody>
+            <tr><td>IF/ID</td><td>instruksjonen (32 bit), PC</td><td>ID: registernumre, opcode til kontrollen, immediate</td></tr>
+            <tr><td>ID/EX</td><td>Les data 1 og 2, immediate, PC, rd-nummeret (og rs1/rs2 for videresending), funct-bit</td><td>EX: ALU, hoppadder, ALU-kontroll</td></tr>
+            <tr><td>EX/MEM</td><td>ALU-resultat, Zero, hoppmål, Les data 2 (til sw), rd-nummeret</td><td>MEM: adresse og skrivedata til minnet, PCSrc</td></tr>
+            <tr><td>MEM/WB</td><td>minnedata, ALU-resultat, rd-nummeret</td><td>WB: MemtoReg-muxen og registerfilen</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="label">Fellen i lw</span>
+        <p>Når lw skal skrive registeret i WB, er det en annen instruksjon som ligger i IF/ID, tre plasser bak. Skriv register kan derfor ikke kobles til IF/ID som i enkeltsykel; da ville lw skrevet til feil register. Løsningen i den korrigerte datastien: rd-nummeret bæres med instruksjonen gjennom ID/EX, EX/MEM og MEM/WB og kommer tilbake til registerfilen fra MEM/WB, sammen med dataene.</p>
+      </div>
+
+      <p>Et <span class="term" data-term="samlebaandsdiagram">samlebåndsdiagram</span> over flere sykler har instruksjonene nedover og klokkesyklene bortover, med IF, ID, EX, MEM, WB i rutene; hver instruksjon er forskjøvet én sykel fra den forrige. Et tverrsnitt i én sykel (én kolonne) viser hele datastien med én instruksjon i hvert steg, som i eksamensfiguren. Widgeten i avsnitt 03 viser begge.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Programmet er I1, I2, I3, I4, I5 uten stans. I hvilken klokkesykel er I3 i EX, og hvilke instruksjoner er i de andre stegene da?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I3 hentes i sykel 3, er i ID i sykel 4 og i EX i sykel 5. I sykel 5: I5 i IF, I4 i ID, I3 i EX, I2 i MEM, I1 i WB. Den eldste instruksjonen er alltid lengst til høyre.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 KONTROLL ─────────────────────────── -->
+  <section id="kontroll">
+    <div class="container">
+      <div class="section-badge">03 · Kontroll i samlebåndet</div>
+      <h2>Signalene <em>reiser med instruksjonen</em></h2>
+      <div class="source-note">Boka · kap. 4.7 «Pipelined control» · s. 305–313 · figur 4.48–4.53 · Eksamen: Ord. 25 oppg. 6.1–6.2</div>
+      <span class="lm-pill">Læringsmål T5.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan kontroll implementeres i 5-stegs samlebåndsprosessoren.</li>
+      </ul>
+
+      <p class="dropcap">Kontrollsignalene er de samme som i enkeltsykel, med samme verdier per instruksjon. Forskjellen er <em>når</em> de brukes. Kontrollenheten lager dem alle i ID fra opcoden, og så legges de i ID/EX og følger instruksjonen: hvert steg bruker sine signaler og sender resten videre. Signalene deles derfor i tre grupper etter steget som bruker dem.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl">
+          <caption>Kontrollsignalene gruppert per steg (figur 4.51). Samme verdier som figur 4.22, bare stokket.</caption>
+          <thead>
+            <tr><th rowspan="2">Instruksjon</th><th colspan="2">EX</th><th colspan="3">MEM</th><th colspan="2">WB</th></tr>
+            <tr><th>ALUOp</th><th>ALUSrc</th><th>Branch</th><th>MemRead</th><th>MemWrite</th><th>RegWrite</th><th>MemtoReg</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>R-type</td><td>10</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+            <tr><td>addi (I-type)</td><td>00</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+            <tr><td>lw</td><td>00</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+            <tr><td>sw</td><td>00</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td class="x">X</td></tr>
+            <tr><td>beq</td><td>01</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td class="x">X</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="def-box">
+        <span class="def-label">Regelen som løser eksamensoppgaven</span>
+        <div class="def-term">Registeret foran et steg holder signalene til instruksjonen i steget</div>
+        <p>ID/EX holder alle sju signalene til instruksjonen som er i EX. EX/MEM holder MEM- og WB-signalene til instruksjonen som er i MEM (EX-signalene er brukt og droppet). MEM/WB holder bare WB-signalene, RegWrite og MemtoReg, til instruksjonen som er i WB. Framgangsmåten: (1) plasser instruksjonene i stegene, eldst lengst til høyre; (2) slå opp hver instruksjon i tabellen; (3) les av gruppene som fortsatt er med. En boble (stans) har alle signaler 0.</p>
+      </div>
+
+      <div class="widget" id="w-pipe">
+        <div class="widget-label">Prøv selv · Samlebåndet sykel for sykel, med kontrollsignaler, videresending og stans</div>
+        <p class="widget-intro">Velg et program og dra i syklusvelgeren. Figuren viser hvilken instruksjon som er i hvert steg; tabellen under viser signalene i de tre samlebåndsregistrene, videresendingskodene for instruksjonen i EX, og om faredeteksjonen stanser. Diagrammet nederst viser hele forløpet. «Test deg selv» skjuler signalene som i eksamensoppgave 6.1. «Eget program» godtar add, sub, and, or, slt, addi, lw, sw og beq (hopp regnes som ikke tatt).</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="pp-prog">program</label>
+            <select id="pp-prog">
+              <option value="o25a">Ord. 25 oppg. 6.1: sw / lw / addi / beq</option>
+              <option value="o25b">Ord. 25 oppg. 6.3: fire add i kjede</option>
+              <option value="lu">Load-use: lw / add / sub (kompendiet)</option>
+              <option value="b427">Bokoppgave 4.27</option>
+              <option value="eget">Eget program …</option>
+            </select>
+          </div>
+          <div class="w-ctl"><label for="pp-cyc">klokkesykel</label><input type="range" id="pp-cyc" min="1" max="8" value="5"><span class="w-val" id="pp-cycv">5</span></div>
+          <div class="w-ctl"><label><input type="checkbox" id="pp-test"> Test deg selv</label></div>
+          <button class="w-btn" id="pp-check" type="button" style="display:none">Rett</button>
+        </div>
+        <textarea id="pp-code" spellcheck="false">lw x1, 0(x2)
+add x3, x1, x4
+sw x3, 8(x2)</textarea>
+        <svg class="cpu" id="pipe-w" viewBox="0 0 760 330" aria-label="Samlebåndet i valgt klokkesykel"></svg>
+        <div class="sigtab" id="pp-sig"></div>
+        <div class="w-out" id="pp-out"></div>
+        <div class="table-wrap"><table class="pd" id="pp-diag"></table></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-6-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 6.1 og 6.2</span><span class="o-ref">Samlebånd, kontrollsignaler · 5 + 6 p</span></div>
+        <div class="o-text">
+          <p>Samlebåndsprosessoren (figur 4.53) utfører programmet under. I klokkesykelen som vises er I1 i WB, I2 i MEM, I3 i EX og I4 i ID.</p>
+<div class="asm">merkelapp:
+  I1: sw   x1, 0(x2)
+  I2: lw   x1, 4(x2)
+  I3: addi x3, x2, 4
+  I4: beq  x4, x5, merkelapp</div>
+          <p>Hva er verdiene til ID/EX ALUSrc, MemWrite, MemRead, RegWrite; EX/MEM MemWrite, MemRead, RegWrite, MemtoReg; MEM/WB RegWrite, MemtoReg? Bruk X når du kan. (6.2) Hvordan sørger kontrollsignalene for at programmet utføres korrekt? Dekk alle signalene unntatt ALUOp for I1, I2 og I3.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (figur 4.51) · ikke offisielt løsningsforslag</span>
+            <div class="table-wrap"><table class="ctrl">
+              <thead><tr><th>Register (instruksjon)</th><th>ALUSrc</th><th>MemWrite</th><th>MemRead</th><th>RegWrite</th><th>MemtoReg</th></tr></thead>
+              <tbody>
+                <tr><td>ID/EX (I3 addi, i EX)</td><td>1</td><td>0</td><td>0</td><td>1</td><td>(0)</td></tr>
+                <tr><td>EX/MEM (I2 lw, i MEM)</td><td>—</td><td>0</td><td>1</td><td>1</td><td>1</td></tr>
+                <tr><td>MEM/WB (I1 sw, i WB)</td><td>—</td><td>—</td><td>—</td><td>0</td><td class="x">X</td></tr>
+              </tbody>
+            </table></div>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>Kontrollenheten lager alle signalene i ID og legger dem i ID/EX. De følger instruksjonen fra register til register; hvert steg bruker sine og sender resten videre. Derfor tilhører signalene i ID/EX instruksjonen i EX, de i EX/MEM instruksjonen i MEM, og de i MEM/WB instruksjonen i WB.</p>
+              <p><strong>I3 (addi) er i EX</strong>, signalene ligger i ID/EX. ALUSrc = 1: ALU-en får den fortegnsutvidede immediaten 4 som andre operand og regner x2 + 4. MemRead = 0 og MemWrite = 0 bæres videre til MEM, der de sørger for at addi ikke rører dataminnet. RegWrite = 1 (og MemtoReg = 0) bæres til WB, der ALU-resultatet skrives til x3.</p>
+              <p><strong>I2 (lw) er i MEM</strong>, signalene ligger i EX/MEM. MemRead = 1: dataminnet leser adressen x2 + 4 som ALU-en regnet ut i forrige sykel. MemWrite = 0: ingenting skrives. RegWrite = 1 og MemtoReg = 1 går videre til MEM/WB: i neste sykel velger muxen minnedataene og skriver dem til x1.</p>
+              <p><strong>I1 (sw) er i WB</strong>, signalene ligger i MEM/WB. RegWrite = 0: sw skal ikke skrive noe register; lagringen i minnet ble gjort i MEM i forrige sykel. Da er MemtoReg = X, for det muxen velger blir ikke skrevet noe sted.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Samme program, én sykel senere (I4 beq er i EX, og en ny instruksjon I5 = <code>add x6, x1, x3</code> er i ID). Hva er ID/EX ALUSrc og RegWrite, EX/MEM MemRead og RegWrite, og MEM/WB RegWrite og MemtoReg?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">ID/EX holder beq: ALUSrc = 0, RegWrite = 0. EX/MEM holder addi: MemRead = 0, RegWrite = 1. MEM/WB holder lw: RegWrite = 1, MemtoReg = 1. Sjekk i widgeten med sykel 6.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 FARER ─────────────────────────── -->
+  <section id="farer">
+    <div class="container">
+      <div class="section-badge">04 · Farer</div>
+      <h2>Når neste instruksjon <em>ikke kan gå</em></h2>
+      <div class="source-note">Boka · kap. 4.6 «Pipeline hazards» · s. 288–295 · figur 4.30–4.34 · Kompendiet · kap. 4 og 6 «Farer»</div>
+      <span class="lm-pill">Læringsmål T5.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne beskrive forskjellen mellom avhengigheter og farer samt gjengi de tre hovedgruppene av farer (strukturfarer, datafarer og kontrollfarer).</li>
+        <li>Studenten skal kjenne til de fire overordnede strategiene for å håndtere farer (unngåelse, videresending, stans og prediksjon).</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="avhengighet">avhengighet</span> er en egenskap ved programmet: instruksjon B trenger noe instruksjon A lager. En <span class="term" data-term="fare">fare</span> (hazard) er en egenskap ved samlebåndet: avhengigheten gjør at B ikke kan utføres i sin planlagte sykel, fordi A ikke er ferdig. Samme avhengighet kan være en fare i ett samlebånd og ufarlig i et annet.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fare</th><th>Årsak</th><th>Eksempel</th><th>Løsning i 5-stegssamlebåndet</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="strukturfare">Strukturfare</span></td><td>Maskinvaren kan ikke gjøre to ting samtidig.</td><td>Ett felles minne: IF og MEM vil bruke det i samme sykel.</td><td>Unngått: egne instruksjons- og dataminner; registerfilen skrives i første og leses i andre halvdel av sykelen.</td></tr>
+            <tr><td><span class="term" data-term="datafare">Datafare</span></td><td>En instruksjon trenger data en tidligere instruksjon ikke har skrevet ennå.</td><td><code>add x19, x0, x1</code> fulgt av <code>sub x2, x19, x3</code>.</td><td>Videresending; stans én sykel ved load-use.</td></tr>
+            <tr><td><span class="term" data-term="kontrollfare">Kontrollfare</span></td><td>Neste instruksjon må hentes før et hopp er avgjort.</td><td><code>beq</code>: hva hentes i sykelen etter?</td><td>Stans, eller prediksjon med tømming ved feil.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>De fire strategiene: <strong>unngåelse</strong> (design maskinvaren eller koden så faren ikke oppstår: to minner, kompilatoren stokker om eller setter inn nop), <strong><span class="term" data-term="videresending">videresending</span></strong> (hent verdien der den finnes i samlebåndet i stedet for å vente på registerfilen), <strong><span class="term" data-term="stans">stans</span></strong> (hold instruksjonen igjen og send en <span class="term" data-term="boble">boble</span>, en nop, videre) og <strong><span class="term" data-term="prediksjon">prediksjon</span></strong> (gjett, fortsett, og rydd opp hvis gjetningen var feil).</p>
+
+      <div class="oppgave" data-quiz id="oppg-4-18">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.18 · s. 374</span></div>
+        <div class="o-text"><p>x11 = 11 og x12 = 22 ved start. Koden under kjøres på et samlebånd som ikke håndterer datafarer (programmereren skulle ha satt inn nop). Hva blir x13 og x14?</p>
+<div class="asm">addi x11, x12, 5
+add  x13, x11, x12
+addi x14, x11, 15</div></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Den første instruksjonen skriver x11 = 27 først i WB, sykel 5. add leser registrene i ID i sykel 3, og addi i sykel 4: begge får den gamle verdien 11. x13 = 11 + 22 = 33 (riktig ville vært 49), x14 = 11 + 15 = 26 (riktig 42). To nop mellom den første og de to neste ville gitt riktig svar; videresending gir det uten nop.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-22">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.22 · s. 375</span></div>
+        <div class="o-text"><p>Samlebåndet endres så det har bare ett minne for både instruksjoner og data. Da er det en strukturfare hver gang en instruksjon skal hentes i samme sykel som en annen bruker dataminnet. 1. Tegn samlebåndsdiagram for koden under og vis hvor den stanser. 2. Kan omstokking av koden redusere antall stans? 3. Må faren håndteres i maskinvare, eller holder det med nop i koden? 4. Omtrent hvor mange stans i et typisk program (25 % lw, 11 % sw)?</p>
+<div class="asm">sw   x29, 12(x16)
+lw   x29, 8(x16)
+sub  x17, x15, x14
+beqz x17, label
+add  x15, x11, x14
+sub  x15, x30, x14</div></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. sw bruker minnet i MEM i sykel 4 og lw i sykel 5. Den fjerde instruksjonen (beqz) skulle vært hentet i sykel 4, men minnet er opptatt i både sykel 4 og 5, så den hentes i sykel 6:</p>
+            <div class="table-wrap"><table class="pd">
+              <thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr></thead>
+              <tbody>
+                <tr><td>sw</td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>lw</td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>sub</td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>beqz</td><td></td><td></td><td></td><td class="st">**</td><td class="st">**</td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td></tr>
+                <tr><td>add</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td></tr>
+                <tr><td>sub</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td></tr>
+              </tbody>
+            </table></div>
+            <p>2. Nei. Hver instruksjon må hentes, og hver load/store opptar minnet én sykel uansett hvor den står; omstokking flytter stansen, men fjerner den ikke. 3. Den må håndteres i maskinvare. En nop må også hentes fra minnet, så den gir samme konflikt. 4. Én stans per load eller store: omtrent 36 % av instruksjonene, altså CPI ≈ 1,36.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-23">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.23 · s. 375</span></div>
+        <div class="o-text"><p>Om load/store bare bruker et register som adresse (uten forskyvning), trenger de ikke ALU-en, og EX og MEM kan overlappes til ett steg: fire steg i alt. 1. Hvordan påvirkes klokkeperioden? 2. Hvordan kan endringen forbedre ytelsen? 3. Hvordan kan den forverre den?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Ikke i det hele tatt (eller lite): i det sammenslåtte steget bruker en instruksjon enten ALU-en eller minnet, ikke begge etter hverandre, så steget blir ikke tregere enn det tregeste av de to gamle. 2. Færre steg gir færre farer: en load er ferdig ett steg tidligere, så load-use-stansen forsvinner, og hopp avgjøres nærmere hentingen, så færre sykler går tapt ved feilprediksjon. 3. Programmer trenger flere instruksjoner: hver lw/sw med forskyvning må få en addi foran seg som regner adressen. Flere instruksjoner med samme klokke gir lengre kjøretid.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 VIDERESENDING ─────────────────────────── -->
+  <section id="videresending">
+    <div class="container">
+      <div class="section-badge">05 · Videresending og stans</div>
+      <h2>Hent verdien <em>der den er</em></h2>
+      <div class="source-note">Boka · kap. 4.8 · s. 313–325 · figur 4.54–4.62 · Kompendiet · kap. 4 eksempel 2, kap. 6 eksempel 1 og 3 · Eksamen: Ord. 25 oppg. 6.3</div>
+      <span class="lm-pill">Læringsmål T5.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan videresending og stans kan brukes til å håndtere datafarer samt kunne analysere hvordan strategiene påvirker prosessorens ytelse.</li>
+      </ul>
+
+      <p class="dropcap">Se på <code>sub x2, x1, x3</code> fulgt av <code>and x12, x2, x5</code>. sub skriver x2 i WB (sykel 5), men and trenger x2 i EX i sykel 4. Verdien <em>finnes</em>: sub regnet den ut i EX i sykel 3, og den ligger i EX/MEM. Videresending kobler den derfra rett inn på ALU-inngangen. To muxer foran ALU-en, styrt av <span class="term" data-term="videresendingsenhet">videresendingsenheten</span>, velger mellom tre kilder for hver operand.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 350" aria-label="Videresending: to muxer foran ALU-en og videresendingsenheten">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker>
+            <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a0522d"/></marker>
+          </defs>
+          <rect class="box box-a" x="60" y="30" width="26" height="240" rx="3"/><text x="73" y="22" text-anchor="middle">ID/EX</text>
+          <rect class="box box-a" x="390" y="30" width="26" height="240" rx="3"/><text x="403" y="22" text-anchor="middle">EX/MEM</text>
+          <rect class="box box-a" x="560" y="30" width="26" height="240" rx="3"/><text x="573" y="22" text-anchor="middle">MEM/WB</text>
+          <path class="box" d="M170 50 L190 60 L190 110 L170 120 Z"/><text class="cap" x="180" y="72" text-anchor="middle">00</text><text class="cap" x="180" y="88" text-anchor="middle">10</text><text class="cap" x="180" y="104" text-anchor="middle">01</text>
+          <path class="box" d="M170 140 L190 150 L190 200 L170 210 Z"/><text class="cap" x="180" y="162" text-anchor="middle">00</text><text class="cap" x="180" y="178" text-anchor="middle">10</text><text class="cap" x="180" y="194" text-anchor="middle">01</text>
+          <path class="box" d="M250 60 L250 105 L264 122 L250 139 L250 190 L320 160 L320 90 Z"/><text x="292" y="130" text-anchor="middle">ALU</text>
+          <path class="arr" d="M86 68 L168 68"/><text class="cap" x="92" y="62">rs1-verdi</text>
+          <path class="arr" d="M86 158 L168 158"/><text class="cap" x="92" y="152">rs2-verdi</text>
+          <path class="arr" d="M190 85 L248 85"/><path class="arr" d="M190 175 L248 165"/>
+          <path class="arr" d="M320 125 L388 125"/><text class="cap" x="326" y="119">resultat</text>
+          <rect class="box" x="450" y="90" width="76" height="70" rx="4"/><text x="488" y="122" text-anchor="middle">Data-</text><text x="488" y="136" text-anchor="middle">minne</text>
+          <path class="arr" d="M416 125 L448 125"/><path class="arr" d="M526 125 L558 125"/>
+          <path class="fw" d="M430 125 L430 296 L140 296 L140 84 L168 84"/><path class="fw" d="M140 174 L168 174"/>
+          <text x="285" y="310" text-anchor="middle" fill="#a0522d">10: fra EX/MEM (forrige instruksjons ALU-resultat)</text>
+          <path class="wire" d="M586 125 L600 125"/><path class="fw" d="M600 125 L615 125 L615 326 L120 326 L120 100 L168 100"/><path class="fw" d="M120 190 L168 190"/>
+          <text x="330" y="340" text-anchor="middle" fill="#a0522d">01: fra MEM/WB (verdien som skrives i WB)</text>
+          <rect class="box box-g" x="215" y="232" width="150" height="34" rx="6"/><text x="290" y="253" text-anchor="middle">Videresendingsenhet</text>
+          <path class="ctl" d="M215 244 L180 244 L180 210"/><path class="ctl" d="M180 140 L180 120"/>
+          <text class="sig" x="196" y="52">ForwardA</text><text class="sig" x="196" y="224">ForwardB</text>
+          <path class="ctl" d="M86 256 L215 256"/><text class="cap" x="94" y="268">rs1, rs2</text>
+          <path class="ctl" d="M390 244 L365 244"/><text class="cap" x="372" y="238" text-anchor="middle">rd</text>
+          <path class="ctl" d="M560 258 L365 258"/><text class="cap" x="470" y="270" text-anchor="middle">rd, RegWrite</text>
+        </svg>
+        <figcaption>Etter figur 4.56–4.58 i boka. Hver ALU-operand velges mellom registerverdien fra ID/EX (00), ALU-resultatet i EX/MEM (10) og verdien i MEM/WB (01). Videresendingsenheten sammenlikner rs1 og rs2 til instruksjonen i EX med rd til de to instruksjonene foran.</figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Videresendingsenhetens betingelser (figur 4.57 og teksten i 4.8). Samme for ForwardB med Rs2.</caption>
+          <thead><tr><th>Mux-kode</th><th>Kilde</th><th>Betingelse</th></tr></thead>
+          <tbody>
+            <tr><td><code>ForwardA = 00</code></td><td>ID/EX: registerfilen</td><td>ingen fare</td></tr>
+            <tr><td><code>ForwardA = 10</code></td><td>EX/MEM: ALU-resultatet til instruksjonen rett foran</td><td>EX/MEM.RegWrite = 1 og EX/MEM.Rd ≠ 0 og EX/MEM.Rd = ID/EX.Rs1 («EX-fare»)</td></tr>
+            <tr><td><code>ForwardA = 01</code></td><td>MEM/WB: minnedata eller ALU-resultat fra to instruksjoner foran</td><td>MEM/WB.RegWrite = 1 og MEM/WB.Rd ≠ 0 og MEM/WB.Rd = ID/EX.Rs1, og ikke samtidig EX-fare («MEM-fare»)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Tre detaljer i betingelsene: RegWrite må være 1 (sw og beq har et «rd-felt» som ikke er et mål); rd ≠ x0 (x0 er alltid 0 og skal ikke videresendes); og EX-faren har forrang, fordi instruksjonen rett foran har den nyeste verdien når begge skriver samme register. Avstand tre krever ingen videresending: registerfilen skrives i første halvdel av sykelen og leses i andre, så en instruksjon i ID ser det instruksjonen i WB skriver i samme sykel.</p>
+
+      <div class="def-box">
+        <span class="def-label">Det videresending ikke klarer</span>
+        <div class="def-term"><span class="term" data-term="load-use">Load-use-fare</span>: én boble</div>
+        <p>lw har ikke dataene før etter MEM. Trenger instruksjonen rett etter dem i EX, er de én sykel for sene; ingen kan sende data bakover i tid. <span class="term" data-term="faredeteksjonsenhet">Faredeteksjonsenheten</span> sjekker i ID: hvis ID/EX.MemRead = 1 og ID/EX.Rd = IF/ID.Rs1 eller IF/ID.Rs2, stans én sykel. Stansen gjøres ved å holde PC og IF/ID (PCWrite = 0, IF/IDWrite = 0) og sette alle kontrollsignalene inn i ID/EX til 0: det blir en boble i EX. Sykelen etter kan dataene videresendes fra MEM/WB (kode 01).</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-6-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 6.3</span><span class="o-ref">Korrekt utføring · 5 p</span></div>
+        <div class="o-text">
+          <p>En samlebåndsprosessor med videresendingsenhet og faredeteksjonsenhet (figur 4.58) utfører programmet under. I klokkesykelen som vises er I1 i WB, I2 i MEM, I3 i EX og I4 i ID. Hvordan sørger prosessoren for at I3 utføres korrekt?</p>
+<div class="asm">I1: add x5, x1, x2
+I2: add x6, x5, x2
+I3: add x7, x5, x6
+I4: add x8, x7, x2</div>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Modellsvar skrevet fra boka (kap. 4.8) · ikke offisielt løsningsforslag</span>
+            <div class="modell">
+              <span class="ml">Modellsvar</span>
+              <p>I3 trenger x5 og x6, men ingen av dem er skrevet til registerfilen ennå: I1, som lager x5, er i WB, og I2, som lager x6, er i MEM. Verdiene I3 leste i ID var derfor gamle. Dette er datafarer, og de løses med videresending.</p>
+              <p>Videresendingsenheten sammenlikner kilderegistrene til instruksjonen i EX (ID/EX.Rs1 = x5, ID/EX.Rs2 = x6) med målregistrene lenger framme. EX/MEM.Rd = x6 er lik Rs2, EX/MEM.RegWrite = 1 og rd ≠ x0: <strong>ForwardB = 10</strong>, så muxen foran ALU-ens andre inngang velger ALU-resultatet i EX/MEM, som er den nye x6. MEM/WB.Rd = x5 er lik Rs1, MEM/WB.RegWrite = 1 og rd ≠ x0, og det er ingen EX-fare for Rs1: <strong>ForwardA = 01</strong>, så muxen foran første inngang velger verdien i MEM/WB (den som skrives til x5 i denne sykelen). ALU-en regner dermed x5 + x6 med riktige verdier.</p>
+              <p>Faredeteksjonsenheten gjør ingenting her: ingen av instruksjonene er en load (ID/EX.MemRead = 0), så ingen stans trengs. I neste sykel får I4 x7 videresendt fra EX/MEM på samme måte.</p>
+            </div>
+            <p>Merk kodene: boka bruker 10 for EX/MEM og 01 for MEM/WB. Se det i widgeten over (program «Ord. 25 oppg. 6.3», sykel 5).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-fwd">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 4 eks. 2 · kap. 6 eks. 1 og 3</span></div>
+        <div class="o-text"><p>(a) <code>add x1, x2, x3</code> fulgt av <code>sub x4, x1, x5</code>: hva er faren, og hvordan løses den? (b) <code>lw x1, 0(x2)</code> fulgt av <code>add x3, x1, x4</code>: hvorfor holder ikke videresending alene?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet · detaljene skrevet for denne siden</span>
+            <p>(a) Datafare: sub trenger x1 i EX før add har skrevet den i WB. Løses med videresending: add sitt ALU-resultat ligger i EX/MEM når sub er i EX, og ForwardA = 10 velger det. Ingen stans.</p>
+            <p>(b) Load-use: lw har x1 først etter MEM, men add trenger den i EX i samme sykel. Faredeteksjonsenheten stanser add én sykel (en boble settes inn i EX), og deretter videresendes x1 fra MEM/WB (ForwardA = 01).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-24">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.24 · s. 376</span></div>
+        <div class="o-text"><p>Hvilket av de to diagrammene beskriver best hvordan faredeteksjonsenheten virker, og hvorfor?</p>
+<div class="asm">Valg 1:  lw  x11, 0(x12):    IF ID EX ME WB
+         add x13, x11, x14:     IF ID EX..ME WB
+         or  x15, x16, x17:        IF ID..EX ME WB
+Valg 2:  lw  x11, 0(x12):    IF ID EX ME WB
+         add x13, x11, x14:     IF ID..EX ME WB
+         or  x15, x16, x17:        IF..ID EX ME WB</div></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Valg 2. Faren oppdages mens add er i ID (lw er i EX med MemRead = 1 og rd = x11 = add sin rs1). Enheten holder IF/ID og PC, så add blir stående i ID én sykel til og or blir stående i IF; boblen settes inn i EX. Valg 1 viser add stanset i EX, men da har den allerede brukt feil verdi i ALU-en.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-25">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.25 · s. 376</span></div>
+        <div class="o-text"><p>Løkka under kjøres med perfekt hopprediksjon, full videresending, og hopp avgjort i EX. 1. Vis samlebåndsdiagram for de to første iterasjonene. 2. Hvor ofte, når båndet er fullt, gjør alle fem stegene nyttig arbeid i samme sykel?</p>
+<div class="asm">LOOP: lw   x10, 0(x13)
+      lw   x11, 8(x13)
+      add  x12, x10, x11
+      addi x13, x13, 16
+      bnez x12, LOOP</div></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. add bruker x11 rett etter at lw laster den: load-use, én boble. Alt annet videresendes (x10 fra MEM/WB, x13 til neste iterasjons lw, x12 til bnez).</p>
+            <div class="table-wrap"><table class="pd">
+              <thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th></tr></thead>
+              <tbody>
+                <tr><td>lw x10</td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>lw x11</td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>add</td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="st">**</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>addi</td><td></td><td></td><td></td><td class="IF">IF</td><td class="st">**</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>bnez</td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>lw x10</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>lw x11</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>add</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="st">**</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td><td></td></tr>
+                <tr><td>addi</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="st">**</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td><td></td></tr>
+                <tr><td>bnez</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="IF">IF</td><td class="ID">ID</td><td class="EX">EX</td><td class="MEM">MEM</td><td class="WB">WB</td></tr>
+              </tbody>
+            </table></div>
+            <p>2. Et steg gjør ikke nyttig arbeid når det holder en boble, eller når instruksjonen ikke bruker steget: add og addi bruker ikke MEM, bnez bruker verken MEM eller WB. MEM er bare nyttig for de to lw. Når den andre lw er i MEM, er boblen i EX; når den første lw er i MEM, er bnez i WB. Svaret er derfor aldri: 0 % av syklene har fem nyttige steg.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-27">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.27.1–4.27.3 · s. 377</span></div>
+        <div class="o-text"><p>Sekvensen under kjøres på et 5-stegs samlebånd. 1. Uten videresending og faredeteksjon: sett inn nop så den utføres riktig. 2. Stokk om eller endre koden for å minimere antall nop (x17 kan brukes til mellomverdier). 3. Med videresending, men uten faredeteksjonsenhet: hva skjer når originalkoden kjøres?</p>
+<div class="asm">add x15, x12, x11
+lw  x13, 8(x15)
+lw  x12, 0(x2)
+or  x13, x15, x13
+sw  x13, 0(x15)</div></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Uten videresending må brukeren være i ID tidligst i sykelen produsenten er i WB (skriv i første halvdel, les i andre): to instruksjoner mellom. add → lw x13 (x15) er naboer: 2 nop. lw x13 → or (x13) har én instruksjon mellom: 1 nop. or → sw (x13) er naboer: 2 nop. Fem nop:</p>
+<div class="asm">add x15, x12, x11
+nop
+nop
+lw  x13, 8(x15)
+lw  x12, 0(x2)
+nop
+or  x13, x15, x13
+nop
+nop
+sw  x13, 0(x15)</div>
+            <p>2. Kjeden add → lw x13 → or → sw er seriell: hvert ledd trenger to plasser mellom, seks i alt. Den eneste uavhengige instruksjonen er <code>lw x12, 0(x2)</code> (den må komme etter add, som leser x12), og den fyller allerede én plass. Omstokking alene kommer derfor ikke under fem nop for denne sekvensen; gevinsten må komme fra videresending.</p>
+            <p>3. Koden utføres riktig. Faredeteksjonsenheten trengs bare når en instruksjon bruker resultatet av en load i instruksjonen rett etter. Her kommer <code>lw x12</code> mellom <code>lw x13</code> og <code>or</code>, så x13 kan videresendes fra MEM/WB; add → lw og or → sw videresendes fra EX/MEM. Kjør den i widgeten («Bokoppgave 4.27»): ingen bobler.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 KONTROLLFARER ─────────────────────────── -->
+  <section id="kontrollfarer">
+    <div class="container">
+      <div class="section-badge">06 · Kontrollfarer</div>
+      <h2>Hva hentes <em>etter et hopp</em>?</h2>
+      <div class="source-note">Boka · kap. 4.6 og 4.9 · s. 291–295, 325–333 · figur 4.32–4.34, 4.63–4.66 · Kompendiet · kap. 4 eksempel 3, kap. 6 eksempel 2</div>
+      <span class="lm-pill">Læringsmål T5.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan kontrollfarer kan håndteres med stans og prediksjon samt analysere hvordan strategiene påvirker prosessorens ytelse.</li>
+      </ul>
+
+      <p class="dropcap">Samlebåndet henter en ny instruksjon hver sykel, men etter en beq vet det ikke hvilken før hoppet er avgjort. I datastien fra avsnitt 02 avgjøres det i MEM: da er tre instruksjoner allerede hentet. Tas hoppet, må de <span class="term" data-term="toemming">tømmes</span> (flush): kontrollsignalene nulles så de blir bobler. Tre tapte sykler per tatte hopp.</p>
+
+      <ul>
+        <li><strong>Avgjør hoppet tidligere.</strong> Flytt hoppadderen og en likhetssammenlikner til ID. Da er bare én instruksjon hentet, og straffen er én sykel. Prisen er ny videresending inn til ID og en mulig stans når hoppet trenger et resultat som nettopp regnes ut.</li>
+        <li><strong>Stans alltid.</strong> Hent ingenting før hoppet er avgjort. Med hopp i ID: én boble per hopp. Er 17 % av instruksjonene hopp, blir CPI 1,17.</li>
+        <li><strong>Statisk prediksjon.</strong> Anta at hoppet ikke tas og fortsett med neste instruksjon. Riktig: ingen kostnad. Feil: tøm og hent fra hoppmålet.</li>
+        <li><strong><span class="term" data-term="dynamisk-prediksjon">Dynamisk prediksjon</span>.</strong> Husk hva hvert hopp gjorde sist i en <span class="term" data-term="hopphistorietabell">hopphistorietabell</span>, indeksert med de laveste bitene av hoppets adresse. 1 bit: gjett det samme som sist. 2 bit: gjetningen må være feil to ganger før den snus.</li>
+      </ul>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 190" aria-label="2-bits prediktor: fire tilstander">
+          <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <g>
+            <ellipse class="box box-g" cx="90" cy="95" rx="62" ry="30"/><text x="90" y="92" text-anchor="middle" style="font-weight:600">Predikér tatt</text><text class="cap" x="90" y="106" text-anchor="middle">11 · sterk</text>
+            <ellipse class="box box-g" cx="250" cy="95" rx="62" ry="30"/><text x="250" y="92" text-anchor="middle" style="font-weight:600">Predikér tatt</text><text class="cap" x="250" y="106" text-anchor="middle">10 · svak</text>
+            <ellipse class="box box-w" cx="410" cy="95" rx="62" ry="30"/><text x="410" y="92" text-anchor="middle" style="font-weight:600">Predikér ikke tatt</text><text class="cap" x="410" y="106" text-anchor="middle">01 · svak</text>
+            <ellipse class="box box-w" cx="560" cy="95" rx="62" ry="30"/><text x="560" y="92" text-anchor="middle" style="font-weight:600">Predikér ikke tatt</text><text class="cap" x="560" y="106" text-anchor="middle">00 · sterk</text>
+          </g>
+          <path d="M140 76 Q170 50 200 76" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="170" y="52" text-anchor="middle">ikke tatt</text>
+          <path d="M300 76 Q330 50 360 76" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="330" y="52" text-anchor="middle">ikke tatt</text>
+          <path d="M458 76 Q485 50 512 76" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="485" y="52" text-anchor="middle">ikke tatt</text>
+          <path d="M512 114 Q485 140 458 114" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="485" y="150" text-anchor="middle">tatt</text>
+          <path d="M360 114 Q330 140 300 114" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="330" y="150" text-anchor="middle">tatt</text>
+          <path d="M200 114 Q170 140 140 114" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="170" y="150" text-anchor="middle">tatt</text>
+          <path d="M60 68 Q30 30 90 62" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="34" y="34">tatt</text>
+          <path d="M590 68 Q620 30 560 62" stroke="#3d3832" fill="none" marker-end="url(#ah2)"/><text class="cap" x="596" y="34">ikke tatt</text>
+          <text class="cap" x="320" y="180" text-anchor="middle">To feil på rad trengs for å snu prediksjonen. En løkke som tas ni ganger og så ikke: 1 bit bommer to ganger per runde, 2 bit én.</text>
+        </svg>
+        <figcaption>Etter figur 4.65 i boka: tilstandsmaskinen i en 2-bits prediktor.</figcaption>
+      </figure>
+
+      <p>Eksempel: et løkkehopp tas ni ganger og faller så gjennom. En 1-bits prediktor bommer på siste runde (gjetter tatt) og igjen på første runde neste gang løkka kjøres (gjetter ikke tatt): 80 % treff. En 2-bits prediktor bommer bare på siste runde: 90 %. Prediktoren sier bare tatt eller ikke; for å hente fra hoppmålet uten ventetid trengs i tillegg et <span class="term" data-term="hoppmaalbuffer">hoppmålbuffer</span> som husker måladressen.</p>
+
+      <div class="oppgave" data-quiz id="oppg-4-28">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.28.1–4.28.2 · s. 378</span></div>
+        <div class="o-text"><p>Dynamisk instruksjonsmiks: R-type 40 %, beqz/bnez 25 %, jal 5 %, lw 25 %, sw 5 %. Prediktortreff: alltid tatt 45 %, alltid ikke tatt 55 %, 2-bit 85 %. Hoppene avgjøres i ID og virker i EX, ingen datafarer, ingen forsinket hopp. 1. Hvor mye øker CPI på grunn av feilpredikerte hopp med alltid tatt? 2. Med alltid ikke tatt? (Og 2-bit, for sammenlikning.)</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Avgjort i ID betyr at én instruksjon er hentet feil når hoppet bommer: én tapt sykel per feilprediksjon. CPI-tillegg = andel betingede hopp × andel feil × straff.</p>
+            <p>1. Alltid tatt: 0,25 × (1 − 0,45) × 1 = 0,1375. CPI ≈ 1,14. 2. Alltid ikke tatt: 0,25 × (1 − 0,55) × 1 = 0,1125. CPI ≈ 1,11. 2-bit: 0,25 × 0,15 × 1 = 0,0375. CPI ≈ 1,04. (Avgjøres hoppet i MEM, er straffen 3 sykler og tilleggene tre ganger større.)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-branch">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 4 eks. 3 · kap. 6 eks. 2</span></div>
+        <div class="o-text"><p><code>beq x1, x2, label</code>: hva er faren, og hvordan hjelper hopprediksjon?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet · detaljene skrevet for denne siden</span>
+            <p>Kontrollfare: neste instruksjon må hentes før sammenlikningen er gjort. Med prediksjon gjetter prosessoren utfallet og fortsetter å hente langs den gjettede veien. Gjetter den riktig, er ingen sykler tapt. Gjetter den feil, tømmes instruksjonene som ble hentet feil (de gjøres til bobler før de har endret register eller minne), og hentingen starter fra riktig adresse.</p>
+          </div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: forsinket hopp og bedre prediktorer</summary>
+        <p>MIPS brukte forsinket hopp (delayed branch): instruksjonen rett etter hoppet utføres alltid, og kompilatoren fyller plassen med noe nyttig. RISC-V har det ikke; det passer dårlig med dype samlebånd. Moderne prediktorer er mer avanserte: en korrelerende prediktor bruker også utfallet av de siste hoppene globalt, og en turneringsprediktor har flere prediktorer per hopp og en velger som husker hvilken som har truffet best. Med over 95 % treff er prediksjon grunnlaget for spekulasjon i 5B.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Fem steg</strong>IF, ID, EX, MEM, WB. Klokka = tregeste steg. n instruksjoner tar n + k − 1 sykler.</div>
+        <div class="recap-pill"><strong>Registrene</strong>IF/ID, ID/EX, EX/MEM, MEM/WB bærer data, rd-nummer og kontrollsignaler videre.</div>
+        <div class="recap-pill"><strong>Kontroll</strong>Lages i ID. EX: ALUOp, ALUSrc. MEM: Branch, MemRead, MemWrite. WB: RegWrite, MemtoReg. Registeret foran et steg holder signalene til instruksjonen i steget.</div>
+        <div class="recap-pill"><strong>Farer</strong>Struktur (delt maskinvare), data (resultat ikke skrevet), kontroll (hopp ikke avgjort).</div>
+        <div class="recap-pill"><strong>Videresending</strong>10 = fra EX/MEM (instruksjonen rett foran), 01 = fra MEM/WB (to foran), 00 = registerfilen. Krever RegWrite = 1 og rd ≠ x0.</div>
+        <div class="recap-pill"><strong>Load-use</strong>lw fulgt av bruker: én boble. ID/EX.MemRead og rd = rs1/rs2 i IF/ID → hold PC og IF/ID, null signalene.</div>
+        <div class="recap-pill"><strong>Hopp</strong>Avgjort i MEM: 3 sykler tapt; i ID: 1. Predikér ikke tatt, eller dynamisk med 1 eller 2 bit. Feil → tøm.</div>
+        <div class="recap-pill"><strong>Ytelse</strong>CPI = 1 + stans per instruksjon (load-use + feilpredikerte hopp × straff).</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">I en klokkesykel er <code>sub x4, x1, x5</code> i EX, <code>lw x1, 0(x2)</code> i WB og <code>add x5, x6, x7</code> i MEM. Hva er ForwardA og ForwardB, og hva er EX/MEM.RegWrite og MEM/WB.MemtoReg?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">rs1 = x1 = MEM/WB.Rd (lw, RegWrite 1): ForwardA = 01. rs2 = x5 = EX/MEM.Rd (add, RegWrite 1): ForwardB = 10. EX/MEM holder add: RegWrite = 1. MEM/WB holder lw: MemtoReg = 1 (minnedataene skrives, og det er de som videresendes).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">30 % av instruksjonene er load, og halvparten av dem følges rett av en instruksjon som bruker resultatet. 15 % er hopp, avgjort i ID og predikert med 80 % treff. Hva er CPI?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Load-use: 0,30 × 0,5 × 1 = 0,15. Hopp: 0,15 × 0,20 × 1 = 0,03. CPI = 1 + 0,15 + 0,03 = 1,18.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Hvorfor har videresendingsbetingelsen «og ikke EX-fare» i MEM-tilfellet? Gi en kodesnutt der det spiller en rolle.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><code>add x1, x1, x2</code> / <code>add x1, x1, x3</code> / <code>add x1, x1, x4</code>. Når den tredje er i EX, skriver både instruksjonen i MEM og den i WB til x1. Den nyeste verdien er den i EX/MEM (instruksjonen rett foran); uten forrangen ville begge betingelsene slått til, og muxen kunne valgt den gamle verdien fra MEM/WB.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 5: oversikt</div></a>
+        <a href="unntak-ytelse.html" class="next"><div class="pn-label">Neste · 5B</div><div class="pn-title">Unntak og prosessorer med høyere ytelse →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(x, y, s, cls, anchor, parent) { var t = el('text', { x: x, y: y, 'class': cls || '', 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; }
+
+  /* ───── Tegn samlebåndsdatastien. Returnerer oppslag med dynamiske elementer. ───── */
+  var STAGES = ['IF', 'ID', 'EX', 'MEM', 'WB'], SX = [20, 168, 316, 464, 612], SW = 128;
+  function drawPipe(svg) {
+    var g = { ins: [], fw: {} };
+    function unit(id, x, y, w, h, lines, rx) { var r = el('rect', { x: x, y: y, width: w, height: h, rx: rx == null ? 4 : rx, 'class': 'u', id: id }, svg); g[id] = r; lines.forEach(function (s, i) { txt(x + w / 2, y + h / 2 + (i - (lines.length - 1) / 2) * 12 + 4, s, '', 'middle', svg); }); return r; }
+    function wire(d, cls, id) { var p = el('path', { d: d, 'class': cls || 'w' }, svg); if (id) g.fw[id] = p; return p; }
+    /* stegbokser og navn */
+    STAGES.forEach(function (s, i) {
+      el('rect', { x: SX[i], y: 44, width: SW, height: 250, rx: 6, 'class': 'stage' }, svg);
+      txt(SX[i] + SW / 2, 40, s, 'cap', 'middle', svg);
+      g.ins.push(txt(SX[i] + SW / 2, 22, '', 'ins', 'middle', svg));
+    });
+    /* samlebåndsregistre */
+    var PR = ['IF/ID', 'ID/EX', 'EX/MEM', 'MEM/WB'], PX = [150, 298, 446, 594];
+    PR.forEach(function (n, i) {
+      el('rect', { x: PX[i], y: 60, width: 16, height: 226, rx: 2, 'class': 'preg' }, svg);
+      txt(PX[i] + 8, 304, n, 'cap', 'middle', svg);
+    });
+    /* kontrollfelt i registrene */
+    function fld(x, y, s) { el('rect', { x: x, y: y, width: 16, height: 14, 'class': 'u' }, svg); txt(x + 8, y + 10, s, 'cap', 'middle', svg); }
+    fld(298, 62, 'WB'); fld(298, 76, 'M'); fld(298, 90, 'EX');
+    fld(446, 62, 'WB'); fld(446, 76, 'M');
+    fld(594, 62, 'WB');
+    /* IF */
+    unit('pc', 30, 180, 26, 40, ['PC']);
+    unit('imem', 68, 165, 70, 70, ['Instr.-', 'minne']);
+    unit('add4', 80, 100, 36, 34, ['+4'], 8);
+    wire('M56 200 L68 200'); wire('M60 200 L60 117 L80 117'); wire('M138 200 L150 200'); wire('M116 117 L150 117');
+    /* ID */
+    var ctl = el('ellipse', { cx: 232, cy: 84, rx: 34, ry: 18, 'class': 'u' }, svg); txt(232, 88, 'Kontroll', '', 'middle', svg);
+    unit('regs', 190, 150, 84, 84, ['Register-', 'fil']);
+    var ig = el('ellipse', { cx: 232, cy: 262, rx: 30, ry: 14, 'class': 'u' }, svg); txt(232, 266, 'Imm Gen', '', 'middle', svg);
+    wire('M166 200 L190 200'); wire('M178 200 L178 84 L198 84'); wire('M178 200 L178 262 L202 262');
+    wire('M274 175 L298 175'); wire('M274 215 L298 215'); wire('M262 262 L298 262');
+    wire('M266 84 L298 84', 'c');
+    /* EX */
+    el('path', { d: 'M366 150 L366 182 L376 194 L366 206 L366 238 L412 220 L412 168 Z', 'class': 'u', id: 'alu' }, svg); txt(394, 198, 'ALU', '', 'middle', svg);
+    el('path', { d: 'M336 158 L350 164 L350 186 L336 192 Z', 'class': 'u' }, svg); el('path', { d: 'M336 204 L350 210 L350 232 L336 238 Z', 'class': 'u' }, svg);
+    txt(343, 152, 'A', 'cap', 'middle', svg); txt(343, 250, 'B', 'cap', 'middle', svg);
+    wire('M314 175 L336 175'); wire('M314 215 L336 221'); wire('M350 175 L366 168'); wire('M350 221 L366 222'); wire('M412 194 L446 194');
+    unit('addb', 372, 104, 34, 30, ['+'], 8); wire('M314 117 L372 117'); wire('M406 119 L446 119');
+    wire('M314 84 L330 84 L330 69 L446 69', 'c'); wire('M314 97 L356 97 L356 150', 'c'); txt(322, 142, 'ALUSrc', 'sig', 'start', svg);
+    /* videresendingslinjer (dynamiske) */
+    wire('M454 194 L454 276 L326 276 L326 181 L336 181', 'w', 'A10'); wire('M454 276 L322 276 L322 227 L336 227', 'w', 'B10');
+    wire('M604 252 L604 288 L320 288 L320 187 L336 187', 'w', 'A01'); wire('M604 288 L318 288 L318 233 L336 233', 'w', 'B01');
+    /* MEM */
+    unit('dmem', 486, 160, 82, 76, ['Data-', 'minne']);
+    wire('M462 194 L486 194'); wire('M568 198 L594 198'); wire('M462 194 L462 252 L594 252');
+    wire('M462 76 L527 76 L527 160', 'c'); txt(530, 110, 'MemRead', 'sig', 'start', svg); txt(530, 122, 'MemWrite', 'sig', 'start', svg); txt(530, 134, 'Branch', 'sig', 'start', svg);
+    wire('M462 69 L594 69', 'c');
+    /* WB */
+    el('path', { d: 'M640 196 L656 204 L656 246 L640 254 Z', 'class': 'u' }, svg); txt(648, 229, 'M', 'cap', 'middle', svg);
+    wire('M610 198 L640 208'); wire('M610 252 L640 244'); wire('M656 225 L724 225 L724 320 L184 320 L184 222 L190 222');
+    wire('M610 69 L648 69 L648 196', 'c'); txt(652, 110, 'MemtoReg', 'sig', 'start', svg); txt(652, 122, 'RegWrite', 'sig', 'start', svg);
+    txt(454, 316, 'tilbakeskriving: data og rd-nummer til registerfilen', 'cap', 'middle', svg);
+    g.stageRects = svg.querySelectorAll('.stage');
+    return g;
+  }
+  var pf = document.getElementById('pipe-fig');
+  if (pf) { var g0 = drawPipe(pf); ['lw', 'add', 'sub', 'sw', 'beq'].reverse().forEach(function (s, i) { g0.ins[i].textContent = ''; }); }
+
+  /* ───── Instruksjoner og simulering ───── */
+  var CLS = {
+    R: { ALUOp: '10', ALUSrc: 0, Branch: 0, MemRead: 0, MemWrite: 0, RegWrite: 1, MemtoReg: 0 },
+    I: { ALUOp: '00', ALUSrc: 1, Branch: 0, MemRead: 0, MemWrite: 0, RegWrite: 1, MemtoReg: 0 },
+    L: { ALUOp: '00', ALUSrc: 1, Branch: 0, MemRead: 1, MemWrite: 0, RegWrite: 1, MemtoReg: 1 },
+    S: { ALUOp: '00', ALUSrc: 1, Branch: 0, MemRead: 0, MemWrite: 1, RegWrite: 0, MemtoReg: 'X' },
+    B: { ALUOp: '01', ALUSrc: 0, Branch: 1, MemRead: 0, MemWrite: 0, RegWrite: 0, MemtoReg: 'X' }
+  };
+  var NOP = { ALUOp: '00', ALUSrc: 0, Branch: 0, MemRead: 0, MemWrite: 0, RegWrite: 0, MemtoReg: 0 };
+  function parse(line) {
+    var s = line.replace(/#.*$|\/\/.*$/, '').trim(); if (!s) return null;
+    s = s.replace(/^[A-Za-z_]\w*:\s*/, '');
+    var m = s.match(/^(\w+)\s+(.*)$/); if (!m) return { err: line };
+    var op = m[1].toLowerCase(), a = m[2].split(',').map(function (t) { return t.trim(); });
+    function r(t) { var k = /^x(\d+)$/.exec(t || ''); return k && +k[1] < 32 ? +k[1] : null; }
+    var o = { text: s, op: op };
+    if (/^(add|sub|and|or|xor|slt|sll|srl|sra)$/.test(op)) { o.c = 'R'; o.rd = r(a[0]); o.rs1 = r(a[1]); o.rs2 = r(a[2]); if (o.rd == null || o.rs1 == null || o.rs2 == null) return { err: line }; }
+    else if (/^(addi|andi|ori|xori|slti)$/.test(op)) { o.c = 'I'; o.rd = r(a[0]); o.rs1 = r(a[1]); o.rs2 = null; if (o.rd == null || o.rs1 == null) return { err: line }; }
+    else if (/^(lw|lb|lh|lbu|lhu)$/.test(op)) { var k = /^(-?\d+)\((x\d+)\)$/.exec(a[1] || ''); o.c = 'L'; o.rd = r(a[0]); o.rs1 = k ? r(k[2]) : null; o.rs2 = null; if (o.rd == null || o.rs1 == null) return { err: line }; }
+    else if (/^(sw|sb|sh)$/.test(op)) { var k2 = /^(-?\d+)\((x\d+)\)$/.exec(a[1] || ''); o.c = 'S'; o.rd = null; o.rs2 = r(a[0]); o.rs1 = k2 ? r(k2[2]) : null; if (o.rs2 == null || o.rs1 == null) return { err: line }; }
+    else if (/^(beq|bne|blt|bge)$/.test(op)) { o.c = 'B'; o.rd = null; o.rs1 = r(a[0]); o.rs2 = r(a[1]); if (o.rs1 == null || o.rs2 == null) return { err: line }; }
+    else return { err: line };
+    return o;
+  }
+  /* Returnerer liste av sykler; hver sykel = [IF, ID, EX, MEM, WB] med indeks i prog, -1 = boble, null = tom. */
+  function simulate(prog) {
+    var st = [null, null, null, null, null], next = 0, cyc = [], guard = 0;
+    while (guard++ < 60) {
+      var stall = false, idI = st[1], exI = st[2];
+      if (idI != null && idI >= 0 && exI != null && exI >= 0) {
+        var c = prog[idI], p = prog[exI];
+        if (p.c === 'L' && p.rd !== 0 && (p.rd === c.rs1 || (c.rs2 != null && p.rd === c.rs2))) stall = true;
+      }
+      var n = [null, null, null, st[2], st[3]];
+      if (stall) { n[2] = -1; n[1] = st[1]; n[0] = st[0]; }
+      else { n[2] = st[1]; n[1] = st[0]; n[0] = next < prog.length ? next++ : null; }
+      st = n; n.stall = stall;
+      if (st.every(function (v) { return v == null; })) break;
+      cyc.push(st);
+    }
+    /* marker stansen på sykelen der den oppdages (boblen dukker opp i EX sykelen etter) */
+    return cyc;
+  }
+  function sigOf(prog, idx) { return idx == null ? null : (idx < 0 ? NOP : CLS[prog[idx].c]); }
+  function fwd(prog, st) {
+    var ex = st[2]; if (ex == null || ex < 0) return { A: '00', B: '00', noteA: '', noteB: '' };
+    var c = prog[ex], m = st[3] != null && st[3] >= 0 ? prog[st[3]] : null, w = st[4] != null && st[4] >= 0 ? prog[st[4]] : null;
+    function one(rs) {
+      if (rs == null) return ['00', ''];
+      if (m && CLS[m.c].RegWrite && m.rd && m.rd === rs) return ['10', 'x' + rs + ' fra EX/MEM (' + m.text + ')'];
+      if (w && CLS[w.c].RegWrite && w.rd && w.rd === rs) return ['01', 'x' + rs + ' fra MEM/WB (' + w.text + ')'];
+      return ['00', ''];
+    }
+    var a = one(c.rs1), b = one(c.rs2);
+    return { A: a[0], B: b[0], noteA: a[1], noteB: b[1] };
+  }
+
+  var PRESETS = {
+    o25a: ['sw x1, 0(x2)', 'lw x1, 4(x2)', 'addi x3, x2, 4', 'beq x4, x5, merkelapp'],
+    o25b: ['add x5, x1, x2', 'add x6, x5, x2', 'add x7, x5, x6', 'add x8, x7, x2'],
+    lu: ['lw x1, 0(x2)', 'add x3, x1, x4', 'sub x5, x3, x6'],
+    b427: ['add x15, x12, x11', 'lw x13, 8(x15)', 'lw x12, 0(x2)', 'or x13, x15, x13', 'sw x13, 0(x15)']
+  };
+  var EXAM = [['ID/EX', 'ALUSrc', 2], ['ID/EX', 'MemWrite', 2], ['ID/EX', 'MemRead', 2], ['ID/EX', 'RegWrite', 2], ['EX/MEM', 'MemWrite', 3], ['EX/MEM', 'MemRead', 3], ['EX/MEM', 'RegWrite', 3], ['EX/MEM', 'MemtoReg', 3], ['MEM/WB', 'RegWrite', 4], ['MEM/WB', 'MemtoReg', 4]];
+
+  (function () {
+    var svg = document.getElementById('pipe-w'); if (!svg) return;
+    var g = drawPipe(svg);
+    var sel = document.getElementById('pp-prog'), cycI = document.getElementById('pp-cyc'), cycV = document.getElementById('pp-cycv'), test = document.getElementById('pp-test'), chk = document.getElementById('pp-check');
+    var code = document.getElementById('pp-code'), sig = document.getElementById('pp-sig'), out = document.getElementById('pp-out'), diag = document.getElementById('pp-diag');
+    var prog = [], cyc = [];
+    function load() {
+      var lines = sel.value === 'eget' ? code.value.split('\n') : PRESETS[sel.value];
+      code.style.display = sel.value === 'eget' ? 'block' : 'none';
+      var p = [], bad = null;
+      lines.forEach(function (l) { var o = parse(l); if (!o) return; if (o.err) bad = o.err; else p.push(o); });
+      if (bad || !p.length || p.length > 8) { out.innerHTML = '<span class="bad">' + (bad ? 'Forstår ikke: ' + bad : 'Skriv 1–8 instruksjoner.') + '</span> Format: add x1, x2, x3 · addi x1, x2, 5 · lw x1, 0(x2) · sw x1, 0(x2) · beq x1, x2, L'; return false; }
+      prog = p; cyc = simulate(prog);
+      cycI.max = cyc.length; if (+cycI.value > cyc.length) cycI.value = cyc.length;
+      if (sel.value === 'o25a' || sel.value === 'o25b') cycI.value = 5;
+      return true;
+    }
+    function name(i) { return i == null ? '' : (i < 0 ? 'boble' : prog[i].text); }
+    function draw() {
+      var k = +cycI.value - 1, st = cyc[k]; cycV.textContent = String(k + 1);
+      for (var i = 0; i < 5; i++) { g.ins[i].textContent = st[i] == null ? '' : (st[i] < 0 ? '(boble)' : 'I' + (st[i] + 1) + ': ' + prog[st[i]].op); g.ins[i].setAttribute('class', 'ins' + (st[i] == null || st[i] < 0 ? ' bub' : '')); }
+      var f = fwd(prog, st);
+      ['A10', 'B10', 'A01', 'B01'].forEach(function (id) { g.fw[id].setAttribute('class', 'w'); });
+      if (f.A !== '00') g.fw['A' + f.A].setAttribute('class', 'w fwd'); if (f.B !== '00') g.fw['B' + f.B].setAttribute('class', 'w fwd');
+      /* signaler */
+      var html = '';
+      if (test.checked) {
+        EXAM.forEach(function (e, n) { if (n === 0 || EXAM[n - 1][0] !== e[0]) html += '<div class="grp">' + e[0] + '</div>'; html += '<div class="s" data-n="' + n + '"><b>' + e[1] + '</b><input type="text" maxlength="1" placeholder="?"></div>'; });
+      } else {
+        [['ID/EX', 2, ['ALUSrc', 'MemRead', 'MemWrite', 'RegWrite', 'MemtoReg']], ['EX/MEM', 3, ['MemRead', 'MemWrite', 'RegWrite', 'MemtoReg']], ['MEM/WB', 4, ['RegWrite', 'MemtoReg']]].forEach(function (r) {
+          var s = sigOf(prog, st[r[1]]);
+          html += '<div class="grp">' + r[0] + ' · instruksjonen i ' + STAGES[r[1]] + ': ' + (st[r[1]] == null ? 'ingen (båndet er ikke fylt, signalene er 0)' : name(st[r[1]])) + '</div>';
+          r[2].forEach(function (nm) { var v = s ? s[nm] : 0; html += '<div class="s' + (v === 1 ? ' on' : '') + '"><b>' + nm + '</b><span class="v">' + v + '</span></div>'; });
+        });
+        html += '<div class="grp">Videresending for instruksjonen i EX</div><div class="s' + (f.A !== '00' ? ' on' : '') + '"><b>ForwardA</b><span class="v">' + f.A + '</span></div><div class="s' + (f.B !== '00' ? ' on' : '') + '"><b>ForwardB</b><span class="v">' + f.B + '</span></div>';
+      }
+      sig.innerHTML = html;
+      chk.style.display = test.checked ? '' : 'none';
+      var msg = 'Sykel ' + (k + 1) + ': ' + STAGES.map(function (s, i) { return s + ' = ' + (st[i] == null ? '—' : name(st[i])); }).join(' · ');
+      if (!test.checked) {
+        if (f.noteA) msg += '\n<span class="hl">ForwardA = ' + f.A + '</span>: ' + f.noteA; if (f.noteB) msg += '\n<span class="hl">ForwardB = ' + f.B + '</span>: ' + f.noteB;
+        if (cyc[k + 1] && cyc[k + 1].stall) msg += '\n<span class="bad">Faredeteksjon:</span> instruksjonen i ID bruker resultatet av en load som er i EX (ID/EX.MemRead = 1). PC og IF/ID holdes, en boble sendes inn i EX neste sykel.';
+        if (st[2] === -1) msg += '\nBoblen i EX har alle kontrollsignaler 0: den endrer verken register eller minne.';
+      } else msg += '\nFyll inn 0, 1 eller X for de ti signalene og trykk Rett.';
+      out.innerHTML = msg;
+      /* diagram */
+      var h = '<thead><tr><th></th>'; for (var c = 0; c < cyc.length; c++) h += '<th' + (c === k ? ' class="now"' : '') + '>' + (c + 1) + '</th>'; h += '</tr></thead><tbody>';
+      prog.forEach(function (p, pi) {
+        h += '<tr><td>I' + (pi + 1) + ': ' + p.text + '</td>'; var prev = null;
+        for (var c = 0; c < cyc.length; c++) { var where = cyc[c].indexOf(pi), lab = where < 0 ? '' : STAGES[where], cl = lab; if (lab && lab === prev) { lab = '**'; cl = 'st'; } else if (where >= 0) prev = STAGES[where]; h += '<td class="' + cl + (c === k ? ' now' : '') + '">' + lab + '</td>'; }
+        h += '</tr>';
+      });
+      diag.innerHTML = h + '</tbody>';
+    }
+    function check() {
+      var st = cyc[+cycI.value - 1], right = 0;
+      sig.querySelectorAll('.s[data-n]').forEach(function (box) {
+        var e = EXAM[+box.getAttribute('data-n')], s = sigOf(prog, st[e[2]]), want = String(s ? s[e[1]] : 0), got = box.querySelector('input').value.trim().toUpperCase(), ok = got === want;
+        box.classList.remove('ok', 'bad'); box.classList.add(ok ? 'ok' : 'bad'); if (ok) right++;
+        if (!ok && !box.querySelector('.v')) { var sp = document.createElement('span'); sp.className = 'v'; sp.textContent = '→ ' + want; box.appendChild(sp); }
+      });
+      out.innerHTML = (right === 10 ? '<span class="ok">10 av 10 riktige.</span>' : '<span class="bad">' + right + ' av 10 riktige.</span>') + ' Eksamen: 0,5 p per riktig, −0,25 per feil, 0 for ubesvart.';
+    }
+    function reload() { if (load()) draw(); }
+    sel.addEventListener('change', reload); code.addEventListener('change', reload);
+    cycI.addEventListener('input', draw); test.addEventListener('change', draw); chk.addEventListener('click', check);
+    reload();
+  })();
+})();
+</script>
+</body>
+</html>

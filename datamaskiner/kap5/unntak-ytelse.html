@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Unntak og høyere ytelse — Kap 5</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+  .asm { font-family: var(--mono); font-size: 0.88rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+  #rn-code { font-family: var(--mono); font-size: 0.88rem; width: 100%; min-height: 7.5em; line-height: 1.5; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  table.rn { font-family: var(--mono); font-size: 0.82rem; }
+  table.rn td, table.rn th { padding: 4px 9px; letter-spacing: 0; }
+  table.rn .waw { color: var(--red); } table.rn .war { color: var(--ochre); } table.rn .raw { color: var(--green); }
+  table.pd { width: auto; font-family: var(--mono); font-size: 0.78rem; }
+  table.pd td, table.pd th { padding: 3px 7px; text-align: center; border: 1px solid var(--line-soft); letter-spacing: 0; }
+  table.pd td:first-child { text-align: left; white-space: nowrap; }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 5</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 5: Samlebåndsprosessorer">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 5 · 5B · Læringsmål T5.2 og T5.3 · Boka kap. 4.10–4.11 · ~35 min</div>
+      <h1>Unntak og prosessorer med <em>høyere ytelse</em></h1>
+      <p class="lede">Hva skjer når noe uventet avbryter samlebåndet, og hvordan kommer moderne prosessorer forbi én instruksjon per sykel: dypere samlebånd, flere instruksjoner per sykel, utføring ute av rekkefølge, og register renaming som fjerner de falske avhengighetene. Det siste var eksamensoppgave i 2025.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#unntak"><span>01</span> Unntak og avbrudd</a>
+        <a href="#ilp"><span>02</span> Parallellitet i tid og rom</a>
+        <a href="#renaming"><span>03</span> Farer og register renaming</a>
+        <a href="#ooo"><span>04</span> Ut av rekkefølge</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T5.3: prio 2 · Ord. 25 oppg. 8.1 (4 p) · T5.2: prio 3 · Ord. 22 oppg. 10 (litt relevant)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Register renaming: hva det gjør og hvorfor</strong> (Ord. 25 oppg. 8.1, 4 p, langsvar). Modellsvaret i avsnitt 03: hver ny verdi får sitt eget fysiske register, WAW- og WAR-farene forsvinner, bare ekte dataflyt (RAW) står igjen, og instruksjoner kan utføres ut av rekkefølge.</li>
+          <li><span class="tag">Forklar</span><strong>Kjenn igjen RAW, WAW og WAR</strong> i en kodesnutt og si hvilken avhengighet som skaper dem. Parallellitet i tid mot rom; statisk mot dynamisk multiple issue med fordeler og ulemper; hva spekulasjon er; de tre enhetene i en prosessor som utfører ut av rekkefølge.</li>
+          <li><span class="tag">Lavere</span><strong>Unntak og avbrudd</strong> (T5.2, prio 3): begrepene, presise unntak, og at samlebåndet tømmer instruksjonene bak og lagrer adressen i SEPC. Én linje hver holder.</li>
+          <li><span class="tag">Lavere</span>Intel Core i7- og ARM Cortex-A53-eksemplene (4.12), matrisemultiplikasjonen (4.13) og detaljene i løkkeutrulling er tatt ut eller lagt i utdypning.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 UNNTAK ─────────────────────────── -->
+  <section id="unntak">
+    <div class="container">
+      <div class="section-badge">01 · Unntak og avbrudd</div>
+      <h2>Når kontrollflyten endres <em>uten et hopp</em></h2>
+      <div class="source-note">Boka · kap. 4.10 · s. 333–340 · figur 4.67–4.68</div>
+      <span class="lm-pill">Læringsmål T5.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare begrepene unntak og avbrudd, inkludert presise unntak.</li>
+        <li>Studenten skal kunne beskrive hvordan presise unntak kan implementeres i 5-stegssamlebåndet.</li>
+        <li>Studenten skal kjenne til prinsippene bak hvordan presise unntak implementeres i prosessorer som utfører instruksjoner ut-av-rekkefølge.</li>
+      </ul>
+
+      <p class="dropcap">Et <span class="term" data-term="unntak">unntak</span> (exception) er en uplanlagt hendelse som forstyrrer programutføringen: en udefinert instruksjon, en ugyldig minneadresse, et systemkall, en maskinvarefeil. Et <span class="term" data-term="avbrudd">avbrudd</span> (interrupt) er et unntak som kommer utenfra prosessoren, typisk fra en I/O-enhet. Prosessoren må gjøre to ting: lagre adressen til instruksjonen som ble rammet i <span class="term" data-term="sepc">SEPC</span> og årsaken i SCAUSE, og overføre kontrollen til operativsystemet på en fast adresse. Operativsystemet håndterer hendelsen og kan fortsette programmet fra adressen i SEPC.</p>
+
+      <p>I samlebåndet er et unntak en ny slags kontrollfare. Får en <code>add</code> i EX en maskinvarefeil, må tre ting skje i samme sykel: instruksjonene bak den (i IF og ID) og den selv <span class="term" data-term="toemming">tømmes</span> med signalene IF.Flush, ID.Flush og EX.Flush, så ingen av dem skriver register eller minne; adressen lagres i SEPC og årsaken i SCAUSE; og PC får adressen til unntakshandleren. Instruksjonene foran, i MEM og WB, fullføres som normalt.</p>
+
+      <div class="def-box">
+        <span class="def-label">Det operativsystemet er avhengig av</span>
+        <div class="def-term"><span class="term" data-term="presist-unntak">Presist unntak</span></div>
+        <p>Unntaket knyttes til riktig instruksjon: alle instruksjoner før den er fullført, og verken den selv eller noen etter den har endret tilstanden. Da kan programmet startes igjen nøyaktig der det stoppet. Med fem instruksjoner i gang samtidig kan flere unntak oppstå i samme sykel, og et senere steg kan oppdage sitt først; maskinvaren prioriterer det som tilhører den tidligste instruksjonen. I en prosessor som utfører ut av rekkefølge holdes resultatene tilbake i en buffer og skrives til registre og minne i programrekkefølge (avsnitt 04); et unntak slår først til når instruksjonen står for tur til å fullføres, og alt bak den kastes.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-4-30">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.30.1–4.30.3 · s. 379</span></div>
+        <div class="o-text"><p>To instruksjoner: (1) <code>beqz x11, LABEL</code> og (2) <code>lw x11, 0(x12)</code>. 1. Hvilke unntak kan hver av dem utløse, og i hvilket steg oppdages de? 2. Om hver unntakstype har sin egen handleradresse: hvordan må samlebåndet endres? 3. Instruksjon 2 hentes rett etter instruksjon 1. Hva skjer i samlebåndet når instruksjon 1 utløser sitt første unntak?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Begge: ugyldig instruksjonsadresse (IF) og udefinert instruksjon (ID), pluss maskinvarefeil i et hvilket som helst steg. beqz i tillegg: ugyldig hoppmål, som oppdages når målet hentes (IF for neste instruksjon). lw i tillegg: ugyldig dataadresse, oppdaget i MEM.</p>
+            <p>2. PC-muxen må få én ekstra inngang per handleradresse (eller en liten tabell valgt av årsaken), og kontrollen må velge riktig inngang ut fra hvilket steg og hvilken årsak som meldte unntaket. SEPC og tømmesignalene trengs som før.</p>
+            <p>3. Oppdages unntaket for beqz i ID (udefinert instruksjon), er lw i IF. IF.Flush gjør lw til en boble og ID.Flush nuller beqz sine kontrollsignaler; SEPC får adressen til beqz, og i neste sykel hentes første instruksjon i handleren. lw utføres ikke; den hentes på nytt hvis programmet fortsetter.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 ILP ─────────────────────────── -->
+  <section id="ilp">
+    <div class="container">
+      <div class="section-badge">02 · Parallellitet i tid og rom</div>
+      <h2>Dypere bånd, eller <em>flere bånd</em></h2>
+      <div class="source-note">Boka · kap. 4.11 · s. 340–347 · figur 4.69–4.72</div>
+      <span class="lm-pill">Læringsmål T5.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne beskrive hvordan en prosessor utnytter parallellitet i tid og parallellitet i rom.</li>
+        <li>Studenten skal kjenne til fordeler og ulemper med «static multi-issue» prosessorer.</li>
+        <li>Studenten skal kunne forklare begrepet «speculation».</li>
+      </ul>
+
+      <p class="dropcap">Samlebåndet utnytter <span class="term" data-term="ilp">parallellitet på instruksjonsnivå</span>: flere instruksjoner er i arbeid samtidig. Det kan økes på to måter. <strong>Parallellitet i tid</strong>: et dypere samlebånd med flere, kortere steg, så flere instruksjoner overlapper og klokka kan gå raskere. <strong>Parallellitet i rom</strong>: dupliser maskinvaren så flere instruksjoner startes i hver sykel, <span class="term" data-term="multiple-issue">multiple issue</span>. Da kan CPI bli under 1, og man snakker heller om IPC, instruksjoner per sykel: en 3 GHz firebredders prosessor kan i beste fall utføre 12 milliarder instruksjoner i sekundet.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th><span class="term" data-term="statisk-multiple-issue">Statisk multiple issue</span></th><th><span class="term" data-term="dynamisk-multiple-issue">Dynamisk multiple issue</span> (superskalar)</th></tr></thead>
+          <tbody>
+            <tr><td>Hvem bestemmer</td><td>Kompilatoren, før kjøring: pakker instruksjoner i <span class="term" data-term="issue-pakke">issue-pakker</span> uten innbyrdes avhengigheter og unngår farer.</td><td>Prosessoren, under kjøring: velger hvor mange som kan startes denne sykelen.</td></tr>
+            <tr><td>Fordeler</td><td>Enkel maskinvare, lite effekt; kompilatoren ser hele programmet og kan stokke om og rulle ut løkker.</td><td>Samme binærkode går riktig på alle modeller; utnytter det som først er kjent under kjøring (hopputfall, hurtigbufferbom, adresser).</td></tr>
+            <tr><td>Ulemper</td><td>Koden må kompileres på nytt for hver prosessormodell for å gå godt (eller i det hele tatt riktig); kompilatoren vet ikke om hopp og bom; én stans holder igjen hele pakken.</td><td>Kompleks maskinvare og høyt effektforbruk; vanskelig å verifisere.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><span class="term" data-term="spekulasjon">Spekulasjon</span> er prediksjon tatt ett steg videre: prosessoren (eller kompilatoren) gjetter på en egenskap ved en instruksjon, for eksempel utfallet av et hopp eller at en store ikke treffer samme adresse som en senere load, og begynner å utføre instruksjonene som avhenger av gjetningen. To ting må finnes: en sjekk av om gjetningen var riktig, og en måte å angre på. I maskinvare holdes spekulative resultater i en buffer til gjetningen er bekreftet; var den feil, kastes de og riktig sekvens utføres. Unntak fra spekulative instruksjoner holdes også tilbake til det er klart at instruksjonen virkelig skulle utføres.</p>
+
+      <div class="oppgave" data-quiz id="oppg-4-31">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">4.31.1–4.31.2 · s. 380</span></div>
+        <div class="o-text"><p>Løkka <code>for (i = 0; i != j; i += 2) b[i] = a[i] − a[i+1];</code> er kompilert uten optimalisering til koden under. En statisk 2-issue-prosessor kan starte to instruksjoner per sykel: én minneoperasjon og én ALU-instruksjon eller hopp. To instruksjoner kan ikke stå i samme pakke om den ene avhenger av den andre, og må én stanse, stanser hele pakken. Full videresending, perfekt hopprediksjon. 1. Hvordan går en iterasjon gjennom prosessoren? 2. Hva er speedup fra 1-issue til 2-issue når løkka går mange ganger?</p>
+<div class="asm">TOP: slli x5, x12, 3
+     add  x6, x10, x5
+     lw   x7, 0(x6)
+     lw   x29, 8(x6)
+     sub  x30, x7, x29
+     add  x31, x11, x5
+     sw   x30, 0(x31)
+     addi x12, x12, 2
+ENT: bne  x12, x13, TOP</div></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · forutsetter pakker i programrekkefølge</span>
+            <p>1-issue: ni instruksjoner per iterasjon pluss én load-use-boble (sub bruker x29 rett etter lw): 10 sykler.</p>
+            <p>2-issue, pakker i programrekkefølge: slli alene (neste er også ALU); add x6 alene (lw x7 avhenger av den); lw x7 alene (neste er også minneoperasjon); lw x29 alene (sub avhenger av den); én boble for load-use; sub alene (add x31 er også ALU); add x31 alene (sw avhenger av den); sw + addi sammen (uavhengige, én av hver type); bne alene. Det er 8 pakker + 1 boble = 9 sykler.</p>
+            <p>2. Speedup 10/9 ≈ 1,11. Uoptimalisert kode gir nesten ingenting på en statisk 2-issue-maskin: avhengighetskjedene og typekravet hindrer paring. Poenget med resten av oppgaven er at kompilatoren må stokke om (og rulle ut løkka) for at den andre plassen i pakkene skal bli brukt.</p>
+          </div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: løkkeutrulling</summary>
+        <p><span class="term" data-term="lokkeutrulling">Løkkeutrulling</span> (loop unrolling) lager flere kopier av løkkekroppen, så flere iterasjoner ligger etter hverandre uten hopp mellom. Da finnes flere uavhengige instruksjoner å fylle pakkene med, og løkkeoverheaden (telling og hopp) betales sjeldnere. Kopiene må bruke hver sine midlertidige registre, ellers oppstår falske avhengigheter mellom dem; det er register renaming gjort av kompilatoren. Bokas eksempel går fra 5 sykler per iterasjon (CPI 0,8) til 8 sykler for fire iterasjoner (CPI 0,57).</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 RENAMING ─────────────────────────── -->
+  <section id="renaming">
+    <div class="container">
+      <div class="section-badge">03 · Farer og register renaming</div>
+      <h2>Ekte dataflyt og <em>falske avhengigheter</em></h2>
+      <div class="source-note">Boka · kap. 4.11 · s. 345–350 · Eksamen: Ord. 25 oppg. 8.1</div>
+      <span class="lm-pill">Læringsmål T5.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne gjenkjenne og beskrive RAW, WAW og WAR farer og avhengighetene som skaper dem.</li>
+        <li>Studenten skal forstå prinsippene bak hvordan «register renaming» fjerner WAW og WAR farer.</li>
+      </ul>
+
+      <p class="dropcap">Når instruksjoner kan utføres i en annen rekkefølge enn programmets, er det tre måter to instruksjoner som bruker samme register kan komme i veien for hverandre. Kall den første instruksjonen A og den senere B.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fare</th><th>Avhengighet</th><th>Mønster</th><th>Hva går galt ved feil rekkefølge</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="raw">RAW</span> (read after write)</td><td>Ekte dataavhengighet: B bruker verdien A lager.</td><td>A skriver x5, B leser x5</td><td>B leser før A har skrevet og får gammel verdi.</td></tr>
+            <tr><td><span class="term" data-term="waw">WAW</span> (write after write)</td><td>Utgangsavhengighet: A og B skriver samme register.</td><td>A skriver x5, B skriver x5</td><td>A skriver sist, og registeret ender med As verdi i stedet for Bs.</td></tr>
+            <tr><td><span class="term" data-term="war">WAR</span> (write after read)</td><td><span class="term" data-term="antiavhengighet">Antiavhengighet</span>: B overskriver et register A skal lese.</td><td>A leser x5, B skriver x5</td><td>B skriver før A har lest, og A får Bs nye verdi.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>RAW er dataflyt og kan ikke fjernes: B må vente på A (eller få verdien videresendt). WAW og WAR er <span class="term" data-term="navneavhengighet">navneavhengigheter</span>: ingen verdi flyter mellom instruksjonene; de kolliderer bare fordi programmet bruker samme registernavn om igjen til noe nytt. I 5-stegssamlebåndet gjør de ingen skade, for alt leses og skrives i programrekkefølge. Ute av rekkefølge blir de reelle farer.</p>
+
+      <div class="def-box">
+        <span class="def-label">Løsningen</span>
+        <div class="def-term"><span class="term" data-term="register-renaming">Register renaming</span></div>
+        <p>Gi hver ny verdi sitt eget lagringssted. Prosessoren har flere fysiske registre enn de 32 arkitekturregistrene, og en tabell som sier hvilket fysisk register som nå holder hvert arkitekturregister. Når en instruksjon dekodes, slås kildene opp i tabellen (slik at den leser fra registeret der den siste skriveren la, eller vil legge, verdien), og målet får et nytt, ledig fysisk register som tabellen så peker på. To skrivinger til x5 havner i to ulike fysiske registre: WAW og WAR er borte, og bare RAW, den ekte dataflyten, står igjen.</p>
+      </div>
+
+<div class="asm"><span class="c">// før                  // etter (p = fysisk register)</span>
+I1: add x5, x1, x2      I1: add p10, x1, x2
+I2: sw  x5, 0(x3)       I2: sw  p10, 0(x3)    <span class="c">// RAW I1→I2 består</span>
+I3: add x5, x4, x6      I3: add p11, x4, x6   <span class="c">// WAW og WAR borte</span>
+I4: sub x7, x5, x1      I4: sub p12, p11, x1  <span class="c">// RAW I3→I4 består</span></div>
+
+      <p>WAW I1→I3 og WAR I2→I3 er borte. Etter omdøpingen kan I3 og I4 utføres før, eller samtidig med, I1 og I2: de deler ikke lenger noe. Uten renaming måtte I3 ventet til I2 hadde lest x5.</p>
+
+      <div class="widget" id="w-rn">
+        <div class="widget-label">Prøv selv · Finn farene og døp om registrene</div>
+        <p class="widget-intro">Skriv en instruksjonsrekke (add, sub, and, or, slt, addi, lw, sw). Widgeten lister RAW-, WAW- og WAR-parene, døper om hvert målregister til et nytt fysisk register (p10, p11, …), og viser hvilke farer som står igjen.</p>
+        <textarea id="rn-code" spellcheck="false">add x5, x1, x2
+sw x5, 0(x3)
+add x5, x4, x6
+sub x7, x5, x1
+add x1, x7, x7</textarea>
+        <div class="w-row"><button class="w-btn" id="rn-run" type="button">Analyser</button></div>
+        <div class="table-wrap"><table class="rn" id="rn-tab"></table></div>
+        <div class="w-out" id="rn-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-8-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 8.1</span><span class="o-ref">Register renaming · 4 p</span></div>
+        <div class="o-text"><p>Hva gjør «register renaming», og hvorfor brukes denne teknikken i prosessorer med høy ytelse?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Modellsvar skrevet fra boka (kap. 4.11) · ikke offisielt løsningsforslag</span>
+            <div class="modell">
+              <span class="ml">Modellsvar</span>
+              <p><strong>Hva:</strong> Register renaming avbilder arkitekturregistrene programmet bruker (x0–x31) på et større sett fysiske registre. Hver gang en instruksjon skriver et register, får resultatet et nytt, ledig fysisk register, og en tabell oppdateres slik at senere instruksjoner som leser arkitekturregisteret, leser fra det nye fysiske registeret. Hver verdi får dermed sitt eget lagringssted.</p>
+              <p><strong>Hvorfor:</strong> Prosessorer med høy ytelse utfører instruksjoner ut av rekkefølge, så snart operandene er klare. Da blir gjenbruk av registernavn et problem: to instruksjoner som skriver samme register (WAW), eller en instruksjon som overskriver et register en tidligere instruksjon ennå ikke har lest (WAR), kan gi feil resultat om rekkefølgen byttes. Disse er navneavhengigheter, ikke dataflyt. Renaming fjerner dem, slik at bare de ekte dataavhengighetene (RAW) begrenser rekkefølgen. Prosessoren finner dermed mer parallellitet: flere uavhengige instruksjoner kan utføres samtidig eller forbi en instruksjon som venter (for eksempel på en hurtigbufferbom).</p>
+              <p><strong>I tillegg:</strong> Siden gamle verdier ikke overskrives før instruksjonen er endelig fullført i programrekkefølge, er det lett å angre spekulative instruksjoner etter et feilpredikert hopp eller et unntak: tabellen settes tilbake, og de nye registrene frigis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Finn alle RAW-, WAW- og WAR-parene: <code>I1: add x1, x2, x3</code> / <code>I2: sub x4, x1, x5</code> / <code>I3: or x1, x6, x7</code> / <code>I4: and x8, x1, x4</code>. Hvilke forsvinner med renaming?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">RAW: I1→I2 (x1), I3→I4 (x1), I2→I4 (x4). WAW: I1→I3 (begge skriver x1). WAR: I2→I3 (I2 leser x1, I3 skriver x1). Renaming gir I3 et nytt fysisk register for x1: WAW og WAR forsvinner, de tre RAW består. Prøv i widgeten.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 OOO ─────────────────────────── -->
+  <section id="ooo">
+    <div class="container">
+      <div class="section-badge">04 · Ut av rekkefølge</div>
+      <h2>Inn i rekkefølge, <em>ut i rekkefølge</em>, fritt i midten</h2>
+      <div class="source-note">Boka · kap. 4.11 «Dynamic multiple-issue processors» · s. 347–355 · figur 4.73</div>
+      <span class="lm-pill">Læringsmål T5.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kjenne til prinsippene bak hvordan prosessorer som utfører instruksjoner ut av rekkefølge («out of order») implementeres («dynamic multi-issue»).</li>
+      </ul>
+
+      <p class="dropcap">En prosessor med <span class="term" data-term="dynamisk-planlegging">dynamisk planlegging</span> velger selv hvilke instruksjoner som utføres i hver sykel, og går forbi instruksjoner som venter. Den har tre hoveddeler.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 250" aria-label="De tre enhetene i et dynamisk planlagt samlebånd">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <rect class="box box-a" x="210" y="14" width="220" height="40" rx="6"/><text x="320" y="32" text-anchor="middle" style="font-weight:600">Hent og dekod</text><text class="cap" x="320" y="46" text-anchor="middle">i programrekkefølge · renaming her</text>
+          <g>
+            <rect class="box" x="60" y="86" width="120" height="30" rx="4"/><text x="120" y="105" text-anchor="middle">Reservasjonsstasjon</text>
+            <rect class="box" x="260" y="86" width="120" height="30" rx="4"/><text x="320" y="105" text-anchor="middle">Reservasjonsstasjon</text>
+            <rect class="box" x="460" y="86" width="120" height="30" rx="4"/><text x="520" y="105" text-anchor="middle">Reservasjonsstasjon</text>
+            <rect class="box box-w" x="60" y="134" width="120" height="30" rx="4"/><text x="120" y="153" text-anchor="middle">Heltallsenhet</text>
+            <rect class="box box-w" x="260" y="134" width="120" height="30" rx="4"/><text x="320" y="153" text-anchor="middle">Flyttallsenhet</text>
+            <rect class="box box-w" x="460" y="134" width="120" height="30" rx="4"/><text x="520" y="153" text-anchor="middle">Load/store</text>
+          </g>
+          <path class="arr" d="M260 54 L130 84"/><path class="arr" d="M320 54 L320 84"/><path class="arr" d="M380 54 L510 84"/>
+          <path class="arr" d="M120 116 L120 132"/><path class="arr" d="M320 116 L320 132"/><path class="arr" d="M520 116 L520 132"/>
+          <text class="cap" x="20" y="130" transform="rotate(-90 20 130)" text-anchor="middle">utføring ut av rekkefølge</text>
+          <rect class="box box-g" x="210" y="196" width="220" height="40" rx="6"/><text x="320" y="214" text-anchor="middle" style="font-weight:600">Fullføringsenhet (reorder buffer)</text><text class="cap" x="320" y="228" text-anchor="middle">skriver registre og minne i programrekkefølge</text>
+          <path class="arr" d="M120 164 L250 194"/><path class="arr" d="M320 164 L320 194"/><path class="arr" d="M520 164 L390 194"/>
+          <path class="arr" d="M430 216 L610 216 L610 100 L582 100"/><text class="cap" x="600" y="180" transform="rotate(-90 600 180)" text-anchor="middle">resultater til ventende</text>
+        </svg>
+        <figcaption>Etter figur 4.73 i boka. Instruksjoner hentes og dekodes i rekkefølge, venter i reservasjonsstasjoner til operandene er klare, utføres når de kan, og fullføres i rekkefølge.</figcaption>
+      </figure>
+
+      <ol>
+        <li><strong>Hent og dekod, i rekkefølge.</strong> Instruksjonen får plass i en <span class="term" data-term="reservasjonsstasjon">reservasjonsstasjon</span> foran en funksjonsenhet. Operander som allerede finnes, kopieres inn straks; for de som mangler, noteres hvilken enhet som skal levere dem.</li>
+        <li><strong>Utfør, ut av rekkefølge.</strong> Når alle operandene er på plass og funksjonsenheten er ledig, utføres instruksjonen. Resultatet sendes både til reservasjonsstasjonene som venter på det og til fullføringsenheten.</li>
+        <li><strong>Fullfør, i rekkefølge.</strong> <span class="term" data-term="reorder-buffer">Fullføringsenheten</span> (commit unit, med reorder buffer) holder resultatene og skriver dem til registerfilen eller minnet først når alle tidligere instruksjoner er fullført: <span class="term" data-term="in-order-commit">in-order commit</span>. Utenfra ser utføringen sekvensiell ut.</li>
+      </ol>
+
+      <p>Å bufre operander i reservasjonsstasjonene og resultater i reorder-bufferen <em>er</em> en form for register renaming: verdiene har sitt eget lagringssted uavhengig av registernavnet. In-order commit er det som gjør unntak presise og spekulasjon trygg: etter et feilpredikert hopp kastes alt i bufferen bak hoppet, og ingenting av det har rukket å endre registre eller minne. Ulempene er kompleksitet og effekt: mye maskinvare brukes på å finne og holde styr på parallellitet, og programmer har sjelden mer enn noen få uavhengige instruksjoner om gangen. Det er en hovedgrunn til at bransjen gikk over til flere kjerner (kapittel 7).</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor fullføres instruksjonene i programrekkefølge når de likevel utføres ut av rekkefølge? Nevn to ting som ville blitt umulige uten.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(1) Presise unntak: får instruksjon 10 et unntak, må ingen senere instruksjon ha endret tilstanden, selv om noen av dem er ferdig utført. (2) Spekulasjon: instruksjoner etter et predikert hopp må kunne kastes sporløst om hoppet var feil. Begge løses ved at resultater ligger i reorder-bufferen og bare skrives til registre og minne i programrekkefølge.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Unntak / avbrudd</strong>Uplanlagt endring i kontrollflyten; avbrudd kommer utenfra. Lagre adressen i SEPC, årsaken i SCAUSE, hopp til handleren.</div>
+        <div class="recap-pill"><strong>Presist unntak</strong>Alt før er fullført, ingenting etter har endret tilstand. I samlebåndet: tøm IF, ID og EX.</div>
+        <div class="recap-pill"><strong>Tid og rom</strong>Dypere samlebånd (tid) eller flere instruksjoner per sykel, multiple issue (rom). IPC &gt; 1.</div>
+        <div class="recap-pill"><strong>Statisk / dynamisk</strong>Kompilatoren pakker og unngår farer, enkel maskinvare, må rekompileres. Prosessoren bestemmer under kjøring, kompleks, kjører all kode.</div>
+        <div class="recap-pill"><strong>RAW · WAW · WAR</strong>Ekte dataavhengighet · utgangsavhengighet · antiavhengighet. De to siste er navneavhengigheter.</div>
+        <div class="recap-pill"><strong>Register renaming</strong>Nytt fysisk register per skriving + tabell. Fjerner WAW og WAR; RAW består.</div>
+        <div class="recap-pill"><strong>Spekulasjon</strong>Gjett og utfør; sjekk; kast ved feil. Resultater bufres til gjetningen er bekreftet.</div>
+        <div class="recap-pill"><strong>Ut av rekkefølge</strong>Hent i rekkefølge → reservasjonsstasjoner → utfør når klar → fullfør i rekkefølge (reorder buffer).</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er forskjellen på et unntak og et avbrudd, og hva lagres i SEPC?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Begge er uplanlagte endringer i kontrollflyten. Et avbrudd har ekstern årsak (I/O-enhet, tidsur); et unntak brukes om alle, og særlig de med årsak i programmet (udefinert instruksjon, ugyldig adresse, systemkall). SEPC lagrer adressen til instruksjonen som ble rammet, så programmet kan fortsettes derfra.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hvorfor er WAR ikke en fare i 5-stegssamlebåndet fra 5A, men en fare i en prosessor som utfører ut av rekkefølge?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I 5-stegssamlebåndet leser alle instruksjoner registrene i ID og skriver i WB, i programrekkefølge: en senere instruksjon kan aldri skrive før en tidligere har lest. Ute av rekkefølge kan den senere instruksjonen bli ferdig mens den tidligere fortsatt venter på en annen operand, og da ville den overskrevet verdien den tidligere skulle lest. Renaming fjerner faren.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">En statisk 2-issue-prosessor kjører en løkke med IPC 1,25, mens den ideelle er 2. Nevn tre grunner til at pakkene ikke fylles.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(1) Avhengigheter: to instruksjoner der den ene bruker den andres resultat kan ikke stå i samme pakke. (2) Typekrav: bare én minneoperasjon og én ALU/hopp-instruksjon per pakke. (3) Lengre use latency: en load-use eller en ALU-bruker kan måtte vente en hel pakke, og en stans holder igjen begge instruksjonene. Omstokking, løkkeutrulling og renaming i kompilatoren hjelper.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="samleband.html" class="prev"><div class="pn-label">← Forrige · 5A</div><div class="pn-title">Samlebåndsprosessoren med fem steg</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 5: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var code = document.getElementById('rn-code'), run = document.getElementById('rn-run'), tab = document.getElementById('rn-tab'), out = document.getElementById('rn-out'); if (!code) return;
+  function parse(line) {
+    var s = line.replace(/#.*$|\/\/.*$/, '').trim(); if (!s) return null;
+    s = s.replace(/^[A-Za-z_]\w*:\s*/, '');
+    var m = s.match(/^(\w+)\s+(.*)$/); if (!m) return { err: line };
+    var op = m[1].toLowerCase(), a = m[2].split(',').map(function (t) { return t.trim(); });
+    function r(t) { var k = /^x(\d+)$/.exec(t || ''); return k && +k[1] < 32 ? +k[1] : null; }
+    var o = { op: op, text: s, rd: null, src: [] }, k;
+    if (/^(add|sub|and|or|xor|slt)$/.test(op)) { o.rd = r(a[0]); o.src = [r(a[1]), r(a[2])]; o.fmt = function (d, s) { return op + ' ' + d + ', ' + s[0] + ', ' + s[1]; }; }
+    else if (/^(addi|andi|ori)$/.test(op)) { o.rd = r(a[0]); o.src = [r(a[1])]; var imm = a[2]; o.fmt = function (d, s) { return op + ' ' + d + ', ' + s[0] + ', ' + imm; }; }
+    else if (op === 'lw') { k = /^(-?\d+)\((x\d+)\)$/.exec(a[1] || ''); if (!k) return { err: line }; o.rd = r(a[0]); o.src = [r(k[2])]; o.fmt = function (d, s) { return 'lw ' + d + ', ' + k[1] + '(' + s[0] + ')'; }; }
+    else if (op === 'sw') { k = /^(-?\d+)\((x\d+)\)$/.exec(a[1] || ''); if (!k) return { err: line }; o.src = [r(a[0]), r(k[2])]; o.fmt = function (d, s) { return 'sw ' + s[0] + ', ' + k[1] + '(' + s[1] + ')'; }; }
+    else return { err: line };
+    if (o.src.indexOf(null) >= 0 || (op !== 'sw' && o.rd == null)) return { err: line };
+    return o;
+  }
+  function go() {
+    var prog = [], bad = null;
+    code.value.split('\n').forEach(function (l) { var o = parse(l); if (!o) return; if (o.err) bad = o.err; else prog.push(o); });
+    if (bad || !prog.length || prog.length > 10) { out.innerHTML = '<span class="bad">' + (bad ? 'Forstår ikke: ' + bad : 'Skriv 1–10 instruksjoner.') + '</span>'; tab.innerHTML = ''; return; }
+    /* avhengigheter (nærmeste for RAW; alle par for WAW/WAR) */
+    var raw = [], waw = [], war = [];
+    for (var j = 0; j < prog.length; j++) {
+      prog[j].src.forEach(function (s) { if (!s) return; for (var i = j - 1; i >= 0; i--) if (prog[i].rd === s) { raw.push('I' + (i + 1) + '→I' + (j + 1) + ' (x' + s + ')'); break; } });
+      if (prog[j].rd) for (var i2 = 0; i2 < j; i2++) {
+        if (prog[i2].rd === prog[j].rd) waw.push('I' + (i2 + 1) + '→I' + (j + 1) + ' (x' + prog[j].rd + ')');
+        if (prog[i2].src.indexOf(prog[j].rd) >= 0) war.push('I' + (i2 + 1) + '→I' + (j + 1) + ' (x' + prog[j].rd + ')');
+      }
+    }
+    /* renaming */
+    var map = {}, next = 10, rows = '';
+    prog.forEach(function (p, i) {
+      var s = p.src.map(function (x) { return map[x] || 'x' + x; }), d = '';
+      if (p.rd) { d = 'p' + (next++); } else if (p.rd === 0) d = 'x0';
+      var after = p.fmt(d, s);
+      if (p.rd) map[p.rd] = d;
+      rows += '<tr><td>I' + (i + 1) + '</td><td>' + p.text + '</td><td>' + after + '</td><td>' + (p.rd ? 'x' + p.rd + ' → ' + d : '—') + '</td></tr>';
+    });
+    tab.innerHTML = '<thead><tr><th></th><th>Før</th><th>Etter renaming</th><th>Tabell oppdateres</th></tr></thead><tbody>' + rows + '</tbody>';
+    out.innerHTML = '<span class="ok">RAW</span> (ekte dataflyt, består): ' + (raw.length ? raw.join(', ') : 'ingen') + '\n<span class="bad">WAW</span> (fjernes): ' + (waw.length ? waw.join(', ') : 'ingen') + '\n<span class="bad">WAR</span> (fjernes): ' + (war.length ? war.join(', ') : 'ingen') + '\nEtter renaming skriver hver instruksjon sitt eget fysiske register, så bare RAW-parene begrenser rekkefølgen.';
+  }
+  run.addEventListener('click', go); go();
+})();
+</script>
+</body>
+</html>

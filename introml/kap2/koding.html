@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Koding: nevrale nettverk — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fn-table { table-layout: fixed; width: 100%; }
+  .fn-table th:first-child, .fn-table td:first-child { width: 34%; font-family: var(--mono); font-size: 0.8rem; word-break: break-word; }
+  .fn-table th:last-child, .fn-table td:last-child { width: 14%; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faded); }
+  pre.pseudo { border-left: 3px solid var(--warm); }
+  pre.pseudo::before { content: 'PSEUDOKODE · forslag'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--warm); margin-bottom: 0.5rem; }
+  pre.notes::before { content: 'FRA NOTATENE'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Nevrale nettverk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2B · Koden i notatene 2.1–2.3 · øvingsstoff · ~25 min</div>
+      <h1>Koding: <em>nevrale nettverk</em></h1>
+      <p class="lede">Perceptronet fra bunnen og med scikit-learn, vektmatrisen for flere klasser, logiske porter som kode, aktiveringsfunksjonene i NumPy, og en forward pass gjennom vilkårlig mange lag. Trening av nettverket (backpropagation) legges til når notatene får det.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#verktoy"><span>01</span> Verktøykassa</a>
+        <a href="#perceptron"><span>02</span> Perceptron</a>
+        <a href="#flerklasse"><span>03</span> Flere klasser</a>
+        <a href="#porter"><span>04</span> Logiske porter</a>
+        <a href="#aktivering"><span>05</span> Aktiveringsfunksjoner</a>
+        <a href="#forward"><span>06</span> Forward pass</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Øvingsstoff, <em>ikke</em> eksamensstoff</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · siden dekker koden i notatene, ikke et eget deltema</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Øving</span><strong>For øvingen om nevrale nettverk.</strong> Ingen kode fra kapittel 2 er spurt på eksamen så langt.</li>
+          <li><span class="tag regn">Regn</span>Det ene som overlapper med eksamen: <strong>shapes og antall parametre</strong>. <code>coef_.shape</code> = (klasser, features), <code>intercept_.shape</code> = (klasser,); et lag med \(n\) inn og \(m\) ut har \(W\) med shape \((m, n)\). Se <a href="#flerklasse">03</a> og <a href="#forward">06</a>.</li>
+          <li><span class="tag">Lavere</span>Resten er oppslag.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 VERKTØY ─────────────────────────── -->
+  <section id="verktoy">
+    <div class="container">
+      <div class="section-badge">01 · Verktøykassa</div>
+      <h2>Funksjonene som <em>går igjen</em></h2>
+      <div class="source-note">Notatene · kodeeksemplene i 2.1–2.3</div>
+
+      <div class="table-wrap">
+        <table class="fn-table">
+          <thead><tr><th>Funksjon</th><th>Hva den gjør</th><th>Brukt i</th></tr></thead>
+          <tbody>
+            <tr><td>sklearn.datasets.make_blobs(n_samples, centers)</td><td>Lager klumper av punkter i planet med klasse-label per klump (figur 17a).</td><td>2.1</td></tr>
+            <tr><td>sklearn.datasets.make_classification(n_classes, ...)</td><td>Lager et mer sammensatt klassifiseringsdatasett (figur 17b).</td><td>2.1</td></tr>
+            <tr><td>Perceptron().fit(X, y)</td><td>sklearn-perceptron; wrapper rundt <code>SGDClassifier(loss="perceptron", learning_rate="constant")</code>.</td><td>2.1</td></tr>
+            <tr><td>modell.coef_, modell.intercept_</td><td>Tilpassede vekter (matrise) og bias (vektor) etter <code>fit</code>. Samme attributter i alle lineære sklearn-modeller.</td><td>2.1</td></tr>
+            <tr><td>X.shape[1], len(set(y))</td><td>Antall features og antall klasser.</td><td>2.1</td></tr>
+            <tr><td>np.heaviside(z, 1), np.maximum(0, z)</td><td>Stegfunksjonen (verdi 1 i 0); ReLU elementvis.</td><td>2.2</td></tr>
+            <tr><td>np.exp(z) / np.sum(np.exp(z))</td><td>Softmax. Trekk fra <code>max(z)</code> først for å unngå overflow.</td><td>2.2</td></tr>
+            <tr><td>W @ a, np.dot, np.hstack</td><td>Matriseprodukt i forward pass; utvide x med 1 for bias-trikset.</td><td>2.1, 2.3</td></tr>
+            <tr><td>np.eye(n_classes)[y]</td><td>One-hot-koding av targets: én kolonne per klasse.</td><td>2.1 (forslag)</td></tr>
+            <tr><td>np.argmax(a, axis=1)</td><td>Fra output-vektor til klasse: noden med størst aktivering.</td><td>2.2 (forslag)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 PERCEPTRON ─────────────────────────── -->
+  <section id="perceptron">
+    <div class="container">
+      <div class="section-badge">02 · Perceptron</div>
+      <h2>Fra bunnen og <em>med sklearn</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.1 · s. 35–36</div>
+
+      <p class="dropcap">Koden fra logistisk regresjon (1E) gjenbrukes med likning (89) som modell og Rosenblatts regel (91) i stedet for gradienten. To linjer er hele modellen:</p>
+<pre class="notes"><code>activation = sum(weight_i * x_i) + bias
+prediction = 1.0 if activation &gt;= 0.0 else 0.0</code></pre>
+<pre class="notes"><code>w = w + learning_rate * (expected - predicted) * x   # x utvidet med et første element 1, w[0] er bias</code></pre>
+
+<pre class="pseudo"><code>class Perceptron:
+    def __init__(self, learning_rate=0.1, epochs=100):
+        self.learning_rate, self.epochs = learning_rate, epochs
+
+    def _add_bias(self, x):
+        return np.hstack([np.ones((x.shape[0], 1)), x])   # (N, d) -&gt; (N, d+1): første kolonne = 1
+
+    def predict(self, x):
+        z = self._add_bias(x) @ self.w                     # (N,)
+        return np.where(z &gt;= 0, 1, 0)                      # Heaviside
+
+    def fit(self, x, y):
+        xb = self._add_bias(x)
+        self.w = np.zeros(xb.shape[1])
+        for _ in range(self.epochs):                       # én epoke = alle datapunkter én gang
+            for xi, yi in zip(xb, y):                      # ett punkt om gangen, ikke hele batchen
+                y_hat = 1 if xi @ self.w &gt;= 0 else 0
+                self.w = self.w + self.learning_rate * (yi - y_hat) * xi   # likning (91); 0 om riktig
+        return self</code></pre>
+
+      <div class="callout">
+        <span class="label">Forskjellen fra logistisk regresjon i kode</span>
+        <p>Samme løkke, men (1) ingen sigmoid og ingen tapsfunksjon å derivere, (2) oppdateringen skjer per datapunkt og bare når prediksjonen er feil, og (3) \((y - \hat{y})\) er alltid \(-1\), \(0\) eller \(1\). Er dataene lineært separerbare, stopper oppdateringene av seg selv; er de ikke det, fortsetter de for alltid, så <code>epochs</code> må begrense løkka.</p>
+      </div>
+
+      <h3>Det samme med scikit-learn</h3>
+<pre class="notes"><code>from sklearn.datasets import make_blobs
+from sklearn.linear_model import Perceptron
+
+perceptron = Perceptron().fit(X_train, y_train)
+y_pred = perceptron.predict(X_test)
+ws = perceptron.coef_          # vektene
+bs = perceptron.intercept_     # bias</code></pre>
+      <p><code>Perceptron</code> er en wrapper rundt <code>SGDClassifier</code> med <code>loss="perceptron"</code> og <code>learning_rate="constant"</code>. Vil du ha logistisk regresjon i stedet, er det samme klasse med <code>loss="log_loss"</code>.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 FLERKLASSE ─────────────────────────── -->
+  <section id="flerklasse">
+    <div class="container">
+      <div class="section-badge">03 · Flere klasser</div>
+      <h2>Vektvektor blir <em>vektmatrise</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.1 · s. 36 (likning 92 og shape-koden)</div>
+
+      <p class="dropcap">Med \(k\) klasser får modellen én output-node per klasse, og vektene blir en <span class="term" data-term="vektmatrise">matrise</span>. Oppdateringen (92) er den samme regelen anvendt på hver output-node \(j\) for seg. Targets må da være one-hot: \(y_j = 1\) for riktig klasse, 0 ellers.</p>
+
+<pre class="notes"><code>perceptron = Perceptron().fit(X_train, y_train)
+ws = perceptron.coef_
+bs = perceptron.intercept_
+print("Features:", X.shape[1])          # 2
+print("Classes:", len(list(set(y))))    # 3
+print("Weights:", ws.shape)             # (3, 2): én rad per klasse, én kolonne per feature
+print("Biases:", bs.shape)              # (3,)</code></pre>
+
+<pre class="pseudo"><code>def fit_multiclass(x, y, n_classes, learning_rate=0.1, epochs=100):
+    xb = np.hstack([np.ones((x.shape[0], 1)), x])      # (N, d+1)
+    Y = np.eye(n_classes)[y]                            # one-hot, (N, k)
+    W = np.zeros((xb.shape[1], n_classes))              # (d+1, k): W[i, j] = vekt fra input i til node j
+    for _ in range(epochs):
+        for xi, yi in zip(xb, Y):
+            y_hat = np.where(xi @ W &gt;= 0, 1, 0)         # (k,): én TLU per klasse
+            W += learning_rate * np.outer(xi, yi - y_hat)   # likning (92) for alle i, j samtidig
+    return W
+
+def predict_multiclass(W, x):
+    xb = np.hstack([np.ones((x.shape[0], 1)), x])
+    return np.argmax(xb @ W, axis=1)                    # klassen med størst aktivering</code></pre>
+      <p><code>np.outer(xi, yi - y_hat)</code> er en \((d+1) \times k\)-matrise med \((y_j - \hat{y}_j)\,x_i\) i posisjon \((i, j)\): nøyaktig (92). Merk at sklearn lagrer \(W\) transponert, som (klasser, features).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 PORTER ─────────────────────────── -->
+  <section id="porter">
+    <div class="container">
+      <div class="section-badge">04 · Logiske porter</div>
+      <h2>Tre tall per <em>port</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.1 · s. 36 (vektene); koden er forslag</div>
+
+<pre class="pseudo"><code>def tlu(w, b):
+    return lambda x: 1 if np.dot(w, x) + b &gt;= 0 else 0
+
+NOT = tlu([-1], 0.5)
+AND = tlu([1, 1], -1.5)
+OR  = tlu([1, 1], -0.5)
+NAND = tlu([-1, -1], 1.5)                            # NOT(AND)
+
+def XOR(x):                                          # to lag: OR og NAND, så AND
+    return AND([OR(x), NAND(x)])
+
+for x in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+    print(x, AND(x), OR(x), XOR(x))                  # 0 0 0 / 0 1 1 / 0 1 1 / 1 1 0</code></pre>
+      <p>Prøv å trene <code>Perceptron</code> fra 02 på XOR-tabellen: vektene slutter aldri å endre seg, og treffsikkerheten kommer aldri over 3 av 4. Det er den praktiske siden av «ikke lineært separerbart».</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 AKTIVERING ─────────────────────────── -->
+  <section id="aktivering">
+    <div class="container">
+      <div class="section-badge">05 · Aktiveringsfunksjoner</div>
+      <h2>Fire funksjoner i <em>NumPy</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.2 · s. 37 (likning 93–95); koden er forslag</div>
+
+<pre class="pseudo"><code>def heaviside(z):  return np.where(z &gt;= 0, 1.0, 0.0)          # perceptron; ikke deriverbar
+def sigmoid(z):    return 1 / (1 + np.exp(-z))                  # (93), binær klassifisering i siste lag
+def relu(z):       return np.maximum(0, z)                      # (95), skjulte lag
+def linear(z):     return z                                     # regresjon i siste lag
+def softmax(z):                                                 # (94), flerklasse i siste lag
+    e = np.exp(z - np.max(z, axis=-1, keepdims=True))           # trekk fra maks: samme svar, ingen overflow
+    return e / np.sum(e, axis=-1, keepdims=True)                # summerer til 1 per datapunkt
+
+# de deriverte (trengs når treningen kommer):
+def d_sigmoid(z): s = sigmoid(z); return s * (1 - s)            # likning (15)
+def d_relu(z):    return np.where(z &gt; 0, 1.0, 0.0)</code></pre>
+      <p>Alle er elementvise, så de virker på en hel matrise av aktiveringer om gangen. <code>softmax</code> er den eneste som ser på hele vektoren; <code>axis=-1</code> gjør at den normaliserer per rad når input er (N, k).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 FORWARD ─────────────────────────── -->
+  <section id="forward">
+    <div class="container">
+      <div class="section-badge">06 · Forward pass</div>
+      <h2>Lag for lag med <em>matriseprodukt</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.3 · s. 38–39 (likning 96 og 101); koden er forslag</div>
+
+      <p class="dropcap">Likning (101) er ett lag: \(\mathbf{a}^{(1)} = g(W^{(1)} \mathbf{x})\), med \(W\) som \(m \times n\) for \(n\) inn og \(m\) ut. Et nettverk er en liste av slike lag, og en forward pass er en løkke som sender aktiveringen fra ett lag inn i det neste. Bias tas med som en egen vektor \(\mathbf{b}\) per lag (notatene baker den inn som \(a_0 = 1\); resultatet er det samme).</p>
+
+<pre class="pseudo"><code>def init_layer(n_in, n_out, g):
+    return {"W": np.random.randn(n_out, n_in) * 0.1,   # (m, n): små tilfeldige vekter
+            "b": np.zeros(n_out),                       # (m,)
+            "g": g}
+
+def forward(layers, x):                                # x: (n_features,) for ett datapunkt
+    a = x                                              # a^(0) = x
+    for layer in layers:
+        z = layer["W"] @ a + layer["b"]                # (m,) = (m, n) @ (n,) + (m,)   likning (96)
+        a = layer["g"](z)                              # ikke-lineær transformasjon
+    return a                                           # output-laget: ŷ
+
+# arkitektur: 3 features -&gt; 4 -&gt; 4 -&gt; 3 klasser (figur 19)
+net = [init_layer(3, 4, relu), init_layer(4, 4, relu), init_layer(4, 3, softmax)]
+y_hat = forward(net, x)                                # (3,), summerer til 1
+klasse = np.argmax(y_hat)
+
+def n_params(layers):
+    return sum(l["W"].size + l["b"].size for l in layers)   # 3*4+4 + 4*4+4 + 4*3+3 = 51</code></pre>
+
+      <div class="callout">
+        <span class="label">Hele batchen på én gang</span>
+        <p>Med \(X\) som \((N, n)\) skriver man <code>z = a @ W.T + b</code>, som gir \((N, m)\). Da er én rad per datapunkt, og <code>softmax</code> med <code>axis=-1</code> normaliserer hver rad. Sjekk shapes etter hvert lag; dimensjonssjekken i notatene (\(3 \times 2\) ganger \(2 \times 1\) gir \(3 \times 1\)) er den samme sjekken.</p>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Bytt <code>relu</code> med <code>linear</code> i begge de skjulte lagene i <code>net</code>. Hva kan nettverket da, og hvorfor?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Bare det et enkelt lag kan. Uten ikke-linearitet er forward pass \(\mathrm{softmax}(W_3 (W_2 (W_1 x + b_1) + b_2) + b_3)\), og produktet av matriser er én matrise: nettverket kollapser til en lineær modell med softmax, altså multinomisk logistisk regresjon. Kjør det på XOR-data og se at det ikke lærer.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne skrive</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Perceptron</strong>Utvid x med 1, <code>z = x @ w</code>, <code>y_hat = z &gt;= 0</code>, <code>w += lr * (y - y_hat) * x</code> per punkt.</div>
+        <div class="recap-pill"><strong>Flere klasser</strong>One-hot targets, W som (d+1, k), <code>W += lr * outer(x, y - y_hat)</code>, argmax for klasse.</div>
+        <div class="recap-pill"><strong>Shapes</strong>sklearn: coef_ (klasser, features), intercept_ (klasser,). Eget lag: W (ut, inn), b (ut,).</div>
+        <div class="recap-pill"><strong>Aktivering</strong>sigmoid, relu, linear elementvis; softmax per rad med maks trukket fra.</div>
+        <div class="recap-pill"><strong>Forward</strong><code>for layer: a = g(W @ a + b)</code>. Tell parametre: Σ (ut·inn + ut).</div>
+        <div class="recap-pill"><strong>XOR</strong>Ett lag klarer det ikke; OR + NAND → AND gjør det.</div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="perceptron.html" class="prev"><div class="pn-label">← Forrige · 2A</div><div class="pn-title">Perceptron, aktivering og arkitektur</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 2: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

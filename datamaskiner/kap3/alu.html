@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>ALU, multiplikasjon og flyttall — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text, .cpu text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap, .cpu .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .cpu .sig { font-family: var(--mono); font-size: 9px; fill: var(--accent); }
+  .fig-svg .box, .cpu .u { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .cpu .u.on { fill: rgba(160,82,45,0.16); stroke: var(--warm); stroke-width: 1.6; }
+  .cpu .w { stroke: var(--ink-ghost); stroke-width: 1.2; fill: none; }
+  .cpu .w.on { stroke: var(--warm); stroke-width: 2.4; }
+  .cpu .c { stroke: var(--accent); stroke-width: 1; fill: none; stroke-dasharray: 3 2; opacity: 0.6; }
+  .cpu .c.on { stroke-width: 2.2; stroke-dasharray: none; opacity: 1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .wire { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+  .sigtab { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.8rem; }
+  .sigtab .s { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 4px; padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .sigtab .s b { color: var(--accent); font-weight: 600; }
+  .sigtab .s .v { font-weight: 600; min-width: 1.6em; text-align: right; }
+  .sigtab .s.on { border-color: var(--warm); background: var(--warm-soft); }
+  .sigtab .s input { width: 2.6em; font-family: var(--mono); font-size: 0.85rem; text-align: center; padding: 2px 3px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); }
+  .sigtab .s.ok { border-color: var(--green); background: rgba(61,107,58,0.08); }
+  .sigtab .s.bad { border-color: var(--red); background: rgba(179,38,30,0.08); }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  table.ctrl td, table.ctrl th { text-align: center; font-family: var(--mono); font-size: 0.85rem; }
+  table.ctrl td:first-child, table.ctrl th:first-child { text-align: left; font-family: var(--sans); }
+  table.steps td, table.steps th { font-family: var(--mono); font-size: 0.82rem; text-align: center; white-space: nowrap; }
+  table.steps td:first-child { text-align: left; font-family: var(--sans); white-space: normal; }
+  table.steps tr.now td { background: var(--warm-soft); }
+  .bits { display: grid; gap: 2px; font-family: var(--mono); font-size: 0.78rem; margin: 0.6rem 0; }
+  .bits .b { text-align: center; padding: 5px 2px; border: 1px solid var(--line-soft); border-radius: 3px; background: var(--paper); }
+  .bits .b.s { background: var(--warm-soft); } .bits .b.e { background: var(--accent-soft); } .bits .b.f { background: rgba(61,107,58,0.10); }
+  .bits .b small { display: block; font-size: 0.6rem; color: var(--ink-ghost); }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+  .steps { margin: 0.6rem 0 0; padding-left: 1.3rem; font-size: 0.92rem; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Enkeltsykelprosessor">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3B · Læringsmål T3.3 · Boka kap. 3.1–3.6, A.5 · Kompendiet kap. 3 · ~70 min</div>
+      <h1>ALU, multiplikasjon <em>og flyttall</em></h1>
+      <p class="lede">Aritmetikken bak prosessoren: hvordan 32 små 1-bits ALU-er gir add, sub, AND, OR og slt med tre kontrollsignaler; hvordan multiplikasjon og divisjon gjøres med skift og addisjon, register for register; og hvordan IEEE 754 pakker et desimaltall i 32 bit. Alle tre er egne deler på eksamen, 23 poeng i Ord. 2025.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#addisjon"><span>01</span> Addisjon og overflyt</a>
+        <a href="#alu"><span>02</span> ALU-en</a>
+        <a href="#multiplikasjon"><span>03</span> Multiplikasjon</a>
+        <a href="#divisjon"><span>04</span> Divisjon</a>
+        <a href="#flyttall"><span>05</span> Flyttall</a>
+        <a href="#simd"><span>06</span> SIMD og fastpunkt</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T3.3: prio 1 · Ord. 25 oppg. 3, 4 og 5 (23 p); Kont 26 oppg. 3; Ord. 22 oppg. 6 og 7</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>ALU-signalene for en operasjon</strong>: Ainvert, Bnegate, Operation (2 bit) for a − b, a + b, a AND b, a OR b, a &lt; b, NOR (Ord. 25 oppg. 3.1, 3 p, −0,25 per feil). <strong>Forklar</strong> så hvordan signalene flyter gjennom 1-bits ALU-en: inverterte innganger, CarryIn = 1, muxen (3.2, 4 p).</li>
+          <li><span class="tag regn">Regn</span><strong>Multiplikatoren iterasjon for iterasjon</strong>: innholdet i Product-registeret (og Multiplicand/Multiplier) etter hvert steg i bokas første maskinvare (Ord. 25 oppg. 4.1, 4 p; bokoppgave 3.12), og <strong>forklar</strong> algoritmen: test LSB, adder, skift (4.2, 4 p).</li>
+          <li><span class="tag regn">Regn</span><strong>IEEE 754 begge veier</strong>: hex → desimaltall (Ord. 25 oppg. 5.1, 0x40980000 = 4,75; bokoppgave 3.22) og desimaltall → bitmønster (3.23, kompendiets −7,5), med mellomregning: fortegn, eksponent − 127, 1 + brøk (5.2, 6 p).</li>
+          <li><span class="tag">Forklar</span>Hvorfor overflyt oppstår og når; hvorfor vi trenger flyttall; prinsippet for flyttallsaddisjon og -multiplikasjon (juster eksponent, regn, normaliser, avrund); divisjonsmaskinvaren (oppgave 3.18); SIMD/subord-parallellitet.</li>
+          <li><span class="tag">Lavere</span>Raskere addisjon (carry lookahead, A.6), raskere multiplikatorer, flyttallsnøyaktighet med guard/round/sticky, x86 SSE/AVX, og matrisemultiplikasjonseksemplene er nevnt kort eller tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 ADDISJON ─────────────────────────── -->
+  <section id="addisjon">
+    <div class="container">
+      <div class="section-badge">01 · Addisjon og overflyt</div>
+      <h2>Bit for bit, <em>mente for mente</em></h2>
+      <div class="source-note">Boka · kap. 3.1–3.2 · s. 190–193 · Kompendiet · kap. 3 «To-komplement», eksempel 1</div>
+      <span class="lm-pill">Læringsmål T3.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne konstruere en 32-bit aritmetisk-logisk enhet (ALU) som kan gjøre addisjon og subtraksjon samt logisk AND og OR og nulldeteksjon.</li>
+      </ul>
+
+      <p class="dropcap">Binær addisjon er som desimal: siffer for siffer fra høyre, med <span class="term" data-term="mente">mente</span> (carry) videre. Hvert bitpar gir en sum-bit og en mente ut; 1 + 1 = 10, 1 + 1 + 1 = 11. Subtraksjon gjøres som addisjon med tokomplementet av subtrahenden: a − b = a + (¬b + 1). Det er grunnen til at ALU-en ikke trenger egen subtraksjonskrets, bare en inverter og en ekstra mente inn.</p>
+
+<pre><code>  0000 0111   (7)          0000 0111   (7)
++ 0000 0110   (6)        + 1111 1010   (−6, tokomplement av 6)
+-----------              -----------
+  0000 1101   (13)       1 0000 0001   (1; menten ut forkastes)</code></pre>
+
+      <p><span class="term" data-term="overflyt">Overflyt</span> oppstår når resultatet ikke får plass i 32 bit med fortegn. Den kan bare oppstå når operandene har samme fortegn ved addisjon (eller motsatt fortegn ved subtraksjon), og kjennes igjen på at resultatets fortegnsbit er «feil»: to positive gir negativt, to negative gir positivt. For usignerte tall er menten ut av bit 31 overflytindikatoren. RISC-V gir ikke unntak ved overflyt i add/sub; programvaren må sjekke selv om den bryr seg.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl">
+          <caption>Når overflyt kan oppstå (figur 3.2). Bit 31 = fortegnsbiten.</caption>
+          <thead><tr><th>Operasjon</th><th>Operand A</th><th>Operand B</th><th>Resultat som viser overflyt</th></tr></thead>
+          <tbody>
+            <tr><td>A + B</td><td>≥ 0</td><td>≥ 0</td><td>&lt; 0</td></tr>
+            <tr><td>A + B</td><td>&lt; 0</td><td>&lt; 0</td><td>≥ 0</td></tr>
+            <tr><td>A − B</td><td>≥ 0</td><td>&lt; 0</td><td>&lt; 0</td></tr>
+            <tr><td>A − B</td><td>&lt; 0</td><td>≥ 0</td><td>≥ 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-5-3">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 3 · eksempel 1</span></div>
+        <div class="o-text"><p>Beregn 5 − 3 i 4-bits tokomplement.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+            <p>5 = 0101. −3: 3 = 0011, inverter 1100, pluss 1 = 1101. Addisjon: 0101 + 1101 = 1 0010; menten ut forkastes, resultatet 0010 = 2.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-3-6">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">3.6, 3.7, 3.8 · s. 247</span></div>
+        <div class="o-text"><p>185 og 122 er 8-bits tall. (3.6) Usignerte: regn 185 − 122. Overflyt, underflyt eller ingen av delene? (3.7) Fortegn-og-størrelse: regn 185 + 122. (3.8) Fortegn-og-størrelse: regn 185 − 122.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>3.6: 185 = 1011 1001, 122 = 0111 1010. 185 − 122 = 63 = 0011 1111. Resultatet er mellom 0 og 255, ingen overflyt (som addisjon med tokomplementet av 122: 1011 1001 + 1000 0110 = 1 0011 1111, menten ut betyr her «ikke lån», ingen feil).</p>
+            <p>3.7: I fortegn-og-størrelse er 185 = 1 011 1001 = −57 og 122 = 0 111 1010 = +122. −57 + 122 = 65 = 0 100 0001. Ingen overflyt (området er −127 … +127).</p>
+            <p>3.8: −57 − 122 = −179, som ikke får plass i −127 … +127: overflyt (resultatet ville trengt 8 bit til størrelsen).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 ALU ─────────────────────────── -->
+  <section id="alu">
+    <div class="container">
+      <div class="section-badge">02 · ALU-en</div>
+      <h2>32 små ALU-er og <em>tre signaler</em></h2>
+      <div class="source-note">Boka · appendiks A.5 · s. A-26–A-36 · figur A.5.6–A.5.14 · Eksamen: Ord. 25 oppg. 3, Kont 26 oppg. 3</div>
+      <span class="lm-pill">Læringsmål T3.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne konstruere en 32-bit ALU som kan gjøre addisjon og subtraksjon samt logisk AND og OR og nulldeteksjon (gjengi og forklare figurene A.5.7, A.5.8 og A.5.12).</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="alu">ALU</span> bygges av 32 like <span class="term" data-term="1-bit-alu">1-bits ALU-er</span>, én per bit. Hver av dem har en AND-port, en OR-port og en 1-bits <span class="term" data-term="fulladder">adder</span>, og en <span class="term" data-term="mux">multiplekser</span> som velger hvilket av resultatene som skal ut. Menten ut av bit i går inn i bit i + 1: en <span class="term" data-term="ripple-carry">ripple-carry-adder</span>. Tre kontrollsignaler styrer alt.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl">
+          <caption>De tre kontrollsignalene (figur A.5.13). Sammen utgjør de de 4 ALU-kontrollbitene i kapittel 4: Ainvert Bnegate Operation.</caption>
+          <thead><tr><th>Operasjon</th><th>Ainvert</th><th>Bnegate</th><th>Operation</th><th>4 bit</th><th>Hva som skjer</th></tr></thead>
+          <tbody>
+            <tr><td>a AND b</td><td>0</td><td>0</td><td>00</td><td>0000</td><td>muxen velger AND-porten</td></tr>
+            <tr><td>a OR b</td><td>0</td><td>0</td><td>01</td><td>0001</td><td>muxen velger OR-porten</td></tr>
+            <tr><td>a + b</td><td>0</td><td>0</td><td>10</td><td>0010</td><td>muxen velger adderen, CarryIn0 = 0</td></tr>
+            <tr><td>a − b</td><td>0</td><td>1</td><td>10</td><td>0110</td><td>b inverteres og CarryIn0 = 1: a + ¬b + 1</td></tr>
+            <tr><td>a &lt; b (slt)</td><td>0</td><td>1</td><td>11</td><td>0111</td><td>subtraher; fortegnsbiten (Set) sendes til Less i bit 0; muxen velger Less</td></tr>
+            <tr><td>a NOR b</td><td>1</td><td>1</td><td>00</td><td>1100</td><td>¬a AND ¬b = NOR (De Morgan)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure>
+        <svg class="cpu" id="alu1-fig" viewBox="0 0 560 300" aria-label="1-bits ALU (figur A.5.10 øverst)"></svg>
+        <figcaption>Etter figur A.5.10 (øverst) i boka: 1-bits ALU-en. Ainvert og Binvert velger a/¬a og b/¬b; Operation (2 bit) velger AND (0), OR (1), adder (2) eller Less (3). Binvert er Bnegate; i bit 0 går Bnegate også inn som CarryIn.</figcaption>
+      </figure>
+
+      <p>Tre detaljer gjør 32-bits-utgaven (figur A.5.12) komplett:</p>
+      <ul>
+        <li><strong>Subtraksjon</strong>: a − b = a + ¬b + 1. Binvert inverterer b i alle 32 cellene, og den ekstra +1 kommer som CarryIn i bit 0. Siden de to alltid settes sammen, slås de til ett signal, <span class="term" data-term="bnegate">Bnegate</span>.</li>
+        <li><strong>slt</strong>: a &lt; b er sant når a − b er negativt, altså når fortegnsbiten i differansen er 1. ALU31 har en ekstra utgang, Set, som er adderens resultat i bit 31. Set kobles til Less-inngangen i ALU0; alle andre Less-innganger er 0. Med Operation = 11 velger muxene Less, så resultatet blir 000…001 eller 000…000.</li>
+        <li><strong>Zero</strong>: alle 32 resultatbitene inn i en stor NOR-port (OR + inverter): Zero = 1 bare når alt er 0. Brukes av beq. <span class="term" data-term="overflytdeteksjon">Overflytdeteksjon</span> ligger i ALU31 og sammenlikner CarryIn og CarryOut i bit 31 (overflyt når de er ulike).</li>
+      </ul>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 560 340" aria-label="32-bits ALU (figur A.5.12)">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <text class="cap" x="60" y="18">Bnegate</text><text class="cap" x="130" y="18">Operation</text><text class="cap" x="190" y="18">Ainvert</text>
+          <path class="wire" d="M80 22 L80 40" stroke-dasharray="3 2"/><path class="wire" d="M150 22 L150 40" stroke-dasharray="3 2"/><path class="wire" d="M210 22 L210 40" stroke-dasharray="3 2"/>
+          <path class="wire" d="M80 40 L40 40 L40 52 L120 52" stroke-dasharray="3 2"/>
+          <text class="cap" x="44" y="66">CarryIn0</text>
+          <g>
+            <rect class="box" x="120" y="40" width="120" height="48" rx="5"/><text x="180" y="60" text-anchor="middle">ALU0</text><text class="cap" x="180" y="74" text-anchor="middle">a0 b0 · Less = Set</text>
+            <text x="100" y="58" text-anchor="end">a0</text><text x="100" y="78" text-anchor="end">b0</text>
+            <path class="arr" d="M104 56 L118 56"/><path class="arr" d="M104 76 L118 76"/>
+            <path class="arr" d="M242 60 L300 60"/><text x="262" y="54">Result0</text>
+            <path class="arr" d="M180 90 L180 102"/><text class="cap" x="186" y="100">CarryOut → CarryIn</text>
+          </g>
+          <g>
+            <rect class="box" x="120" y="104" width="120" height="48" rx="5"/><text x="180" y="124" text-anchor="middle">ALU1</text><text class="cap" x="180" y="138" text-anchor="middle">a1 b1 · Less = 0</text>
+            <text x="100" y="122" text-anchor="end">a1</text><text x="100" y="142" text-anchor="end">b1</text>
+            <path class="arr" d="M104 120 L118 120"/><path class="arr" d="M104 140 L118 140"/>
+            <path class="arr" d="M242 124 L300 124"/><text x="262" y="118">Result1</text>
+            <path class="arr" d="M180 154 L180 166"/>
+          </g>
+          <g>
+            <rect class="box" x="120" y="168" width="120" height="48" rx="5"/><text x="180" y="188" text-anchor="middle">ALU2</text><text class="cap" x="180" y="202" text-anchor="middle">a2 b2 · Less = 0</text>
+            <text x="100" y="186" text-anchor="end">a2</text><text x="100" y="206" text-anchor="end">b2</text>
+            <path class="arr" d="M104 184 L118 184"/><path class="arr" d="M104 204 L118 204"/>
+            <path class="arr" d="M242 188 L300 188"/><text x="262" y="182">Result2</text>
+            <path class="wire" d="M180 218 L180 228" stroke-dasharray="2 3"/>
+          </g>
+          <text class="cap" x="180" y="244" text-anchor="middle">⋮</text>
+          <g>
+            <rect class="box box-w" x="120" y="252" width="120" height="56" rx="5"/><text x="180" y="272" text-anchor="middle">ALU31</text><text class="cap" x="180" y="286" text-anchor="middle">a31 b31 · Less = 0</text><text class="cap" x="180" y="298" text-anchor="middle">+ overflytdeteksjon</text>
+            <text x="100" y="272" text-anchor="end">a31</text><text x="100" y="292" text-anchor="end">b31</text>
+            <path class="arr" d="M104 270 L118 270"/><path class="arr" d="M104 290 L118 290"/>
+            <path class="arr" d="M242 266 L300 266"/><text x="262" y="260">Result31</text>
+            <path class="arr" d="M242 284 L330 284 L330 318 L60 318 L60 80 L118 80"/><text class="cap" x="196" y="328" text-anchor="middle">Set (fortegnsbiten fra adderen) → Less0</text>
+            <path class="arr" d="M242 302 L400 302"/><text x="404" y="306">Overflow</text>
+          </g>
+          <path class="wire" d="M350 60 L350 100 L420 100"/><path class="wire" d="M350 124 L350 100"/><path class="wire" d="M350 188 L350 100"/><path class="wire" d="M350 266 L350 100"/>
+          <path class="wire" d="M300 60 L350 60"/><path class="wire" d="M300 124 L350 124"/><path class="wire" d="M300 188 L350 188"/><path class="wire" d="M300 266 L350 266"/>
+          <path class="box" d="M420 84 L440 84 A16 16 0 0 1 440 116 L420 116 Z"/><circle class="box" cx="460" cy="100" r="3"/>
+          <path class="arr" d="M464 100 L500 100"/><text x="504" y="104">Zero</text>
+          <text class="cap" x="430" y="128">OR + inverter</text>
+        </svg>
+        <figcaption>Etter figur A.5.12 i boka: 32 1-bits ALU-er i ripple-carry-kjede. Bnegate går til alle Binvert-inngangene og til CarryIn0. Set fra ALU31 går til Less0. Alle resultatbitene inn i NOR gir Zero.</figcaption>
+      </figure>
+
+      <div class="widget" id="w-alu">
+        <div class="widget-label">Prøv selv · Kontrollsignalene inn i 1-bits ALU-en</div>
+        <p class="widget-intro">Velg operasjon og se hvilke verdier Ainvert, Bnegate og Operation får, og hvilken vei gjennom 1-bits ALU-en som er aktiv. Sett inn a og b (og CarryIn for bit 0) for å se result og CarryOut for én bit. «Test deg selv» skjuler signalene som på eksamen.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="alu-op">operasjon</label>
+            <select id="alu-op"><option value="sub">a − b</option><option value="add">a + b</option><option value="and">a AND b</option><option value="or">a OR b</option><option value="slt">a &lt; b (slt)</option><option value="nor">a NOR b</option></select>
+          </div>
+          <div class="w-ctl"><label for="alu-a">a</label><select id="alu-a"><option>0</option><option selected>1</option></select></div>
+          <div class="w-ctl"><label for="alu-b">b</label><select id="alu-b"><option selected>0</option><option>1</option></select></div>
+          <div class="w-ctl"><label for="alu-less">Less</label><select id="alu-less"><option selected>0</option><option>1</option></select></div>
+          <div class="w-ctl"><label><input type="checkbox" id="alu-test"> Test deg selv</label></div>
+          <button class="w-btn" id="alu-check" type="button" style="display:none">Rett</button>
+        </div>
+        <svg class="cpu" id="alu1-w" viewBox="0 0 560 300" aria-label="1-bits ALU i drift"></svg>
+        <div class="sigtab" id="alu-sig"></div>
+        <div class="w-out" id="alu-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 3.1 og 3.2</span><span class="o-ref">Aritmetisk-logisk enhet · 3 + 4 p</span></div>
+        <div class="o-text"><p>Den 32-bits ALU-en i figur A.5.12, bygget av 1-bits ALU-er, skal utføre a − b. Angi Bnegate, Ainvert og Operation i binær med rett antall bit. (3.2) Forklar hvordan signalene fører til at a − b utføres.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (figur A.5.13) · ikke offisielt løsningsforslag</span>
+            <p>Bnegate = 1, Ainvert = 0, Operation = 10.</p>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>Subtraksjon gjøres som addisjon med tokomplementet: a − b = a + (¬b + 1). <strong>Ainvert = 0</strong>: a går uendret inn i hver 1-bits ALU. <strong>Bnegate = 1</strong> gjør to ting: i hver av de 32 cellene velger Binvert-muxen ¬b i stedet for b, og i bit 0 går Bnegate inn som CarryIn = 1. Dermed regner adderkjeden a + ¬b + 1; menten vandrer fra celle til celle (ripple carry), og CarryOut fra bit 31 forkastes. <strong>Operation = 10</strong> gjør at muxen i hver celle velger adderens utgang (inngang 2) som Result, ikke AND, OR eller Less. Resultatet er a − b i tokomplement; Zero blir 1 hvis a = b, og ALU31 melder overflyt hvis fortegnet er feil.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor må Set tas fra adderen i ALU31 og ikke fra Result31, og hva ville gått galt om Less-inngangene i bit 1–31 var koblet til 1?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Ved slt er Operation = 11, så Result31 er Less31 (= 0), ikke differansens fortegn. Set må derfor hentes direkte fra adderens utgang i bit 31, som er fortegnet til a − b. Var Less = 1 i bit 1–31, ville slt gitt 111…11x i stedet for 000…00x; slt skal sette alle bit unntatt den minst signifikante til 0.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 MULTIPLIKASJON ─────────────────────────── -->
+  <section id="multiplikasjon">
+    <div class="container">
+      <div class="section-badge">03 · Multiplikasjon</div>
+      <h2>Test LSB, adder, <em>skift</em></h2>
+      <div class="source-note">Boka · kap. 3.3 · s. 193–199 · figur 3.3–3.6 · Eksamen: Ord. 25 oppg. 4</div>
+      <span class="lm-pill">Læringsmål T3.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne utføre multiplikasjon og divisjon av binære tall og beskrive hvordan disse implementeres i maskinvare.</li>
+      </ul>
+
+      <p class="dropcap">Papirmetoden fra skolen fungerer binært og blir enklere: hvert siffer i <span class="term" data-term="multiplikator">multiplikatoren</span> er 0 eller 1, så hvert delprodukt er enten <span class="term" data-term="multiplikand">multiplikanden</span> skiftet på plass, eller 0. Et n-bits tall ganger et m-bits tall gir et <span class="term" data-term="produkt">produkt</span> på n + m bit. Bokas første maskinvare etterlikner papirmetoden direkte.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 560 250" aria-label="Første versjon av multiplikasjonsmaskinvaren (figur 3.3)">
+          <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <rect class="box box-a" x="120" y="20" width="200" height="40" rx="5"/><text x="220" y="38" text-anchor="middle" style="font-weight:600">Multiplicand</text><text class="cap" x="220" y="52" text-anchor="middle">64 bit · skift venstre</text>
+          <path d="M160 10 L120 10" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none"/>
+          <path d="M220 62 L220 92" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none"/>
+          <path class="box" d="M150 96 L290 96 L260 136 L180 136 Z"/><text x="220" y="120" text-anchor="middle">64-bits ALU</text>
+          <path d="M220 138 L220 168" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none"/>
+          <rect class="box box-w" x="120" y="170" width="200" height="40" rx="5"/><text x="220" y="188" text-anchor="middle" style="font-weight:600">Product</text><text class="cap" x="220" y="202" text-anchor="middle">64 bit · Write</text>
+          <path d="M120 190 L90 190 L90 110 L150 110" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none"/>
+          <rect class="box box-a" x="380" y="80" width="150" height="40" rx="5"/><text x="455" y="98" text-anchor="middle" style="font-weight:600">Multiplier</text><text class="cap" x="455" y="112" text-anchor="middle">32 bit · skift høyre</text>
+          <path d="M490 70 L530 70" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none"/>
+          <ellipse class="box" cx="455" cy="180" rx="50" ry="22"/><text x="455" y="184" text-anchor="middle">Kontroll</text>
+          <path d="M455 122 L455 156" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none"/><text class="cap" x="462" y="142">test Multiplier0</text>
+          <path d="M405 180 L322 190" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none" stroke-dasharray="3 2"/>
+          <path d="M440 158 L330 50" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none" stroke-dasharray="3 2"/>
+          <path d="M490 162 L520 122" stroke="#3d3832" stroke-width="1.2" marker-end="url(#ah3)" fill="none" stroke-dasharray="3 2"/>
+          
+        </svg>
+        <figcaption>Etter figur 3.3 i boka. Multiplikanden starter i høyre halvdel av et 64-bits register og skiftes venstre hvert steg; multiplikatoren skiftes høyre så neste bit kommer i posisjon 0; produktet starter på 0. I eksamensutgaven er registrene 8, 4 og 8 bit.</figcaption>
+      </figure>
+
+      <p>Tre steg per bit, gjentatt like mange ganger som multiplikatoren har bit: (1) hvis Multiplier0 = 1, legg multiplikanden til produktet; (2) skift multiplikanden ett steg til venstre; (3) skift multiplikatoren ett steg til høyre. Med én sykel per steg tar 32 bit nesten 100 sykler. Den forbedrede versjonen (figur 3.5) gjør stegene parallelt og halverer bredden: produktregisteret skiftes høyre, og multiplikatoren ligger i produktregisterets høyre halvdel. Raske multiplikatorer legger alle 32 delproduktene sammen i et tre av addere.</p>
+
+      <div class="widget" id="w-mul">
+        <div class="widget-label">Prøv selv · Multiplikatoren iterasjon for iterasjon</div>
+        <p class="widget-intro">Skriv multiplikand og multiplikator binært (like mange bit som på eksamen, 4 hver, eller 6 som i oppgave 3.12). Tabellen viser registrene etter hvert steg i hver iterasjon; dette er nøyaktig det Ord. 2025 oppgave 4.1 spør om. Forhåndsutfylt med 1010 × 1001.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="mul-a">multiplikand</label><input type="text" id="mul-a" value="1010" style="width:110px"></div>
+          <div class="w-ctl"><label for="mul-b">multiplikator</label><input type="text" id="mul-b" value="1001" style="width:110px"></div>
+          <button class="w-btn" id="mul-run" type="button">Regn</button>
+        </div>
+        <div class="table-wrap"><table class="steps" id="mul-tab"></table></div>
+        <div class="w-out" id="mul-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 4.1 og 4.2</span><span class="o-ref">Multiplikator · 4 + 4 p</span></div>
+        <div class="o-text"><p>Multiplikatoren i figur 3.3 (8-bits Multiplicand og Product, 4-bits Multiplier) skal regne 1010 × 1001. Angi verdien i Product-registeret etter hver av de fire iterasjonene, i binær med rett antall bit. (4.2) Forklar hvordan du kom fram til svaret.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (figur 3.4 og 3.6) · ikke offisielt løsningsforslag</span>
+            <p>Etter iterasjon 1: 0000 1010. Etter 2: 0000 1010. Etter 3: 0000 1010. Etter 4: 0101 1010 (= 90 = 10 × 9).</p>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>Start: Product = 0000 0000, Multiplicand = 0000 1010 (i høyre halvdel av 8 bit), Multiplier = 1001. Hver iterasjon: (1) se på Multiplier0; er den 1, legges Multiplicand til Product; (2) Multiplicand skiftes ett steg venstre; (3) Multiplier skiftes ett steg høyre. Iterasjon 1: Multiplier0 = 1 → Product = 0000 1010; Multiplicand = 0001 0100; Multiplier = 0100. Iterasjon 2: Multiplier0 = 0 → ingen addisjon; Multiplicand = 0010 1000; Multiplier = 0010. Iterasjon 3: Multiplier0 = 0 → ingen addisjon; Multiplicand = 0101 0000; Multiplier = 0001. Iterasjon 4: Multiplier0 = 1 → Product = 0000 1010 + 0101 0000 = 0101 1010; Multiplicand = 1010 0000; Multiplier = 0000. Dette er papirmetoden: delproduktene for bit 0 og bit 3 i multiplikatoren, skiftet 0 og 3 plasser, lagt sammen.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-3-12">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">3.12 · s. 247</span></div>
+        <div class="o-text"><p>Regn produktet av de usignerte 6-bits oktaltallene 62 og 12 med maskinvaren i figur 3.3, og vis innholdet i hvert register i hvert steg (som figur 3.6).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>62<sub>8</sub> = 110 010<sub>2</sub> = 50, 12<sub>8</sub> = 001 010<sub>2</sub> = 10. Registrene er 12, 6 og 12 bit. Multiplikatoren 001010 har 1 i bit 1 og bit 3, så bare iterasjon 2 og 4 adderer:</p>
+            <div class="table-wrap"><table class="steps">
+              <thead><tr><th>Iterasjon</th><th>Steg</th><th>Multiplier</th><th>Multiplicand</th><th>Product</th></tr></thead>
+              <tbody>
+                <tr><td>0</td><td>start</td><td>001010</td><td>000000 110010</td><td>000000 000000</td></tr>
+                <tr><td>1</td><td>LSB = 0 → ingen; skift</td><td>000101</td><td>000001 100100</td><td>000000 000000</td></tr>
+                <tr><td>2</td><td>LSB = 1 → adder; skift</td><td>000010</td><td>000011 001000</td><td>000001 100100</td></tr>
+                <tr><td>3</td><td>LSB = 0 → ingen; skift</td><td>000001</td><td>000110 010000</td><td>000001 100100</td></tr>
+                <tr><td>4</td><td>LSB = 1 → adder; skift</td><td>000000</td><td>001100 100000</td><td>000111 110100</td></tr>
+                <tr><td>5–6</td><td>LSB = 0 → ingen; skift</td><td>000000</td><td>110010 000000</td><td>000111 110100</td></tr>
+              </tbody>
+            </table></div>
+            <p>Produkt 000111110100<sub>2</sub> = 500 = 764<sub>8</sub>. Kontroll: 50 × 10 = 500. Kjør det i widgeten med 110010 × 001010.</p>
+          </div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: signert multiplikasjon og RISC-V-instruksjonene</summary>
+        <p>Enkleste løsning for signerte tall: husk fortegnene, multipliser absoluttverdiene, og negér produktet om fortegnene var ulike. Den forbedrede maskinvaren kan også regne direkte på tokomplement ved å fortegnsutvide delproduktene (Booths algoritme er en videre forbedring). RISC-V har <code>mul</code> (nedre 32 bit av produktet), <code>mulh</code>, <code>mulhu</code> og <code>mulhsu</code> (øvre 32 bit, med ulike fortegnstolkninger). Et 32 × 32-produkt er 64 bit, så overflyt kan oppdages ved å sjekke om de øvre 32 bitene bare er kopier av fortegnsbiten i de nedre.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 DIVISJON ─────────────────────────── -->
+  <section id="divisjon">
+    <div class="container">
+      <div class="section-badge">04 · Divisjon</div>
+      <h2>Trekk fra, og <em>angre hvis negativt</em></h2>
+      <div class="source-note">Boka · kap. 3.4 · s. 199–208 · figur 3.8–3.10</div>
+
+      <p class="dropcap">Divisjon er multiplikasjon baklengs: <span class="term" data-term="dividend">dividend</span> = <span class="term" data-term="kvotient">kvotient</span> × <span class="term" data-term="divisor">divisor</span> + <span class="term" data-term="rest">rest</span>. Bokas første maskinvare har et 64-bits Divisor-register (divisoren starter i venstre halvdel og skiftes høyre), et 32-bits Quotient-register og et 64-bits Remainder-register som starter med dividenden. Algoritmen (figur 3.9), 33 ganger for 32 bit:</p>
+      <ol>
+        <li>Remainder = Remainder − Divisor.</li>
+        <li>Er Remainder ≥ 0: skift Quotient venstre og sett bit 0 = 1. Er den &lt; 0: legg Divisor tilbake (angre), skift Quotient venstre med bit 0 = 0.</li>
+        <li>Skift Divisor ett steg til høyre.</li>
+      </ol>
+      <p>Som for multiplikasjon finnes en forbedret versjon der resten skiftes venstre og kvotienten bygges i restregisterets høyre halvdel. Signert divisjon: regn på absoluttverdier og sett fortegn etterpå; regelen er at resten har samme fortegn som dividenden. RISC-V har <code>div</code>, <code>divu</code>, <code>rem</code>, <code>remu</code>, og gir ikke unntak ved divisjon med 0 (resultatet er alle enere).</p>
+
+      <div class="widget" id="w-div">
+        <div class="widget-label">Prøv selv · Divisjon steg for steg</div>
+        <p class="widget-intro">Usignert n-bits dividend og divisor. Tabellen viser Remainder, Divisor og Quotient i hvert av de n + 1 stegene, med «angre» der differansen ble negativ. Forhåndsutfylt med oppgave 3.18: 74 ÷ 21 med 6 bit.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="div-a">dividend</label><input type="number" id="div-a" value="74" min="0"></div>
+          <div class="w-ctl"><label for="div-b">divisor</label><input type="number" id="div-b" value="21" min="1"></div>
+          <div class="w-ctl"><label for="div-n">bit</label><input type="number" id="div-n" value="6" min="2" max="8"></div>
+          <button class="w-btn" id="div-run" type="button">Regn</button>
+        </div>
+        <div class="table-wrap"><table class="steps" id="div-tab"></table></div>
+        <div class="w-out" id="div-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-3-18">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">3.18 · s. 247</span></div>
+        <div class="o-text"><p>Regn 74 ÷ 21 med maskinvaren i figur 3.8 og vis registrene i hvert steg (som figur 3.10). Begge er usignerte 6-bits tall.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>74 = 001001010 (trenger 7 bit, 1001010; i 12-bits Remainder: 000000 1001010 … vi bruker 12 bit: 0000 0100 1010). Divisor 21 = 010101 starter i venstre halvdel: 010101 000000. 7 iterasjoner. Resultat: kvotient 000011 = 3, rest 001011 = 11. Kontroll: 3 × 21 + 11 = 74. Hele tabellen, steg for steg, får du i widgeten over (74, 21, 6 bit); de fem første iterasjonene gir negativ differanse og angres (kvotientbit 0), iterasjon 6 og 7 gir kvotientbit 1.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 FLYTTALL ─────────────────────────── -->
+  <section id="flyttall">
+    <div class="container">
+      <div class="section-badge">05 · Flyttall</div>
+      <h2>Fortegn, eksponent, <em>brøk</em></h2>
+      <div class="source-note">Boka · kap. 3.5 · s. 208–233 · figur 3.13–3.16 · Kompendiet · kap. 3 «IEEE 754», eksempel 2 · Eksamen: Ord. 25 oppg. 5, Ord. 22 oppg. 6–7</div>
+      <span class="lm-pill">Læringsmål T3.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne motivere for hvorfor vi trenger flyttall og beskrive prinsippene for hvordan addisjon og multiplikasjon med flyttallsverdier utføres i maskinvare.</li>
+        <li>Studenten skal kunne konvertere fra desimaltall til flyttall og motsatt.</li>
+      </ul>
+
+      <p class="dropcap">Heltall dekker verken 3,14159, 0,000001 eller 3,15576 × 10<sup>9</sup>. <span class="term" data-term="flyttall">Flyttall</span> er vitenskapelig notasjon i base 2: et tall skrives <span class="term" data-term="normalisert">normalisert</span> som 1,xxx<sub>2</sub> × 2<sup>yyy</sup>, og bitene lagrer fortegnet, eksponenten og brøkdelen etter kommaet. Den ledende 1-eren er alltid der og lagres ikke (implisitt bit); det gir ett bit ekstra presisjon.</p>
+
+      <div class="bits" style="grid-template-columns: 1fr 8fr 23fr">
+        <div class="b s">s<small>bit 31 · 1 bit</small></div>
+        <div class="b e">eksponent<small>bit 30–23 · 8 bit · bias 127</small></div>
+        <div class="b f">brøk (fraction)<small>bit 22–0 · 23 bit</small></div>
+      </div>
+
+      \[ \text{verdi} = (-1)^{s} \times (1 + \text{brøk}) \times 2^{\,\text{eksponent} - 127} \]
+
+      <p>Eksponenten lagres med <span class="term" data-term="bias">bias</span> 127 (<span class="term" data-term="biased-notasjon">biased notasjon</span>): 2<sup>0</sup> lagres som 127, 2<sup>2</sup> som 129, 2<sup>−1</sup> som 126. Da sorterer flyttall som heltall, og eksponentfeltet er aldri negativt. <span class="term" data-term="dobbel-presisjon">Dobbel presisjon</span> (64 bit) har 11 bits eksponent (bias 1023) og 52 bits brøk. Eksponent 0 og 255 er reservert: 0 med brøk 0 er tallet 0, 255 med brøk 0 er ±∞, 255 med brøk ≠ 0 er <span class="term" data-term="nan">NaN</span>. <span class="term" data-term="flyttallsoverflyt">Overflyt</span> betyr at eksponenten er for stor for feltet, <span class="term" data-term="underflyt">underflyt</span> at den er for liten (for nær 0).</p>
+
+      <div class="widget" id="w-fp">
+        <div class="widget-label">Prøv selv · IEEE 754 enkel presisjon begge veier</div>
+        <p class="widget-intro">Skriv et bitmønster (0x… eller 32 binære siffer) eller et desimaltall, og se feltene og mellomregningen. Forhåndsutfylt med eksamensoppgaven 0x40980000. Prøv −0,75, 63,25 (oppgave 3.23), 0x0C000000 (3.22) og −7,5 (kompendiet).</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="fp-in">inn</label><input type="text" id="fp-in" value="0x40980000" style="width:220px"></div>
+          <div class="w-ctl"><span class="w-val" style="min-width:0">hex, binært eller desimaltall (bruk punktum)</span></div>
+        </div>
+        <div class="bits" id="fp-bits" style="grid-template-columns: 1fr 8fr 23fr"></div>
+        <div class="w-out" id="fp-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-5">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 5.1 og 5.2</span><span class="o-ref">Flyttall · 2 + 6 p</span></div>
+        <div class="o-text"><p>Hvilket desimaltall representerer flyttallet 0x40980000 (IEEE 754 enkel presisjon)? (5.2) Forklar hvordan du kom fram til svaret.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka · ikke offisielt løsningsforslag</span>
+            <p>4,75.</p>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>Hex til binært, fire bit per siffer: 0x40980000 = 0100 0000 1001 1000 0000 0000 0000 0000. Del i felt: s = 0 (positivt), eksponent = de neste 8 bitene 1000 0001 = 129, brøk = 001 1000 0000 0000 0000 0000. Eksponenten er lagret med bias 127, så den faktiske eksponenten er 129 − 127 = 2. Brøken er 0·2<sup>−1</sup> + 0·2<sup>−2</sup> + 1·2<sup>−3</sup> + 1·2<sup>−4</sup> = 0,125 + 0,0625 = 0,1875, og med den implisitte 1-eren er signifikanden 1,1875. Verdien er (−1)<sup>0</sup> × 1,1875 × 2<sup>2</sup> = 1,1875 × 4 = 4,75.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-fp-075">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">3.5 · s. 213–214</span></div>
+        <div class="o-text"><p>Vis IEEE 754-representasjonen av −0,75 i enkel presisjon. Og motsatt: hvilket desimaltall er 1 10000001 01000000000000000000000?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>−0,75 = −3/4 = −0,11<sub>2</sub> = −1,1<sub>2</sub> × 2<sup>−1</sup>. Fortegn 1, eksponent −1 + 127 = 126 = 01111110, brøk 1000…0: <strong>1 01111110 10000000000000000000000</strong> (0xBF400000). I dobbel presisjon: eksponent −1 + 1023 = 1022 = 01111111110, brøk 1 fulgt av 51 nuller.</p>
+            <p>Andre vei: fortegn 1, eksponent 129 → 129 − 127 = 2, brøk 01000… = 1 × 2<sup>−2</sup> = 0,25. (−1)<sup>1</sup> × 1,25 × 2<sup>2</sup> = −5,0.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-ieee">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 3 · eksempel 2</span></div>
+        <div class="o-text"><p>Hvordan representeres −7,5 i IEEE 754?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+            <p>Fortegn 1. 7,5 = 111,1<sub>2</sub> = 1,111 × 2<sup>2</sup>, eksponent 127 + 2 = 130 = 10000010, brøk 1110000…0. Resultat: 1 10000010 11100000000000000000000 (0xC0F00000).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-3-20">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">3.20–3.23 · s. 247–248</span></div>
+        <div class="o-text"><p>(3.20) Hvilket desimaltall er 0x0C000000 som tokomplement-heltall, og som usignert? (3.21) Hvilken RISC-V-instruksjon er 0x0000006F? (3.22) Hvilket desimaltall er 0x0C000000 som IEEE 754-flyttall? (3.23) Skriv 63,25 i IEEE 754 enkel presisjon.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>3.20: 0x0C000000 = 0000 1100 0000 … 0000. Bit 31 er 0, så tokomplement og usignert gir samme tall: 12 × 16<sup>6</sup> = 12 × 2<sup>24</sup> = 201 326 592.</p>
+            <p>3.21: 0x0000006F = … 0000 0000 0110 1111. Opcode 1101111 = jal, rd = 00000, immediate = 0: <code>jal x0, 0</code>, et hopp til seg selv (uendelig løkke).</p>
+            <p>3.22: s = 0, eksponent = 0001 1000 = 24, brøk = 0. Verdi = 1,0 × 2<sup>24 − 127</sup> = 2<sup>−103</sup> ≈ 9,86 × 10<sup>−32</sup>. Samme bit, helt annet tall: mønsteret betyr ingenting i seg selv.</p>
+            <p>3.23: 63,25 = 111111,01<sub>2</sub> = 1,1111101 × 2<sup>5</sup>. Fortegn 0, eksponent 5 + 127 = 132 = 10000100, brøk 1111101 fulgt av 16 nuller: 0 10000100 11111010000000000000000 = 0x427D0000.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Addisjon og multiplikasjon i prinsipp</h3>
+      <p>Flyttallsaddisjon (figur 3.14, 3.15) har fire steg: (1) <strong>juster</strong>: skift signifikanden til tallet med minst eksponent til høyre til eksponentene er like; (2) <strong>adder</strong> signifikandene; (3) <strong>normaliser</strong>: skift til formen 1,xxx og juster eksponenten, sjekk overflyt/underflyt; (4) <strong>avrund</strong> til 23 bit, og normaliser igjen om nødvendig. Eksempel i desimal med fire siffer: 9,999 × 10<sup>1</sup> + 1,610 × 10<sup>−1</sup> → 0,016 × 10<sup>1</sup> justert → 10,015 × 10<sup>1</sup> → 1,0015 × 10<sup>2</sup> → 1,002 × 10<sup>2</sup>.</p>
+      <p>Flyttallsmultiplikasjon (figur 3.16): (1) <strong>adder eksponentene</strong> (og trekk fra én bias, siden begge har bias); (2) <strong>multipliser</strong> signifikandene; (3) normaliser; (4) avrund; (5) <strong>fortegn</strong> = XOR av de to fortegnene. Signifikandene multipliseres med heltallsmultiplikatoren fra avsnitt 03; derfor er flyttallsenheter i praksis heltallsenheter med ekstra bokføring av eksponent og normalisering. For nøyaktig avrunding holder maskinvaren to ekstra bit (guard og round) pluss en sticky-bit under regningen.</p>
+
+      <details><summary>Utdypning · lavere prioritet: RISC-V-flyttallsinstruksjoner og nøyaktighet</summary>
+        <p>RISC-V har 32 egne flyttallsregistre f0–f31 og instruksjoner som <code>fadd.s</code>, <code>fsub.s</code>, <code>fmul.s</code>, <code>fdiv.s</code>, <code>fsqrt.s</code>, <code>flw</code>, <code>fsw</code>, sammenlikninger <code>feq.s</code>, <code>flt.s</code>, <code>fle.s</code>, og .d-varianter for dobbel presisjon. Egne registre gir dobbelt så mange registre uten flere bit i instruksjonen, og er vanlig i de fleste ISA-er. IEEE 754 krever korrekt avrunding (nærmeste, eventuelt til partall ved likt) og gir fire avrundingsmodi. Flyttallsaddisjon er ikke assosiativ: (x + y) + z kan avvike fra x + (y + z) når tallene har svært ulik størrelse, noe som gjør parallelle summer avhengige av rekkefølgen.</p>
+      </details>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor lagres eksponenten med bias i stedet for i tokomplement, og hvorfor står eksponenten foran brøken i ordet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Med bias er eksponentfeltet et usignert tall som vokser med eksponenten, og brøken ligger etter. Da kan to positive flyttall sammenliknes med en vanlig heltallssammenlikning av bitmønstrene (fortegn, så eksponent, så brøk), som er rask i maskinvare. Med tokomplement ville en negativ eksponent sett «større» ut enn en positiv.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 SIMD ─────────────────────────── -->
+  <section id="simd">
+    <div class="container">
+      <div class="section-badge">06 · SIMD og fastpunkt</div>
+      <h2>Mange små tall <em>i ett stort register</em></h2>
+      <div class="source-note">Boka · kap. 3.6 · s. 233–234 · Kompendiet · kap. 3 «Parallelisme og SIMD»</div>
+      <span class="lm-pill">Læringsmål T3.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kjenne til hvordan man implementerer SIMD-instruksjoner og hva de brukes til.</li>
+        <li>Studenten skal kunne oppgi fordeler og ulemper med å representere tall i et «fixed-point» format.</li>
+      </ul>
+
+      <p class="dropcap">Grafikk og lyd bruker ofte 8- eller 16-bits tall, mens registrene er 32 eller 128 bit brede. <span class="term" data-term="subord-parallellitet">Subord-parallellitet</span> deler et bredt register i flere smale felt og lar én instruksjon regne på alle samtidig: et 128-bits register kan holde seksten 8-bits, åtte 16-bits eller fire 32-bits tall, og én <span class="term" data-term="simd">SIMD</span>-addisjon (single instruction, multiple data) gjør fire flyttallsaddisjoner på én gang. Maskinvaren er en bred adder der mentekjeden kuttes ved feltgrensene. Dette er ideen bak x86 SSE/AVX og RISC-V-vektorutvidelsen, og den dukker opp igjen i kapittel 7 under Flynns taksonomi.</p>
+
+      <div class="callout">
+        <span class="label">Fastpunkt · egen tolkning etter læringsmålet</span>
+        <p><span class="term" data-term="fastpunkt">Fastpunkt</span> (fixed point) er heltall der et fast antall bit regnes som desimaler: med 16 bit etter kommaet er verdien heltallet / 2<sup>16</sup>. Fordeler: addisjon og subtraksjon er vanlig heltallsaritmetikk, rask og billig, uten normalisering, og presisjonen er jevn over hele området. Ulemper: området er lite og fast; små og store tall kan ikke blandes uten å miste siffer, multiplikasjon krever skift etterpå, og programmereren må holde styr på hvor kommaet står. Flyttall løser det med eksponenten, mot mer maskinvare og variabel presisjon.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Subtraksjon</strong>a − b = a + ¬b + 1. Overflyt når fortegnet på resultatet er «feil».</div>
+        <div class="recap-pill"><strong>1-bits ALU</strong>AND, OR, adder, Less inn i en 4:1-mux styrt av Operation; Ainvert/Binvert på inngangene.</div>
+        <div class="recap-pill"><strong>Signalene</strong>AND 0 0 00 · OR 0 0 01 · add 0 0 10 · sub 0 1 10 · slt 0 1 11 · NOR 1 1 00 (Ainvert Bnegate Operation).</div>
+        <div class="recap-pill"><strong>32 bit</strong>Ripple carry; Bnegate → Binvert + CarryIn0; Set fra ALU31 → Less0; NOR av resultatet = Zero.</div>
+        <div class="recap-pill"><strong>Multiplikator</strong>Test Multiplier0 → adder multiplikanden; multiplikand << 1; multiplikator >> 1. n ganger.</div>
+        <div class="recap-pill"><strong>Divisjon</strong>Rest − divisor; ≥ 0 → kvotientbit 1, &lt; 0 → angre og 0; divisor >> 1. n + 1 ganger.</div>
+        <div class="recap-pill"><strong>IEEE 754</strong>s (1) · eksponent (8, bias 127) · brøk (23). Verdi = (−1)<sup>s</sup> (1 + brøk) 2<sup>e − 127</sup>.</div>
+        <div class="recap-pill"><strong>Flyttallsregning</strong>Juster eksponent → regn på signifikandene → normaliser → avrund.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">ALU-en skal gjøre a OR b. Ainvert, Bnegate, Operation?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">0, 0, 01. Ingen inverter, ingen mente, muxen velger OR-porten.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hva inneholder Product etter hver iterasjon når maskinvaren i figur 3.3 regner 0110 × 0101 (8-bits produkt)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Multiplikator 0101: bit 0 og bit 2 er 1. Iterasjon 1: 0000 0110. Iterasjon 2: 0000 0110. Iterasjon 3: 0000 0110 + 0001 1000 = 0001 1110. Iterasjon 4: 0001 1110 (= 30 = 6 × 5).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvilket desimaltall er 0xC1200000?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">1100 0001 0010 0000 …: s = 1, eksponent 1000 0010 = 130 → 3, brøk 010… = 0,25. −1,25 × 8 = −10,0.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="logikk.html" class="prev"><div class="pn-label">← Forrige · 3A</div><div class="pn-title">Kombinatorisk logikk</div></a>
+        <a href="enkeltsykel.html" class="next"><div class="pn-label">Neste · 3C</div><div class="pn-title">Enkeltsykelprosessoren →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(x, y, s, cls, anchor, parent) { var t = el('text', { x: x, y: y, 'class': cls || '', 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; }
+  function bits(v, n) { var s = ''; for (var i = n - 1; i >= 0; i--) s += (v >> i) & 1 ? '1' : '0'; return s; }
+  function grp(s, n) { return s.replace(new RegExp('(.{' + n + '})(?=.)', 'g'), '$1 '); }
+
+  /* ───── 1-bits ALU (figur A.5.10 øverst) ───── */
+  function drawALU1(svg) {
+    var g = {};
+    function u(id, e) { g[id] = e; return e; }
+    function mux2(id, x, y, l0, l1) { var p = el('path', { d: 'M' + x + ' ' + y + ' L' + (x + 16) + ' ' + (y + 7) + ' L' + (x + 16) + ' ' + (y + 33) + ' L' + x + ' ' + (y + 40) + ' Z', 'class': 'u', id: id }, svg); txt(x + 8, y + 15, l0, 'cap', 'middle', svg); txt(x + 8, y + 32, l1, 'cap', 'middle', svg); return u(id, p); }
+    function w(id, d, cls) { return u(id, el('path', { d: d, 'class': cls || 'w', id: id }, svg)); }
+    /* innganger */
+    txt(20, 90, 'a', '', 'start', svg); txt(20, 190, 'b', '', 'start', svg);
+    txt(118, 24, 'Ainvert', 'sig', 'middle', svg); txt(150, 150, 'Binvert', 'sig', 'middle', svg); txt(468, 24, 'Operation', 'sig', 'middle', svg); txt(300, 24, 'CarryIn', 'cap', 'middle', svg);
+    /* a-sti */
+    w('w-a', 'M30 86 L110 86'); w('w-a-inv', 'M60 86 L60 106 L96 106');
+    u('inv-a', el('path', { d: 'M96 100 L108 106 L96 112 Z', 'class': 'u' }, svg)); el('circle', { cx: 110, cy: 106, r: 2, 'class': 'u' }, svg);
+    mux2('mux-a', 112, 76, '0', '1'); w('c-ainv', 'M118 30 L118 76', 'c');
+    w('w-a-out', 'M128 96 L160 96');
+    /* b-sti */
+    w('w-b', 'M30 186 L110 186'); w('w-b-inv', 'M60 186 L60 206 L96 206');
+    u('inv-b', el('path', { d: 'M96 200 L108 206 L96 212 Z', 'class': 'u' }, svg)); el('circle', { cx: 110, cy: 206, r: 2, 'class': 'u' }, svg);
+    mux2('mux-b', 112, 176, '0', '1'); w('c-binv', 'M150 154 L150 164 L118 164 L118 176', 'c');
+    w('w-b-out', 'M128 196 L160 196');
+    /* fordeling til AND, OR, adder */
+    w('w-a-and', 'M160 96 L160 70 L230 70'); w('w-b-and', 'M160 196 L175 196 L175 82 L230 82');
+    w('w-a-or', 'M160 96 L190 96 L190 120 L230 120'); w('w-b-or', 'M175 196 L205 196 L205 132 L230 132');
+    w('w-a-add', 'M190 96 L200 96 L200 170 L230 170'); w('w-b-add', 'M205 196 L230 196');
+    u('and', el('path', { d: 'M230 62 L246 62 A14 14 0 0 1 246 90 L230 90 Z', 'class': 'u' }, svg)); txt(240, 80, '&', 'cap', 'middle', svg);
+    u('or', el('path', { d: 'M230 112 Q240 126 230 140 Q252 140 262 126 Q252 112 230 112 Z', 'class': 'u' }, svg)); 
+    u('add', el('rect', { x: 230, y: 160, width: 36, height: 48, rx: 6, 'class': 'u' }, svg)); txt(248, 188, '+', '', 'middle', svg);
+    w('w-cin', 'M300 30 L300 150 L248 150 L248 160'); w('w-cout', 'M248 208 L248 250 L300 250'); txt(304, 254, 'CarryOut', 'cap', 'start', svg);
+    /* resultatmux */
+    w('w-and-mux', 'M260 76 L360 76 L360 112 L380 112'); w('w-or-mux', 'M262 126 L380 126'); w('w-add-mux', 'M266 184 L350 184 L350 140 L380 140'); w('w-less-mux', 'M30 270 L340 270 L340 154 L380 154');
+    txt(20, 274, 'Less', '', 'start', svg);
+    u('mux-r', el('path', { d: 'M380 100 L400 110 L400 158 L380 168 Z', 'class': 'u' }, svg)); txt(388, 116, '0', 'cap', 'middle', svg); txt(388, 130, '1', 'cap', 'middle', svg); txt(388, 144, '2', 'cap', 'middle', svg); txt(388, 158, '3', 'cap', 'middle', svg);
+    w('c-op', 'M468 30 L468 90 L390 90 L390 100', 'c');
+    w('w-res', 'M400 134 L480 134'); txt(484, 138, 'Result', '', 'start', svg);
+    txt(300, 68, 'AND', 'cap', 'middle', svg); txt(300, 120, 'OR', 'cap', 'middle', svg); txt(320, 178, 'adder', 'cap', 'middle', svg);
+    return g;
+  }
+  var OPS = {
+    and: { ai: 0, bn: 0, op: '00', four: '0000', on: ['w-a', 'mux-a', 'w-a-out', 'w-b', 'mux-b', 'w-b-out', 'w-a-and', 'w-b-and', 'and', 'w-and-mux', 'mux-r', 'w-res'], f: function (a, b, c, l) { return [a & b, 0]; } },
+    or:  { ai: 0, bn: 0, op: '01', four: '0001', on: ['w-a', 'mux-a', 'w-a-out', 'w-b', 'mux-b', 'w-b-out', 'w-a-or', 'w-b-or', 'or', 'w-or-mux', 'mux-r', 'w-res'], f: function (a, b, c, l) { return [a | b, 0]; } },
+    add: { ai: 0, bn: 0, op: '10', four: '0010', on: ['w-a', 'mux-a', 'w-a-out', 'w-b', 'mux-b', 'w-b-out', 'w-a-add', 'w-b-add', 'add', 'w-cin', 'w-cout', 'w-add-mux', 'mux-r', 'w-res'], f: function (a, b, c, l) { var s = a + b + c; return [s & 1, s >> 1]; } },
+    sub: { ai: 0, bn: 1, op: '10', four: '0110', on: ['w-a', 'mux-a', 'w-a-out', 'w-b', 'w-b-inv', 'inv-b', 'mux-b', 'c-binv', 'w-b-out', 'w-a-add', 'w-b-add', 'add', 'w-cin', 'w-cout', 'w-add-mux', 'mux-r', 'w-res'], f: function (a, b, c, l) { var s = a + (1 - b) + c; return [s & 1, s >> 1]; } },
+    slt: { ai: 0, bn: 1, op: '11', four: '0111', on: ['w-a', 'mux-a', 'w-a-out', 'w-b', 'w-b-inv', 'inv-b', 'mux-b', 'c-binv', 'w-b-out', 'w-a-add', 'w-b-add', 'add', 'w-cin', 'w-cout', 'w-less-mux', 'mux-r', 'w-res'], f: function (a, b, c, l) { var s = a + (1 - b) + c; return [l, s >> 1]; } },
+    nor: { ai: 1, bn: 1, op: '00', four: '1100', on: ['w-a', 'w-a-inv', 'inv-a', 'mux-a', 'c-ainv', 'w-a-out', 'w-b', 'w-b-inv', 'inv-b', 'mux-b', 'c-binv', 'w-b-out', 'w-a-and', 'w-b-and', 'and', 'w-and-mux', 'mux-r', 'w-res'], f: function (a, b, c, l) { return [(1 - a) & (1 - b), 0]; } }
+  };
+  var f1 = document.getElementById('alu1-fig'); if (f1) drawALU1(f1);
+  (function () {
+    var svg = document.getElementById('alu1-w'); if (!svg) return;
+    var g = drawALU1(svg);
+    var sel = document.getElementById('alu-op'), ai = document.getElementById('alu-a'), bi = document.getElementById('alu-b'), li = document.getElementById('alu-less'), test = document.getElementById('alu-test'), chk = document.getElementById('alu-check');
+    var sig = document.getElementById('alu-sig'), out = document.getElementById('alu-out');
+    var NAMES = { and: 'a AND b', or: 'a OR b', add: 'a + b', sub: 'a − b', slt: 'a < b', nor: 'a NOR b' };
+    function draw() {
+      var o = OPS[sel.value];
+      for (var k in g) g[k].classList.remove('on');
+      o.on.forEach(function (id) { if (g[id]) g[id].classList.add('on'); });
+      if (o.op !== '00' || o.ai) g['c-op'].classList.add('on');
+      var a = +ai.value, b = +bi.value, c = o.bn, l = +li.value, r = o.f(a, b, c, l);
+      if (test.checked) {
+        sig.innerHTML = ['Ainvert', 'Bnegate', 'Operation'].map(function (n) { return '<div class="s" data-sig="' + n + '"><b>' + n + '</b><input type="text" maxlength="2" placeholder="?"></div>'; }).join('');
+        out.innerHTML = 'Fyll inn Ainvert (1 bit), Bnegate (1 bit) og Operation (2 bit) for ' + NAMES[sel.value] + ', og trykk Rett.';
+      } else {
+        sig.innerHTML = '<div class="s' + (o.ai ? ' on' : '') + '"><b>Ainvert</b><span class="v">' + o.ai + '</span></div><div class="s' + (o.bn ? ' on' : '') + '"><b>Bnegate</b><span class="v">' + o.bn + '</span></div><div class="s on"><b>Operation</b><span class="v">' + o.op + '</span></div><div class="s"><b>4 bit</b><span class="v">' + o.four + '</span></div>';
+        out.innerHTML = '<span class="hl">' + NAMES[sel.value] + '</span> i bit 0: a = ' + a + ', b = ' + b + (o.bn ? ' → ¬b = ' + (1 - b) : '') + ', CarryIn = Bnegate = ' + c + (sel.value === 'slt' ? ', Less = ' + l + ' (Set fra bit 31)' : '') + '\nResult = <span class="hl">' + r[0] + '</span>' + (o.op === '10' || sel.value === 'slt' ? ', CarryOut = ' + r[1] : '');
+      }
+      chk.style.display = test.checked ? '' : 'none';
+    }
+    function check() {
+      var o = OPS[sel.value], want = { Ainvert: String(o.ai), Bnegate: String(o.bn), Operation: o.op }, right = 0;
+      sig.querySelectorAll('.s[data-sig]').forEach(function (box) {
+        var n = box.getAttribute('data-sig'), got = box.querySelector('input').value.trim(), ok = got === want[n];
+        box.classList.remove('ok', 'bad'); box.classList.add(ok ? 'ok' : 'bad'); if (ok) right++;
+        if (!ok) { var sp = document.createElement('span'); sp.className = 'v'; sp.textContent = '→ ' + want[n]; box.appendChild(sp); }
+      });
+      out.innerHTML = (right === 3 ? '<span class="ok">3 av 3 riktige.</span>' : '<span class="bad">' + right + ' av 3 riktige.</span>') + ' Eksamen: 1 p per riktig, −0,25 per feil.';
+    }
+    [sel, ai, bi, li, test].forEach(function (e) { e.addEventListener('change', draw); }); chk.addEventListener('click', check);
+    draw();
+  })();
+
+  /* ───── Multiplikator ───── */
+  (function () {
+    var a = document.getElementById('mul-a'), b = document.getElementById('mul-b'), run = document.getElementById('mul-run'), tab = document.getElementById('mul-tab'), out = document.getElementById('mul-out'); if (!a) return;
+    function go() {
+      var sa = a.value.replace(/\s/g, ''), sb = b.value.replace(/\s/g, '');
+      if (!/^[01]{1,8}$/.test(sa) || !/^[01]{1,8}$/.test(sb)) { out.innerHTML = '<span class="bad">Skriv 1–8 binære siffer i hvert felt.</span>'; tab.innerHTML = ''; return; }
+      var n = Math.max(sa.length, sb.length), W = 2 * n, mc = parseInt(sa, 2), mp = parseInt(sb, 2), prod = 0, rows = [];
+      rows.push(['0', 'start', bits(mp, n), bits(mc, W), bits(prod, W)]);
+      for (var i = 1; i <= n; i++) {
+        var lsb = mp & 1, step;
+        if (lsb) { prod = (prod + mc) & ((1 << W) - 1); step = '1a. Multiplier0 = 1: Product += Multiplicand'; } else step = '1. Multiplier0 = 0: ingen addisjon';
+        rows.push([String(i), step, bits(mp, n), bits(mc, W), bits(prod, W)]);
+        mc = (mc << 1) & ((1 << W) - 1); rows.push([String(i), '2. Multiplicand << 1', bits(mp, n), bits(mc, W), bits(prod, W)]);
+        mp = mp >> 1; rows.push([String(i), '3. Multiplier >> 1', bits(mp, n), bits(mc, W), bits(prod, W)]);
+      }
+      tab.innerHTML = '<thead><tr><th>Iterasjon</th><th>Steg</th><th>Multiplier</th><th>Multiplicand</th><th>Product</th></tr></thead><tbody>' + rows.map(function (r, i) { return '<tr' + (r[1].indexOf('3.') === 0 ? ' class="now"' : '') + '><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + grp(r[2], 4) + '</td><td>' + grp(r[3], 4) + '</td><td>' + grp(r[4], 4) + '</td></tr>'; }).join('') + '</tbody>';
+      out.innerHTML = grp(sa, 4) + ' × ' + grp(sb, 4) + ' = ' + parseInt(sa, 2) + ' × ' + parseInt(sb, 2) + ' = <span class="hl">' + parseInt(sa, 2) * parseInt(sb, 2) + '</span> = ' + grp(bits(prod, W), 4) + '. Markerte rader = Product etter hver fullført iterasjon (det eksamen spør om).';
+    }
+    run.addEventListener('click', go); a.addEventListener('change', go); b.addEventListener('change', go); go();
+  })();
+
+  /* ───── Divisjon ───── */
+  (function () {
+    var a = document.getElementById('div-a'), b = document.getElementById('div-b'), nI = document.getElementById('div-n'), run = document.getElementById('div-run'), tab = document.getElementById('div-tab'), out = document.getElementById('div-out'); if (!a) return;
+    function go() {
+      var n = Math.max(2, Math.min(8, +nI.value || 6)), W = 2 * n, dv = +a.value, ds = +b.value;
+      if (dv < 0 || dv >= (1 << W) || ds <= 0 || ds >= (1 << n)) { out.innerHTML = '<span class="bad">Dividend må være 0 … ' + ((1 << W) - 1) + ', divisor 1 … ' + ((1 << n) - 1) + '.</span>'; tab.innerHTML = ''; return; }
+      var rem = dv, div = ds << n, q = 0, rows = [];
+      rows.push(['0', 'start', bits(q, n), bits(div, W), bits(rem, W)]);
+      for (var i = 1; i <= n + 1; i++) {
+        var d = rem - div;
+        rows.push([String(i), '1. Rem = Rem − Div', bits(q, n), bits(div, W), (d < 0 ? '−' : '') + bits(Math.abs(d), W)]);
+        if (d >= 0) { rem = d; q = ((q << 1) | 1) & ((1 << n) - 1); rows.push([String(i), '2a. Rem ≥ 0: Q << 1, Q0 = 1', bits(q, n), bits(div, W), bits(rem, W)]); }
+        else { q = (q << 1) & ((1 << n) - 1); rows.push([String(i), '2b. Rem < 0: angre (+ Div), Q << 1, Q0 = 0', bits(q, n), bits(div, W), bits(rem, W)]); }
+        div = div >> 1; rows.push([String(i), '3. Div >> 1', bits(q, n), bits(div, W), bits(rem, W)]);
+      }
+      tab.innerHTML = '<thead><tr><th>Iterasjon</th><th>Steg</th><th>Quotient</th><th>Divisor</th><th>Remainder</th></tr></thead><tbody>' + rows.map(function (r) { return '<tr' + (r[1].indexOf('3.') === 0 ? ' class="now"' : '') + '><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + grp(r[2], 4) + '</td><td>' + grp(r[3], 4) + '</td><td>' + grp(r[4], 4) + '</td></tr>'; }).join('') + '</tbody>';
+      out.innerHTML = dv + ' ÷ ' + ds + ' = <span class="hl">' + Math.floor(dv / ds) + '</span> rest <span class="hl">' + (dv % ds) + '</span>. Quotient = ' + bits(q, n) + ', Remainder = ' + bits(rem, W) + '. Kontroll: ' + Math.floor(dv / ds) + ' × ' + ds + ' + ' + (dv % ds) + ' = ' + dv + '.';
+    }
+    run.addEventListener('click', go); go();
+  })();
+
+  /* ───── IEEE 754 ───── */
+  (function () {
+    var inp = document.getElementById('fp-in'), bitsDiv = document.getElementById('fp-bits'), out = document.getElementById('fp-out'); if (!inp) return;
+    function go() {
+      var s = inp.value.trim().replace(/\s|_/g, '').replace(',', '.'), u, fromBits = true;
+      if (/^0x[0-9a-f]{1,8}$/i.test(s)) u = parseInt(s.slice(2), 16) >>> 0;
+      else if (/^[01]{32}$/.test(s)) u = parseInt(s, 2) >>> 0;
+      else if (/^-?\d*\.?\d+(e-?\d+)?$/i.test(s)) { fromBits = false; var dv = new DataView(new ArrayBuffer(4)); dv.setFloat32(0, parseFloat(s)); u = dv.getUint32(0); }
+      else { out.innerHTML = '<span class="bad">Skriv 0x + 8 heksadesimale sifre, 32 binære sifre, eller et desimaltall.</span>'; bitsDiv.innerHTML = ''; return; }
+      var sign = u >>> 31, exp = (u >>> 23) & 0xff, frac = u & 0x7fffff;
+      var dv2 = new DataView(new ArrayBuffer(4)); dv2.setUint32(0, u); var val = dv2.getFloat32(0);
+      bitsDiv.innerHTML = '<div class="b s">' + sign + '<small>s</small></div><div class="b e">' + bits(exp, 8) + '<small>eksponent = ' + exp + '</small></div><div class="b f">' + bits(frac, 23) + '<small>brøk</small></div>';
+      var hex = '0x' + ('00000000' + u.toString(16)).slice(-8);
+      var txt = '';
+      if (!fromBits) {
+        var av = Math.abs(parseFloat(s));
+        txt += 'Desimaltall → bit: fortegn ' + sign + '. ' + av + ' = ';
+        if (exp > 0 && exp < 255) { var e = exp - 127; txt += (1 + frac / 8388608) + ' × 2^' + e + ' (normalisert: 1,' + bits(frac, 23).replace(/0+$/, '') + '₂ × 2^' + e + '). Eksponentfelt = ' + e + ' + 127 = ' + exp + ' = ' + bits(exp, 8) + '.\n'; }
+        else txt += '(spesialverdi eller utenfor normalt område).\n';
+      }
+      txt += 'Bitmønster: ' + hex + ' = ' + grp(bits(u, 32), 4) + '\n';
+      if (exp === 0 && frac === 0) txt += 'Eksponent 0 og brøk 0: tallet er ' + (sign ? '−0' : '0') + '.';
+      else if (exp === 255) txt += 'Eksponent 255: ' + (frac === 0 ? (sign ? '−∞' : '+∞') : 'NaN') + '.';
+      else if (exp === 0) txt += 'Eksponent 0, brøk ≠ 0: denormalisert tall (ingen implisitt 1), verdi (−1)^' + sign + ' × 0.brøk × 2^−126 = ' + val + '.';
+      else {
+        var e2 = exp - 127, fr = frac / 8388608, terms = [];
+        for (var i = 0; i < 23 && terms.length < 6; i++) if ((frac >> (22 - i)) & 1) terms.push('2^−' + (i + 1));
+        txt += 'Eksponent ' + bits(exp, 8) + ' = ' + exp + ' → ' + exp + ' − 127 = <span class="hl">' + e2 + '</span>\nBrøk = ' + (terms.length ? terms.join(' + ') + (terms.length === 6 ? ' + …' : '') : '0') + ' = ' + fr + ' → signifikand 1 + ' + fr + ' = ' + (1 + fr) + '\nVerdi = (−1)^' + sign + ' × ' + (1 + fr) + ' × 2^' + e2 + ' = <span class="hl">' + val + '</span>';
+      }
+      out.innerHTML = txt;
+    }
+    inp.addEventListener('input', go); go();
+  })();
+})();
+</script>
+</body>
+</html>

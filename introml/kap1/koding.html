@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Koding: veiledet læring — Kap 1</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fn-table { table-layout: fixed; width: 100%; }
+  .fn-table th:first-child, .fn-table td:first-child { width: 34%; font-family: var(--mono); font-size: 0.8rem; word-break: break-word; }
+  .fn-table th:last-child, .fn-table td:last-child { width: 14%; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faded); }
+  pre.pseudo { border-left: 3px solid var(--warm); }
+  pre.pseudo::before { content: 'PSEUDOKODE · forslag'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--warm); margin-bottom: 0.5rem; }
+  pre.notes::before { content: 'FRA NOTATENE'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.5rem; }
+  .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 1rem 0; }
+  .rule { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; font-size: 0.95rem; }
+  .rule .r-k { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 1</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 1: Veiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 1 · 1E · Koden i notatene 1.1–1.5 · øvingsstoff · ~40 min</div>
+      <h1>Koding: <em>veiledet læring</em></h1>
+      <p class="lede">Alt kodestoffet fra kapittel 1 samlet: hvilke funksjoner fra pandas, NumPy, scikit-learn og matplotlib som brukes, hva de gjør, og pseudokode for det du må skrive selv i øvingene: logistisk regresjon fra bunnen, evaluering, resampling, trær, regresjon og ensembler.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#verktoy"><span>01</span> Verktøykassa</a>
+        <a href="#oppskrift"><span>02</span> Oppskriften</a>
+        <a href="#preprosessering"><span>03</span> Preprosessering</a>
+        <a href="#logreg"><span>04</span> Logistisk regresjon</a>
+        <a href="#evaluering"><span>05</span> Evaluering</a>
+        <a href="#ubalanse"><span>06</span> Ubalanse</a>
+        <a href="#bayes"><span>07</span> Naïv Bayes</a>
+        <a href="#traer"><span>08</span> Trær</a>
+        <a href="#regresjon"><span>09</span> Regresjon</a>
+        <a href="#ensemble"><span>10</span> Ensembler</a>
+        <a href="#oppsummering"><span>11</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Øvingsstoff, <em>ikke</em> eksamensstoff</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · siden dekker koden i notatene, ikke et eget deltema</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Øving</span><strong>Denne siden er for øvingene</strong>, der du skriver logistisk regresjon, evaluering og regresjon selv, og bruker scikit-learn til trær og ensembler. Ingenting her skal skrives på eksamen.</li>
+          <li><span class="tag regn">Kode</span><strong>Eksamen har likevel «les koden»-spørsmål</strong>: hvilken kodelinje er cross entropy (Ord. 2024 spm. 9 og 10), hva gjør <code>scaler.transform(X_test)</code>, hva inneholder <code>y_pred</code> etter sigmoid, og hvilken funksjon splitter data (Ord. 2025 del 10). De står som bokser på 1A. Reglene i <a href="#oppsummering">11</a> er det du må huske.</li>
+          <li><span class="tag">Lavere</span>Alt annet på siden er verktøy: kan slås opp, trenger ikke pugges.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 VERKTØY ─────────────────────────── -->
+  <section id="verktoy">
+    <div class="container">
+      <div class="section-badge">01 · Verktøykassa</div>
+      <h2>Funksjonene som <em>går igjen</em></h2>
+      <div class="source-note">Notatene · kodeeksemplene i 1.1–1.5</div>
+
+      <p class="dropcap">Fire biblioteker dekker alt i kapittel 1: <strong>pandas</strong> for tabeller, <strong>NumPy</strong> for regning på arrays, <strong><span class="term" data-term="sklearn">scikit-learn</span></strong> for preprosessering, splitting og ferdige modeller, og <strong>matplotlib</strong> for plott. Tabellen sier hva hver funksjon gjør og hvor i notatene den brukes.</p>
+
+      <div class="table-wrap">
+        <table class="fn-table">
+          <thead><tr><th>Funksjon</th><th>Hva den gjør</th><th>Brukt i</th></tr></thead>
+          <tbody>
+            <tr><td>pd.read_csv(sti)</td><td>Leser en CSV-fil til en DataFrame (kolonner = features, rader = datapunkter).</td><td>1.3.4</td></tr>
+            <tr><td>df[["a", "b"]]</td><td>Velger kolonner. <code>.values</code> gir NumPy-array.</td><td>1.3.4</td></tr>
+            <tr><td>df.dropna()</td><td>Fjerner rader der minst én verdi mangler.</td><td>1.1</td></tr>
+            <tr><td>pd.crosstab(a, b, normalize="index")</td><td>Tabell over hvor ofte kombinasjoner forekommer; normalisert per rad gir \(p(b \mid a)\).</td><td>1.2.8</td></tr>
+            <tr><td>s.value_counts(normalize=True)</td><td>Andel per verdi i en kolonne: marginalfordelingen \(p(a)\), eller prior \(p(C_k)\).</td><td>1.2.8</td></tr>
+            <tr><td>LabelEncoder().fit_transform(kol)</td><td>Mapper hver strengverdi til et unikt heltall («female» → 0, «male» → 1).</td><td>1.1, 1.3.4</td></tr>
+            <tr><td>MinMaxScaler() / StandardScaler()</td><td>Skalerer til [0, 1] / til snitt 0 og standardavvik 1. <code>fit</code> på trening, <code>transform</code> på begge.</td><td>1.1, eksamen</td></tr>
+            <tr><td>PolynomialFeatures(degree=M)</td><td>Lager features \(x, x^2, \dots, x^M\) (og kryssledd). Samme fit/transform-regel.</td><td>1.4.2</td></tr>
+            <tr><td>train_test_split(X, y, test_size=0.3)</td><td>Deler tilfeldig i trening og test. To ganger for å få validering også.</td><td>1.2.3, 1.4.3</td></tr>
+            <tr><td>np.matmul(A, B) / A @ B</td><td>Matriseprodukt. <code>np.matmul(X, w)</code> gir \(\mathbf{w}\mathbf{x}\) for alle rader samtidig.</td><td>1.2.3</td></tr>
+            <tr><td>np.zeros(n), np.exp, np.log, np.mean</td><td>Startvekter; sigmoid; cross entropy; gjennomsnitt (tap, accuracy).</td><td>1.2.3</td></tr>
+            <tr><td>np.histogram(data, bins=10)</td><td>Teller datapunkter per intervall. Brukes til å diskretisere kontinuerlige features (Age).</td><td>1.2.8</td></tr>
+            <tr><td>np.linspace(a, b, n), np.floor, np.random.normal</td><td>Jevnt fordelte x-verdier; trappefunksjonen; gaussisk støy.</td><td>1.4.6</td></tr>
+            <tr><td>DecisionTreeClassifier(max_depth, criterion)</td><td>Klassifiseringstre. criterion = "gini" (default), "entropy" eller "log_loss".</td><td>1.3.4</td></tr>
+            <tr><td>DecisionTreeRegressor()</td><td>Regresjonstre. <code>get_depth()</code>, <code>get_n_leaves()</code>, <code>tree_.threshold</code>.</td><td>1.4.6</td></tr>
+            <tr><td>SGDRegressor(learning_rate="constant", eta0=0.01)</td><td>Lineær regresjon med stokastisk gradient descent. <code>partial_fit</code> = én epoke.</td><td>1.4.3</td></tr>
+            <tr><td>mean_squared_error(y, y_pred)</td><td>MSE fra sklearn.metrics (uten faktoren ½).</td><td>1.4.3</td></tr>
+            <tr><td>modell.fit(X, y) / modell.predict(X)</td><td>Standardnavnene for å trene og predikere. Bruk dem også i egen kode.</td><td>1.2.3</td></tr>
+            <tr><td>tree.plot_tree(m), DecisionBoundaryDisplay</td><td>Tegner treet; tegner beslutningsflaten i planet.</td><td>1.3.4, 1.4.6</td></tr>
+            <tr><td>plt.plot / scatter / step / axvline / legend / show</td><td>Kurve; punkter; trappekurve (<code>where="post"</code>); vertikal linje; forklaring; vis.</td><td>1.2.4, 1.4.6</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="label">Importene</span>
+<pre><code>import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, PolynomialFeatures
+from sklearn.model_selection import train_test_split
+from sklearn import tree
+from sklearn.linear_model import SGDRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.inspection import DecisionBoundaryDisplay</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 OPPSKRIFT ─────────────────────────── -->
+  <section id="oppskrift">
+    <div class="container">
+      <div class="section-badge">02 · Oppskriften</div>
+      <h2>Hele løypa i <em>ett skjelett</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.1–1.2.4 satt sammen</div>
+
+      <p class="dropcap">Uansett modell er rekkefølgen den samme: les data, rydd, splitt, skaler, tren, prediker, evaluer, plott. Skjelettet under er det du fyller ut i hver øving. Alt som står med <code>fit</code> skjer på treningsdata alene.</p>
+
+<pre class="pseudo"><code>df = pd.read_csv("data.csv")
+df = df[FEATURES + [TARGET]].dropna()              # 1. rydd: fjern rader med hull
+for kol in KATEGORISKE:                              # 2. enkode strenger til tall
+    df[kol] = LabelEncoder().fit_transform(df[kol])
+
+X = df[FEATURES].values
+y = df[TARGET].values
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)   # 3. splitt FØR skalering
+
+scaler = MinMaxScaler().fit(X_train)                 # 4. skaler: fit på trening ...
+X_train = scaler.transform(X_train)
+X_test  = scaler.transform(X_test)                   #    ... transform på begge
+
+modell = LogisticRegression(learning_rate=0.01, epochs=30)   # 5. egen klasse (04) eller sklearn
+modell.fit(X_train, y_train)                         # 6. tren
+y_pred = modell.predict(X_test)                      # 7. prediker på usette data
+
+print(accuracy(y_test, y_pred))                      # 8. evaluer (05): confusion matrix, metrikker
+plt.plot(modell.losses); plt.plot(modell.train_accuracies); plt.show()   # 9. plott treningen</code></pre>
+
+      <div class="callout callout-warn">
+        <span class="label">De to feilene som går igjen</span>
+        <p><strong>Skalering før splitt</strong> (steg 3 og 4 i feil rekkefølge) lekker testdata inn i treningen. <strong>Hyperparametre justert på testsettet</strong> gjør at du ikke har usette data igjen; bruk et valideringssett (09).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 PREPROSESSERING ─────────────────────────── -->
+  <section id="preprosessering">
+    <div class="container">
+      <div class="section-badge">03 · Preprosessering</div>
+      <h2>Rydde, enkode, <em>skalere</em>, plotte</h2>
+      <div class="source-note">Notatene · avsnitt 1.1 · s. 4</div>
+
+      <p class="dropcap">Titanic-tabellen har tre problemer før den kan plottes: manglende verdi (rad 6), strenger (Sex) og ulik størrelsesorden (Age mot Pclass). <span class="term" data-term="preprosessering">Preprosesseringen</span> løser dem i tur og orden.</p>
+
+<pre class="notes"><code>df = df.dropna()                                   # rader med minst én manglende verdi
+df["Sex"] = LabelEncoder().fit_transform(df["Sex"])  # "female" -&gt; 0, "male" -&gt; 1
+scaler = MinMaxScaler()
+X_train[:, AGE] = scaler.fit_transform(X_train[:, [AGE]]).ravel()   # [0, 1] på trening
+X_test[:, AGE]  = scaler.transform(X_test[:, [AGE]]).ravel()        # samme min/maks på test</code></pre>
+
+      <h3>Hva <code>fit</code>, <code>transform</code> og <code>fit_transform</code> gjør</h3>
+      <div class="rule-grid">
+        <div class="rule"><div class="r-k">fit(X)</div>Lærer parametrene fra X: min og maks for MinMaxScaler, snitt og standardavvik for StandardScaler, verdimengden for LabelEncoder. Endrer ikke X.</div>
+        <div class="rule"><div class="r-k">transform(X)</div>Bruker de lærte parametrene på X. Kan kalles på hvilket som helst datasett med samme kolonner.</div>
+        <div class="rule"><div class="r-k">fit_transform(X)</div>Begge deler i ett kall. Bare på treningsdata (eller på hele kolonner der det ikke lekker informasjon, som LabelEncoder på en kategorisk kolonne).</div>
+      </div>
+
+      <h3>Plott før modellering</h3>
+      <p>Bar-plott viser middelverdien av target per kategori; histogram viser fordelingen til en feature innad i hver klasse. Antall <span class="term" data-term="bins">bins</span> er en vurderingssak: for mange gir hakkete stolper, for få skjuler formen.</p>
+<pre class="pseudo"><code>import seaborn as sns
+sns.barplot(data=df, x="Pclass", y="Survived")               # figur 1a: snitt av Survived per klasse
+sns.histplot(data=df, x="Age", hue="Survived", bins=20)     # figur 1d: fordeling per klasse
+plt.show()</code></pre>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Du kjører <code>MinMaxScaler().fit_transform(X)</code> på hele datasettet og splitter etterpå. Hva har gått galt, og hvordan oppdager en sensor det i koden?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Min og maks er beregnet med testdataene inkludert, så testsettet har påvirket treningen (datalekkasje). Det synes ved at <code>train_test_split</code> kommer <em>etter</em> skaleringen, eller ved at <code>fit</code>/<code>fit_transform</code> kalles på noe som inneholder <code>X_test</code>. Riktig: splitt først, <code>fit</code> på <code>X_train</code>, <code>transform</code> på begge.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 LOGISTISK REGRESJON ─────────────────────────── -->
+  <section id="logreg">
+    <div class="container">
+      <div class="section-badge">04 · Logistisk regresjon fra bunnen</div>
+      <h2>Klassen du skal <em>fylle ut</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.3 · s. 8–9 (skjelettet og fit/predict); metodekroppene er forslag</div>
+
+      <p class="dropcap">Notatene gir klassen med tomme metoder og sier at du skriver kroppene selv. Under er skjelettet slik det står, og deretter et forslag til hver metode, direkte fra formlene på 1A: sigmoid (3), cross entropy (11), gradientene (22) og (25), oppdateringen (13). Behold navnene <span class="term" data-term="fit-predict">fit</span> og <code>predict</code>; de er standard i alle biblioteker.</p>
+
+<pre class="notes"><code>class LogisticRegression:
+    def __init__(self, learning_rate=0.1, epochs=1000):
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.weights, self.bias = None, None
+        self.losses, self.train_accuracies = [], []
+
+    def sigmoid_function(self, x):
+    def _compute_loss(self, y, y_pred):
+    def compute_gradients(self, x, y, y_pred):
+    def update_parameters(self, grad_w, grad_b):
+
+    def accuracy(true_values, predictions):
+        return np.mean(true_values == predictions)</code></pre>
+
+<pre class="pseudo"><code>def sigmoid_function(self, x):                       # likning (3)
+    return 1 / (1 + np.exp(-x))
+
+def _compute_loss(self, y, y_pred):                  # likning (11), snitt over datapunktene
+    eps = 1e-12                                      # unngå log(0)
+    y_pred = np.clip(y_pred, eps, 1 - eps)
+    return np.mean(-y * np.log(y_pred) - (1 - y) * np.log(1 - y_pred))
+
+def compute_gradients(self, x, y, y_pred):           # likning (22) og (25), snitt over datapunktene
+    diff = y_pred - y                                # shape (N,)
+    grad_w = np.matmul(x.transpose(), diff) / len(y) # shape (features,): sum_i (y_pred_i - y_i) x_ij
+    grad_b = np.mean(diff)
+    return grad_w, grad_b
+
+def update_parameters(self, grad_w, grad_b):         # likning (13)
+    self.weights = self.weights - self.learning_rate * grad_w
+    self.bias    = self.bias    - self.learning_rate * grad_b</code></pre>
+
+      <p>Så <code>fit</code> og <code>predict</code>, som notatene gir ferdig:</p>
+<pre class="notes"><code>def fit(self, x, y):
+    self.weights = np.zeros(x.shape[1])   # x.shape = (datapunkter, features)
+    self.bias = 0
+
+    for _ in range(self.epochs):          # én epoke = gradient descent på alle treningsdata
+        lin_model = np.matmul(self.weights, x.transpose()) + self.bias
+        y_pred = self._sigmoid(lin_model)
+        grad_w, grad_b = self.compute_gradients(x, y, y_pred)
+        self.update_parameters(grad_w, grad_b)
+
+        loss = self._compute_loss(y, y_pred)
+        pred_to_class = [1 if _y &gt; 0.5 else 0 for _y in y_pred]
+        self.train_accuracies.append(accuracy(y, pred_to_class))
+        self.losses.append(loss)
+
+def predict(self, x):
+    lin_model = np.matmul(x, self.weights) + self.bias
+    y_pred = self._sigmoid(lin_model)
+    return [1 if _y &gt; 0.5 else 0 for _y in y_pred]</code></pre>
+
+      <div class="callout">
+        <span class="label">Shapes å holde styr på</span>
+        <p><code>x</code> er (N, d), <code>weights</code> er (d,). <code>np.matmul(weights, x.T)</code> og <code>np.matmul(x, weights)</code> gir begge (N,): ett tall \(z\) per datapunkt. <code>y_pred - y</code> er (N,), og <code>x.T @ (y_pred - y)</code> er (d,): én gradientkomponent per vekt. Får du en shape-feil, er det nesten alltid her.</p>
+      </div>
+
+      <h3>Trene og plotte</h3>
+<pre class="notes"><code>train_epochs = 30
+log_reg = LogisticRegression(learning_rate=0.01, epochs=train_epochs)
+log_reg.fit(X_train, y_train)
+predictions = log_reg.predict(X_test)
+
+epoch_list = np.arange(0, train_epochs, 1)
+plt.plot(epoch_list, log_reg.losses, c='red', label="Loss")
+plt.plot(epoch_list, log_reg.train_accuracies, c='blue', label="Accuracy")
+plt.legend()
+plt.show()</code></pre>
+      <p>Tapet skal synke jevnt og flate ut; treffsikkerheten skal stige og flate ut (figur 4). Flater de ikke ut, tren flere epoker. Oscillerer tapet, senk læringsraten.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor deler <code>compute_gradients</code> på <code>len(y)</code>, når likning (22) ikke har noen \(1/N\)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Likning (22) er gradienten for <em>ett</em> datapunkt. Optimeringsproblemet (12) minimerer gjennomsnittet over alle \(N\) punkter, så gradienten av det er gjennomsnittet av enkeltgradientene. Uten \(1/N\) skalerer steget med datasettets størrelse, og læringsraten måtte justeres for hvert datasett.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 EVALUERING ─────────────────────────── -->
+  <section id="evaluering">
+    <div class="container">
+      <div class="section-badge">05 · Evaluering</div>
+      <h2>Confusion matrix, metrikker og <em>ROC for hånd</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.4–1.2.5 · s. 9–12 (tabell 4, figur 5–7); koden er forslag</div>
+
+      <p class="dropcap">Notatene definerer <span class="term" data-term="confusion-matrix">confusion matrix</span> og metrikkene i tabell 4, men gir ikke kode. Alt kan regnes med fire tellinger, og ROC-kurven er de samme fire tellingene gjentatt for mange terskler.</p>
+
+<pre class="pseudo"><code>def confusion(y_true, y_pred):
+    TP = np.sum((y_true == 1) &amp; (y_pred == 1))
+    TN = np.sum((y_true == 0) &amp; (y_pred == 0))
+    FP = np.sum((y_true == 0) &amp; (y_pred == 1))     # falsk alarm
+    FN = np.sum((y_true == 1) &amp; (y_pred == 0))     # missed case
+    return TP, TN, FP, FN
+
+def metrics(TP, TN, FP, FN):                        # tabell 4 + (26), (27)
+    return {
+        "accuracy":    (TP + TN) / (TP + TN + FP + FN),
+        "TPR/recall":  TP / (TP + FN),
+        "TNR":         TN / (TN + FP),
+        "FPR":         FP / (FP + TN),
+        "precision":   TP / (TP + FP),
+    }
+
+def roc_curve(y_true, y_prob):                      # figur 6: sveip terskelen fra 1 til 0
+    points = []
+    for t in np.linspace(1, 0, 101):
+        y_pred = (y_prob &gt; t).astype(int)           # samme regel som i predict, med terskel t
+        TP, TN, FP, FN = confusion(y_true, y_pred)
+        points.append((FP / (FP + TN), TP / (TP + FN)))   # (FPR, TPR)
+    return points                                   # starter i (0,0), ender i (1,1)
+
+def auc(points):                                    # arealet under kurven, trapesmetoden
+    xs, ys = zip(*points)
+    return np.trapz(ys, xs)</code></pre>
+
+      <p>Precision–recall-kurven (figur 7) er samme sveip med <code>(recall, precision)</code> som punkter. Merk at <code>y_prob</code> er sigmoid-outputen <em>før</em> terskelen; <code>predict</code> i 04 returnerer klasser, så du trenger en <code>predict_proba</code> som returnerer <code>y_pred</code> uten listeforståelsen.</p>
+
+      <div class="callout callout-warn">
+        <span class="label">Deling på null</span>
+        <p>Ved terskel 1 er ingen predikert positive, så \(TP + FP = 0\) og precision er udefinert. Sjekk nevneren, eller start sveipet litt under 1. sklearn gjør det samme og gir en advarsel.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 UBALANSE ─────────────────────────── -->
+  <section id="ubalanse">
+    <div class="container">
+      <div class="section-badge">06 · Ubalanserte data</div>
+      <h2>Terskel, resampling og <em>vektet tap</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.10 · s. 16–17; resampling-koden er forslag</div>
+
+      <p class="dropcap">Tre grep, i økende inngripen: flytt terskelen (endrer ikke modellen), endre dataene (<span class="term" data-term="undersampling">undersampling</span> / <span class="term" data-term="oversampling">oversampling</span>), eller endre tapsfunksjonen (<span class="term" data-term="vektet-tapsfunksjon">vektet cross entropy</span>).</p>
+
+<pre class="notes"><code>y_pred = [1 if _y &gt; 0.5 else 0 for _y in y_pred]   # bytt 0.5 med terskel valgt fra precision-recall-plottet</code></pre>
+
+<pre class="pseudo"><code>def undersample(X, y, minority=1):
+    idx_min = np.where(y == minority)[0]
+    idx_maj = np.where(y != minority)[0]
+    keep = np.random.choice(idx_maj, size=len(idx_min), replace=False)   # like mange fra majoriteten
+    idx = np.concatenate([idx_min, keep])
+    return X[idx], y[idx]                            # totalt 2 * n_minoritet punkter
+
+def oversample(X, y, minority=1):
+    idx_min = np.where(y == minority)[0]
+    idx_maj = np.where(y != minority)[0]
+    extra = np.random.choice(idx_min, size=len(idx_maj) - len(idx_min), replace=True)   # duplikater
+    idx = np.concatenate([idx_maj, idx_min, extra])
+    return X[idx], y[idx]                            # totalt 2 * n_majoritet punkter</code></pre>
+
+      <p>Vektet tap er én linje endret i <code>_compute_loss</code> (likning 43), og gradientene får samme vekter per datapunkt:</p>
+<pre class="pseudo"><code>def _compute_loss(self, y, y_pred, w0=1.0, w1=1.0):
+    return np.mean(-w1 * y * np.log(y_pred) - w0 * (1 - y) * np.log(1 - y_pred))
+
+def compute_gradients(self, x, y, y_pred, w0=1.0, w1=1.0):
+    weights_per_point = np.where(y == 1, w1, w0)   # w1 der y = 1, w0 der y = 0
+    diff = weights_per_point * (y_pred - y)
+    return np.matmul(x.transpose(), diff) / len(y), np.mean(diff)</code></pre>
+      <p>Tommelregel for vektene: omvendt proporsjonalt med klassestørrelsen, så 9000/1000 gir \(w_A = 0.1\), \(w_B = 1\).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 NAÏV BAYES ─────────────────────────── -->
+  <section id="bayes">
+    <div class="container">
+      <div class="section-badge">07 · Naïv Bayes i kode</div>
+      <h2>Tellinger blir <em>sannsynligheter</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.2.7–1.2.8 · s. 13–15 (crosstab-koden); klassifikatoren er forslag</div>
+
+      <p class="dropcap">Med kategoriske features er <span class="term" data-term="naiv-bayes">naïv Bayes</span> bare tellinger: prior \(p(C_k)\) er andelen per klasse, og hver \(p(x_i \mid C_k)\) er en normalisert krysstabell. Kontinuerlige features (Age) deles først i bins med <code>np.histogram</code>.</p>
+
+<pre class="notes"><code>p_cond = pd.crosstab(df.Pclass, df.Sex, normalize="index")   # p(Sex | Pclass), én rad per Pclass
+p_marg = df.Sex.value_counts(normalize=True)                  # p(Sex)
+ax = p_cond.plot.bar(rot=0)
+plt.show()                                                    # ulike rader =&gt; Sex og Pclass er ikke uavhengige</code></pre>
+
+<pre class="pseudo"><code>def fit_naive_bayes(df, features, target):
+    prior = df[target].value_counts(normalize=True)           # p(C_k)
+    cond = {f: pd.crosstab(df[target], df[f], normalize="index") for f in features}   # p(x_f | C_k)
+    return prior, cond
+
+def predict_naive_bayes(prior, cond, x):                      # likning (38)
+    scores = {}
+    for k in prior.index:
+        s = prior[k]
+        for f, v in x.items():
+            s *= cond[f].loc[k, v]                            # produktet over features
+        scores[k] = s
+    return max(scores, key=scores.get)                        # argmax_k; ikke kalibrert sannsynlighet
+
+df["Age_bin"] = np.digitize(df["Age"], np.histogram(df["Age"], bins=10)[1])   # kontinuerlig -&gt; 10 kategorier</code></pre>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 TRÆR ─────────────────────────── -->
+  <section id="traer">
+    <div class="container">
+      <div class="section-badge">08 · Beslutningstrær</div>
+      <h2>Gini, entropi og <em>sklearn-treet</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.3.2–1.3.4 · s. 18–20</div>
+
+      <p class="dropcap">I dette kurset bygger du ikke trær selv, men du bør kunne pseudokoden, og du bruker <code>DecisionTreeClassifier</code> i øvingene. Splitt-kriteriene er to små funksjoner; bruk dem til å sjekke regnestykkene fra 1B.</p>
+
+<pre class="pseudo"><code>def gini(counts):                                  # likning (44); counts = antall per klasse i noden
+    p = np.array(counts) / np.sum(counts)
+    return 1 - np.sum(p ** 2)
+
+def entropy(counts):                               # likning (46)
+    p = np.array(counts) / np.sum(counts)
+    p = p[p &gt; 0]                                   # 0 log 0 = 0
+    return -np.sum(p * np.log2(p))
+
+def split_score(left, right, f=gini):              # likning (45) / (48): vektet snitt over barna
+    n_l, n_r = np.sum(left), np.sum(right)
+    return (n_l * f(left) + n_r * f(right)) / (n_l + n_r)
+
+def information_gain(parent, left, right):         # likning (49)
+    return entropy(parent) - split_score(left, right, entropy)
+
+# tabell 6: gini([0, 10]) = 0.0, gini([3, 7]) = 0.42, gini([5, 5]) = 0.5
+# oppgaven p=9, n=5: entropy([9, 5]) = 0.94, split_score([4, 5], [5, 0], entropy) = 0.64</code></pre>
+
+<pre class="notes"><code>def build_decision_tree(data, features, depth):
+    if (all data in same class):
+        return class label
+    elif (no features left to test) or (depth &gt;= max_depth):
+        return 1 if p/(p+n) &gt; n/(p+n) else 0
+    elif (no data left to test):
+        return (dominant class in parent node)
+    else:
+        choose best_feature f for split               # lavest gini / størst informasjonsgevinst
+        partition data based on f
+        for each data partition:
+            build_decision_tree(data partition, features - best_feature, depth+1)</code></pre>
+
+      <h3>Palmer Penguins med scikit-learn</h3>
+<pre class="notes"><code>df = pd.read_csv("data/penguins_lter.csv")
+df = df[["Flipper Length (mm)", "Body Mass (g)", "Sex"]].dropna()
+label_encoder = LabelEncoder()
+df["Sex"] = label_encoder.fit_transform(df["Sex"])
+
+X_data = df[["Flipper Length (mm)", "Body Mass (g)"]].values
+y_data = df['Sex'].values
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.3)
+
+clf = tree.DecisionTreeClassifier(max_depth=7, criterion="log_loss")
+clf.fit(X_train, y_train)</code></pre>
+<pre class="pseudo"><code>print(accuracy(y_test, clf.predict(X_test)))
+tree.plot_tree(clf, feature_names=["Flipper", "Mass"], filled=True); plt.show()
+DecisionBoundaryDisplay.from_estimator(clf, X_train, response_method="predict", alpha=0.4)
+plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train); plt.show()      # beslutningsflaten</code></pre>
+      <p>Trær trenger ingen skalering (tabell 8), så MinMaxScaler-steget kan droppes. <code>max_depth</code> er hyperparameteren som styrer overfit; prøv flere verdier og sammenlikn på valideringsdata.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 09 REGRESJON ─────────────────────────── -->
+  <section id="regresjon">
+    <div class="container">
+      <div class="section-badge">09 · Regresjon</div>
+      <h2>Gjenbruk, polynomer, <em>validering</em> og k-fold</h2>
+      <div class="source-note">Notatene · avsnitt 1.4.1–1.4.6 · s. 20–32</div>
+
+      <p class="dropcap">Lineær regresjon er logistisk regresjon uten sigmoid og med <span class="term" data-term="mse">MSE</span>. Tre metoder endres; resten av klassen fra 04 beholdes. Gradientene er (55) og (56), oppdateringen (57).</p>
+
+<pre class="pseudo"><code>class LinearRegression(LogisticRegression):        # arv alt, bytt tre metoder
+    def _linear(self, x):
+        return np.matmul(x, self.weights) + self.bias   # ingen sigmoid
+
+    def _compute_loss(self, y, y_pred):            # likning (52)
+        return np.mean((y - y_pred) ** 2) / 2
+
+    def compute_gradients(self, x, y, y_pred):     # likning (55), (56): samme form som logistisk!
+        diff = y_pred - y
+        return np.matmul(x.transpose(), diff) / len(y), np.mean(diff)
+
+    def predict(self, x):
+        return self._linear(x)                     # et tall, ikke en klasse</code></pre>
+
+      <h3>Polynomiske features</h3>
+<pre class="pseudo"><code>poly = PolynomialFeatures(degree=2, include_bias=False)   # lager [x, x^2]
+X_train_p = poly.fit_transform(X_train)                    # fit + transform på trening
+X_test_p  = poly.transform(X_test)                         # bare transform på test
+# så vanlig lineær regresjon på X_train_p: y = b0 + b1 x + b2 x^2 (likning 58)</code></pre>
+
+      <h3>Treningsløkke med valideringsdata</h3>
+      <p>To splitter gir tre sett. Løkka under regner tap på både trening og validering hver epoke, som i figur 14.</p>
+<pre class="pseudo"><code>X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train, X_val,  y_train, y_val  = train_test_split(X_train, y_train, test_size=0.25)   # 60/20/20</code></pre>
+<pre class="notes"><code>model = SGDRegressor(learning_rate='constant', eta0=0.01)
+train_losses, val_losses = [], []
+n_epochs = 100
+for epoch in range(n_epochs):
+    model.partial_fit(X_train, y_train)            # én epoke
+
+    y_train_pred = model.predict(X_train)
+    train_loss = mean_squared_error(y_train, y_train_pred)
+    train_losses.append(train_loss)
+
+    y_val_pred = model.predict(X_val)
+    val_loss = mean_squared_error(y_val, y_val_pred)
+    val_losses.append(val_loss)</code></pre>
+<pre class="pseudo"><code># early stopping: stopp når val_loss ikke har bedret seg på 'patience' epoker
+best, since_best = np.inf, 0
+for epoch in range(n_epochs):
+    model.partial_fit(X_train, y_train)
+    val_loss = mean_squared_error(y_val, model.predict(X_val))
+    if val_loss &lt; best - tol:
+        best, since_best = val_loss, 0
+    else:
+        since_best += 1
+        if since_best &gt;= patience:
+            break</code></pre>
+
+      <h3>k-fold kryssvalidering</h3>
+<pre class="pseudo"><code>def k_fold(X, y, k, make_model):
+    idx = np.random.permutation(len(y))
+    folds = np.array_split(idx, k)                 # k ikke-overlappende deler
+    scores = []
+    for i in range(k):
+        test_idx  = folds[i]
+        train_idx = np.concatenate([folds[j] for j in range(k) if j != i])
+        model = make_model().fit(X[train_idx], y[train_idx])
+        scores.append(mean_squared_error(y[test_idx], model.predict(X[test_idx])))
+    return np.mean(scores)                         # LOOCV = k_fold med k = len(y)</code></pre>
+
+      <h3>Regresjonstre</h3>
+<pre class="notes"><code>X_data = np.linspace(xmin, xmax, 100)
+y_true = [np.floor(_x) for _x in X_data]
+y_data = [_y + np.random.normal(0, 0.1) for _y in y_true]
+X_data = X_data.reshape(-1, 1)                    # sklearn vil ha (N, features), også med én feature
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data)
+
+regressor = tree.DecisionTreeRegressor().fit(X_train, y_train)   # legg til max_depth=2 for det beste treet
+print("Tree depth:", regressor.get_depth())
+print("Number of leaves:", regressor.get_n_leaves())
+print("Model MSE:", mean_squared_error(y_test, regressor.predict(X_test)))
+
+grid = np.linspace(-3, 3, 500).reshape(-1, 1)
+plt.step(grid.ravel(), regressor.predict(grid), where="post", label="tree")   # trappekurven
+thresholds = regressor.tree_.threshold[regressor.tree_.feature &gt;= 0]
+for thr in thresholds:
+    plt.axvline(thr, color="gray", ls=":")        # splittene = grensene mellom regionene</code></pre>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 10 ENSEMBLE ─────────────────────────── -->
+  <section id="ensemble">
+    <div class="container">
+      <div class="section-badge">10 · Ensembler</div>
+      <h2>Bootstrap, bagging og boosting <em>i kode</em></h2>
+      <div class="source-note">Notatene · avsnitt 1.5 · s. 32–34 (læringsregelen for gradient boosting); resten er forslag</div>
+
+      <p class="dropcap">Notatene gir bare læringsregelen for gradient boosting og navnene på bibliotekene. I øvingene bruker du sklearn; pseudokoden under viser hva som skjer inni.</p>
+
+<pre class="pseudo"><code>def bootstrap_sample(X, y):
+    idx = np.random.choice(len(y), size=len(y), replace=True)   # MED tilbakelegging
+    return X[idx], y[idx]
+
+def bagging_fit(X, y, n_models, make_model):
+    return [make_model().fit(*bootstrap_sample(X, y)) for _ in range(n_models)]
+
+def bagging_predict(models, X, task="classification"):
+    preds = np.array([m.predict(X) for m in models])          # (n_models, N)
+    if task == "regression":
+        return preds.mean(axis=0)                             # gjennomsnitt
+    return np.apply_along_axis(lambda col: np.bincount(col).argmax(), 0, preds)   # flertall</code></pre>
+
+<pre class="pseudo"><code>def gradient_boosting_fit(X, y, n_trees, learning_rate, max_depth=1):
+    F0 = np.mean(y)                                # start: gjennomsnittet
+    trees = []
+    F = np.full(len(y), F0)
+    for _ in range(n_trees):
+        residual = y - F                           # pseudo-residualer = -gradient av 1/2 (y - F)^2
+        t = tree.DecisionTreeRegressor(max_depth=max_depth).fit(X, residual)
+        trees.append(t)
+        F = F + learning_rate * t.predict(X)       # new_ensemble = previous_ensemble - lr * (-residualtre)
+    return F0, trees
+
+def gradient_boosting_predict(F0, trees, learning_rate, X):
+    return F0 + sum(learning_rate * t.predict(X) for t in trees)</code></pre>
+
+      <h3>Ferdige modeller i scikit-learn</h3>
+<pre class="pseudo"><code>from sklearn.ensemble import RandomForestClassifier, GradientBoostingRegressor, AdaBoostClassifier
+
+rf  = RandomForestClassifier(n_estimators=100, max_features="sqrt").fit(X_train, y_train)   # bootstrap + feature-utvalg
+gb  = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3).fit(X_train, y_train)
+ada = AdaBoostClassifier(n_estimators=50).fit(X_train, y_train)                                # stumper som default
+# XGBoost, LightGBM og CatBoost er egne pakker med samme fit/predict-grensesnitt: pip install xgboost</code></pre>
+      <p>Bruk alltid en av disse som referanse på tabulære data: gjør din egen modell det dårligere enn en random forest med standardinnstillinger, er noe galt i preprosesseringen eller treningen.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 11 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">11 · Oppsummering</div>
+      <h2>Reglene som <em>må sitte</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Splitt først</strong>train_test_split før all skalering og feature engineering.</div>
+        <div class="recap-pill"><strong>fit på trening</strong>transform på begge. Aldri fit på testdata.</div>
+        <div class="recap-pill"><strong>Cross entropy</strong><code>-y*log(y_pred) - (1-y)*log(1-y_pred)</code>: y utenfor, y_pred inni logaritmen.</div>
+        <div class="recap-pill"><strong>Vektet</strong>w1 på y-leddet, w0 på (1−y)-leddet.</div>
+        <div class="recap-pill"><strong>Gradienten</strong>x.T @ (y_pred − y) / N for w, mean(y_pred − y) for b. Samme for lineær og logistisk.</div>
+        <div class="recap-pill"><strong>Sigmoid-output</strong>Tall i (0, 1). Klasser først etter terskel.</div>
+        <div class="recap-pill"><strong>Tre sett</strong>Trening tilpasser, validering justerer hyperparametre, test rapporterer én gang.</div>
+        <div class="recap-pill"><strong>Bootstrap</strong>np.random.choice(..., replace=True). k-fold: array_split uten overlapp.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Du skal bruke samme <code>LogisticRegression</code>-klasse til lineær regresjon. List opp nøyaktig hvilke linjer som endres.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Tre steder: (1) sigmoid fjernes fra <code>fit</code> og <code>predict</code>, slik at <code>y_pred = lin_model</code>; (2) <code>_compute_loss</code> bytter cross entropy mot <code>np.mean((y - y_pred)**2) / 2</code>; (3) <code>predict</code> returnerer tallet, ikke <code>[1 if _y &gt; 0.5 ...]</code>. <code>compute_gradients</code> og <code>update_parameters</code> er <em>uendret</em>, siden (55)–(56) har samme form som (22) og (25). Accuracy gir ikke mening for regresjon; bruk MSE som metrikk.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hva er forskjellen på <code>np.random.choice(n, n, replace=True)</code> og <code>np.random.permutation(n)</code>, og hvilken hører til bagging og hvilken til k-fold?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><code>choice</code> med <code>replace=True</code> trekker \(n\) indekser med tilbakelegging: duplikater og hull, det er en bootstrap-trekning og hører til bagging. <code>permutation</code> stokker alle \(n\) indeksene én gang uten gjentak; delt i \(k\) biter gir det ikke-overlappende folds til kryssvalidering. Det er nøyaktig forskjellen eksamen 2024 spm. 18 spør om.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">I <code>gradient_boosting_fit</code> tilpasses treet til <code>residual = y - F</code> og legges til med pluss. Notatene skriver <code>new_ensemble = previous_ensemble - learning_rate * new_tree</code>. Hvorfor er det samme algoritme?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Notatene lar treet tilpasse gradienten \(-(y - F)\), altså den negative residualen, og trekker fra. Koden lar treet tilpasse residualen \(y - F\) og legger til. Siden \(F - \eta \cdot (-(y - F)) = F + \eta (y - F)\), er stegene identiske; det er bare et fortegn flyttet fra treet til oppdateringen. Begge er gradient descent på \(\tfrac12(y - F)^2\) i rommet av trær.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="ensemble.html" class="prev"><div class="pn-label">← Forrige · 1D</div><div class="pn-title">Ensemble-modeller</div></a>
+        <a href="../kap2/koding.html" class="next"><div class="pn-label">Neste · 2B</div><div class="pn-title">Koding: nevrale nettverk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

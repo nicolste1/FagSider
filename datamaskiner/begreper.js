@@ -20,6 +20,11 @@
   var C = 'kap2/instruksjoner.html';
   var D = 'kap2/tall.html';
   var E = 'kap2/prosedyrer.html';
+  var F = 'kap3/logikk.html';
+  var G = 'kap3/enkeltsykel.html';
+  var H = 'kap3/alu.html';
+  var K = 'kap5/samleband.html';
+  var L = 'kap5/unntak-ytelse.html';
 
   window.GLOSSARY = {
     /* ── T1.1 Datamaskintyper og de 7 store ideene ── */
@@ -876,6 +881,590 @@
       alias: 'Java Virtual Machine, Just In Time compiler, tolk',
       def: '<p>Java kompileres til bytekode, et instruksjonssett laget for å tolkes. JVM er tolken (en tolk er et program som simulerer en ISA, som RISC-V-simulatoren i faget). For ytelse kompilerer en JIT-kompilator de «varme» metodene til maskinens eget instruksjonssett under kjøring. Fordelen med tolking er maskinuavhengighet.</p>',
       more: E + '#oversettelse'
+    },
+    /* ── T3.2 Kombinatorisk logikk (3A) ── */
+    'kombinatorisk-element': {
+      term: 'Kombinatorisk element',
+      alias: 'combinational element, kombinatorisk logikk',
+      def: '<p>Logikk uten minne: utgangen avhenger bare av inngangene akkurat nå. ALU, addere, muxer og dekodere er kombinatoriske. Motsatsen er tilstandselementer, som husker.</p>',
+      more: F + '#porter'
+    },
+    'sannhetstabell': {
+      term: 'Sannhetstabell',
+      alias: 'truth table',
+      def: '<p>Tabell over alle 2<sup>n</sup> kombinasjoner av n innganger med utgangsverdien for hver. Beskriver en kombinatorisk funksjon fullstendig, og er utgangspunktet for sum-av-produkt-formen.</p>',
+      more: F + '#porter'
+    },
+    'logisk-likning': {
+      term: 'Logisk likning',
+      alias: 'logic equation, boolsk algebra',
+      def: '<p>Funksjon skrevet med AND (·), OR (+) og NOT (strek over). Følger lovene i boolsk algebra: identitet, invers, kommutativ, assosiativ, distributiv og De Morgan.</p>',
+      more: F + '#porter'
+    },
+    'de-morgan': {
+      term: 'De Morgans lover',
+      alias: "DeMorgan's theorems",
+      def: '<p>¬(A · B) = Ā + B̄ og ¬(A + B) = Ā · B̄. Lar deg bytte AND og OR ved å invertere inngangene og utgangen, og er grunnen til at NAND og NOR hver for seg kan bygge alt.</p>',
+      more: F + '#porter'
+    },
+    'universell-port': {
+      term: 'Universell port',
+      alias: 'NAND, NOR, universal gate',
+      def: '<p>En port som alene kan bygge AND, OR og NOT, og dermed enhver logisk funksjon. NAND og NOR er universelle (oppgave A.5, A.6); også en toinngangs mux er det (A.10).</p>',
+      more: F + '#porter'
+    },
+    'sum-av-produkt': {
+      term: 'Sum av produkter',
+      alias: 'sum of products, SOP, to-nivå-logikk',
+      def: '<p>Logisk funksjon skrevet som OR av AND-ledd, der hvert ledd inneholder hver inngang rett eller invertert. Lages mekanisk fra sannhetstabellen: ett produktledd per rad med utgang 1. Gir en krets med to lag porter.</p>',
+      more: F + '#sop'
+    },
+    'tonivaa-logikk': {
+      term: 'To-nivå-logikk',
+      alias: 'two-level logic',
+      def: '<p>Krets med ett lag AND-porter og ett lag OR-porter (eller omvendt), med invertere bare på inngangene. Enhver funksjon kan skrives slik (sum av produkter eller produkt av summer).</p>',
+      more: F + '#sop'
+    },
+    'pla': {
+      term: 'PLA',
+      alias: 'programmable logic array, programmerbar logikkmatrise',
+      def: '<p>Sum av produkter i maskinvare: en AND-matrise som lager produktleddene og en OR-matrise som summerer dem til hver utgang. Tar bare med leddene som trengs, og lar utganger dele ledd.</p>',
+      more: F + '#sop'
+    },
+    'rom': {
+      term: 'ROM',
+      alias: 'read-only memory',
+      def: '<p>Lesbart minne brukt som logikk: inngangen er adressen, utgangen er lagret innhold, så hele sannhetstabellen ligger i ROM-en. Enkelt, men størrelsen er 2<sup>n</sup> ord uansett hvor få 1-ere funksjonen har.</p>',
+      more: F + '#sop'
+    },
+    'mux': {
+      term: 'Multiplekser (mux)',
+      alias: 'multiplexor, selector, velger',
+      def: '<p>Velger én av n datainnganger etter log<sub>2</sub> n velgerbit og sender den til utgangen. Toinngangsmux: C = A·S̄ + B·S. Står overalt i datastien der to kilder vil inn på samme inngang (ALUSrc, MemtoReg, PCSrc).</p>',
+      more: F + '#mux'
+    },
+    'dekoder': {
+      term: 'Dekoder',
+      alias: 'decoder',
+      def: '<p>n bit inn, 2<sup>n</sup> utganger, og nøyaktig én utgang er 1: den med nummer lik inngangsverdien. Peker ut ett register av 32 i registerfilen eller én rad i et minne. En stor mux er en dekoder pluss AND-porter og én OR-port.</p>',
+      more: F + '#mux'
+    },
+    'buss': {
+      term: 'Buss',
+      alias: 'bus, A[31:0]',
+      def: '<p>Samling signaler som hører sammen, tegnet som én strek med bredden skrevet på. A[31:0] er alle 32 linjene, A[7:4] linjene 7 til 4, A[0] én linje. Slik plukkes feltene (rs1 = Instruction[19:15]) ut av instruksjonsordet, uten logikk.</p>',
+      more: F + '#mux'
+    },
+    'dont-care': {
+      term: 'Don\'t care (X)',
+      alias: 'don\'t-care term',
+      def: '<p>Et signal eller en tabellrad som ikke påvirker resultatet, markert X. I kontrollordet: MemtoReg er X når RegWrite = 0; funct-feltene er X når ALUOp ikke er 10. Riktig bruk av X teller på eksamen, og X der det må være en verdi er feil.</p>',
+      more: G + '#kontroll'
+    },
+
+    /* ── T3.3 ALU og aritmetikk (3B) ── */
+    'mente': {
+      term: 'Mente',
+      alias: 'carry, CarryIn, CarryOut',
+      def: '<p>Det som bæres videre fra én bitposisjon til den neste i addisjon: 1 + 1 = 10 gir sum 0 og mente 1. CarryIn kommer fra posisjonen under, CarryOut går til posisjonen over.</p>',
+      more: H + '#addisjon'
+    },
+    'fulladder': {
+      term: '1-bits adder (fulladder)',
+      alias: 'full adder',
+      def: '<p>Krets som legger sammen tre bit, a, b og CarryIn, og gir Sum og CarryOut. Sum = a ⊕ b ⊕ CarryIn; CarryOut = 1 når minst to av inngangene er 1. Byggesteinen i hver 1-bits ALU.</p>',
+      more: H + '#alu'
+    },
+    'ripple-carry': {
+      term: 'Ripple-carry-adder',
+      alias: 'ripple carry',
+      def: '<p>32 1-bits addere der CarryOut fra bit i er CarryIn til bit i + 1. Enkel, men menten må vandre gjennom alle 32 trinnene i verste fall. Carry lookahead (A.6) er raskere.</p>',
+      more: H + '#alu'
+    },
+    '1-bit-alu': {
+      term: '1-bits ALU',
+      alias: '1-bit ALU, figur A.5.10',
+      def: '<p>Én celle av ALU-en: AND-port, OR-port og adder på a og b, pluss Less-inngangen, inn i en 4:1-mux styrt av Operation. Ainvert og Binvert velger a/¬a og b/¬b på inngangene. 32 slike i kjede er hele ALU-en.</p>',
+      more: H + '#alu'
+    },
+    'alu': {
+      term: 'ALU',
+      alias: 'arithmetic logic unit, aritmetisk-logisk enhet',
+      def: '<p>Enheten som regner: AND, OR, add, sub og slt på to 32-bits operander, med utgangene Result, Zero og Overflow. Bygget av 32 1-bits ALU-er i ripple-carry-kjede, styrt av Ainvert, Bnegate og Operation (sammen de 4 ALU-kontrollbitene).</p>',
+      more: H + '#alu'
+    },
+    'bnegate': {
+      term: 'Bnegate',
+      alias: 'Binvert, Ainvert, Operation',
+      def: '<p>Kontrollsignalet som gjør subtraksjon: inverterer b i alle 32 cellene (Binvert) og setter CarryIn i bit 0 til 1, slik at adderen regner a + ¬b + 1 = a − b. Sammen med Ainvert (inverter a) og Operation (2 bit, velger AND/OR/adder/Less) utgjør det ALU-ens kontroll.</p>',
+      more: H + '#alu'
+    },
+    'overflytdeteksjon': {
+      term: 'Overflytdeteksjon',
+      alias: 'overflow detection, Set, Zero',
+      def: '<p>Logikk i ALU31 som melder overflyt når CarryIn og CarryOut i fortegnsbiten er ulike. ALU31 gir også Set, adderens fortegnsbit, som sendes til Less i bit 0 for slt. Zero = NOR av alle resultatbitene.</p>',
+      more: H + '#alu'
+    },
+    'multiplikand': {
+      term: 'Multiplikand',
+      alias: 'multiplicand',
+      def: '<p>Det første tallet i en multiplikasjon, det som adderes til produktet når multiplikatorbiten er 1. I bokas første maskinvare ligger den i et 64-bits register som skiftes ett steg til venstre per iterasjon.</p>',
+      more: H + '#multiplikasjon'
+    },
+    'multiplikator': {
+      term: 'Multiplikator',
+      alias: 'multiplier',
+      def: '<p>Det andre tallet i en multiplikasjon; bitene testes ett om gangen fra høyre. Registeret skiftes ett steg til høyre per iterasjon så neste bit havner i posisjon 0 (Multiplier0).</p>',
+      more: H + '#multiplikasjon'
+    },
+    'produkt': {
+      term: 'Produkt',
+      alias: 'product',
+      def: '<p>Resultatet av multiplikasjonen, n + m bit langt for n-bits multiplikand og m-bits multiplikator. Starter på 0 og akkumulerer delproduktene: Product = Product + Multiplicand når Multiplier0 = 1.</p>',
+      more: H + '#multiplikasjon'
+    },
+    'dividend': {
+      term: 'Dividend',
+      alias: 'dividend',
+      def: '<p>Tallet som deles: dividend = kvotient × divisor + rest. Legges i Remainder-registeret ved start.</p>',
+      more: H + '#divisjon'
+    },
+    'divisor': {
+      term: 'Divisor',
+      alias: 'divisor',
+      def: '<p>Tallet det deles med. Starter i venstre halvdel av et dobbelt så bredt register og skiftes ett steg til høyre per iterasjon.</p>',
+      more: H + '#divisjon'
+    },
+    'kvotient': {
+      term: 'Kvotient',
+      alias: 'quotient',
+      def: '<p>Resultatet av heltallsdivisjonen. Bygges bit for bit: skiftes venstre hver iterasjon, og bit 0 settes til 1 hvis subtraksjonen av divisoren ga rest ≥ 0, ellers 0.</p>',
+      more: H + '#divisjon'
+    },
+    'rest': {
+      term: 'Rest',
+      alias: 'remainder',
+      def: '<p>Det som blir igjen: dividend − kvotient × divisor. Har samme fortegn som dividenden ved signert divisjon. RISC-V: rem/remu.</p>',
+      more: H + '#divisjon'
+    },
+    'flyttall': {
+      term: 'Flyttall',
+      alias: 'floating point, IEEE 754',
+      def: '<p>Tall i vitenskapelig notasjon i base 2: (−1)<sup>s</sup> × (1 + brøk) × 2<sup>eksponent − bias</sup>. Enkel presisjon: 1 fortegnsbit, 8 bits eksponent (bias 127), 23 bits brøk. Dekker både 3,14 og 10<sup>−38</sup>, i motsetning til heltall.</p>',
+      more: H + '#flyttall'
+    },
+    'normalisert': {
+      term: 'Normalisert tall',
+      alias: 'normalized, signifikand, implisitt 1',
+      def: '<p>Flyttall skrevet med nøyaktig ett ikke-null siffer foran kommaet: 1,xxx × 2<sup>y</sup>. Siden sifferet alltid er 1 i base 2, lagres det ikke; signifikanden er 1 + brøk, og brøkfeltet får ett bit ekstra presisjon.</p>',
+      more: H + '#flyttall'
+    },
+    'bias': {
+      term: 'Bias (127)',
+      alias: 'exponent bias',
+      def: '<p>Tallet som legges til eksponenten før lagring: 2<sup>2</sup> lagres som 129, 2<sup>−1</sup> som 126. Enkel presisjon bruker 127, dobbel 1023. Gjør eksponentfeltet usignert, så flyttall kan sammenliknes som heltall.</p>',
+      more: H + '#flyttall'
+    },
+    'biased-notasjon': {
+      term: 'Biased notasjon',
+      alias: 'biased notation',
+      def: '<p>Representasjon der den lagrede verdien er den faktiske pluss en konstant (bias), så det minste tallet lagres som 000…0 og det største som 111…1. Brukes for eksponenten i IEEE 754.</p>',
+      more: H + '#flyttall'
+    },
+    'dobbel-presisjon': {
+      term: 'Dobbel presisjon',
+      alias: 'double precision, single precision, enkel presisjon',
+      def: '<p>64-bits flyttall: 1 fortegnsbit, 11 bits eksponent (bias 1023), 52 bits brøk. Enkel presisjon er 32 bit (8 + 23, bias 127). C: double og float. Halv presisjon (16 bit) finnes også.</p>',
+      more: H + '#flyttall'
+    },
+    'nan': {
+      term: 'NaN og uendelig',
+      alias: 'Not a Number, infinity',
+      def: '<p>Spesialverdier med eksponentfelt 255: brøk 0 betyr ±∞ (resultat av overflyt eller 1/0), brøk ≠ 0 betyr NaN, «ikke et tall» (0/0, √−1). Eksponent 0 og brøk 0 er tallet 0.</p>',
+      more: H + '#flyttall'
+    },
+    'flyttallsoverflyt': {
+      term: 'Flyttallsoverflyt',
+      alias: 'overflow (floating point)',
+      def: '<p>Resultatets eksponent er for stor til å få plass i eksponentfeltet (over 2<sup>127</sup> i enkel presisjon). Gir uendelig etter IEEE 754.</p>',
+      more: H + '#flyttall'
+    },
+    'underflyt': {
+      term: 'Underflyt',
+      alias: 'underflow',
+      def: '<p>Resultatets eksponent er for liten (tallet er for nær 0) til å representeres normalisert. IEEE 754 har denormaliserte tall som mykner overgangen til 0.</p>',
+      more: H + '#flyttall'
+    },
+    'subord-parallellitet': {
+      term: 'Subord-parallellitet',
+      alias: 'subword parallelism',
+      def: '<p>Å dele et bredt register (128 bit) i flere smale felt (16 × 8, 8 × 16 eller 4 × 32 bit) og regne på alle feltene med én instruksjon. Maskinvaren er en bred adder med mentekjeden kuttet ved feltgrensene. Grunnlaget for SIMD-utvidelser.</p>',
+      more: H + '#simd'
+    },
+    'simd': {
+      term: 'SIMD',
+      alias: 'single instruction, multiple data',
+      def: '<p>Én instruksjon som utfører samme operasjon på mange dataelementer samtidig, for eksempel fire flyttallsaddisjoner i ett 128-bits register. Brukes i grafikk, lyd og maskinlæring (x86 SSE/AVX, RISC-V-vektorutvidelsen). Én av klassene i Flynns taksonomi.</p>',
+      more: H + '#simd'
+    },
+    'fastpunkt': {
+      term: 'Fastpunkt',
+      alias: 'fixed point',
+      def: '<p>Heltall der et fast antall bit regnes som desimaler (verdien er heltallet delt på 2<sup>k</sup>). Rask og billig aritmetikk med jevn presisjon, men lite og fast tallområde; programmereren må holde styr på kommaet. Flyttall løser det med eksponenten.</p>',
+      more: H + '#simd'
+    },
+
+    /* ── T3.1 Enkeltsykelprosessor (3C) ── */
+    'enkeltsykelprosessor': {
+      term: 'Enkeltsykelprosessor',
+      alias: 'single-cycle implementation',
+      def: '<p>Prosessor der hver instruksjon utføres fullstendig i én klokkesykel: hent, les registre, ALU, minne, skriv tilbake. CPI = 1, men klokkeperioden må være lang nok for den tregeste instruksjonen (lw), så ytelsen er dårlig.</p>',
+      more: G + '#overblikk'
+    },
+    'tilstandselement': {
+      term: 'Tilstandselement',
+      alias: 'state element',
+      def: '<p>Enhet som husker: PC, registerfil, minner. Har data- og klokkeinngang og oppdateres bare på klokkeflanken. Alt som er lagret i tilstandselementene er prosessorens tilstand.</p>',
+      more: G + '#overblikk'
+    },
+    'kantstyrt-klokking': {
+      term: 'Kantstyrt klokking',
+      alias: 'edge-triggered clocking',
+      def: '<p>Klokkemetode der tilstandselementer bare oppdateres på klokkeflanken. Mellom to flanker leser kombinatorisk logikk fra tilstandselementene og legger resultatet klart på inngangene. Gjør at samme register kan leses og skrives i én sykel.</p>',
+      more: G + '#overblikk'
+    },
+    'instruksjonsminne': {
+      term: 'Instruksjonsminne',
+      alias: 'instruction memory, dataminne, data memory',
+      def: '<p>Minnet datastien henter instruksjoner fra, adressert av PC; bare lest. Dataminnet er det lw/sw bruker, med MemRead og MemWrite. I enkeltsykeldatastien er de to separate enheter fordi begge brukes i samme sykel.</p>',
+      more: G + '#datasti'
+    },
+    'registerfil': {
+      term: 'Registerfil',
+      alias: 'register file',
+      def: '<p>De 32 registrene som én enhet: to leseporter (Les register 1/2 → Les data 1/2), én skriveport (Skriv register, Skriv data) og skrivesignalet RegWrite. Leser alltid; skriver bare på flanken når RegWrite = 1.</p>',
+      more: G + '#datasti'
+    },
+    'imm-gen': {
+      term: 'Imm Gen',
+      alias: 'immediate generation, sign extension unit, fortegnsutvider',
+      def: '<p>Enheten som plukker den 12-bits immediaten ut av instruksjonsordet (ulik plassering for I-, S- og SB-format, valgt etter opcoden) og fortegnsutvider den til 32 bit for ALU-en eller hoppadderen.</p>',
+      more: G + '#datasti'
+    },
+    'hoppmaal': {
+      term: 'Hoppmål',
+      alias: 'branch target address',
+      def: '<p>Adressen et betinget hopp går til: PC + (fortegnsutvidet immediate × 2). Skiftet med ett steg fordi immediaten teller halvord. Regnes av en egen adder parallelt med ALU-ens sammenlikning.</p>',
+      more: G + '#datasti'
+    },
+    'hovedkontroll': {
+      term: 'Hovedkontroll',
+      alias: 'main control unit, kontrollenhet',
+      def: '<p>Kontrollenheten som ser bare på opcoden (bit 6:0) og setter ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch og det 2-bits ALUOp. Kan implementeres som en PLA fra sannhetstabellen i figur 4.26.</p>',
+      more: G + '#kontroll'
+    },
+    'aluop': {
+      term: 'ALUOp',
+      alias: 'ALUOp',
+      def: '<p>2-bits signal fra hovedkontrollen til ALU-kontrollen: 00 = add (lw/sw), 01 = subtract (beq), 10 = la funct-feltene bestemme (R-type).</p>',
+      more: G + '#kontroll'
+    },
+    'alu-kontroll': {
+      term: 'ALU-kontroll',
+      alias: 'ALU control',
+      def: '<p>Lite kontrollnivå som tar ALUOp og funct-bitene (30, 14:12) og lager de fire ALU-kontrollbitene: 0010 add, 0110 sub, 0000 AND, 0001 OR, 0111 slt. To nivåer gjør hovedkontrollen mindre og raskere.</p>',
+      more: G + '#kontroll'
+    },
+    'regwrite': {
+      term: 'RegWrite',
+      alias: 'RegWrite',
+      def: '<p>Kontrollsignal: 1 betyr at registeret i Skriv register (rd) får verdien på Skriv data på klokkeflanken. 1 for R-type og lw, 0 for sw og beq. Når det er 0, er MemtoReg don\'t care.</p>',
+      more: G + '#kontroll'
+    },
+    'alusrc': {
+      term: 'ALUSrc',
+      alias: 'ALUSrc',
+      def: '<p>Kontrollsignal til muxen foran ALU-ens andre inngang: 0 = Les data 2 (rs2), 1 = den fortegnsutvidede immediaten. 0 for R-type og beq, 1 for lw, sw og I-type aritmetikk.</p>',
+      more: G + '#kontroll'
+    },
+    'pcsrc': {
+      term: 'PCSrc',
+      alias: 'PCSrc',
+      def: '<p>Kontrollsignal til muxen som velger neste PC: 0 = PC + 4, 1 = hoppmålet. Lages som Branch AND Zero: kontrollen vet om instruksjonen er et hopp, ALU-en om operandene var like. 0 for alt som ikke er hopp.</p>',
+      more: G + '#kontroll'
+    },
+    'branch-signal': {
+      term: 'Branch',
+      alias: 'Branch',
+      def: '<p>Hovedkontrollens signal som sier at instruksjonen er et betinget hopp (beq). AND-es med ALU-ens Zero for å gi PCSrc. 1 bare for beq.</p>',
+      more: G + '#kontroll'
+    },
+    'memread': {
+      term: 'MemRead',
+      alias: 'MemRead',
+      def: '<p>Kontrollsignal: 1 får dataminnet til å lese adressen (ALU-resultatet) og legge innholdet på Les data. 1 bare for lw.</p>',
+      more: G + '#kontroll'
+    },
+    'memwrite': {
+      term: 'MemWrite',
+      alias: 'MemWrite',
+      def: '<p>Kontrollsignal: 1 får dataminnet til å skrive Skriv data (Les data 2, rs2) til adressen på klokkeflanken. 1 bare for sw/sb/sh.</p>',
+      more: G + '#kontroll'
+    },
+    'memtoreg': {
+      term: 'MemtoReg',
+      alias: 'MemtoReg',
+      def: '<p>Kontrollsignal til muxen foran registerfilens Skriv data: 0 = ALU-resultatet, 1 = dataminnets Les data. 0 for R-type, 1 for lw, X for sw og beq (ingenting skrives).</p>',
+      more: G + '#kontroll'
+    },
+    /* ── T5.1 Samlebåndsprosessor med 5 steg (5A) ── */
+    'samlebaandssteg': {
+      term: 'Samlebåndssteg',
+      alias: 'pipeline stage, IF, ID, EX, MEM, WB',
+      def: '<p>Ett av de fem trinnene en instruksjon går gjennom: IF (hent), ID (dekod og les registre), EX (ALU), MEM (dataminne) og WB (skriv tilbake). Én instruksjon i hvert steg samtidig; klokkeperioden er det tregeste steget.</p>',
+      more: K + '#ide'
+    },
+    'balanserte-steg': {
+      term: 'Balanserte steg',
+      alias: 'balanced stages',
+      def: '<p>Samlebåndssteg som tar like lang tid. Bare da gir k steg en speedup på k; er ett steg tregere enn de andre, bestemmer det klokka, og de raske stegene står og venter.</p>',
+      more: K + '#ide'
+    },
+    'oppstartskostnad': {
+      term: 'Oppstartskostnad',
+      alias: 'pipeline fill, n + k − 1',
+      def: '<p>Tiden det tar å fylle samlebåndet: den første instruksjonen trenger k sykler, de neste kommer ut én per sykel. n instruksjoner tar n + k − 1 sykler, så gevinsten nærmer seg k først når programmet er langt.</p>',
+      more: K + '#ide'
+    },
+    'samlebaandsregister': {
+      term: 'Samlebåndsregister',
+      alias: 'pipeline register, IF/ID, ID/EX, EX/MEM, MEM/WB',
+      def: '<p>Register mellom to steg som fanger alt steget til venstre regnet ut og holder det stabilt for steget til høyre i neste sykel. Bærer data, rd-nummeret og kontrollsignalene instruksjonen trenger senere. Navngitt etter stegene det skiller.</p>',
+      more: K + '#datasti'
+    },
+    'samlebaandsdiagram': {
+      term: 'Samlebåndsdiagram',
+      alias: 'multiple-clock-cycle pipeline diagram',
+      def: '<p>Tabell med instruksjonene nedover og klokkesyklene bortover, og steget (IF, ID, EX, MEM, WB) i hver rute. Hver instruksjon er forskjøvet én sykel fra den forrige; bobler vises som hull. En kolonne er et tverrsnitt: hvilken instruksjon som er i hvert steg i den sykelen.</p>',
+      more: K + '#datasti'
+    },
+    'avhengighet': {
+      term: 'Avhengighet',
+      alias: 'dependence',
+      def: '<p>Egenskap ved programmet: én instruksjon trenger noe en annen lager (data), eller må vite utfallet av et hopp (kontroll). En avhengighet blir bare en fare hvis samlebåndet er slik at den senere instruksjonen ikke kan utføres i sin planlagte sykel.</p>',
+      more: K + '#farer'
+    },
+    'fare': {
+      term: 'Fare',
+      alias: 'hazard, pipeline hazard',
+      def: '<p>Situasjon der neste instruksjon ikke kan utføres i neste klokkesykel. Tre grupper: strukturfarer, datafarer og kontrollfarer. Fire strategier: unngåelse, videresending, stans og prediksjon.</p>',
+      more: K + '#farer'
+    },
+    'strukturfare': {
+      term: 'Strukturfare',
+      alias: 'structural hazard',
+      def: '<p>Maskinvaren støtter ikke kombinasjonen av instruksjoner som skal utføres i samme sykel, for eksempel ett felles minne som både IF og MEM vil bruke. Unngått i RISC-V-samlebåndet med separate instruksjons- og dataminner.</p>',
+      more: K + '#farer'
+    },
+    'datafare': {
+      term: 'Datafare',
+      alias: 'data hazard, pipeline data hazard',
+      def: '<p>En instruksjon trenger data fra en tidligere instruksjon som fortsatt er i samlebåndet og ikke har skrevet resultatet til registerfilen. Løses med videresending, og med én stans ved load-use.</p>',
+      more: K + '#farer'
+    },
+    'kontrollfare': {
+      term: 'Kontrollfare',
+      alias: 'control hazard, branch hazard',
+      def: '<p>Instruksjonen som ble hentet er ikke den som trengs, fordi et hopp ikke var avgjort da den ble hentet. Løses med stans eller prediksjon; feilgjettede instruksjoner tømmes.</p>',
+      more: K + '#farer'
+    },
+    'videresending': {
+      term: 'Videresending',
+      alias: 'forwarding, bypassing',
+      def: '<p>Å hente en verdi fra et samlebåndsregister (EX/MEM eller MEM/WB) rett inn på ALU-inngangen, i stedet for å vente til den er skrevet i registerfilen. Løser datafarer uten stans når verdien allerede er regnet ut.</p>',
+      more: K + '#videresending'
+    },
+    'videresendingsenhet': {
+      term: 'Videresendingsenhet',
+      alias: 'forwarding unit, ForwardA, ForwardB',
+      def: '<p>Logikk som sammenlikner rs1 og rs2 til instruksjonen i EX med rd i EX/MEM og MEM/WB og styrer muxene foran ALU-en. 00 = registerfilen, 10 = EX/MEM (instruksjonen rett foran), 01 = MEM/WB. Krever RegWrite = 1 og rd ≠ x0; EX/MEM har forrang.</p>',
+      more: K + '#videresending'
+    },
+    'load-use': {
+      term: 'Load-use-fare',
+      alias: 'load-use data hazard',
+      def: '<p>Datafaren videresending ikke klarer: en load fulgt rett av en instruksjon som bruker det som lastes. Dataene finnes først etter MEM, én sykel for sent for EX. Krever én stans; deretter videresendes de fra MEM/WB.</p>',
+      more: K + '#videresending'
+    },
+    'faredeteksjonsenhet': {
+      term: 'Faredeteksjonsenhet',
+      alias: 'hazard detection unit',
+      def: '<p>Logikk i ID som oppdager load-use: ID/EX.MemRead = 1 og ID/EX.Rd lik rs1 eller rs2 i IF/ID. Stanser ved å holde PC og IF/ID (PCWrite = 0, IF/IDWrite = 0) og nulle kontrollsignalene inn i ID/EX.</p>',
+      more: K + '#videresending'
+    },
+    'stans': {
+      term: 'Stans',
+      alias: 'stall, pipeline stall',
+      def: '<p>Å holde en instruksjon igjen i steget sitt én sykel til, mens instruksjonene foran går videre. Hullet som oppstår fylles med en boble. Koster én sykel per stans.</p>',
+      more: K + '#farer'
+    },
+    'boble': {
+      term: 'Boble',
+      alias: 'bubble, nop',
+      def: '<p>En «ikke-instruksjon» som vandrer gjennom samlebåndet etter en stans eller tømming: alle kontrollsignalene er 0, så den skriver verken register eller minne. Tilsvarer en nop.</p>',
+      more: K + '#farer'
+    },
+    'toemming': {
+      term: 'Tømming',
+      alias: 'flush',
+      def: '<p>Å kaste instruksjoner som er hentet feil (etter et feilpredikert hopp eller et unntak) ved å nulle kontrollsignalene deres, så de blir bobler før de har endret register eller minne.</p>',
+      more: K + '#kontrollfarer'
+    },
+    'dynamisk-prediksjon': {
+      term: 'Dynamisk hopprediksjon',
+      alias: 'dynamic branch prediction, 1-bit, 2-bit predictor',
+      def: '<p>Å gjette utfallet av et hopp ut fra hva det gjorde tidligere under kjøringen. 1 bit: samme som sist. 2 bit: gjetningen må være feil to ganger før den snus, så en løkke bommer én gang per runde i stedet for to.</p>',
+      more: K + '#kontrollfarer'
+    },
+    'hopphistorietabell': {
+      term: 'Hopphistorietabell',
+      alias: 'branch prediction buffer, branch history table',
+      def: '<p>Lite minne indeksert med de laveste bitene av hoppinstruksjonens adresse, som inneholder 1 eller 2 bit om hva hoppet gjorde sist. Flere hopp kan dele en plass; det gir bare en dårligere gjetning, aldri feil resultat.</p>',
+      more: K + '#kontrollfarer'
+    },
+    'hoppmaalbuffer': {
+      term: 'Hoppmålbuffer',
+      alias: 'branch target buffer',
+      def: '<p>Hurtigbuffer som husker måladressen til hopp, slik at et hopp som predikeres tatt kan hente fra målet uten å vente på at adressen regnes ut.</p>',
+      more: K + '#kontrollfarer'
+    },
+
+    /* ── T5.2 Unntak og avbrudd, T5.3 Prosessorer med høyere ytelse (5B) ── */
+    'unntak': {
+      term: 'Unntak',
+      alias: 'exception',
+      def: '<p>Uplanlagt hendelse som forstyrrer programutføringen: udefinert instruksjon, ugyldig adresse, systemkall, maskinvarefeil. Prosessoren lagrer adressen til instruksjonen i SEPC og årsaken i SCAUSE, og hopper til operativsystemets handler.</p>',
+      more: L + '#unntak'
+    },
+    'avbrudd': {
+      term: 'Avbrudd',
+      alias: 'interrupt',
+      def: '<p>Et unntak som kommer utenfra prosessoren, typisk fra en I/O-enhet eller et tidsur. Håndteres som andre unntak, men er ikke knyttet til en bestemt instruksjon i programmet.</p>',
+      more: L + '#unntak'
+    },
+    'sepc': {
+      term: 'SEPC og SCAUSE',
+      alias: 'supervisor exception program counter, supervisor exception cause',
+      def: '<p>To registre for unntak i RISC-V: SEPC holder adressen til instruksjonen som ble rammet, SCAUSE holder årsaken. Operativsystemet leser SCAUSE for å velge handling og bruker SEPC for å fortsette programmet.</p>',
+      more: L + '#unntak'
+    },
+    'presist-unntak': {
+      term: 'Presist unntak',
+      alias: 'precise exception, precise interrupt',
+      def: '<p>Unntak som alltid knyttes til riktig instruksjon: alt før den er fullført, og verken den eller noe etter har endret tilstanden. I samlebåndet oppnås det ved å tømme instruksjonene bak; ute av rekkefølge ved å fullføre i programrekkefølge.</p>',
+      more: L + '#unntak'
+    },
+    'ilp': {
+      term: 'Parallellitet på instruksjonsnivå',
+      alias: 'instruction-level parallelism, ILP',
+      def: '<p>Parallellitet mellom instruksjoner i ett program. Utnyttes i tid (dypere samlebånd, flere instruksjoner overlapper) og i rom (multiple issue, flere instruksjoner startes per sykel).</p>',
+      more: L + '#ilp'
+    },
+    'multiple-issue': {
+      term: 'Multiple issue',
+      alias: 'multiple issue, IPC',
+      def: '<p>Å starte flere instruksjoner i samme klokkesykel ved å duplisere maskinvaren. CPI kan da bli under 1; man bruker heller IPC, instruksjoner per sykel. Statisk (kompilatoren bestemmer) eller dynamisk (prosessoren bestemmer).</p>',
+      more: L + '#ilp'
+    },
+    'statisk-multiple-issue': {
+      term: 'Statisk multiple issue',
+      alias: 'static multiple issue',
+      def: '<p>Multiple issue der kompilatoren avgjør før kjøring hvilke instruksjoner som startes sammen, og unngår farene. Enkel maskinvare, men koden må kompileres for den bestemte prosessoren, og kompilatoren kjenner ikke hopputfall og bom.</p>',
+      more: L + '#ilp'
+    },
+    'dynamisk-multiple-issue': {
+      term: 'Dynamisk multiple issue',
+      alias: 'dynamic multiple issue, superscalar, superskalar',
+      def: '<p>Multiple issue der prosessoren under kjøring velger hvor mange instruksjoner som kan startes hver sykel. Samme binærkode går riktig på alle modeller. Kalles superskalar; oftest kombinert med utføring ut av rekkefølge.</p>',
+      more: L + '#ilp'
+    },
+    'issue-pakke': {
+      term: 'Issue-pakke',
+      alias: 'issue packet, issue slots',
+      def: '<p>Settet av instruksjoner som startes i én klokkesykel. I statisk multiple issue fyller kompilatoren pakkene og sørger for at instruksjonene i en pakke ikke avhenger av hverandre.</p>',
+      more: L + '#ilp'
+    },
+    'spekulasjon': {
+      term: 'Spekulasjon',
+      alias: 'speculation',
+      def: '<p>Å gjette på en egenskap ved en instruksjon (hopputfall, at en store ikke treffer en senere load) og begynne å utføre det som avhenger av gjetningen. Krever en sjekk og en måte å angre: resultatene bufres til gjetningen er bekreftet, og kastes om den var feil.</p>',
+      more: L + '#ilp'
+    },
+    'lokkeutrulling': {
+      term: 'Løkkeutrulling',
+      alias: 'loop unrolling',
+      def: '<p>Kompilatorteknikk som lager flere kopier av løkkekroppen etter hverandre. Gir flere uavhengige instruksjoner å planlegge parallelt og færre hopp; kopiene må bruke ulike registre (renaming i kompilatoren).</p>',
+      more: L + '#ilp'
+    },
+    'raw': {
+      term: 'RAW-fare',
+      alias: 'read after write, ekte dataavhengighet',
+      def: '<p>En senere instruksjon leser et register en tidligere skriver. Ekte dataflyt: leseren må vente på skriveren eller få verdien videresendt. Kan ikke fjernes med renaming.</p>',
+      more: L + '#renaming'
+    },
+    'waw': {
+      term: 'WAW-fare',
+      alias: 'write after write, utgangsavhengighet, output dependence',
+      def: '<p>To instruksjoner skriver samme register. Utføres de i feil rekkefølge, ender registeret med den tidligste instruksjonens verdi. En navneavhengighet; fjernes med register renaming.</p>',
+      more: L + '#renaming'
+    },
+    'war': {
+      term: 'WAR-fare',
+      alias: 'write after read',
+      def: '<p>En senere instruksjon skriver et register en tidligere skal lese. Skriver den først, får den tidligere instruksjonen feil verdi. Skyldes en antiavhengighet; fjernes med register renaming.</p>',
+      more: L + '#renaming'
+    },
+    'antiavhengighet': {
+      term: 'Antiavhengighet',
+      alias: 'antidependence',
+      def: '<p>Rekkefølgekrav som skyldes gjenbruk av et registernavn, ikke at en verdi flyter mellom instruksjonene: en senere instruksjon overskriver et register en tidligere leser. Gir WAR-fare.</p>',
+      more: L + '#renaming'
+    },
+    'navneavhengighet': {
+      term: 'Navneavhengighet',
+      alias: 'name dependence',
+      def: '<p>Fellesnavn på antiavhengighet (WAR) og utgangsavhengighet (WAW): to instruksjoner bruker samme registernavn uten at data flyter mellom dem. Forsvinner når hver verdi får sitt eget register.</p>',
+      more: L + '#renaming'
+    },
+    'register-renaming': {
+      term: 'Register renaming',
+      alias: 'register renaming, omdøping av registre',
+      def: '<p>Å avbilde arkitekturregistrene på et større sett fysiske registre, slik at hver skriving får et nytt fysisk register og en tabell peker på det nyeste. Fjerner WAW- og WAR-farer, så bare ekte dataflyt (RAW) begrenser rekkefølgen. Gjør utføring ut av rekkefølge og spekulasjon mulig.</p>',
+      more: L + '#renaming'
+    },
+    'dynamisk-planlegging': {
+      term: 'Dynamisk planlegging',
+      alias: 'dynamic pipeline scheduling, out-of-order execution',
+      def: '<p>Maskinvaren velger hvilke instruksjoner som utføres i hver sykel og går forbi instruksjoner som venter: utføring ut av rekkefølge. Instruksjoner hentes og fullføres i programrekkefølge, men utføres når operandene er klare.</p>',
+      more: L + '#ooo'
+    },
+    'reservasjonsstasjon': {
+      term: 'Reservasjonsstasjon',
+      alias: 'reservation station',
+      def: '<p>Buffer foran en funksjonsenhet som holder en instruksjons operasjon og operander. Operander som mangler, fanges opp når enheten som lager dem er ferdig. Instruksjonen utføres når alt er på plass.</p>',
+      more: L + '#ooo'
+    },
+    'reorder-buffer': {
+      term: 'Reorder buffer',
+      alias: 'commit unit, fullføringsenhet',
+      def: '<p>Bufferen i fullføringsenheten som holder ferdige resultater til de kan skrives til registre og minne i programrekkefølge. Gir presise unntak og gjør det mulig å kaste spekulative instruksjoner. Fungerer sammen med reservasjonsstasjonene som register renaming.</p>',
+      more: L + '#ooo'
+    },
+    'in-order-commit': {
+      term: 'In-order commit',
+      alias: 'in-order commit, fullføring i rekkefølge',
+      def: '<p>Resultater skrives til den programmerer-synlige tilstanden (registre og minne) i samme rekkefølge som instruksjonene ble hentet, selv om de ble utført i en annen. Utenfra ser utføringen sekvensiell ut.</p>',
+      more: L + '#ooo'
     }
   };
 })();

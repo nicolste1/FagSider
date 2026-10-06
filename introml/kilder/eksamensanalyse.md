@@ -1,15 +1,15 @@
 # Eksamensanalyse — TDT4172 Introduksjon til maskinlæring
 
 Skrevet 26. september 2026 ut fra løsningsforslagene til Ord. 2024 og Ord. 2025 (begge i `kilder/`) og notatene
-datert 22. september 2026 (avsnitt 1.1–2.3). **Ikke gjennomgått med brukeren ennå**: prioritetene under er et
-forslag som skal godkjennes. Den maskinlesbare varianten ligger i `eksamen.json`.
+datert 22. september 2026 (avsnitt 1.1–2.3). **Godkjent av brukeren 26. september 2026.** Den maskinlesbare
+varianten ligger i `eksamen.json`. Utvides når notatene får nye kapitler (se tabellen «senere»).
 
 ## Status
 
 - [x] Eksamenssett samlet: Ord. 2024 (`kilder/2024_LF.pdf`) og Ord. 2025 (`kilder/2025_LF.pdf`), begge med fasit
-- [ ] Gjennomgått med brukeren
+- [x] Gjennomgått med brukeren
 - [x] `eksamen.json` fylt ut
-- [ ] Godkjent av brukeren: (dato)
+- [x] Godkjent av brukeren: 26. september 2026
 - [ ] Konteeksamener og eldre sett: mangler
 
 ## Eksamensform

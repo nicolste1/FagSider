@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kombinatorisk logikk — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .g { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
+  .fig-svg .wire { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; }
+  .fig-svg .bub { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
+  table.tt td, table.tt th { text-align: center; font-family: var(--mono); font-size: 0.85rem; padding: 4px 8px; }
+  table.tt td.one { color: var(--warm); font-weight: 600; }
+  .ttw { display: inline-grid; grid-template-columns: repeat(4, auto); gap: 4px 10px; font-family: var(--mono); font-size: 0.85rem; margin: 0.6rem 0; align-items: center; }
+  .ttw .h { color: var(--ink-faded); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ttw button { font-family: var(--mono); font-size: 0.9rem; width: 2.2em; padding: 3px 0; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); cursor: pointer; color: var(--ink); }
+  .ttw button.one { background: var(--warm-soft); border-color: var(--warm); color: var(--warm); font-weight: 600; }
+  .w-ctl select { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Enkeltsykelprosessor">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3A · Læringsmål T3.2 · Boka appendiks A.1–A.3 · Kompendiet appendiks A · ~30 min</div>
+      <h1>Kombinatorisk <em>logikk</em></h1>
+      <p class="lede">Byggeklossene under ALU-en og kontrollenheten: porter og sannhetstabeller, hvordan enhver logisk funksjon skrives som sum av produkter og bygges med to lag porter, og de to kretsene prosessorfigurene er fulle av: multiplekseren og dekoderen.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#porter"><span>01</span> Porter og sannhetstabeller</a>
+        <a href="#sop"><span>02</span> Sum av produkter</a>
+        <a href="#mux"><span>03</span> Mux, dekoder og buss</a>
+        <a href="#oppsummering"><span>04</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T3.2: prio 2 · Kont 24 oppg. 2, Ord. 23 oppg. 3, Kont 23 oppg. 2, Ord. 22 oppg. 4–5, Kont 22 oppg. 3 · ikke i Ord. 25, Kont 25 eller Kont 26</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Prio 2</span><strong>Kom i hvert sett til og med Kont 2024, ikke i de tre siste.</strong> Stoffet brukes likevel overalt i kapittel 3–6 (muxer, dekodere, sannhetstabellen for kontrollenheten), så det lønner seg å kunne det, men bruk mindre tid her enn på 3B og 3C.</li>
+          <li><span class="tag regn">Regn</span><strong>Sannhetstabell ↔ sum-av-produkt</strong>: skriv funksjonen fra tabellen (ett produktledd per rad med 1), og tegn den med to lag porter (oppgave A.7, A.8, A.11). Forenkle med De Morgan.</li>
+          <li><span class="tag">Forklar</span><strong>Portene</strong> AND, OR, NOT, NAND, NOR, XOR med symbol og tabell; hvorfor NAND/NOR er universelle (A.5); mux som velger og dekoder som peker ut (A.10); hva en buss og notasjonen A[7:4] betyr.</li>
+          <li><span class="tag">Lavere</span>PLA og ROM som implementasjon, Verilog (A.4), carry-lookahead (A.6) og klokkedetaljer (A.7) er nevnt kort eller tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 PORTER ─────────────────────────── -->
+  <section id="porter">
+    <div class="container">
+      <div class="section-badge">01 · Porter og sannhetstabeller</div>
+      <h2>Tre operasjoner <em>er nok</em></h2>
+      <div class="source-note">Boka · appendiks A.1–A.2 · s. A-3–A-9 · Kompendiet · appendiks A «Logiske porter»</div>
+      <span class="lm-pill">Læringsmål T3.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kjenne til de logiske portene AND, OR og inverter og deres symboler samt kunne beskrive oppførselen deres med sannhetstabeller.</li>
+        <li>Studenten skal kjenne til symbolene og kunne gjengi sannhetstabellene for kombinerte logiske porter (NAND og NOR).</li>
+      </ul>
+
+      <p class="dropcap">Alt i prosessoren er signaler som er 0 (lav spenning) eller 1 (høy). Et <span class="term" data-term="kombinatorisk-element">kombinatorisk element</span> har utganger som bare avhenger av inngangene nå, uten minne; et tilstandselement (kapittel 4) husker. En kombinatorisk funksjon kan alltid beskrives med en <span class="term" data-term="sannhetstabell">sannhetstabell</span>: alle 2<sup>n</sup> kombinasjoner av de n inngangene, med utgangen for hver. Eller med en <span class="term" data-term="logisk-likning">logisk likning</span> med operatorene AND (·), OR (+) og NOT (strek over, eller ¬).</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 170" aria-label="Portsymboler: AND, OR, NOT, NAND, NOR, XOR">
+          <g transform="translate(20,20)">
+            <path class="g" d="M0 10 L22 10 A20 20 0 0 1 22 50 L0 50 Z"/><path class="wire" d="M-14 20 L0 20 M-14 40 L0 40 M42 30 L56 30"/><text x="21" y="78" text-anchor="middle">AND</text><text class="cap" x="21" y="92" text-anchor="middle">A · B</text>
+          </g>
+          <g transform="translate(120,20)">
+            <path class="g" d="M0 10 Q10 30 0 50 Q24 50 42 30 Q24 10 0 10 Z"/><path class="wire" d="M-14 20 L4 20 M-14 40 L4 40 M42 30 L56 30"/><text x="21" y="78" text-anchor="middle">OR</text><text class="cap" x="21" y="92" text-anchor="middle">A + B</text>
+          </g>
+          <g transform="translate(220,20)">
+            <path class="g" d="M0 12 L30 30 L0 48 Z"/><circle class="bub" cx="34" cy="30" r="4"/><path class="wire" d="M-14 30 L0 30 M38 30 L56 30"/><text x="21" y="78" text-anchor="middle">NOT</text><text class="cap" x="21" y="92" text-anchor="middle">Ā</text>
+          </g>
+          <g transform="translate(320,20)">
+            <path class="g" d="M0 10 L22 10 A20 20 0 0 1 22 50 L0 50 Z"/><circle class="bub" cx="46" cy="30" r="4"/><path class="wire" d="M-14 20 L0 20 M-14 40 L0 40 M50 30 L60 30"/><text x="21" y="78" text-anchor="middle">NAND</text><text class="cap" x="21" y="92" text-anchor="middle">¬(A · B)</text>
+          </g>
+          <g transform="translate(420,20)">
+            <path class="g" d="M0 10 Q10 30 0 50 Q24 50 42 30 Q24 10 0 10 Z"/><circle class="bub" cx="46" cy="30" r="4"/><path class="wire" d="M-14 20 L4 20 M-14 40 L4 40 M50 30 L60 30"/><text x="21" y="78" text-anchor="middle">NOR</text><text class="cap" x="21" y="92" text-anchor="middle">¬(A + B)</text>
+          </g>
+          <g transform="translate(520,20)">
+            <path class="g" d="M6 10 Q16 30 6 50 Q30 50 48 30 Q30 10 6 10 Z"/><path class="wire" d="M-2 10 Q8 30 -2 50"/><path class="wire" d="M-14 20 L6 20 M-14 40 L6 40 M48 30 L62 30"/><text x="24" y="78" text-anchor="middle">XOR</text><text class="cap" x="24" y="92" text-anchor="middle">A ⊕ B</text>
+          </g>
+          <text class="cap" x="320" y="140" text-anchor="middle">En boble (○) på en inngang eller utgang betyr invertering. NAND = AND med boble, NOR = OR med boble.</text>
+        </svg>
+        <figcaption>Portsymbolene. AND og OR kan ha flere innganger. Boka tegner invertering som en boble; «bubbled inputs» er samme sak på inngangssiden.</figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table class="tt">
+          <caption>Sannhetstabeller for to innganger.</caption>
+          <thead><tr><th>A</th><th>B</th><th>AND</th><th>OR</th><th>NAND</th><th>NOR</th><th>XOR</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>0</td><td>0</td><td>0</td><td class="one">1</td><td class="one">1</td><td>0</td></tr>
+            <tr><td>0</td><td>1</td><td>0</td><td class="one">1</td><td class="one">1</td><td>0</td><td class="one">1</td></tr>
+            <tr><td>1</td><td>0</td><td>0</td><td class="one">1</td><td class="one">1</td><td>0</td><td class="one">1</td></tr>
+            <tr><td>1</td><td>1</td><td class="one">1</td><td class="one">1</td><td>0</td><td>0</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="def-box">
+        <span class="def-label">Lovene du trenger</span>
+        <div class="def-term">Boolsk algebra</div>
+        <p>Identitet: A + 0 = A, A · 1 = A. Null/én: A + 1 = 1, A · 0 = 0. Invers: A + Ā = 1, A · Ā = 0. Kommutativ, assosiativ og distributiv som i vanlig algebra, pluss A + (B · C) = (A + B) · (A + C). <span class="term" data-term="de-morgan">De Morgan</span>: ¬(A · B) = Ā + B̄ og ¬(A + B) = Ā · B̄. De Morgan er grunnen til at NAND og NOR hver for seg er <span class="term" data-term="universell-port">universelle</span>: alle tre grunnoperasjonene kan bygges av bare NAND eller bare NOR.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a-5">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">A.5 · s. A-79</span></div>
+        <div class="o-text"><p>Vis at NOR-porten er universell ved å bygge AND, OR og NOT med bare toinngangs NOR-porter.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>NOT: koble begge inngangene til A: NOR(A, A) = ¬(A + A) = Ā. OR: NOR etterfulgt av NOT: NOR(NOR(A, B), NOR(A, B)) = ¬¬(A + B) = A + B. AND: De Morgan sier A · B = ¬(Ā + B̄), altså NOR av de inverterte inngangene: NOR(NOR(A, A), NOR(B, B)). (NAND tilsvarende: NAND(A, A) = Ā, AND = NAND fulgt av NOT, OR = NAND(Ā, B̄).)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 SOP ─────────────────────────── -->
+  <section id="sop">
+    <div class="container">
+      <div class="section-badge">02 · Sum av produkter</div>
+      <h2>Fra tabell til <em>to lag porter</em></h2>
+      <div class="source-note">Boka · appendiks A.2–A.3 · s. A-6–A-13 · Kompendiet · appendiks A «Sum-av-produkt», eksempel 1</div>
+      <span class="lm-pill">Læringsmål T3.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne oversette mellom boolske uttrykk på sum-av-produkt form og sannhetstabeller.</li>
+      </ul>
+
+      <p class="dropcap">Enhver logisk funksjon kan skrives på <span class="term" data-term="sum-av-produkt">sum-av-produkt-form</span>: en OR (sum) av AND-ledd (produkter), der hvert produkt inneholder hver inngang enten rett eller invertert. Oppskriften fra sannhetstabellen: for hver rad der utgangen er 1, lag et produktledd som er sant akkurat på den raden (inngang med 1 tas rett, inngang med 0 tas invertert), og OR alle leddene. Resultatet er en <span class="term" data-term="tonivaa-logikk">to-nivå-krets</span>: ett lag AND, ett lag OR, med invertere bare på inngangene.</p>
+
+      <p>Bokas eksempel: tre innganger A, B, C og tre utganger. D er 1 hvis minst én inngang er 1; E er 1 hvis nøyaktig to er 1; F er 1 hvis alle tre er 1. Da er D = A + B + C, F = A · B · C, og fra de tre radene der nøyaktig to er 1:</p>
+      \[ E = (A \cdot B \cdot \bar{C}) + (A \cdot \bar{B} \cdot C) + (\bar{A} \cdot B \cdot C) \]
+      <p>Samme funksjon kan skrives kortere, E = ((A · B) + (A · C) + (B · C)) · ¬(A · B · C), men det er tre nivåer. Sum-av-produkt er mekanisk og lar seg lage automatisk fra tabellen; forenkling er en egen jobb. En <span class="term" data-term="dont-care">don't care</span> i tabellen (X) betyr at raden ikke spiller noen rolle, og kan brukes til å forenkle.</p>
+
+      <div class="widget" id="w-sop">
+        <div class="widget-label">Prøv selv · Sannhetstabell → sum av produkter</div>
+        <p class="widget-intro">Klikk på utgangsverdiene i tabellen for tre innganger, og se produktleddene og uttrykket. Forhåndsutfylt med bokas E (nøyaktig to av tre). Prøv oppgave A.11: «X har bare én 0», «X har et partall av 0-er», «X &lt; 4 usignert», «X negativ som tokomplement».</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sop-preset">forhåndsvalg</label>
+            <select id="sop-preset"><option value="E">E: nøyaktig to er 1</option><option value="D">D: minst én er 1</option><option value="F">F: alle tre er 1</option><option value="one0">A.11: bare én 0</option><option value="even0">A.11: partall 0-er</option><option value="lt4">A.11: X &lt; 4</option><option value="neg">A.11: X negativ</option><option value="odd">Oddetallsparitet (A.7, 3 bit)</option></select>
+          </div>
+        </div>
+        <div class="ttw" id="sop-tt"></div>
+        <div class="w-out" id="sop-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-sop">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Appendiks A · eksempel 1</span></div>
+        <div class="o-text"><p>F(A, B, C) er 1 når A = 1, B = 0, C = 1 og når A = 0, B = 1, C = 1. Skriv sum-av-produkt-uttrykket.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra kompendiet</span><p>F = A · B̄ · C + Ā · B · C. (Kan forenkles til (A ⊕ B) · C.)</p></div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a-7">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">A.7 og A.8 · s. A-79</span></div>
+        <div class="o-text"><p>(A.7) Sett opp sannhetstabellen for en fireinngangs oddetallsparitetsfunksjon (utgang 1 når antall 1-ere på inngangen er et oddetall). (A.8) Implementer den med AND- og OR-porter med bobler på innganger og utganger.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>A.7: 16 rader; utgangen er 1 for de 8 radene med ett eller tre 1-ere: 0001, 0010, 0100, 1000, 0111, 1011, 1101, 1110.</p>
+            <p>A.8: Sum av produkter med ett ledd per slik rad, åtte fireinngangs AND-porter inn i én åtteinngangs OR-port. For 0001: Ā · B̄ · C̄ · D, tegnet som en AND-port med boble på de tre første inngangene, osv. Med bobler på utgangene kan OR-laget byttes mot NAND (De Morgan: OR av ledd = NAND av de inverterte leddene). Kortere: paritet er XOR av alle fire, A ⊕ B ⊕ C ⊕ D.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a-11">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">A.11 · s. A-80</span></div>
+        <div class="o-text"><p>X er 3 bit, x2 x1 x0. Skriv fire logiske funksjoner som er sanne hvis og bare hvis (a) X inneholder bare én 0, (b) X inneholder et partall 0-er, (c) X som usignert tall er mindre enn 4, (d) X som tokomplementtall er negativt.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>(a) Radene 011, 101, 110: x̄2 · x1 · x0 + x2 · x̄1 · x0 + x2 · x1 · x̄0. (b) Null eller to 0-er: 111, 001, 010, 100: x2 · x1 · x0 + x̄2 · x̄1 · x0 + x̄2 · x1 · x̄0 + x2 · x̄1 · x̄0 (det er x2 ⊕ x1 ⊕ x0). (c) X &lt; 4 betyr x2 = 0: funksjonen er x̄2. (d) Negativt betyr fortegnsbit 1: funksjonen er x2.</p>
+          </div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: PLA og ROM</summary>
+        <p>En <span class="term" data-term="pla">PLA</span> (programmerbar logikkmatrise) er sum-av-produkt i maskinvare: en AND-matrise som lager produktleddene fra inngangene og deres inverser, og en OR-matrise som summerer leddene til hver utgang. Flere utganger kan dele produktledd. Bare leddene som trengs tas med, så PLA-en er liten for funksjoner med få 1-rader; det er slik bokas kontrollenhet i kapittel 4 kan tenkes implementert. Et <span class="term" data-term="rom">ROM</span> gjør det samme med brute force: en tabell med 2<sup>n</sup> ord, der inngangen er adressen og utgangen er innholdet; hele sannhetstabellen lagres, uansett hvor få 1-ere den har.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 MUX ─────────────────────────── -->
+  <section id="mux">
+    <div class="container">
+      <div class="section-badge">03 · Mux, dekoder og buss</div>
+      <h2>Velge og <em>peke ut</em></h2>
+      <div class="source-note">Boka · appendiks A.3 · s. A-9–A-11, A-16 · figur A.3.1, A.3.2 · Kompendiet · appendiks A «Kombinatorisk logikk»</div>
+      <span class="lm-pill">Læringsmål T3.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kjenne til symbolene og kunne gjengi sannhetstabellene for mer avanserte kretser (multiplekser og dekoder).</li>
+        <li>Studenten skal kjenne til konseptet buss og notasjonen for adressering av enkeltlinjer i busser.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="mux">multiplekser</span> (mux) er en velger: n datainnganger, log<sub>2</sub> n velgerbit (selektor), én utgang som er den valgte inngangen. Toinngangsmuxen er C = (A · S̄) + (B · S), tegnet som et trapes med 0 og 1 ved inngangene. Prosessorfigurene har en mux overalt der to kilder vil inn på samme sted: ALUSrc, MemtoReg, PCSrc. En bred mux (32 bit) er 32 enkle muxer med felles selektor.</p>
+
+      <p>En <span class="term" data-term="dekoder">dekoder</span> gjør det motsatte av å velge: n inngangsbit, 2<sup>n</sup> utganger, og nøyaktig én utgang er 1, den med nummer lik inngangsverdien. En 3-til-8-dekoder med inngang 101 setter Out5. Dekoderen brukes til å peke ut ett register av 32 i registerfilen (5 bit inn, 32 skrivesignaler ut) og én rad i et minne. En stor mux er i virkeligheten en dekoder, n AND-porter og én OR-port.</p>
+
+      <div class="fig-row">
+        <figure>
+          <svg class="fig-svg" viewBox="0 0 280 170" aria-label="Toinngangsmux: symbol og porter">
+            <path class="g" d="M30 40 L60 54 L60 106 L30 120 Z"/><text x="45" y="62" text-anchor="middle">0</text><text x="45" y="104" text-anchor="middle">1</text><text x="45" y="84" text-anchor="middle">M</text>
+            <path class="wire" d="M8 58 L30 58 M8 102 L30 102 M60 80 L84 80 M45 130 L45 120"/><text x="4" y="52">A</text><text x="4" y="116">B</text><text x="88" y="84">C</text><text x="40" y="145">S</text>
+            <g transform="translate(140,30)">
+              <path class="g" d="M0 10 L16 10 A14 14 0 0 1 16 38 L0 38 Z"/><path class="g" d="M0 70 L16 70 A14 14 0 0 1 16 98 L0 98 Z"/>
+              <path class="g" d="M60 40 Q68 54 60 68 Q78 68 92 54 Q78 40 60 40 Z"/>
+              <path class="wire" d="M-16 16 L0 16 M-16 32 L0 32 M-16 76 L0 76 M-16 92 L0 92 M30 24 L46 24 L46 48 L62 48 M30 84 L46 84 L46 60 L62 60 M92 54 L110 54"/>
+              <circle class="bub" cx="-20" cy="32" r="4"/>
+              <text x="-30" y="20" text-anchor="end">A</text><text x="-30" y="36" text-anchor="end">S</text><text x="-30" y="80" text-anchor="end">B</text><text x="-30" y="96" text-anchor="end">S</text><text x="114" y="58">C</text>
+            </g>
+            <text class="cap" x="140" y="160" text-anchor="middle">C = A·S̄ + B·S</text>
+          </svg>
+          <figcaption>Etter figur A.3.2: muxen som symbol og som porter.</figcaption>
+        </figure>
+        <figure>
+          <svg class="fig-svg" viewBox="0 0 280 170" aria-label="3-til-8-dekoder">
+            <rect class="g" x="90" y="20" width="70" height="130" rx="6"/><text x="125" y="90" text-anchor="middle">Dekoder</text>
+            <path class="wire" d="M40 85 L90 85"/><text x="36" y="80" text-anchor="end">3</text><text class="cap" x="20" y="100">I2 I1 I0</text>
+            <path class="wire" d="M60 80 L68 90"/>
+            <g>
+              <path class="wire" d="M160 30 L190 30 M160 46 L190 46 M160 62 L190 62 M160 78 L190 78 M160 94 L190 94 M160 110 L190 110 M160 126 L190 126 M160 142 L190 142"/>
+              <text class="cap" x="194" y="33">Out0</text><text class="cap" x="194" y="49">Out1</text><text class="cap" x="194" y="65">Out2</text><text class="cap" x="194" y="81">Out3</text><text class="cap" x="194" y="97">Out4</text><text class="cap" x="194" y="113">Out5 = 1 for 101</text><text class="cap" x="194" y="129">Out6</text><text class="cap" x="194" y="145">Out7</text>
+            </g>
+          </svg>
+          <figcaption>Etter figur A.3.1: 3 bit inn, 8 ut, bare én er 1.</figcaption>
+        </figure>
+      </div>
+
+      <div class="def-box">
+        <span class="def-label">Buss</span>
+        <div class="def-term"><span class="term" data-term="buss">Buss</span> og notasjonen A[7:4]</div>
+        <p>En buss er en samling signaler som hører sammen, for eksempel de 32 bitene i et dataord, tegnet som én tykk strek med bredden skrevet på (32 eller en liten skråstrek). Notasjonen A[31:0] betyr alle 32 linjene i bussen A, A[7:4] betyr linjene 7, 6, 5 og 4, og A[0] betyr én linje. Det er slik datastien plukker felt ut av instruksjonsordet: Instruction[19:15] er rs1, Instruction[6:0] er opcoden, uten noen logikk, bare ledninger.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-a-10">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">A.10 · s. A-80</span></div>
+        <div class="o-text"><p>Vis at en toinngangs multiplekser også er universell, ved å bygge en NAND- (eller NOR-) port med en mux.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>Muxen regner C = A·S̄ + B·S. NOT: sett A = 1, B = 0 og S = inngangen: C = S̄. AND(X, Y): A = 0, B = Y, S = X gir C = X · Y. OR(X, Y): A = Y, B = 1, S = X gir C = X̄·Y + X = X + Y. NAND(X, Y): A = 1, B = Ȳ, S = X gir C = X̄ + X·Ȳ = ¬(X · Y); Ȳ lages med en mux til. Siden NAND er universell, er muxen det også.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Registerfilen har 32 registre. Hvor mange bit trenger dekoderen for Skriv register, og hvor mange utganger har den? Hva gjør RegWrite i den sammenhengen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">5 bit inn (2<sup>5</sup> = 32), 32 utganger. Hver utgang AND-es med RegWrite og klokka, så bare det pekte registeret, og bare når RegWrite = 1, får lov til å lagre Skriv data på flanken. (Figur A.8.9 i kapittel 4.)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">04 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Porter</strong>AND (·), OR (+), NOT (strek); NAND/NOR = boble på utgangen; XOR = ulike. Sannhetstabell med 2<sup>n</sup> rader.</div>
+        <div class="recap-pill"><strong>De Morgan</strong>¬(A·B) = Ā + B̄, ¬(A+B) = Ā·B̄. NAND og NOR er universelle.</div>
+        <div class="recap-pill"><strong>Sum av produkter</strong>Ett AND-ledd per 1-rad (0 → invertert inngang), OR dem. To nivåer; PLA/ROM bygger det direkte.</div>
+        <div class="recap-pill"><strong>Mux</strong>Velger én av n innganger med log<sub>2</sub> n selektorbit. C = A·S̄ + B·S.</div>
+        <div class="recap-pill"><strong>Dekoder</strong>n bit inn, 2<sup>n</sup> ut, nøyaktig én aktiv. Peker ut register eller minnerad.</div>
+        <div class="recap-pill"><strong>Buss</strong>Flere linjer som én strek; A[7:4] = linje 7–4. Felt i instruksjonen er bare ledninger.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Skriv sum-av-produkt-uttrykket for XOR av A og B.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Radene 01 og 10 gir 1: Ā·B + A·B̄.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">En 4-til-1-mux skal bygges av porter. Hvor mange selektorbit, og hvordan ser kretsen ut i tre deler?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">2 selektorbit. (1) En 2-til-4-dekoder lager fire signaler, ett per inngang; (2) fire AND-porter kombinerer hver datainngang med sitt dekodersignal; (3) én fireinngangs OR-port samler utgangene. Det er nøyaktig muxen i 1-bits ALU-en (Operation har 2 bit, fire innganger).</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Kontrollenheten i kapittel 4 har 7 inngangsbit (opcoden) og lager RegWrite. Hvor mange rader har den fulle sannhetstabellen, og hvorfor klarer boka seg med fire?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">2<sup>7</sup> = 128 rader. Bare fire opcoder er i bruk (R-type, lw, sw, beq); de andre 124 radene er don't care, og boka viser bare radene der utgangene må ha en bestemt verdi. RegWrite = 1 for R-type- og lw-radene: to produktledd i sum-av-produkt.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 3: oversikt</div></a>
+        <a href="alu.html" class="next"><div class="pn-label">Neste · 3B</div><div class="pn-title">ALU, multiplikasjon og flyttall →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var tt = document.getElementById('sop-tt'), out = document.getElementById('sop-out'), pre = document.getElementById('sop-preset'); if (!tt) return;
+  var NAMES = ['A', 'B', 'C'];
+  var PRESETS = {
+    E: function (a, b, c) { return a + b + c === 2 ? 1 : 0; }, D: function (a, b, c) { return a + b + c >= 1 ? 1 : 0; }, F: function (a, b, c) { return a + b + c === 3 ? 1 : 0; },
+    one0: function (a, b, c) { return a + b + c === 2 ? 1 : 0; }, even0: function (a, b, c) { return (3 - a - b - c) % 2 === 0 ? 1 : 0; }, lt4: function (a, b, c) { return a === 0 ? 1 : 0; }, neg: function (a, b, c) { return a; },
+    odd: function (a, b, c) { return (a + b + c) % 2; }
+  };
+  var vals = [];
+  function load() { var f = PRESETS[pre.value]; vals = []; for (var i = 0; i < 8; i++) vals.push(f((i >> 2) & 1, (i >> 1) & 1, i & 1)); draw(); }
+  function draw() {
+    var names = pre.value.indexOf('A.11') === 0 || /one0|even0|lt4|neg/.test(pre.value) ? ['x2', 'x1', 'x0'] : NAMES;
+    var h = '<span class="h">' + names[0] + '</span><span class="h">' + names[1] + '</span><span class="h">' + names[2] + '</span><span class="h">ut</span>';
+    for (var i = 0; i < 8; i++) h += '<span>' + ((i >> 2) & 1) + '</span><span>' + ((i >> 1) & 1) + '</span><span>' + (i & 1) + '</span><button type="button" data-i="' + i + '" class="' + (vals[i] ? 'one' : '') + '">' + vals[i] + '</button>';
+    tt.innerHTML = h;
+    var terms = [];
+    for (var j = 0; j < 8; j++) if (vals[j]) terms.push([2, 1, 0].map(function (k, idx) { return ((j >> k) & 1) ? names[idx] : names[idx] + '̄'; }).join('·'));
+    out.innerHTML = terms.length ? 'Produktledd fra radene med 1: ' + terms.length + '\n<span class="hl">ut = ' + terms.join(' + ') + '</span>' : 'ut = 0 (ingen rad gir 1)';
+  }
+  tt.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var i = +b.getAttribute('data-i'); vals[i] = vals[i] ? 0 : 1; draw(); });
+  pre.addEventListener('change', load); load();
+})();
+</script>
+</body>
+</html>

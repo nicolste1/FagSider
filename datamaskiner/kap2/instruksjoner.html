@@ -79,12 +79,12 @@
     <div class="container">
       <div class="section-badge">00 · Eksamensfokus</div>
       <h2>Hva du må <em>kunne fra denne siden</em></h2>
-      <div class="source-note">Læringsutbyttebeskrivelsen T2.1 (26. aug. 2026) · nevnte eksamensoppgaver: oppgave 1 i Kont 26, Ord. 25, Kont 25, Ord. 24, Kont 24 · eksamensanalyse for faget er ikke laget ennå</div>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T2.1: prio 1 · oppgave 1 i Ord. 25 (16 p), Kont 26, Kont 25, Ord. 24, Kont 24; Ord. 22 oppg. 11</div>
       <div class="callout callout-warm">
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
-          <li><span class="tag regn">Regn</span><strong>Assembly ↔ maskinkode:</strong> kod og dekod R-, I- og S-instruksjoner felt for felt (opcode, funct3, funct7, rd, rs1, rs2, immediate); hex ↔ binært (oppgave 2.12, 2.13; oppgave 1 på nesten hver eksamen).</li>
-          <li><span class="tag regn">Regn</span><strong>C ↔ assembly:</strong> tilordninger, tabellindeks × 4, if/else og while med bne/beq (oppgave 2.1–2.4).</li>
+          <li><span class="tag regn">Regn</span><strong>Assembly → maskinkode felt for felt</strong> er oppgave 1 på hver eksamen (16 p i Ord. 2025): opcode, rs1, rs2, rd, funct3, funct7 og immediate for R-, I- og S-instruksjoner, med opcode-tabellen vedlagt. Negativ immediate i 12-bits tokomplement (−16 = 1111 1111 0000). Hex ↔ binært (oppgave 2.12, 2.13; Ord. 25 oppg. 1 nederst i avsnitt 03).</li>
+          <li><span class="tag regn">Regn</span><strong>C ↔ assembly:</strong> tilordninger, tabellindeks × 4, if/else og while med bne/beq (oppgave 2.1–2.4). Står i læringsmålene, men har ikke vært egen eksamensoppgave; prioriter maskinkoden.</li>
           <li><span class="tag">Forklar</span>De tre designprinsippene med begrunnelse; hvorfor 32 registre; hvorfor S-immediaten er delt; byteadressering; hva x0 er til; hvordan hopp bruker at instruksjoner ligger på adresser.</li>
           <li><span class="tag">Lavere</span>RV64, MIPS/ARM-sammenlikninger og hopptabeller er nevnt kort. Bokas «Check Yourself» om språk og registertall er tatt ut.</li>
         </ul>
@@ -517,6 +517,31 @@ imm[11:5] rs2 rs1   f3  imm[4:0] opcode
             <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
             <p>S-type. opcode = 0100011 (35), funct3 = 010 (sw), rs1 = 30 = 11110, rs2 = 5 = 00101. Forskyvningen 32 = 0000001 00000<sub>to</sub> deles: imm[11:5] = 0000001, imm[4:0] = 00000.</p>
 <pre><code>0000001 00101 11110 010 00000 0100011  =  0000 0010 0101 1111 0010 0000 0010 0011  =  0x025f2023</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 1</span><span class="o-ref">Instruksjonssett · 16 p</span></div>
+        <div class="o-text">
+          <p>Tabellen gir opcode, funct3 og funct7 for add, lw, sll, xor, andi, sw, slt, sra, sub og addi (slt: 0110011 / 010 / 0000000; andi: 0010011 / 111; sw: 0100011 / 010). Ett poeng per riktig felt. Angi maskinkode for:</p>
+          <ol>
+            <li><code>slt x10, x15, x20</code>: opcode, rs1, rs2, rd, funct3, funct7.</li>
+            <li><code>andi x5, x4, 0x7fb</code>: opcode, rs1, rd, imm, funct3.</li>
+            <li><code>sw x30, -16(x14)</code>: opcode, rs1, rs2, imm, funct3.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka · ikke offisielt løsningsforslag</span>
+            <p><strong>slt x10, x15, x20</strong> er R-type. Registernumrene skrives som 5-bits binærtall: x15 = 01111, x20 = 10100, x10 = 01010.</p>
+<pre><code>opcode 0110011   rs1 01111   rs2 10100   rd 01010   funct3 010   funct7 0000000</code></pre>
+            <p><strong>andi x5, x4, 0x7fb</strong> er I-type. Immediaten er 12 bit: 0x7fb = 0111 1111 1011 (positiv, bit 11 = 0). x4 = 00100, x5 = 00101.</p>
+<pre><code>opcode 0010011   rs1 00100   rd 00101   imm 0111 1111 1011   funct3 111</code></pre>
+            <p><strong>sw x30, -16(x14)</strong> er S-type. −16 i 12-bits tokomplement: 16 = 0000 0001 0000, inverter → 1111 1110 1111, pluss 1 → 1111 1111 0000. I instruksjonsordet deles den i imm[11:5] = 1111111 og imm[4:0] = 10000. rs1 er basisregisteret x14 = 01110, rs2 er dataregisteret x30 = 11110.</p>
+<pre><code>opcode 0100011   rs1 01110   rs2 11110   imm 1111 1111 0000   funct3 010</code></pre>
+            <p>Vanlige feil: å bytte rs1 og rs2 i sw (rs1 er alltid adressen, rs2 verdien som lagres), og å glemme at en negativ forskyvning fyller de øvre bitene med 1.</p>
           </div>
         </div>
       </div>

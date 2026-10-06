@@ -188,7 +188,7 @@ relokering, kjørbar fil; eksempel med prosedyre A og B) → laster (seks steg).
 
 Læringsutbytter: K1–K4, F2, F3, G1. T3.1 Enkeltsykelprosessor (boka 4.1–4.4; oppgaver 4.1, 4.3, 4.5, 4.7), T3.2 Kombinatorisk
 logikk (boka A.1–A.3; oppgaver A.5, A.7, A.8, A.10, A.11), T3.3 ALU (boka 3.1–3.6, A.5; oppgaver 3.3, 3.6–3.8, 3.12, 3.18,
-3.20–3.23). Kompendiet kapittel 3, 4 og Appendix A. Ikke dekket på siden ennå.
+3.20–3.23). Kompendiet kapittel 3, 4 og Appendix A. Eksamen: Ord. 25 oppg. 2–5. Dekket på kap3/ (3A logikk, 3B ALU, 3C enkeltsykel), laget 2. oktober 2026 etter eksamensanalysen.
 
 ## 4 T4 Flersykelprosessor (og sekvensiell logikk)
 
@@ -199,7 +199,8 @@ A.8, A.10, A.11; oppgaver A.36–A.39). Kompendiet kapittel 4 og Appendix A. Ikk
 
 Læringsutbytter: K1–K3, F2, F3, G1. T5.1 Samlebåndsprosessor med 5 steg (boka 4.6–4.9; oppgaver 4.16–4.18, 4.22–4.25,
 4.27, 4.28.1–2), T5.2 Unntak og avbrudd (boka 4.10–4.11; oppgave 4.30), T5.3 Prosessorer med høyere ytelse (boka 4.11;
-oppgave 4.31). Kompendiet kapittel 4 og 6. Ikke dekket på siden ennå.
+oppgave 4.31). Kompendiet kapittel 4 og 6. Eksamen: Ord. 25 oppg. 6 og 8.1. Dekket på kap5/ (5A samlebånd, 5B unntak og høyere
+ytelse), laget 5. oktober 2026 etter eksamensanalysen.
 
 ## 6 T6 Minnesystemet
 
