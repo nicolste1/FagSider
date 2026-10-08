@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Clustering: k-means og DBSCAN — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: middle; border-radius: 50%; }
+  .legend-row .l-core::before { background: var(--accent); }
+  .legend-row .l-border::before { background: var(--accent); opacity: 0.45; }
+  .legend-row .l-out::before { background: transparent; border: 1.5px solid var(--ink-faded); }
+  .legend-row .l-cen::before { background: var(--ink); border-radius: 2px; }
+  /* klyngefarger for widgetene */
+  .c0 { fill: var(--accent); } .c1 { fill: var(--warm); } .c2 { fill: var(--green); } .c3 { fill: var(--ochre); } .c4 { fill: var(--red); } .c5 { fill: #6b5b95; }
+  .c0, .c1, .c2, .c3, .c4, .c5 { stroke: none; }
+  .border-pt { opacity: 0.45; }
+  .out-pt { fill: none; stroke: var(--ink-faded); stroke-width: 1.4; }
+  .cen { stroke: var(--ink); stroke-width: 2.2; fill: var(--paper); }
+  .cen-old { stroke: var(--ink-ghost); stroke-width: 1.2; fill: none; stroke-dasharray: 2 2; }
+  .hist { fill: var(--accent); opacity: 0.75; }
+  .tt { border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  .tt th, .tt td { border: 1px solid var(--line-soft); padding: 4px 10px; text-align: center; }
+  .tt th { background: var(--paper-dark); font-weight: 600; }
+  .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0.8rem 0; }
+  .step-card { border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.7rem 0.9rem; background: var(--paper-dark); font-size: 0.92rem; }
+  .step-card .sc-n { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Uveiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3A · Notater 3–3.1.4 · s. 43–47 · ~35 min</div>
+      <h1>Clustering: <em>k-means og DBSCAN</em></h1>
+      <p class="lede">Maskinlæring uten targets. Hvordan k-means deler datasettet i k klynger rundt sentroider, hvorfor initialiseringen er et problem og hva k-means++ gjør med det, hvordan man velger k når ingen fasit finnes, hvordan DBSCAN finner klynger ut fra tetthet og lar outliers stå utenfor, og hvorfor avstand slutter å bety noe i høye dimensjoner.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#intro"><span>01</span> Uten targets</a>
+        <a href="#kmeans"><span>02</span> k-means</a>
+        <a href="#kvalitet"><span>03</span> Valg av k</a>
+        <a href="#dbscan"><span>04</span> DBSCAN</a>
+        <a href="#kategorier"><span>05</span> Kategorier</a>
+        <a href="#dimensjoner"><span>06</span> Høye dimensjoner</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · deltema 3.1 (prio 1) · utvidelsen for kapittel 3 fra 8. oktober 2026 er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Hva k-means minimerer</strong>: summen av kvadrerte avstander mellom hvert punkt og sentroiden det er tildelt (Ord. 2025 del 6 spm. 1). Og <strong>når k-means passer</strong>: når avstanden innad i klyngen er mindre enn avstanden mellom klyngene (Ord. 2024 spm. 29). Se <a href="#kmeans">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>k-means++</strong>: neste sentroide velges med sannsynlighet proporsjonal med kvadrert avstand til nærmeste sentroide, som sprer sentroidene men beholder tilfeldighet, så de havner nær midten av klyngene i stedet for i utkanten (Ord. 2025 del 6 spm. 2). Se <a href="#kmeans">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Valg av k</strong> er vanskelig fordi ulike metrikker kan foreslå ulike k (Ord. 2025 del 6 spm. 3). Kjenn inertia, silhouette-koeffisienten og Calinski–Harabasz. Se <a href="#kvalitet">03</a>.</li>
+          <li><span class="tag">Forklar</span><strong>DBSCAN</strong>: to punkter er i samme klynge når det ene kan nås fra det andre gjennom en kjede av punkter med steg \(\le \epsilon\) (Ord. 2025 del 6 spm. 4); robust fordi den identifiserer outliers og ikke putter dem i klynger (Ord. 2024 spm. 27); en klynge som splittes i mange små, med mange outliers, betyr for lav \(\epsilon\) (Ord. 2024 spm. 30). Kjernepunkt, ikke-kjernepunkt, outlier. Se <a href="#dbscan">04</a>.</li>
+          <li><span class="tag regn">Les av</span><strong>Kategoriene</strong>: k-means er sentroidebasert, DBSCAN er tetthetsbasert (Ord. 2024 spm. 22). Fordelings- og hierarkibasert bare som navn. Se <a href="#kategorier">05</a>.</li>
+          <li><span class="tag">Lavere</span>Stirling-utledningen av \(k!/k^k\) (bare konklusjonen trengs), <code>MiniBatchKMeans</code>-koden (ligger på 3B), historikken bak DBSCAN, og 3.1.4 dimensjonsforbannelsen igjen: bare konklusjonen, avstander vokser og forskjellene mellom dem krymper. Se <a href="#dimensjoner">06</a>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 INTRO ─────────────────────────── -->
+  <section id="intro">
+    <div class="container">
+      <div class="section-badge">01 · Uten targets</div>
+      <h2>Klassifisering <em>uten labels</em></h2>
+      <div class="source-note">Notatene · avsnitt 3 og 3.1 · s. 43</div>
+
+      <p class="dropcap">Målet er fortsatt databaserte modeller, men nå har vi ikke data som forteller hva som er riktig svar. Da snakker vi om <span class="term" data-term="unlabeled-data">unlabeled data</span>, data uten targets, og <span class="term" data-term="uveiledet-laering">uveiledet læring</span> (unsupervised learning): læringsalgoritmer som finner mønstre i data uten targets. Kurset ser på tre kategorier:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="clustering">Clustering</span> · klynging</div><div class="fc-val">Denne siden. Finn grupperinger av like datapunkter.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="dimensjonsreduksjon">Dimensionality reduction</span></div><div class="fc-val">Kommer i notatene senere (PCA, t-SNE).</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="anomalideteksjon">Outlier detection</span></div><div class="fc-val">Kommer i notatene senere (anomalideteksjon).</div></div>
+      </div>
+      <p>Clustering kan tolkes som «klassifisering uten labels»: formålet er å finne egnede grupperinger av like datapunkter. Vi har flere mulige valg av likhetsmetrikk, for eksempel avstand mellom datapunktene. For å gjøre en optimaliseringsprosess, som er grunnleggende i maskinlæring, trenger vi et læringssignal, altså et tap å minimere. To algoritmer: <strong>k-means</strong>, der likhet er avstand, og <strong>DBSCAN</strong>, der likhet er tetthet.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 K-MEANS ─────────────────────────── -->
+  <section id="kmeans">
+    <div class="container">
+      <div class="section-badge">02 · k-means</div>
+      <h2>Sentroider som <em>flytter seg til midten</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.1 · s. 43–44</div>
+
+      <p class="dropcap"><span class="term" data-term="k-means">k-means</span> deler et datasett med \(n\) datapunkter inn i \(k\) klynger. Hvert datapunkt tilordnes klyngen hvis klyngesentrum er nærmest datapunktet. Stegvis:</p>
+      <ol class="steps">
+        <li>Velg et tall \(k\), som representerer antall klynger.</li>
+        <li>Velg \(k\) tilfeldige klyngesentroider. En <span class="term" data-term="sentroide">sentroide</span> er midten av en klynge, altså ikke et datapunkt (selv om den kan sammenfalle med et faktisk datapunkt).</li>
+        <li>Tildel hvert datapunkt en tilfeldig klynge.</li>
+        <li>Beregn den <span class="term" data-term="euklidsk-avstand">euklidske avstanden</span> mellom hvert datapunkt og alle sentroidene: \(d^2(p, q) = (p_1 - q_1)^2 + (p_2 - q_2)^2 + \cdots + (p_n - q_n)^2\).</li>
+        <li>Tildel hvert datapunkt den nærmeste sentroiden fra steg 4.</li>
+        <li>Velg nye sentroider ved å regne ut middelverdien (<code>np.mean</code>) for hver klynge.</li>
+        <li>Gjenta steg 4, 5 og 6 inntil klyngene ikke endrer seg.</li>
+      </ol>
+      <p>Hvert steg gjør summen av kvadrerte avstander mellom punktene og sentroiden deres mindre eller lik: steg 5 fordi hvert punkt bytter til en nærmere sentroide, steg 6 fordi middelverdien er det punktet som minimerer summen av kvadrerte avstander i en klynge. Det er denne summen, <span class="term" data-term="inertia">inertia</span>, k-means minimerer.</p>
+
+      <div class="widget" id="w-km">
+        <div class="widget-label">Prøv selv · k-means steg for steg</div>
+        <p class="widget-intro">Tre klumper i planet (egen konstruert). Velg \(k\), velg hvordan sentroidene plasseres først, og klikk «Ett steg» (steg 4–6) til klyngene ikke endrer seg. Firkantene er sentroidene; stiplede ringer viser hvor de sto forrige steg. Prøv tilfeldig start flere ganger med \(k = 3\): av og til havner to sentroider i samme klump, og algoritmen kommer seg aldri ut av det.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="k-means"></svg>
+        <div class="legend-row"><span class="l-cen">Sentroide</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="km-k">k</label><input type="range" id="km-k" min="1" max="6" step="1" value="3"><span class="w-val" id="km-k-val">3</span></div>
+          <div class="w-ctl"><label for="km-init">start</label><select id="km-init"><option value="random">tilfeldig</option><option value="far">lengst unna</option><option value="pp">k-means++</option></select></div>
+          <button class="w-btn secondary" id="km-new" type="button">Ny start</button>
+          <button class="w-btn" id="km-step" type="button">Ett steg</button>
+          <button class="w-btn" id="km-run" type="button">Til konvergens</button>
+        </div>
+        <div class="w-out" id="km-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-6-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 6 · spm. 1</span><span class="o-ref">3.1.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Hvilken størrelse forsøker k-means å minimere?</p>
+          <ol class="mcq-list" type="A">
+            <li>Den gjennomsnittlige avstanden mellom ulike cluster-sentroider</li>
+            <li>Summen av kvadrerte avstander mellom hvert punkt og den tildelte sentroiden</li>
+            <li>Silhouette-koeffisienten</li>
+            <li>Calinski–Harabasz-scoren</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Det er inertia, og det er det steg 5 og 6 senker. A er feil retning (avstand <em>mellom</em> sentroider vil vi gjerne ha stor). C og D er metrikker for å <em>vurdere</em> en ferdig clustering og velge \(k\), ikke det algoritmen optimaliserer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-29">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 29</span><span class="o-ref">3.1.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Når bør vi bruke k-means?</p>
+          <ol class="mcq-list" type="A">
+            <li>Når vi ikke har en god hypotese om hvor mange klynger som finnes.</li>
+            <li>Når features har ulike størrelsesordener.</li>
+            <li>Når klyngene ikke er lineært separerbart.</li>
+            <li>Når avstanden innad i klyngen er mindre enn avstandene mellom klyngene.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> k-means bruker avstand som mål på likhet, så den virker når punkter i samme klynge ligger nærmere hverandre enn punkter i ulike klynger. A er motsatt: k-means <em>krever</em> at vi velger \(k\). B er et argument mot: euklidsk avstand domineres av featuren med størst skala, så features bør skaleres først. C: klynger som ikke kan skilles med rette linjer (for eksempel en ring rundt en klump) er nettopp der k-means feiler.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-kmeans-antakelse">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.1.1 · s. 45</span></div>
+        <div class="o-text"><p>Det finnes tilfeller der k-means ikke klarer å identifisere klynger selv om vi oppgir korrekt verdi av \(k\). Alle læringsalgoritmer har implisitte antakelser om problemet de skal løse. Hvilken implisitt antakelse ligger i k-means?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>At <strong>avstand er et mål på likhet</strong> mellom punkter: punkter i samme klynge antas å ligge nærmere hverandre (nærmere sin sentroide) enn punkter i andre klynger. Feilene skjer typisk når avstanden innad i klyngen er større enn mellom naboklynger, for eksempel langstrakte klynger eller en ring rundt en klump. Da finnes det ikke noe sett med \(k\) sentroider som gjenspeiler strukturen, uansett hvor god initialiseringen er.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Initialiseringen er problemet</h3>
+      <p>Utfordringen er at sannsynligheten for å velge tilfeldige sentroider (steg 2) på uegnede steder, slik at algoritmen ikke klarer å danne gode klynger, øker eksponensielt med \(k\). Anta at vi 1) velger riktig \(k\), og 2) at hver sanne klynge har like mange datapunkter. Antall måter å sortere \(k\) ulike elementer på er \(k!\), mens antall måter å trekke \(k\) elementer fra en mengde på \(k\) elementer er \(k^k\). Sannsynligheten for at hver sentroide havner i en unik klynge er derfor</p>
+      \[ \frac{k!}{k^k} = \frac{1 \cdot 2 \cdot 3 \cdots k}{k \cdot k \cdot k \cdots k} = \frac{1}{k} \cdot \frac{2}{k} \cdot \frac{3}{k} \cdots \frac{k}{k}. \tag{103} \]
+      <p>Intuitivt, én sentroide om gangen: den første kan havne hvor som helst (sannsynlighet 1). Den andre må unngå klyngen som er tatt: \((k-1)/k\). Den tredje må unngå to: \((k-2)/k\). Den siste har bare én ledig klynge: \(1/k\). Produktet er \(k \cdot (k-1) \cdots 1 / k^k\).</p>
+      <table class="tt">
+        <thead><tr><th>\(k\)</th><th>2</th><th>3</th><th>4</th><th>5</th><th>8</th><th>10</th></tr></thead>
+        <tbody><tr><td>\(k!/k^k\)</td><td>0.50</td><td>0.22</td><td>0.094</td><td>0.038</td><td>0.0024</td><td>0.00036</td></tr></tbody>
+      </table>
+      <details>
+        <summary>Utdypning · lavere prioritet: Stirling</summary>
+        <p>Stirlings approksimasjon \(k! \approx \sqrt{2\pi k}\, e^{-k} k^k\) (104) gir \(k!/k^k \approx \sqrt{2\pi k}\, e^{-k}\), altså eksponensielt avtakende med \(k\).</p>
+      </details>
+
+      <p>En mer moderne løsning er å plassere den første sentroiden tilfeldig, og neste sentroide på datapunktet som er lengst borte fra den første, gjentatt til alle \(k\) er plassert. Generelt: sentroide \(j\) initialiseres på datapunktet der minste avstand til nærmeste sentroide er størst. Men «lengst unna» havner som oftest i <em>utkanten</em> av en klynge.</p>
+      <p><span class="term" data-term="kmeans-pp">k-means++</span> velger i stedet datapunktet <strong>med en viss sannsynlighet, proporsjonal med kvadrert avstand</strong> fra den nærmeste initialiserte sentroiden. Fremdeles velges et punkt som er langt borte fra forrige klynge, men tilfeldigheten øker sannsynligheten for å havne nær midten av den faktiske klyngen. Det finnes et bevis for at denne plasseringen er forventet å være suboptimal med maksimalt en faktor \(\log(k)\).</p>
+
+      <div class="oppgave" data-quiz id="oppg-o25-6-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 6 · spm. 2</span><span class="o-ref">3.1.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Ved sentroid-initialisering i k-means++ velges neste sentroid ved å sample et datapunkt med sannsynlighet proporsjonal med kvadratet av avstanden til den nærmeste eksisterende sentroiden. Hvorfor er denne strategien å foretrekke fremfor å alltid velge punktet som ligger lengst unna?</p>
+          <ol class="mcq-list" type="A">
+            <li>Den garanterer lik avstand mellom alle sentroider</li>
+            <li>Den velger kun punkter med lav varians</li>
+            <li>Den foretrekker punkter som ligger nær allerede valgte sentroider</li>
+            <li>Den sprer sentroidene samtidig som den beholder tilfeldighet, noe som gjør det mer sannsynlig at sentroidene plasseres nær sentrum av de ekte klyngene i stedet for ute ved kantene</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> «Lengst unna» er deterministisk og plukker alltid ytterpunktet; en outlier vinner hver gang. Med sannsynlighet \(\propto d^2\) har hele den fjerne klyngen sjanse, og den har flest punkter nær midten. A er ingen garanti noen metode gir, B handler ikke om avstand, og C er det motsatte av å spre.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett · flervalg</div>
+        <div class="q-text">Du velger \(k = 4\) og tilfeldige startsentroider i et datasett med fire like store, klart adskilte klumper. Omtrent hvor stor er sjansen for at hver klump får nøyaktig én sentroide?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">Omtrent 50 %</button></li>
+          <li><button class="mcq-opt" type="button">Omtrent 25 %</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">Under 10 %</button></li>
+          <li><button class="mcq-opt" type="button">Nesten 100 %, algoritmen retter det opp selv</button></li>
+        </ul>
+        <div class="mcq-feedback">\(4!/4^4 = 24/256 \approx 0.094\). Og nei, algoritmen retter det ikke opp: to sentroider i samme klump deler klumpen mellom seg og blir der. Derfor k-means++.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 VALG AV K ─────────────────────────── -->
+  <section id="kvalitet">
+    <div class="container">
+      <div class="section-badge">03 · Valg av k</div>
+      <h2>Ingen fasit, <em>flere metrikker</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.1 · s. 44–45</div>
+
+      <p class="dropcap">Oppgir vi ikke \(k\), vil biblioteket prøve å velge en optimal verdi selv. Det kan fungere godt, men vil vel så ofte fungere mindre godt. <strong>Valg av \(k\) er blant de store utfordringene innen clustering</strong>, og det finnes flere metrikker for å måle kvaliteten på clusteringen (<code>sklearn.metrics.cluster</code>). Tre du skal kjenne:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="inertia">Inertia</span></div><div class="fc-val">Sum av kvadrert avstand mellom punkter og sentroide. Lav verdi betyr kompakte klynger, som er bra. Svakhet: den letteste måten å få lav verdi er én sentroide per datapunkt, altså størst mulig \(k\).</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="silhouette">Silhouette-koeffisient</span></div><div class="fc-val">\(\dfrac{b - a}{\max(a, b)}\), der \(a\) er midlere avstand innad i klyngen og \(b\) midlere avstand til nærmeste klynge. Måler hvor nært et punkt er sin egen klynge sammenliknet med andre. Best er 1; 0 betyr overlapp eller punkt på randen; verst er \(-1\), punktet er i feil klynge.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="calinski-harabasz">Calinski–Harabasz-score</span></div><div class="fc-val">Ratio mellom sum av kvadrert avstand <em>mellom</em> klynger (høy er bra) og sum av kvadrert avstand mellom punkter <em>i samme</em> klynge (lav er bra): hvor langt det er mellom klyngene, normalisert til hvor store de er. Høy verdi = tette klynger med god separasjon.</div></div>
+      </div>
+      <p>Med et datasett uten labels, der vi ikke ser hvilken \(k\) vi bør velge, er det nyttig å tilpasse flere k-means-modeller med ulike hyperparametre og regne ut flere metrikker, for å se om vi klarer å identifisere optimale verdier. Metrikkene er ikke nødvendigvis enige.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o25-6-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 6 · spm. 3</span><span class="o-ref">3.1.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Hvorfor er det vanskelig å velge antall klynger \(k\) i K-means?</p>
+          <ol class="mcq-list" type="A">
+            <li>Det finnes én enkelt metrikk som alltid gir det optimale k, men denne er beregningstung og det er vanskelig å approksimere den</li>
+            <li>K-means velger automatisk det beste k under trening</li>
+            <li>Ulike metrikker kan foreslå ulike verdier for k</li>
+            <li>Den optimale verdien av k er alltid lik antall klasser i datasettet, men dette tallet er ukjent</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Inertia vil alltid ha størst \(k\), silhouette og Calinski–Harabasz kan toppe ved ulike \(k\), og ingen av dem vet hva du egentlig er ute etter. A finnes ikke. B: \(k\) er en hyperparameter som settes før trening. D: uten labels finnes det ikke «klasser», og klynger trenger ikke svare til dem selv om labels fantes.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Ulemper og fordeler</h3>
+      <div class="compare-grid">
+        <div class="compare-card">
+          <div class="cc-head">Ulemper</div>
+          <ul>
+            <li>Følsom for antall sentroider valgt: automatisk valg fungerer ofte dårlig, og manuelt valg er bare så godt som utvalgsmetoden.</li>
+            <li>Svak med <span class="term" data-term="outlier">outliers</span>, siden disse kan trekke sentroidene vekk fra de faktiske klyngene.</li>
+            <li>Fungerer dårlig i høydimensjonale rom, fordi den baserer seg på euklidsk avstand, som konvergerer mot en konstant for store \(d\).</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <div class="cc-head">Fordeler</div>
+          <ul>
+            <li>Lett å forstå og implementere.</li>
+            <li>Fungerer godt på store datasett (store \(n\)).</li>
+          </ul>
+        </div>
+      </div>
+      <details>
+        <summary>Utdypning · lavere prioritet: mini batch</summary>
+        <p>For store datasett anbefales <code>MiniBatchKMeans</code>: i stedet for hele datasettet brukes en liten tilfeldig trekning (en <span class="term" data-term="mini-batch">mini batch</span>) per iterasjon. \(k\) settes med <code>n_clusters</code> og initialiseringsmetoden med <code>init</code>. Koden står på <a href="koding.html#kmeans">3B</a>.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 DBSCAN ─────────────────────────── -->
+  <section id="dbscan">
+    <div class="container">
+      <div class="section-badge">04 · DBSCAN</div>
+      <h2>Klynger som <em>tetthet</em>, ikke avstand til et senter</h2>
+      <div class="source-note">Notatene · avsnitt 3.1.2 · s. 45–46</div>
+
+      <p class="dropcap"><span class="term" data-term="dbscan">DBSCAN</span> er en uveiledet læringsalgoritme som identifiserer tre typer punkter i dataene:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="kjernepunkt">Kjernepunkter</span></div><div class="fc-val">Datapunkter som ligger nært midten av en klynge: minst <code>min_samples</code> naboer innenfor avstand \(\epsilon\).</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="ikke-kjernepunkt">Ikke-kjernepunkter</span></div><div class="fc-val">Tilhører klyngen, men ligger i utkanten: færre enn <code>min_samples</code> naboer, men innenfor \(\epsilon\) av et kjernepunkt.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="outlier">Outliers</span></div><div class="fc-val">Datapunkter som ikke tilhører noen klynge. En hovedstyrke ved metoden er at den ikke prøver å putte disse punktene i klynger.</div></div>
+      </div>
+      <p>Hyperparametrene er <span class="term" data-term="epsilon">\(\epsilon\)</span>, maksimal avstand mellom to nabopunkter som kan tilhøre samme klynge, og <span class="term" data-term="min-samples"><code>min_samples</code></span>, minimum antall naboer et punkt må ha for å telle som kjernepunkt. Prosedyren:</p>
+      <ol class="steps">
+        <li>Identifiser kjernepunkter ved å telle antall naboer innenfor en avstand \(\epsilon\). Er antallet minst <code>min_samples</code>, er punktet et kjernepunkt.</li>
+        <li>Gå gjennom kjernepunktene og spre klyngen til datapunkter i nærheten. Er nabopunktet et kjernepunkt, bruk det til å utvide klyngen videre. Hvis ikke, er det et ikke-kjernepunkt: del av klyngen, men det utvider den ikke.</li>
+        <li>Identifiser alle punkter som ikke tilordnes en klynge, som outliers.</li>
+      </ol>
+      <p>Om et punkt er kjernepunkt vet vi altså fra hyperparametrene allerede i steg 1. Etter prosedyren vet vi også forskjellen på outliers og ikke-kjernepunkter: begge har færre enn <code>min_samples</code> naboer, men ikke-kjernepunktet ligger innenfor \(\epsilon\) av et kjernepunkt. To punkter havner i samme klynge når det ene kan nås fra det andre gjennom en kjede av kjernepunkter der hvert steg er høyst \(\epsilon\).</p>
+
+      <div class="widget" id="w-db">
+        <div class="widget-label">Prøv selv · DBSCAN med ε og min_samples</div>
+        <p class="widget-intro">En tett klump, en langstrakt klynge, en løsere klump og noen spredte punkter (egen konstruert). Fylte punkter er kjernepunkter, bleke er ikke-kjernepunkter, hule er outliers. Sirkelen viser \(\epsilon\) rundt ett punkt. Knappene gjengir feilen i eksamensoppgaven under: for lav \(\epsilon\) splitter klyngene i mange små, med outliers imellom; for høy \(\epsilon\) slår alt sammen til én.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="DBSCAN"></svg>
+        <div class="legend-row"><span class="l-core">Kjernepunkt</span><span class="l-border">Ikke-kjernepunkt</span><span class="l-out">Outlier</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="db-eps">ε</label><input type="range" id="db-eps" min="0.2" max="2" step="0.05" value="0.7"><span class="w-val" id="db-eps-val">0.70</span></div>
+          <div class="w-ctl"><label for="db-min">min_samples</label><input type="range" id="db-min" min="2" max="10" step="1" value="4"><span class="w-val" id="db-min-val">4</span></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn secondary" type="button" data-db="0.3,4">ε for lav</button>
+          <button class="w-btn secondary" type="button" data-db="0.7,4">passe</button>
+          <button class="w-btn secondary" type="button" data-db="1.8,4">ε for høy</button>
+          <button class="w-btn secondary" type="button" data-db="0.7,10">min_samples for høy</button>
+        </div>
+        <div class="w-out" id="db-out"></div>
+      </div>
+
+      <h3>Fordeler og ulemper</h3>
+      <div class="compare-grid">
+        <div class="compare-card">
+          <div class="cc-head">Fordeler</div>
+          <ul>
+            <li>Vi trenger ikke spesifisere antall klynger, og algoritmen gjør heller ingen antakelse om antallet.</li>
+            <li>Har en metode for å identifisere outliers, og er dermed robust for outliers.</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <div class="cc-head">Ulemper</div>
+          <ul>
+            <li>Følsom for valg av \(\epsilon\) og <code>min_samples</code>, og de er <em>globale</em>: har klyngene ulik tetthet, finnes det ingen enkelt \(\epsilon\) som passer alle.</li>
+            <li>Tregere for store datasett (stor \(n\)), fordi avstander mellom samtlige punkter må beregnes for å finne naboer.</li>
+            <li>Svakere i høydimensjonale data, fordi den baserer seg på avstand (<a href="#dimensjoner">06</a>).</li>
+          </ul>
+        </div>
+      </div>
+      <details>
+        <summary>Utdypning · lavere prioritet: opphav</summary>
+        <p>DBSCAN ble utviklet av Martin Ester, Hans-Peter Kriegel, Jörg Sander og Xiaowei Xu i 1996.</p>
+      </details>
+
+      <div class="oppgave" data-quiz id="oppg-o25-6-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 6 · spm. 4</span><span class="o-ref">3.1.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Ifølge DBSCAN, tilhører to punkter samme klynge dersom:</p>
+          <ol class="mcq-list" type="A">
+            <li>De har identiske feature-vektorer</li>
+            <li>De begge ligger langt unna sin nærmeste sentroid</li>
+            <li>De befinner seg i samme Voronoi-region fra k-means</li>
+            <li>Det ene kan nås fra det andre gjennom en kjede av punkter der hvert skritt i kjeden har lengde som ikke overstiger ε</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D</strong> er fasiten, og ved sensur ble <strong>A</strong> også godkjent (to identiske punkter har avstand 0, så de havner trivielt sammen, eller begge som outliers). D er definisjonen av at klyngen «spres» fra kjernepunkt til kjernepunkt. B og C handler om sentroider, som DBSCAN ikke har.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-27">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 27</span><span class="o-ref">3.1.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hvilken av disse egenskapene gjør DBSCAN særlig robust?</p>
+          <ol class="mcq-list" type="A">
+            <li>Den kan bruke ulike hyperparametre i ulike klynger.</li>
+            <li>Hvorvidt et punkt identifiseres som kjernepunkt er ikke sensitivt for valg av epsilon.</li>
+            <li>Den identifiserer outliers og prøver ikke å putte disse i klynger.</li>
+            <li>Hyperparameteren som angir antall klynger er valgfri.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> A og B er det motsatte av sant: \(\epsilon\) og <code>min_samples</code> er globale, og kjernepunkt-status avhenger direkte av \(\epsilon\) (dra i widgeten). D er feil formulert: DBSCAN har ingen hyperparameter for antall klynger i det hele tatt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-30">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 30</span><span class="o-ref">3.1.2 · flervalg, lese plott</span></div>
+        <div class="o-text">
+          <p>Figuren viser resultatet av en DBSCAN-modell med dårlig valg av parameter: et smilefjes (en stor ring, to øyne og en munn) er delt opp i rundt tretti små klynger i ulike farger langs ringen og munnen, med mange hvite (uklassifiserte) punkter spredt mellom klyngene. Hvilket dårlig parametervalg har skjedd her?</p>
+          <ol class="mcq-list" type="A">
+            <li>For lav verdi av epsilon.</li>
+            <li>For lav verdi av min_points.</li>
+            <li>For høy verdi av min_points.</li>
+            <li>For høy verdi av epsilon.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Ringen er én sammenhengende klynge, men kjeden brytes overalt der to nabopunkter ligger lenger fra hverandre enn \(\epsilon\): resultatet er mange små klynger med outliers imellom. For høy \(\epsilon\) (D) gir det motsatte, alt slår sammen. For høyt <code>min_points</code> (C) gir færre kjernepunkter og flere outliers, men ville ikke delt ringen i tretti biter så lenge \(\epsilon\) når naboene. For lavt <code>min_points</code> (B) gjør nesten alt til kjernepunkter, altså færre og større klynger. Trykk «ε for lav» i widgeten.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 KATEGORIER ─────────────────────────── -->
+  <section id="kategorier">
+    <div class="container">
+      <div class="section-badge">05 · Kategorier</div>
+      <h2>Fire hovedkategorier av <em>clustering</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.3 · s. 46</div>
+
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="sentroidebasert">Sentroidebasert</span></div><div class="fc-val">Starter med sentroider, assosierer datapunkter med disse og tilpasser frem til konvergens. <strong>k-means.</strong></div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="tetthetsbasert">Tetthetsbasert</span></div><div class="fc-val">Klynger defineres av tettheten til datapunkter: punkter som ligger nær hverandre er klynger, isolerte punkter er outliers. <strong>DBSCAN.</strong></div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="fordelingsbasert">Fordelingsbasert</span></div><div class="fc-val">Antar at hver klynge består av punkter fra en sannsynlighetsfordeling, vanligvis en Gauss, og finner parametrene til fordelingen. Bare navnet er pensum.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="hierarkibasert">Hierarkibasert</span></div><div class="fc-val">Lager et hierarki av klynger: i starten er hvert datapunkt sin egen klynge, til slutt er alle i samme, og man velger klyngene fra et steg i hierarkiet. Bare navnet er pensum.</div></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-kategorier">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.1.3 · s. 46</span></div>
+        <div class="o-text"><p>Hvilke av disse kategoriene hører k-means og DBSCAN til?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>k-means er <strong>sentroidebasert</strong> (likhet er avstand til et klyngesentrum), DBSCAN er <strong>tetthetsbasert</strong> (likhet er tetthet). De to øvrige kategoriene er ikke pensum utover at du bør ha hørt om dem.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-22">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 22</span><span class="o-ref">3.1.3 · flervalg, to deler</span></div>
+        <div class="o-text">
+          <p>Hvilken kategori tilhører k-means? Velg ett alternativ.</p>
+          <ol class="mcq-list" type="A">
+            <li>Sentroidebasert</li>
+            <li>Tetthetsbasert</li>
+            <li>Hierarkibasert</li>
+            <li>Fordelingsbasert</li>
+          </ol>
+          <p>Hvilken kategori tilhører DBSCAN? Velg ett alternativ.</p>
+          <ol class="mcq-list" type="A">
+            <li>Tetthetsbasert</li>
+            <li>Sentroidebasert</li>
+            <li>Hierarkibasert</li>
+            <li>Fordelingsbasert</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>k-means: <strong>A, sentroidebasert</strong>. DBSCAN: <strong>A, tetthetsbasert</strong>. Merk at alternativene står i ulik rekkefølge i de to delene.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 DIMENSJONER ─────────────────────────── -->
+  <section id="dimensjoner">
+    <div class="container">
+      <div class="section-badge">06 · Høye dimensjoner</div>
+      <h2>Dimensjonsforbannelsen <em>igjen</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.4 · s. 46–47 · prio 3: ikke spurt i noen av settene</div>
+
+      <p class="dropcap">Trekk to tilfeldige punkter fra enhetskuben \([0, 1]^d\) og regn ut den euklidske avstanden mellom dem. Gjentatt 1000 ganger for flere verdier av \(d\) gir det en fordeling av avstander per \(d\). Mønsteret: fordelingenes <strong>middelverdier blir store</strong> med økende \(d\), mens <strong>spredningene blir små</strong>.</p>
+
+      <div class="widget" id="w-dim">
+        <div class="widget-label">Prøv selv · Avstander i enhetskuben for ulike d</div>
+        <p class="widget-intro">Samme eksperiment som figur 22 i notatene: 600 tilfeldige par i \([0,1]^d\), histogram av avstandene. Bytt \(d\) og se på forholdet spredning/middelverdi.</p>
+        <svg viewBox="0 0 560 220" data-w="560" data-h="220" aria-label="Avstandsfordeling"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="dim-d">d</label><select id="dim-d"><option value="2">2</option><option value="3">3</option><option value="10" selected>10</option><option value="100">100</option><option value="1000">1000</option></select></div>
+          <button class="w-btn secondary" id="dim-new" type="button">Trekk på nytt</button>
+        </div>
+        <div class="metric-grid" id="dim-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-avstand-hoydim">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.1.4 · s. 47</span></div>
+        <div class="o-text"><p>Hva forteller fordelingene av avstander for økende \(d\) oss om hvordan avstand oppfører seg i høydimensjonale rom?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Avstander skalerer eksponensielt med \(d\). Det gir opphav til <span class="term" data-term="concentration-of-distances">Concentration of Distances</span>: <em>relative</em> avstander blir mindre i høye dimensjoner. Avstandene i seg selv blir veldig store, mens <em>forskjellene</em> mellom avstander blir små. Tidligere (1A, veiledet læring) betydde det at mesteparten av datarommet er tomt når vi har flere features enn \(\mathcal{O}(10)\); nå betyr det også at klynger i høydimensjonale rom ikke kan være kompakte. Clustering-algoritmer er avhengige av at datapunkter befinner seg nær hverandre på en eller annen måte, og det vil generelt ikke være tilfelle i høydimensjonale rom. Løsningen er å redusere dimensjonaliteten i dataene (neste del av notatene).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Uveiledet læring</strong>Data uten targets. Clustering = klassifisering uten labels; likhet som avstand (k-means) eller tetthet (DBSCAN).</div>
+        <div class="recap-pill"><strong>k-means</strong>Velg k, tilfeldige sentroider, gjenta: tildel nærmeste sentroide, flytt sentroiden til middelverdien, til ingenting endrer seg.</div>
+        <div class="recap-pill"><strong>Minimerer</strong>Summen av kvadrerte avstander punkt–sentroide (inertia). Passer når avstand innad &lt; avstand mellom klynger.</div>
+        <div class="recap-pill"><strong>Initialisering</strong>Tilfeldig start lykkes med sannsynlighet \(k!/k^k\), eksponensielt avtakende. k-means++: neste sentroide med sannsynlighet \(\propto d^2\), sprer med tilfeldighet.</div>
+        <div class="recap-pill"><strong>Valg av k</strong>Vanskelig: inertia synker alltid med k, silhouette (−1…1, 1 best) og Calinski–Harabasz (høy best) kan foreslå ulike k.</div>
+        <div class="recap-pill"><strong>DBSCAN</strong>Kjernepunkt: ≥ min_samples naboer innen ε. Ikke-kjernepunkt: innen ε av et kjernepunkt. Outlier: ingen av delene, holdes utenfor.</div>
+        <div class="recap-pill"><strong>ε-feil</strong>For lav ε: klynger splittes i mange små med outliers imellom. For høy ε: klynger slås sammen. Globale parametre: ulik tetthet er et problem.</div>
+        <div class="recap-pill"><strong>Kategorier</strong>Sentroidebasert (k-means), tetthetsbasert (DBSCAN), fordelingsbasert (Gauss), hierarkibasert.</div>
+        <div class="recap-pill"><strong>Høye dimensjoner</strong>Avstander vokser, forskjellene krymper (concentration of distances): klynger kan ikke være kompakte, begge metodene sliter.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels · flervalg</div>
+        <div class="q-text">Du kjører k-means for \(k = 1, 2, \dots, 10\) og plotter inertia. Kurven synker hele veien. Hva kan du konkludere?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">Datasettet har 10 klynger</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">Ingenting ennå: inertia synker alltid med k, så en annen metrikk trengs</button></li>
+          <li><button class="mcq-opt" type="button">Initialiseringen var dårlig</button></li>
+          <li><button class="mcq-opt" type="button">Dataene er høydimensjonale</button></li>
+        </ul>
+        <div class="mcq-feedback">Flere sentroider gir alltid kortere avstand til nærmeste sentroide; med \(k = n\) er inertia null. Se på silhouette eller Calinski–Harabasz i tillegg, eller let etter en «albue» i kurven.</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Et datasett har to klynger: en tett liten klump og en stor, glissen sky rundt den. Hvorfor sliter både k-means og DBSCAN her, og hvilken sliter av hvilken grunn?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">k-means antar at hver klynge er samlet rundt sitt eget senter, men begge klyngene har omtrent samme senter; avstanden innad i skyen er større enn avstanden mellom klyngene, så ingen plassering av to sentroider skiller dem. DBSCAN kan i prinsippet skille tett fra glissent, men \(\epsilon\) og <code>min_samples</code> er globale: en \(\epsilon\) som holder klumpen sammen uten å sluke skyen, er for liten til å holde skyen sammen, så skyen blir outliers eller mange små klynger. Ulik tetthet er DBSCANs svake punkt; ikke-konvekse former rundt samme senter er k-means sitt.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Lineær regresjon i 1C trengte skalerte features; beslutningstrær trengte det ikke. Hvor står k-means og DBSCAN, og hvorfor?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Begge trenger skalering, av samme grunn som gradient descent trengte det, men enda mer direkte: de bruker euklidsk avstand som likhetsmål, og \(d^2 = \sum_i (p_i - q_i)^2\) domineres av featuren med størst tallverdi. Med alder i år og inntekt i kroner er «nærmeste sentroide» i praksis «nærmeste inntekt», og en \(\epsilon\) i DBSCAN måler bare inntekt. Trær slipper unna fordi de splitter én feature om gangen med en terskel; de sammenlikner aldri features med hverandre.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 3: oversikt</div></a>
+        <a href="koding.html" class="next"><div class="pn-label">Neste · 3B</div><div class="pn-title">Koding: clustering →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function gauss(r) { var u = 1 - r(), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  var f2 = function (v) { return (Math.round(v * 100) / 100).toFixed(2); };
+  var svgNS = 'http://www.w3.org/2000/svg';
+  var COL = ['var(--accent)', 'var(--warm)', 'var(--green)', 'var(--ochre)', 'var(--red)', '#6b5b95'];
+  function d2(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - b[i]) * (a[i] - b[i]); return s; }
+
+  /* ─── k-means ─── */
+  (function () {
+    var root = document.getElementById('w-km'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 9], y: [0, 8], xLabel: 'x₁', yLabel: 'x₂', xTicks: [0, 3, 6, 9], yTicks: [0, 2, 4, 6, 8] });
+    var out = document.getElementById('km-out'), kIn = document.getElementById('km-k'), initSel = document.getElementById('km-init');
+    var r = rng(7), D = [];
+    [[2, 2.2, 0.6], [6, 6.3, 0.7], [7.2, 1.8, 0.55]].forEach(function (c) { for (var i = 0; i < 22; i++) D.push([c[0] + gauss(r) * c[2], c[1] + gauss(r) * c[2]]); });
+    var rr = rng(1), C = [], prevC = [], assign = [], iter = 0, converged = false;
+    function nearest(p) { var best = 0, bd = Infinity; for (var j = 0; j < C.length; j++) { var d = d2(p, C[j]); if (d < bd) { bd = d; best = j; } } return best; }
+    function inertia() { var s = 0; D.forEach(function (p, i) { s += d2(p, C[assign[i]]); }); return s; }
+    function init() {
+      var k = +kIn.value, mode = initSel.value; C = []; prevC = []; iter = 0; converged = false;
+      if (mode === 'random') { for (var j = 0; j < k; j++) C.push(D[Math.floor(rr() * D.length)].slice()); }
+      else {
+        C.push(D[Math.floor(rr() * D.length)].slice());
+        while (C.length < k) {
+          var dmin = D.map(function (p) { var m = Infinity; C.forEach(function (c) { m = Math.min(m, d2(p, c)); }); return m; });
+          var idx = 0;
+          if (mode === 'far') { for (var i = 1; i < D.length; i++) if (dmin[i] > dmin[idx]) idx = i; }
+          else { var tot = dmin.reduce(function (a, b) { return a + b; }, 0), u = rr() * tot, acc = 0; for (idx = 0; idx < D.length; idx++) { acc += dmin[idx]; if (acc >= u) break; } if (idx >= D.length) idx = D.length - 1; }
+          C.push(D[idx].slice());
+        }
+      }
+      assign = D.map(nearest);
+      draw('Start (' + { random: 'tilfeldige datapunkter', far: 'lengst unna forrige', pp: 'k-means++' }[mode] + '). Punktene er tildelt nærmeste sentroide.');
+    }
+    function step() {
+      if (converged) { draw('Konvergert: klyngene endrer seg ikke lenger.'); return; }
+      prevC = C.map(function (c) { return c.slice(); });
+      var sums = C.map(function () { return [0, 0, 0]; });
+      D.forEach(function (p, i) { var a = assign[i]; sums[a][0] += p[0]; sums[a][1] += p[1]; sums[a][2]++; });
+      C = C.map(function (c, j) { return sums[j][2] ? [sums[j][0] / sums[j][2], sums[j][1] / sums[j][2]] : c; });
+      var newA = D.map(nearest), changed = 0; for (var i = 0; i < D.length; i++) if (newA[i] !== assign[i]) changed++;
+      assign = newA; iter++;
+      if (changed === 0) converged = true;
+      draw('Steg ' + iter + ': sentroidene flyttet til middelverdien (steg 6), punktene tildelt på nytt (steg 4–5). ' + changed + ' punkter byttet klynge.' + (converged ? ' Ingen endring → konvergert.' : ''));
+    }
+    function draw(msg) {
+      document.getElementById('km-k-val').textContent = kIn.value;
+      plot.clearData(); plot.clearOverlay();
+      D.forEach(function (p, i) { plot.point(p[0], p[1], 'c' + (assign[i] % 6), 4.5); });
+      prevC.forEach(function (c) { plot.point(c[0], c[1], 'cen-old', 8); });
+      C.forEach(function (c, j) {
+        var s = document.createElementNS(svgNS, 'rect'); s.setAttribute('x', plot.sx(c[0]) - 6); s.setAttribute('y', plot.sy(c[1]) - 6); s.setAttribute('width', 12); s.setAttribute('height', 12); s.setAttribute('class', 'cen'); s.style.stroke = COL[j % 6]; plot.layers.overlay.appendChild(s);
+      });
+      var counts = C.map(function () { return 0; }); assign.forEach(function (a) { counts[a]++; });
+      out.innerHTML = msg + '\nk = ' + C.length + '   ·   punkter per klynge: ' + counts.join(' / ') + '   ·   inertia (sum kvadrerte avstander): <span class="hl">' + f2(inertia()) + '</span>';
+    }
+    document.getElementById('km-new').addEventListener('click', init);
+    document.getElementById('km-step').addEventListener('click', step);
+    document.getElementById('km-run').addEventListener('click', function () { var n = 0; while (!converged && n < 50) { step(); n++; } });
+    kIn.addEventListener('input', init); initSel.addEventListener('change', init);
+    init();
+  })();
+
+  /* ─── DBSCAN ─── */
+  (function () {
+    var root = document.getElementById('w-db'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 9], y: [0, 8], xLabel: 'x₁', yLabel: 'x₂', xTicks: [0, 3, 6, 9], yTicks: [0, 2, 4, 6, 8] });
+    var out = document.getElementById('db-out'), epsIn = document.getElementById('db-eps'), minIn = document.getElementById('db-min');
+    var r = rng(23), D = [];
+    for (var i = 0; i < 26; i++) D.push([2 + gauss(r) * 0.35, 2 + gauss(r) * 0.35]);
+    for (var j = 0; j < 30; j++) D.push([7 + gauss(r) * 0.25, 1 + j * 0.2 + gauss(r) * 0.1]);
+    for (var k = 0; k < 22; k++) D.push([4 + gauss(r) * 0.7, 6 + gauss(r) * 0.5]);
+    for (var m = 0; m < 12; m++) D.push([0.5 + r() * 8, 0.5 + r() * 7]);
+    function run(eps, minS) {
+      var e2 = eps * eps, n = D.length, nb = [], label = [], core = [];
+      for (var i = 0; i < n; i++) { nb.push([]); label.push(-2); }
+      for (var a = 0; a < n; a++) for (var b = a + 1; b < n; b++) if (d2(D[a], D[b]) <= e2) { nb[a].push(b); nb[b].push(a); }
+      for (var c = 0; c < n; c++) core.push(nb[c].length >= minS);
+      var cl = 0;
+      for (var s = 0; s < n; s++) {
+        if (!core[s] || label[s] !== -2) continue;
+        var q = [s]; label[s] = cl;
+        while (q.length) { var p = q.pop(); nb[p].forEach(function (v) { if (label[v] === -2 || label[v] === -1) { label[v] = cl; if (core[v]) q.push(v); } }); }
+        cl++;
+      }
+      for (var t = 0; t < n; t++) if (label[t] === -2) label[t] = -1;
+      return { label: label, core: core, n: cl };
+    }
+    function draw() {
+      var eps = +epsIn.value, minS = +minIn.value;
+      document.getElementById('db-eps-val').textContent = eps.toFixed(2); document.getElementById('db-min-val').textContent = minS;
+      var res = run(eps, minS);
+      plot.clearData(); plot.clearOverlay();
+      var circ = document.createElementNS(svgNS, 'ellipse'); var p0 = D[40];
+      circ.setAttribute('cx', plot.sx(p0[0])); circ.setAttribute('cy', plot.sy(p0[1])); circ.setAttribute('rx', plot.sx(eps) - plot.sx(0)); circ.setAttribute('ry', plot.sy(0) - plot.sy(eps)); circ.setAttribute('class', 'cen-old'); plot.layers.data.appendChild(circ);
+      var nCore = 0, nBorder = 0, nOut = 0;
+      D.forEach(function (p, i) {
+        var l = res.label[i];
+        if (l < 0) { nOut++; plot.point(p[0], p[1], 'out-pt', 4); }
+        else if (res.core[i]) { nCore++; plot.point(p[0], p[1], 'c' + (l % 6), 4.5); }
+        else { nBorder++; plot.point(p[0], p[1], 'c' + (l % 6) + ' border-pt', 4); }
+      });
+      out.innerHTML = 'ε = ' + eps.toFixed(2) + ', min_samples = ' + minS + '   →   klynger: <span class="hl">' + res.n + '</span>   ·   kjernepunkter: ' + nCore + '   ·   ikke-kjernepunkter: ' + nBorder + '   ·   outliers: ' + nOut +
+        '\n' + (res.n > 6 ? 'Mange små klynger og mange outliers: ε er for lav til å holde kjedene sammen.' : res.n === 1 && nOut < 3 ? 'Alt er én klynge: ε er så høy at kjeden når over gapene mellom klumpene.' : nOut > 40 ? 'Nesten alt er outliers: for få punkter når opp i min_samples naboer.' : 'Tre klynger og noen outliers som får stå utenfor.');
+    }
+    [epsIn, minIn].forEach(function (el) { el.addEventListener('input', draw); });
+    root.querySelectorAll('[data-db]').forEach(function (btn) { btn.addEventListener('click', function () { var v = btn.dataset.db.split(','); epsIn.value = v[0]; minIn.value = v[1]; draw(); }); });
+    draw();
+  })();
+
+  /* ─── Avstander i enhetskuben ─── */
+  (function () {
+    var root = document.getElementById('w-dim'); if (!root) return;
+    var svg = root.querySelector('svg'), sel = document.getElementById('dim-d'), out = document.getElementById('dim-out');
+    var r = rng(99);
+    function draw() {
+      var d = +sel.value, N = 600, dist = [];
+      for (var i = 0; i < N; i++) { var s = 0; for (var j = 0; j < d; j++) { var a = r() - r(); s += a * a; } dist.push(Math.sqrt(s)); }
+      var mean = dist.reduce(function (a, b) { return a + b; }, 0) / N, v = 0; dist.forEach(function (x) { v += (x - mean) * (x - mean); }); var sd = Math.sqrt(v / N);
+      var lo = 0, hi = Math.max.apply(null, dist) * 1.05, nb = 24, bins = []; for (var b = 0; b < nb; b++) bins.push(0);
+      dist.forEach(function (x) { var k = Math.min(nb - 1, Math.floor((x - lo) / (hi - lo) * nb)); bins[k]++; });
+      var top = Math.max.apply(null, bins);
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      var plot = MLPlot.make(svg, { x: [lo, hi], y: [0, top * 1.1], xLabel: 'euklidsk avstand', yLabel: 'antall par', xTicks: [0, hi / 4, hi / 2, 3 * hi / 4, hi].map(function (t) { return Math.round(t * 10) / 10; }), yTicks: [0, Math.round(top / 2), top] });
+      var w = (hi - lo) / nb;
+      bins.forEach(function (cnt, k) {
+        var rect = document.createElementNS(svgNS, 'rect'); var x0 = lo + k * w;
+        rect.setAttribute('x', plot.sx(x0) + 1); rect.setAttribute('y', plot.sy(cnt)); rect.setAttribute('width', Math.max(1, plot.sx(x0 + w) - plot.sx(x0) - 2)); rect.setAttribute('height', plot.sy(0) - plot.sy(cnt)); rect.setAttribute('class', 'hist'); plot.layers.data.appendChild(rect);
+      });
+      plot.vline(mean, 'guide');
+      out.innerHTML = '<div class="metric"><div class="m-name">d</div><div class="m-val">' + d + '</div></div>' +
+        '<div class="metric"><div class="m-name">middelverdi</div><div class="m-val">' + f2(mean) + '</div><div class="m-formula">vokser med d</div></div>' +
+        '<div class="metric"><div class="m-name">standardavvik</div><div class="m-val">' + f2(sd) + '</div><div class="m-formula">omtrent konstant</div></div>' +
+        '<div class="metric"><div class="m-name">spredning / middel</div><div class="m-val">' + (sd / mean).toFixed(3) + '</div><div class="m-formula">→ 0: relative avstander krymper</div></div>';
+    }
+    sel.addEventListener('change', draw); document.getElementById('dim-new').addEventListener('click', draw);
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

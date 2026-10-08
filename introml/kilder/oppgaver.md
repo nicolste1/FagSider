@@ -1,6 +1,6 @@
 # Oppgaver («Oppgave:») i kilden
 
-Datert September 22, 2026. Generert av `tools/pdf_til_tekst.py`.
+Datert October 7, 2026. Generert av `tools/pdf_til_tekst.py`.
 
 ## 1.1 Data
 1. (Tenk deg om før du sjekker svaret på oppgaven, på neste side) 1. Hvilke variabler er kategoriske? 2. Hvilke variabler er binære? 3. Hvilke variabler er kontinuerlige?
@@ -73,4 +73,20 @@ Datert September 22, 2026. Generert av `tools/pdf_til_tekst.py`.
 36. Kan kan et perseptron gjøre XOR? Hvordan?
 
 ## 2.3 Arkitektur
-37. Se på første (øverste) node i det første laget etter input-laget og skriv ned aktiveringen til denne noden. Du bør komme frem til følgende uttrykk: (cid:32) n (cid:33) a(1) =g (cid:88) w(1)x . (97) 1 i1 i i=0 Vi tar for oss tilfellet der vi har to input-features, og har bygget et skjult lag beståend…
+37. Se på første (øverste) node i det første laget etter input-laget og skriv ned aktiveringen til denne noden. Du bør komme frem til følgende uttrykk: (cid:32) n (cid:33) a(1) =g (cid:88) w(1)x +b(1) . (97) 1 i1 i 1 i=0 Vi tar for oss tilfellet der vi har to input-features, og har bygget et skjult lag …
+
+## 2.5 Bygge, trene og predikere
+38. Hva er grunnen til dette?
+
+## 3.1.1 k-means
+39. Beggemåteneåplasseresentroiderervisualisertforulikedatafordelingerpåwww.naftaliharris.com/blog/visualizing- k-means-clustering/. Det kan være lurtå leke litt med dette visualiseringsverktøyet forå få en følelse av hvordan k-means fungerer. Tilsluttskalvisepåkmeans++,sombrukerenmeravansertmåteåvelgep…
+40. Hvilken implisitt antakelse ligger i k-means?
+
+## 3.1.2 DBSCAN
+41. Prøv selv med verktøyet https://www.naftaliharris.com/blog/visualizing-dbscan-clustering/.
+
+## 3.1.3 Hovedkategorier
+42. Hvilke av disse kategoriene hører k-means og DBSCAN til?
+
+## 3.1.4 Dimensjonsforbannelsen igjen
+43. Hvafortellerfordelingeneifigur22ossomhvordanavstandoppførersegihøydimensjonale rom?

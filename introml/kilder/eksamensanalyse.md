@@ -2,7 +2,11 @@
 
 Skrevet 26. september 2026 ut fra løsningsforslagene til Ord. 2024 og Ord. 2025 (begge i `kilder/`) og notatene
 datert 22. september 2026 (avsnitt 1.1–2.3). **Godkjent av brukeren 26. september 2026.** Den maskinlesbare
-varianten ligger i `eksamen.json`. Utvides når notatene får nye kapitler (se tabellen «senere»).
+varianten ligger i `eksamen.json`.
+
+**Utvidet 8. oktober 2026** med deltemaene 2.4 (backpropagation), 2.5 (bygge og trene i Keras) og 3.1 (clustering),
+etter notatene datert 7. oktober 2026 (47 sider, avsnitt 1.1–3.1.4). **Utvidelsen er et forslag og venter på
+godkjenning fra brukeren.** Resten (PCA/t-SNE, anomali, RL, XAI, etikk) står fortsatt som «senere».
 
 ## Status
 
@@ -10,6 +14,7 @@ varianten ligger i `eksamen.json`. Utvides når notatene får nye kapitler (se t
 - [x] Gjennomgått med brukeren
 - [x] `eksamen.json` fylt ut
 - [x] Godkjent av brukeren: 26. september 2026
+- [ ] Utvidelse 8. oktober 2026 (2.4, 2.5, 3.1): forslag, ikke godkjent
 - [ ] Konteeksamener og eldre sett: mangler
 
 ## Eksamensform
@@ -29,8 +34,9 @@ iterasjoner per epoke, Shapley-verdier).
 
 ## Hva settene dekker, og hva notatene dekker så langt
 
-Settene dekker hele kurset. Notatene (22. sept.) dekker bare veiledet læring (kap. 1) og starten på nevrale
-nettverk (2.1–2.3). Resten av eksamensstoffet kommer i senere versjoner av notatene, og analysen må utvides da.
+Settene dekker hele kurset. Notatene (7. okt.) dekker veiledet læring (kap. 1), nevrale nettverk (kap. 2, nå med
+backpropagation og Keras) og clustering (3.1). Resten av eksamensstoffet kommer i senere versjoner av notatene,
+og analysen må utvides da.
 
 | Tema | Ord. 2024 (spm.) | Ord. 2025 (del.spm.) | I notatene? |
 |---|---|---|---|
@@ -43,15 +49,15 @@ nettverk (2.1–2.3). Resten av eksamensstoffet kommer i senere versjoner av not
 | Lineær regresjon, MSE, GD-steg, bias–varians, over/underfit | 1, 2, 3 | 4.1, 4.2, 4.3 | 1.4 (ja) |
 | Regresjonstrær | – | 4.4 | 1.4.6 (ja) |
 | Ensemble: bagging, random forest, boosting, bootstrap vs CV | 16, 17, 18 | 3.1, 3.2, 3.3, 3.4 | 1.5 (ja, nytt 22. sept.) |
-| Perceptron, Heaviside, XOR, sigmoid, backpropagation | 19 | 5.1, 5.2, 5.3, 5.4 | 2.1–2.3 (ja); backprop kommer |
-| Klynging: k-means, DBSCAN | 22, 27, 29, 30 | 6.1–6.4 | nei, kommer |
+| Perceptron, Heaviside, XOR, sigmoid, backpropagation | 19 | 5.1, 5.2, 5.3, 5.4 | 2.1–2.4 (ja; backprop nytt 7. okt.) |
+| Klynging: k-means, DBSCAN | 22, 27, 29, 30 | 6.1–6.4 | 3.1 (ja, nytt 7. okt.) |
 | Dimensjonsreduksjon: PCA, t-SNE, KL | 24, 25, 26, 28 | 7.1, 7.2, 7.3 | nei, kommer |
 | Anomalideteksjon, Isolation Forest | 21, 23 | 7.4 | nei, kommer |
 | Reinforcement learning, Q-learning, DQN | 31, 32, 33 | 8.1–8.4, 9.1–9.4, 10.4 | nei, kommer |
 | Forklarbarhet: LIME, SHAP, Shapley-verdier | 34, 35, 36 | – | nei, kommer |
 | Etikk, AI Act | 37, 38, 39 | – | nei, kommer |
 
-Omtrent halvparten av hvert sett ligger i det notatene dekker nå.
+Omtrent 60 % av hvert sett ligger i det notatene dekker nå (24 av 39 spørsmål i 2024, 24 av 40 i 2025).
 
 ## Tilgjengelige eksamenssett
 
@@ -88,7 +94,13 @@ Type: flervalg er formen for alt; «regn» betyr at spørsmålet krever utregnin
 | 1.5 Ensemble, bagging, random forest, boosting | 1 | flervalg | O24 · 16, 17, 18; O25 · 3.1, 3.2, 3.3, 3.4 | «Effekt av bootstrap-samples?» (variabilitet mellom modellene), «Hvorfor to typer tilfeldighet i RF?» (redusere korrelasjon), «Hvilke punkter får økt vekt i AdaBoost?» (feilklassifiserte), «Hvorfor tilpasse pseudo-residualer?» (modellere gjenværende feil) |
 | 2.1 Perceptron, Heaviside, XOR | 1 | flervalg | O25 · 5.1, 5.2 | «Hvorfor er Heaviside uegnet for gradient?» (ikke deriverbar, derivert 0 nesten overalt), «Hvorfor kan ikke ett perceptron lære XOR?» (ikke lineært separerbart) |
 | 2.2 Aktiveringsfunksjoner | 2 | flervalg | O25 · 5.3 | «Konsekvens av sigmoid i stedet for step?» (deriverbar, kan trenes med GD) |
-| 2.3 Arkitektur, backpropagation | 2 | flervalg | O24 · 19; O25 · 5.4 | «Hovedformålet med backpropagation?» (beregne hvordan hver vekt påvirker tapet via kjerneregelen; justere vektene). Backprop er ikke i notatene ennå |
+| 2.3 Arkitektur | 2 | flervalg | (ingen direkte; telle noder/vekter er bakgrunn for 5.x) | Antall noder i input/output-lag, matriseformen (101), hvert lag er en ikke-lineær transformasjon |
+| 2.4 Backpropagation | 2 | flervalg | O24 · 19; O25 · 5.4 | «Hovedformålet med backpropagation?» (beregne hvordan hver vekt påvirker tapet via kjerneregelen bakover; justere vektene). Nytt i notatene 7. okt.: intuisjonen med ønskede endringer lag for lag |
+| 2.5 Bygge, trene og predikere (Keras) | 3 | kode | ingen | Øvingsstoff: `Sequential`, `Dense`, `compile`/`fit`/`predict`/`evaluate`, `batch_size`, `epochs`, early stopping på `val_loss`. Knyttes til 1.2.3 (batch/epoke) og 1.4.3 (early stopping) |
+| 3.1.1 k-means: algoritmen, initialisering, k-means++, valg av k, metrikker | 1 | flervalg | O24 · 22 (del 1), 29; O25 · 6.1, 6.2, 6.3 | «Hva minimerer k-means?» (sum av kvadrerte avstander punkt–sentroide, inertia); «Hvorfor k-means++ framfor lengst-unna?» (sprer sentroidene med tilfeldighet, havner nær midten av klyngene); «Hvorfor er k vanskelig?» (ulike metrikker foreslår ulike k); «Når bruke k-means?» (avstand innad < avstand mellom klynger); «Hvilken kategori?» (sentroidebasert) |
+| 3.1.2 DBSCAN: kjernepunkt, ε, min_samples, outliers | 1 | flervalg, lese plott | O24 · 22 (del 2), 27, 30; O25 · 6.4 | «Hva gjør DBSCAN robust?» (identifiserer outliers, putter dem ikke i klynger); «Samme klynge når?» (kjede av punkter med steg ≤ ε; identiske vektorer også godkjent); «Smiley splittet i mange små klynger: hvilken parameterfeil?» (for lav ε); «Hvilken kategori?» (tetthetsbasert) |
+| 3.1.3 Hovedkategorier | 2 | flervalg | O24 · 22 | Sentroide-, tetthets-, fordelings- og hierarkibasert; de to siste bare som navn |
+| 3.1.4 Dimensjonsforbannelsen igjen | 3 | – | ingen | Concentration of distances; forklarer hvorfor både k-means og DBSCAN sliter i høye dimensjoner. Én linje under «Lavere» |
 
 ## Tidligere eksamensoppgaver som skal inn som `.oppgave`-bokser
 
@@ -139,9 +151,17 @@ riktig bokstav merket «Svar fra løsningsforslaget» og en begrunnelse skrevet 
 | O25 · 5.1 Heaviside og gradient | 2.1 | kap2/perceptron.html#perceptron | ferdig |
 | O25 · 5.2 XOR | 2.1 | kap2/perceptron.html#logikk | ferdig |
 | O25 · 5.3 sigmoid i stedet for step | 2.2 | kap2/perceptron.html#aktivering | ferdig |
-| O24 · 19 formålet med backpropagation | 2.3 | kap2/perceptron.html#arkitektur | ferdig |
-| O25 · 5.4 backpropagation og kjerneregelen | 2.3 | kap2/perceptron.html#arkitektur | ferdig |
-| O24 · 21–39, O25 · 6–9, 10.4 (klynging, PCA, t-SNE, anomali, RL, XAI, etikk) | senere kap. | – | venter på notatene |
+| O24 · 19 formålet med backpropagation | 2.4 | kap2/perceptron.html#backpropagation | ferdig (flyttet 8. okt.) |
+| O25 · 5.4 backpropagation og kjerneregelen | 2.4 | kap2/perceptron.html#backpropagation | ferdig (flyttet 8. okt.) |
+| O25 · 6.1 hva k-means minimerer | 3.1.1 | kap3/clustering.html#kmeans | ferdig |
+| O24 · 29 når bruke k-means | 3.1.1 | kap3/clustering.html#kmeans | ferdig |
+| O25 · 6.2 k-means++ framfor lengst unna | 3.1.1 | kap3/clustering.html#kmeans | ferdig |
+| O25 · 6.3 hvorfor k er vanskelig å velge | 3.1.1 | kap3/clustering.html#kvalitet | ferdig |
+| O25 · 6.4 samme klynge i DBSCAN | 3.1.2 | kap3/clustering.html#dbscan | ferdig |
+| O24 · 27 hva gjør DBSCAN robust | 3.1.2 | kap3/clustering.html#dbscan | ferdig |
+| O24 · 30 DBSCAN smiley, for lav ε | 3.1.2 | kap3/clustering.html#dbscan | ferdig |
+| O24 · 22 kategori for k-means og DBSCAN | 3.1.3 | kap3/clustering.html#kategorier | ferdig |
+| O24 · 21, 23–26, 28, 31–39, O25 · 7–9, 10.4 (PCA, t-SNE, anomali, RL, XAI, etikk) | senere kap. | – | venter på notatene |
 
 ## Hva som bevisst nedprioriteres
 
@@ -154,7 +174,11 @@ Ikke spurt i noen av settene, og lagt under «Lavere» i Eksamensfokus-boksene:
 - 1.3.4: pseudokoden for å bygge tre og Palmer Penguins-koden (notatene sier selv at dere ikke skal bygge trær).
 - 1.4.5: den fulle utledningen (72)–(88) av bias–varians-dekomposisjonen. Definisjonene av bias, varians og tolkningen (høy varians = overfit) er det som spørres.
 - 1.4.6: sklearn-koden for regresjonstrær.
-- 2.1: historikk (McCulloch–Pitts, Rosenblatt), sklearn-Perceptron-koden.
+- 2.1: historikk (McCulloch–Pitts 1943, Rosenblatt 1957), sklearn-Perceptron-koden.
+- 2.5: all Keras-koden (ligger på kap2/koding.html som øvingsstoff). Bare begrepene batch size, epoker og early stopping overlapper med eksamen, og de spørres under 1.2.3 og 1.4.3.
+- 3.1.1: Stirling-utledningen (103)–(104) av sannsynligheten k!/kᵏ for god tilfeldig initialisering; bare konklusjonen (avtar eksponensielt med k, derfor k-means++) trengs. `MiniBatchKMeans`-koden.
+- 3.1.2: historikken (Ester m.fl. 1996).
+- 3.1.4: koden som simulerer avstander i enhetskuben; bare konklusjonen (avstandene vokser, spredningen krymper, klynger kan ikke være kompakte) trengs.
 
 Eksisterende sider (1A–1C) er skrevet før analysen og inneholder fortsatt alt dette. De er ikke kuttet ned;
 Eksamensfokus-boksen sier hva som kan hoppes over.

@@ -305,7 +305,7 @@
       <h2>Svake modeller i <em>rekke</em></h2>
       <div class="source-note">Notatene · avsnitt 1.5.2 · s. 34</div>
 
-      <p class="dropcap"><span class="term" data-term="boosting">Boosting</span> er algoritmer som iterativt trener <span class="term" data-term="svak-modell">svake modeller</span> (for eksempel trestumper) på en datafordeling, og kombinerer dem til én sterk modell, ensemblet. En svak modell er en modell hvis prediksjoner bare er svakt korrelert med target; en sterk modell er vilkårlig sterkt korrelert med target. Navnet kommer av at feilene begått av én modell gjør den påfølgende modellen bedre («booster» den). Modellene organiseres sekvensielt, og hver forholder seg til den forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell. Notatene ser på to algoritmer.</p>
+      <p class="dropcap"><span class="term" data-term="boosting">Boosting</span> er algoritmer som iterativt trener <span class="term" data-term="svak-modell">svake modeller</span> (for eksempel trestumper) på en datafordeling, og kombinerer dem til én sterk modell, ensemblet. En svak modell er en modell hvis prediksjoner bare er svakt korrelert med target; en sterk modell er vilkårlig sterkt korrelert med target. Navnet kommer av at feilene begått av de forrige modellene gjør den påfølgende modellen bedre («booster» den): AdaBoost tar hensyn til alle tidligere modeller, mens gradient boosting ser på prediksjonsfeilen til den forrige modellen. Modellene organiseres sekvensielt, og hver forholder seg til de forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell. Notatene ser på to algoritmer.</p>
 
       <details>
         <summary>Utdypning · lavere prioritet: opphavet</summary>

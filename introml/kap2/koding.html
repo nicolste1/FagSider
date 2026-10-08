@@ -40,9 +40,9 @@
 <main data-chapter="Kapittel 2: Nevrale nettverk">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 2 · 2B · Koden i notatene 2.1–2.3 · øvingsstoff · ~25 min</div>
+      <div class="eyebrow">Kapittel 2 · 2B · Koden i notatene 2.1–2.5 · øvingsstoff · ~35 min</div>
       <h1>Koding: <em>nevrale nettverk</em></h1>
-      <p class="lede">Perceptronet fra bunnen og med scikit-learn, vektmatrisen for flere klasser, logiske porter som kode, aktiveringsfunksjonene i NumPy, og en forward pass gjennom vilkårlig mange lag. Trening av nettverket (backpropagation) legges til når notatene får det.</p>
+      <p class="lede">Perceptronet fra bunnen og med scikit-learn, vektmatrisen for flere klasser, logiske porter som kode, aktiveringsfunksjonene i NumPy, en forward pass gjennom vilkårlig mange lag, og til slutt Keras: bygge, kompilere, trene, evaluere og lagre et nettverk.</p>
       <nav class="toc">
         <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#verktoy"><span>01</span> Verktøykassa</a>
@@ -51,7 +51,8 @@
         <a href="#porter"><span>04</span> Logiske porter</a>
         <a href="#aktivering"><span>05</span> Aktiveringsfunksjoner</a>
         <a href="#forward"><span>06</span> Forward pass</a>
-        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+        <a href="#keras"><span>07</span> Keras</a>
+        <a href="#oppsummering"><span>08</span> Oppsummering</a>
       </nav>
     </div>
   </header>
@@ -61,12 +62,13 @@
     <div class="container">
       <div class="section-badge">00 · Eksamensfokus</div>
       <h2>Øvingsstoff, <em>ikke</em> eksamensstoff</h2>
-      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · siden dekker koden i notatene, ikke et eget deltema</div>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · siden dekker koden i notatene (2.1–2.5); deltema 2.5 (prio 3) er fra utvidelsen 8. oktober 2026, et forslag som venter på godkjenning</div>
       <div class="callout callout-warm">
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
           <li><span class="tag">Øving</span><strong>For øvingen om nevrale nettverk.</strong> Ingen kode fra kapittel 2 er spurt på eksamen så langt.</li>
-          <li><span class="tag regn">Regn</span>Det ene som overlapper med eksamen: <strong>shapes og antall parametre</strong>. <code>coef_.shape</code> = (klasser, features), <code>intercept_.shape</code> = (klasser,); et lag med \(n\) inn og \(m\) ut har \(W\) med shape \((m, n)\). Se <a href="#flerklasse">03</a> og <a href="#forward">06</a>.</li>
+          <li><span class="tag regn">Regn</span>Det ene som overlapper med eksamen: <strong>shapes og antall parametre</strong>. <code>coef_.shape</code> = (klasser, features), <code>intercept_.shape</code> = (klasser,); et lag med \(n\) inn og \(m\) ut har \(W\) med shape \((m, n)\) og \(n \cdot m + m\) parametre (Keras: <code>Input(shape=(3,))</code> + <code>Dense(6)</code> gir 24). Se <a href="#flerklasse">03</a>, <a href="#forward">06</a> og <a href="#keras">07</a>.</li>
+          <li><span class="tag">Forklar</span>Begrepene i <code>model.fit(batch_size=64, epochs=10)</code> og early stopping på <code>val_loss</code> er spurt under 1.2.3 og 1.4.3 i kapittel 1. Se <a href="#keras">07</a>.</li>
           <li><span class="tag">Lavere</span>Resten er oppslag.</li>
         </ul>
       </div>
@@ -78,7 +80,7 @@
     <div class="container">
       <div class="section-badge">01 · Verktøykassa</div>
       <h2>Funksjonene som <em>går igjen</em></h2>
-      <div class="source-note">Notatene · kodeeksemplene i 2.1–2.3</div>
+      <div class="source-note">Notatene · kodeeksemplene i 2.1–2.5</div>
 
       <div class="table-wrap">
         <table class="fn-table">
@@ -94,6 +96,14 @@
             <tr><td>W @ a, np.dot, np.hstack</td><td>Matriseprodukt i forward pass; utvide x med 1 for bias-trikset.</td><td>2.1, 2.3</td></tr>
             <tr><td>np.eye(n_classes)[y]</td><td>One-hot-koding av targets: én kolonne per klasse.</td><td>2.1 (forslag)</td></tr>
             <tr><td>np.argmax(a, axis=1)</td><td>Fra output-vektor til klasse: noden med størst aktivering.</td><td>2.2 (forslag)</td></tr>
+            <tr><td>keras.ops.ones((10, 3))</td><td>Tensor med ettall til å eksperimentere med; shape (instanser, features).</td><td>2.5</td></tr>
+            <tr><td>Sequential(), model.add(Dense(n, activation=...))</td><td>Modell der lagene kommer i sekvens; <code>Dense</code> = fully connected lag med n noder.</td><td>2.5</td></tr>
+            <tr><td>keras.Input(shape=(n,))</td><td>Forteller modellen input-dimensjonen, så vektene kan opprettes før første evaluering.</td><td>2.5</td></tr>
+            <tr><td>model.summary(), model.weights, model.layers</td><td>Oppsummering med output shape og antall parametre; vektene; lista av lag.</td><td>2.5</td></tr>
+            <tr><td>model.compile(optimizer, loss, metrics)</td><td>Velg optimizer (kurset: <code>keras.optimizers.SGD()</code>), tapsfunksjon og metrikker.</td><td>2.5</td></tr>
+            <tr><td>model.fit(x, y, batch_size, epochs, validation_data)</td><td>Trener; returnerer <code>history</code> med <code>loss</code> og <code>val_loss</code> per epoke.</td><td>2.5</td></tr>
+            <tr><td>model.predict(x), model.evaluate(x, y)</td><td>Inferens; evaluering på valgt metrikk.</td><td>2.5</td></tr>
+            <tr><td>model.save("navn.keras"), keras.models.load_model(...)</td><td>Lagre modellen når du går hjem, laste den igjen neste morgen.</td><td>2.5</td></tr>
           </tbody>
         </table>
       </div>
@@ -274,10 +284,107 @@ def n_params(layers):
     </div>
   </section>
 
-  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <!-- ─────────────────────────── 07 KERAS ─────────────────────────── -->
+  <section id="keras">
+    <div class="container">
+      <div class="section-badge">07 · Keras</div>
+      <h2>Bygge, trene og <em>predikere</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.5 · s. 41–43</div>
+
+      <p class="dropcap">Kurset anbefaler <span class="term" data-term="keras">Keras</span> og tensorflow. De grunnleggende byggesteinene i tensorflow er keras-operasjoner. En \((10, 3)\)-dimensjonal tensor fylt med ettall til å eksperimentere med:</p>
+<pre class="notes"><code>from keras import ops
+x = ops.ones((10, 3))</code></pre>
+      <p>Et enkelt nettverk med to indre lag på henholdsvis 6 og 7 noder og et output-lag med 2 noder:</p>
+<pre class="notes"><code>from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+model = Sequential()
+model.add(Dense(6, activation="relu", name="layer1"))
+model.add(Dense(7, activation="relu", name="layer2"))
+model.add(Dense(2, activation="softmax", name="output"))
+model(x)                     # (10, 2): to ulike, foreløpig meningsløse tall gjentatt 10 ganger</code></pre>
+      <p>Modellen heter <code>Sequential</code> fordi lagene kommer i en lineær sekvens, slik at dataene flyter sekvensielt fra input- til output-laget. Lagene heter <code>Dense</code> fordi alle nodene har koblinger til alle nodene i forrige og neste lag; koblingen er så tett som den kan være. Alle lagene initialiseres med tilfeldige verdier. To andre måter å skrive det samme:</p>
+<pre class="notes"><code>model = Sequential(
+    Dense(6, activation="relu", name="layer1"),
+    Dense(7, activation="relu", name="layer2"),
+    Dense(2, activation="softmax", name="output"),
+)                            # hele modellen direkte, fra en liste av lag
+model(x)
+
+layer1 = Dense(6, activation="relu", name="layer1")
+layer2 = Dense(7, activation="relu", name="layer2")
+layer3 = Dense(2, activation="softmax", name="output")
+layer3(layer2(layer1(x)))    # sekvensen eksplisitt; gir ikke noe modell-objekt</code></pre>
+      <p>Det viktige å huske er at lag oppfører seg som elementer i en liste: <code>model.layers</code> gir lista over lagene modellen består av. Et enkelt mentalt bilde av et nevralt nettverk i Python er lag stablet oppå hverandre.</p>
+
+      <div class="oppgave" data-quiz id="oppg-keras-vekter">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">2.5 · s. 42</span></div>
+        <div class="o-text"><p>Lager vi modellen bare ved å stable lagene, uten å evaluere den (for eksempel på tensoren <code>x</code>), har den ingen vekter: <code>model.weights</code> gir en tom liste <code>[]</code>, og <code>model.summary()</code> viser <code>Output shape=?</code>. Modellparametrene finnes altså ikke. Hva er grunnen til dette?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Vi kjørte modellen på en tensor med shape \((10, 3)\) selv om ingen av lagene har 3 noder. Grunnen er at modellens input er et objekt, ikke av typen <code>keras.layers</code>, så <strong>input vises ikke som et lag</strong>. Før modellen kjenner input-dimensjonen vet den ikke hvor mange parametre den består av (første lag trenger \(n \cdot m\) vekter, og \(n\) er ukjent). Enten evaluerer vi modellen på en input-tensor, eller vi spesifiserer input-shape:</p>
+<pre><code>model = keras.Sequential()
+model.add(keras.Input(shape=(3,)))
+model.add(Dense(6, activation="relu", name="layer1"))
+model.summary()              # output shape 6, 24 parametre: 3·6 vekter + 6 bias
+model(x).shape               # TensorShape([10, 6]): 10 instanser inn, 6 noder ut</code></pre>
+            <p>Det følger vanlig matrisemultiplikasjon; tegn opp tensordimensjonene om du er usikker. Shape på modellens output svarer alltid til antall noder i siste lag.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Kompilere, trene, evaluere, lagre</h3>
+      <p>Når modellen kompileres velger vi metoden som optimaliserer parametrene under trening, tapsfunksjonen, og eventuelle metrikker som beregnes underveis. Kurset bruker <code>optimizer=keras.optimizers.SGD()</code>, og tapsfunksjonen må passe til oppgaven og dataene. Treningen:</p>
+<pre class="notes"><code>history = model.fit(x_train, y_train, batch_size=64,
+                    epochs=10, validation_data=(x_val, y_val))
+
+train_losses = history.history["loss"]
+val_losses = history.history["val_loss"]
+epochs = np.arange(1, len(train_losses) + 1)
+plt.plot(epochs, train_losses, label="Train loss")
+plt.plot(epochs, val_losses, label="Validation loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.show()</code></pre>
+      <p>Beregnede metrikker lagres i <code>history</code>, hvert steg i SGD bruker 64 datapunkter (<span class="term" data-term="batch-size">batch size</span>), modellen trenes i 10 <span class="term" data-term="epoke">epoker</span>, og den evalueres på valideringsdata underveis. Som i 1C er det lurt å stanse treningen når både trenings- og valideringstapet flater ut, men før tapet på treningsdataene blir mye mindre enn tapet på valideringsdataene, siden det er et typisk tegn på overtilpasning. Keras har et <span class="term" data-term="early-stopping">early stopping</span>-kriterium der vi angir hva som skal monitoreres, vanligst <code>monitor="val_loss"</code>, og hvor tålmodig læringsalgoritmen skal være før treningen stoppes.</p>
+<pre class="pseudo"><code>model.compile(optimizer=keras.optimizers.SGD(), loss="binary_crossentropy", metrics=["accuracy"])
+
+from keras.callbacks import EarlyStopping
+stopp = EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True)   # tålmodighet: 5 epoker uten bedring
+history = model.fit(x_train, y_train, batch_size=64, epochs=200,
+                    validation_data=(x_val, y_val), callbacks=[stopp])</code></pre>
+
+      <p>Prinsipielt jobber vi med nevrale nettverk som med andre maskinlæringsmodeller, men med større frihet i valg av arkitektur og antall parametre. Hele treningsprosessen koker ned til:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">model.compile()</div><div class="fc-val">Modellen bygges og kompileres med valg av optimizer, tapsfunksjon, early stopping, med mer.</div></div>
+        <div class="fact-card"><div class="fc-key">model.fit()</div><div class="fc-val">Trener modellen på treningsdataene, med validering underveis.</div></div>
+        <div class="fact-card"><div class="fc-key">model.predict()</div><div class="fc-val">Bruker modellen til å predikere, altså gjøre inferens.</div></div>
+        <div class="fact-card"><div class="fc-key">model.evaluate()</div><div class="fc-val">Evaluerer den trente modellen på egnet metrikk.</div></div>
+        <div class="fact-card"><div class="fc-key">model.save('sted/navn.keras')</div><div class="fc-val">Lagrer modellen når du går hjem for dagen.</div></div>
+        <div class="fact-card"><div class="fc-key">keras.models.load_model(...)</div><div class="fc-val">Laster den opp igjen neste morgen.</div></div>
+      </div>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett · flervalg</div>
+        <div class="q-text">Treningssettet har 6 400 datapunkter og <code>model.fit(..., batch_size=64, epochs=10)</code> kjøres. Hvor mange SGD-steg (parameteroppdateringer) gjøres totalt?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">10</button></li>
+          <li><button class="mcq-opt" type="button">100</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">1 000</button></li>
+          <li><button class="mcq-opt" type="button">64 000</button></li>
+        </ul>
+        <div class="mcq-feedback">\(6400 / 64 = 100\) steg per epoke, ganger 10 epoker = 1 000 steg. Samme regnestykke som Ord. 2024 spm. 14 i kapittel 1.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 OPPSUMMERING ─────────────────────────── -->
   <section id="oppsummering">
     <div class="container">
-      <div class="section-badge">07 · Oppsummering</div>
+      <div class="section-badge">08 · Oppsummering</div>
       <h2>Det du bør <em>kunne skrive</em></h2>
 
       <div class="recap-grid">
@@ -287,6 +394,8 @@ def n_params(layers):
         <div class="recap-pill"><strong>Aktivering</strong>sigmoid, relu, linear elementvis; softmax per rad med maks trukket fra.</div>
         <div class="recap-pill"><strong>Forward</strong><code>for layer: a = g(W @ a + b)</code>. Tell parametre: Σ (ut·inn + ut).</div>
         <div class="recap-pill"><strong>XOR</strong>Ett lag klarer det ikke; OR + NAND → AND gjør det.</div>
+        <div class="recap-pill"><strong>Keras</strong><code>Sequential</code> + <code>Dense</code>-lag; <code>Input(shape)</code> før vektene finnes; <code>compile → fit → predict → evaluate → save</code>.</div>
+        <div class="recap-pill"><strong>fit</strong><code>batch_size</code> = punkter per SGD-steg, <code>epochs</code> = runder over alle data, <code>validation_data</code> + early stopping på <code>val_loss</code>.</div>
       </div>
 
       <nav class="page-nav">

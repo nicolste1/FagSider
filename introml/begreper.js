@@ -20,6 +20,9 @@
   var RG = 'kap1/regresjon.html';
   var EN = 'kap1/ensemble.html';
   var NN = 'kap2/perceptron.html';
+  var NK = 'kap2/koding.html';
+  var CL = 'kap3/clustering.html';
+  var CK = 'kap3/koding.html';
 
   window.GLOSSARY = {
     /* ── 1.1 Data ── */
@@ -862,8 +865,144 @@
     },
     'backpropagation': {
       term: 'Backpropagation',
-      def: '<p>Algoritmen som beregner hvordan hver vekt i nettverket påvirker tapet, ved å bruke kjerneregelen bakover fra output mot input, slik at gradient descent kan justere vektene for å minimere feilen. Kommer i notatene senere; spurt på eksamen både 2024 og 2025.</p>',
-      more: NN + '#arkitektur'
+      alias: 'Tilbakepropagering',
+      def: '<p>Metoden som beregner gradienten til tapsfunksjonen for alle parametrene i et nevralt nettverk: feilen i prediksjonen propageres bakover fra output, gjennom alle lagene, til input, og underveis samles «ønskede endringer» for vektene og aktiveringene i hvert lag (kjerneregelen). Gradient descent bruker resultatet til å justere vektene. Spurt på eksamen både 2024 og 2025.</p>',
+      more: NN + '#backpropagation'
+    },
+    'forward-pass': {
+      term: 'Forward pass',
+      def: '<p>Når nettverket gjør en prediksjon: dataene (input) transformeres gjennom lagene til output. Motsatsen er backpropagation, som går bakover fra output til input med feilen.</p>',
+      more: NN + '#backpropagation'
+    },
+    'keras': {
+      term: 'Keras / Sequential / Dense',
+      def: '<p>Biblioteket kurset anbefaler for nevrale nettverk (sammen med tensorflow). <code>Sequential</code> er en modell der lagene kommer i lineær sekvens; <code>Dense</code> er et fully connected lag med et gitt antall noder. Modellen får vekter først når input-dimensjonen er kjent (evaluer på en tensor, eller <code>keras.Input(shape=...)</code>). Arbeidsflyt: compile → fit → predict → evaluate → save.</p>',
+      more: NK + '#keras'
+    },
+
+    /* ── 3 Uveiledet læring ── */
+    'uveiledet-laering': {
+      term: 'Uveiledet læring',
+      alias: 'Unsupervised learning',
+      def: '<p>Maskinlæring på data uten targets (unlabeled data): læringsalgoritmer som finner mønstre selv. Tre kategorier i kurset: clustering, dimensjonsreduksjon og anomalideteksjon.</p>',
+      more: CL + '#intro'
+    },
+    'unlabeled-data': {
+      term: 'Unlabeled data',
+      def: '<p>Data uten targets, altså uten kolonnen som sier hva riktig svar er. Utgangspunktet for uveiledet læring.</p>',
+      more: CL + '#intro'
+    },
+    'clustering': {
+      term: 'Clustering',
+      alias: 'Klynging',
+      def: '<p>«Klassifisering uten labels»: finne grupperinger (klynger) av like datapunkter. Likhet kan defineres som avstand (k-means) eller tetthet (DBSCAN). Trenger et læringssignal, altså et tap å minimere.</p>',
+      more: CL + '#intro'
+    },
+    'dimensjonsreduksjon': {
+      term: 'Dimensjonsreduksjon',
+      def: '<p>Uveiledet læring som reduserer antall dimensjoner i dataene, blant annet for å omgå dimensjonsforbannelsen. Kommer senere i notatene (PCA, t-SNE).</p>',
+      more: CL + '#intro'
+    },
+    'anomalideteksjon': {
+      term: 'Anomalideteksjon',
+      alias: 'Outlier detection',
+      def: '<p>Uveiledet læring som finner datapunkter som skiller seg fra resten. Kommer senere i notatene.</p>',
+      more: CL + '#intro'
+    },
+    'k-means': {
+      term: 'k-means',
+      def: '<p>Sentroidebasert clustering: deler n datapunkter i k klynger, der hvert punkt tilordnes klyngen med nærmeste sentroide. Gjentar «tildel nærmeste sentroide» og «flytt sentroiden til middelverdien» til klyngene ikke endrer seg. Minimerer summen av kvadrerte avstander mellom punkt og sentroide.</p>',
+      more: CL + '#kmeans'
+    },
+    'sentroide': {
+      term: 'Sentroide',
+      def: '<p>Midten av en klynge, beregnet som middelverdien av punktene i den. Ikke et datapunkt, selv om den kan sammenfalle med ett.</p>',
+      more: CL + '#kmeans'
+    },
+    'euklidsk-avstand': {
+      term: 'Euklidsk avstand',
+      def: '<p>d²(p, q) = (p<sub>1</sub> − q<sub>1</sub>)² + (p<sub>2</sub> − q<sub>2</sub>)² + … + (p<sub>n</sub> − q<sub>n</sub>)². Likhetsmålet i k-means; fungerer dårlig i høye dimensjoner fordi avstandene konvergerer mot en konstant.</p>',
+      more: CL + '#kmeans'
+    },
+    'kmeans-pp': {
+      term: 'k-means++',
+      def: '<p>Initialisering der neste sentroide velges blant datapunktene med sannsynlighet proporsjonal med kvadrert avstand til nærmeste allerede valgte sentroide. Sprer sentroidene, men tilfeldigheten gjør at de oftere havner nær midten av en klynge enn i utkanten. Forventet maksimalt en faktor log(k) fra optimalt.</p>',
+      more: CL + '#kmeans'
+    },
+    'inertia': {
+      term: 'Inertia',
+      def: '<p>Sum av kvadrert avstand mellom punktene og sentroiden deres. Lav verdi = kompakte klynger. Svakhet: minker alltid med k, og er null med én sentroide per datapunkt.</p>',
+      more: CL + '#kvalitet'
+    },
+    'silhouette': {
+      term: 'Silhouette-koeffisient',
+      def: '<p>(b − a) / max(a, b), der a er midlere avstand innad i klyngen og b midlere avstand til nærmeste andre klynge. 1 er best (nærmere egen klynge), 0 betyr overlapp eller punkt på randen, −1 betyr feil klynge.</p>',
+      more: CL + '#kvalitet'
+    },
+    'calinski-harabasz': {
+      term: 'Calinski–Harabasz-score',
+      def: '<p>Forholdet mellom spredning mellom klynger (sum av kvadrert avstand mellom klynger, høy er bra) og spredning innad i klyngene (lav er bra). Høy verdi = tette klynger med god separasjon.</p>',
+      more: CL + '#kvalitet'
+    },
+    'mini-batch': {
+      term: 'Mini batch',
+      def: '<p>En liten tilfeldig trekning fra datasettet som brukes i én iterasjon i stedet for hele datasettet. MiniBatchKMeans gjør dette for k-means; SGD gjør det for gradient descent.</p>',
+      more: CK + '#kmeans'
+    },
+    'dbscan': {
+      term: 'DBSCAN',
+      def: '<p>Tetthetsbasert clustering (Ester m.fl. 1996). Deler punktene i kjernepunkter, ikke-kjernepunkter og outliers ut fra hyperparametrene ε (maks naboavstand) og min_samples (minste antall naboer). Trenger ikke antall klynger, og lar outliers stå utenfor.</p>',
+      more: CL + '#dbscan'
+    },
+    'kjernepunkt': {
+      term: 'Kjernepunkt',
+      def: '<p>Datapunkt med minst min_samples naboer innenfor avstand ε. Ligger nær midten av en klynge og brukes til å utvide klyngen.</p>',
+      more: CL + '#dbscan'
+    },
+    'ikke-kjernepunkt': {
+      term: 'Ikke-kjernepunkt',
+      def: '<p>Datapunkt med færre enn min_samples naboer innenfor ε, men som ligger innenfor ε av et kjernepunkt. Tilhører klyngen (utkanten), men bidrar ikke til å utvide den.</p>',
+      more: CL + '#dbscan'
+    },
+    'outlier': {
+      term: 'Outlier',
+      def: '<p>Datapunkt som ikke tilhører noen klynge. En hovedstyrke ved DBSCAN er at den ikke prøver å putte slike punkter i klynger; k-means er svak mot dem fordi de trekker sentroidene vekk.</p>',
+      more: CL + '#dbscan'
+    },
+    'epsilon': {
+      term: 'ε (epsilon)',
+      def: '<p>Hyperparameter i DBSCAN: maksimal avstand mellom to nabopunkter som kan tilhøre samme klynge. For lav ε splitter klynger i mange små; for høy ε slår klynger sammen.</p>',
+      more: CL + '#dbscan'
+    },
+    'min-samples': {
+      term: 'min_samples',
+      def: '<p>Hyperparameter i DBSCAN: minimum antall naboer innenfor ε et punkt må ha for å telle som kjernepunkt.</p>',
+      more: CL + '#dbscan'
+    },
+    'sentroidebasert': {
+      term: 'Sentroidebasert clustering',
+      def: '<p>Starter med sentroider, assosierer datapunkter med disse og tilpasser fram til konvergens. k-means.</p>',
+      more: CL + '#kategorier'
+    },
+    'tetthetsbasert': {
+      term: 'Tetthetsbasert clustering',
+      def: '<p>Klynger defineres av tettheten til datapunkter: punkter som ligger nær hverandre er klynger, isolerte punkter er outliers. DBSCAN.</p>',
+      more: CL + '#kategorier'
+    },
+    'fordelingsbasert': {
+      term: 'Fordelingsbasert clustering',
+      def: '<p>Antar at hver klynge består av punkter fra en sannsynlighetsfordeling, vanligvis en Gauss, og finner parametrene til fordelingen. Bare navnet er pensum.</p>',
+      more: CL + '#kategorier'
+    },
+    'hierarkibasert': {
+      term: 'Hierarkibasert clustering',
+      def: '<p>Lager et hierarki av klynger: i starten er hvert datapunkt sin egen klynge, til slutt er alle i samme klynge, og man velger klyngene fra et steg i hierarkiet. Bare navnet er pensum.</p>',
+      more: CL + '#kategorier'
+    },
+    'concentration-of-distances': {
+      term: 'Concentration of distances',
+      def: '<p>I høye dimensjoner blir avstandene mellom punkter store, mens forskjellene mellom avstander blir små (relative avstander krymper). Følge av dimensjonsforbannelsen: klynger kan ikke være kompakte, og avstandsbaserte metoder (k-means, DBSCAN) sliter.</p>',
+      more: CL + '#dimensjoner'
     }
   };
 })();

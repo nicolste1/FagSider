@@ -1,6 +1,6 @@
 # Tekstuttrekk av kilden
 
-Kilde: `TDT4172_forelesningsnotater.pdf` · datert September 22, 2026 · 39 sider · sha256 `87105d7872ea…`
+Kilde: `2026___TDT4172_Lecture_notes_and_equations-6.pdf` · datert October 7, 2026 · 47 sider · sha256 `192b616b67e6…`
 
 > Generert av `tools/pdf_til_tekst.py`. Formler er uleselige her; filen brukes til å diffe versjoner.
 
@@ -1524,9 +1524,229 @@ estimatet vårt. Vi startet altså med ett datasett som vi kunne lage ett estima
 hjelp av bootstrapping skaffet oss en fordeling – uten å ha fått tilgang til flere datapunkter eller
 datasett. Vi har laget mer utenå måtte samle mer data, altså “pulled us up by our own bootstraps”.
 Begrepet bagging er satt sammen av b fra bootstrap, og agging fra aggregering.
+Trenings data slebaL
+Test data
+lgoritme Modell
+Trening Inferens
+nojskiderP
+Trenings data slebaL
+Test data
+lgoritme 1 Modell 1
+lgoritme 2 Modell 2
+lgoritme 3 Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+3M
+M
+M gjennomsnitt 3M
+2M
+Test sampl
+M
+M
+, 1, , alse, emale, ,
+n
+ppiget
+M
+M M M
+3M 2M gjennomsnitt 3M
+M M
+M
+3M
+2M M
+tvalge n 2M gjennomsnittspris M
+n
+2M M
+gjennomsnitt 3M M M
+2M M
+n
+slebaL
+slebaL
+av data slebaL
+av data slebaL
+lgoritme 1 Modell 1
+lgoritme 2 Modell 2 Me a t t a a
+Meta
+eatres ata
+featres lgoritme 3 Modell 3
+Meta
+ata
+Meta ata
+Meta
+ata
+Meta 1 ata
+lgoritme 1 Modell 1
+eatres
+lgoritme 2 Modell 2 Me a t t a a
+eatres
+featres lgoritme 3 Modell 3
+Trening
+slebaL Metaalgoritme Metamodell
+slebaL
+slebaL
+Trenings data slebaL
+Test data
+s T b re s n e i t n 1 g lgoritme Modell 1
+s T b re s n e i t n 2 g lgoritme Modell 2
+s T b re s n et in 3 g lgoritme Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings data slebaL
+Test data
+s T b re s n e i t n 1 g lgoritme 1 Modell 1
+s T b re s n e i t n 2 g lgoritme 2 Modell 2
+s T b re s n et in 3 g lgoritme 3 Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings data slebaL
+Test data
+s T b re s n e i t n 1 g lgoritme 1 Modell 1
+s T b re s n e i t n 2 g lgoritme 2 Modell 2
+s T b re s n et in 3 g lgoritme 3 Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+nojskiderP
+nojskiderP
+gniregergg
+nojskiderp
+etsiS
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings data slebaL
+Test data
+lgoritme Modell 1
+lgoritme Modell 2
+lgoritme Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings data
+tilpass datavektene
+Trenings data
+tilpass datavektene
+Trenings data
+slebaL
+slebaL
+slebaL
+Test data
+α1 Modell 1
+α2 Modell 2
+α3 Modell 3
+Trening
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+Inferens
+ttinsmonnejg
+tetkeV 3α ,2α ,1α
+nojskiderp
+etsiS
+Trenings data endre target
+Trenings data
+endre target
+Trenings data
+slebaL
+slebaL
+slebaL
+Test data
+α1 Modell 1
+α2 Modell 2
+α3 Modell 3
+Trening
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+Inferens
+ttinsmonnejg
+tetkeV 3α ,2α ,1α
+nojskiderp
+etsiS
+Trening
+sbset 1
+Trenings
+data
+slebaL
+eatres
+Trening
+sbset 2
+Trening
+sbset 3
+renojsavresb
+eatres
+Trekkin
+med tilbakelegging
+eatres
+renojsavresb
+eatres
+eatres
+Trekkin
+med tilbakelegging
+renojsavresb
+eatres
+Trekkin
+med tilbakelegging
+eatres
+renojsavresb
+Prediksjon Prediksjon Prediksjon
+12 1
+Siste prediksjon
+
+eatres
+Trekkin 3
+med tilbakelegging
+eatres
+renojsavresb
+Figure 17: Enkel illustrasjon av AdaBoost.
 En enkel type ensemblemodell som bruker bagging er random forest (tilfeldig skog). Denne lages ved
-å sette sammen ulike beslutningstrær, eventuelt stumper. For at ensemblemodellen skal bli god, må
-de ulike trærne være diverse og uavhengige. Dette oppnår vi gjennomå trene trærne på ulike deler av
+å sette sammen ulike beslutningstrær, eventuelt stumper. For at ensemblemodellen skal bli god, må de ulike trærne være diverse og uavhengige. Dette oppnår vi gjennomå trene trærne på ulike deler av
 dataene (bootstrapp-teknikken), og dessuten ulike utvalg av data-features, slik at trærne modellerer
 ulikesammenhenger. Tilsluttaggregesprediksjonenefraalletrærnetilénprediksjon–ogbagging har
 skjedd.
@@ -1545,22 +1765,287 @@ septet stammer fra en samling publikasjoner av Kearns og Valiant (1988, 1989), o
 som undersøkte muligheten for at flere svake modeller, altså modeller hvis prediksjoner er kun svakt
 korellertmedtargetidataene,kansettessammentilensterkmodell,altsåenmodellhvisprediksjoner
 er vilkårlig sterkt korellert med targets i dataene. Begrepet boosting handler om at feilene begått av
-én modell gjør den påfølgende modellen i iterasjonen bedre (“booster” den). I stedet forå kombinere
-flere modeller parallelt, organiseres de altså sekvensielt, og hver modell forholder seg til den forrige på
-enmåtesomgjørensembletsterkereennhverenkeltmodellerforsegselv. Viskalsepåtoalgoritmer
-som gjør dette.
+de forrige modellene gjør den påfølgende modellen i iterasjonen bedre (“booster” den)2. I stedet forå
+kombinere flere modeller parallelt, organiseres de altså sekvensielt, og hver modell forholder seg til de
+forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell er for seg selv. Vi skal se på to
+algoritmer som gjør dette.
 AdaBoost-algoritmen bygger et ensemble av modeller som korrigerer hverandres feil, gjennom en
-iterativ treningsprosedyre. I starten av prosedyren har alle punktene i treningsdataene samme vekt,
-ogvitrenerénmodellsompredikererpådissedataene. Basertpåtargetsserviforhvilkedatapunkter
-modellen har størst tap, og i neste iterasjon økes vektene for disse datapunktene. Deretter trenes en
-ny modell, som igjen predikerer på et datasett, før vektene igjen justeres.
-Gradient boosting er, til forskjell fra AdaBoost, ikke basert på vekting av observasjoner. I stedet
-predikerer hver modell forskjellen mellom targets og den forrige modellens prediksjon, såkalte pseudo-
-residuals. Det nye ensemblet lages vedå følge læringsregelen
+iterativtreningsprosedyre(seFigur17forenkelillustrasjon). Istartenavprosedyrenharallepunktene
+i treningsdataene samme vekt, og vi trener én modell som predikerer på disse dataene. Basert på
+targetsserviforhvilkedatapunktermodellenharstørsttap,oginesteiterasjonøkesvektenefordisse
+datapunktene. Deretter trenes en ny modell, som igjen predikerer på et datasett, før vektene igjen
+justeres.
+Gradient boostinger,tilforskjellfraAdaBoost,ikkebasertpåvektingavobservasjoner(seFigur18
+for en enkel illustrasjon). I stedet predikerer hver modell forskjellen mellom targets og den forrige
+modellens prediksjon, såkalte pseudo-residuals. Det nye ensemblet lages vedå følge læringsregelen
 new_ensemble = previous_ensemble - learning_rate * new_tree
 Dette uttrykket bør minne deg om gradient descent, som er opphavet til navnet gradient boosting. Vi
 gjør altså ikke gradient descent i rommet over alle mulige parameterverdier, men i rommet over alle
 mulige trær ensemblet vårt kan bestå av. Gradienten i dette tilfellet er altså -(label-prediction).
+2AdaBoosttarhensyntilalletidligeremodeller,mensGradientBoostserpåprediksjonsfeilentildenforrigemodellen.
+eatres
+Trekkin
+med tilbakelegging
+2 alse
+Trenings
+data
+slebaL
+Test data
+lgoritme Modell
+Trening Inferens
+nojskiderP
+Trenings data slebaL
+Test data
+lgoritme 1 Modell 1
+lgoritme 2 Modell 2
+lgoritme 3 Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+3M
+M
+M gjennomsnitt 3M
+2M
+Test sampl
+M
+M
+, 1, , alse, emale, ,
+n
+ppiget
+M
+M
+M M
+3M 2M gjennomsnitt 3M
+M M
+M
+3M
+2M M
+2M M
+talge n gjennomsnittspris
+n
+2M M
+gjennomsnitt 3M M M
+2M M
+n
+slebaL
+slebaL
+a data slebaL
+a
+data
+slebaL
+lgoritme 1 Modell 1
+Meta- lgoritme 2 Modell 2 ata
+Meta-
+eatres ata
+featres lgoritme 3 Modell 3
+Meta-
+ata
+Meta-
+ata
+Meta-
+ata
+Meta-
+1 ata
+lgoritme 1 Modell 1
+eatres
+Meta-
+lgoritme 2 Modell 2 ata
+eatres
+featres lgoritme 3 Modell 3
+Trening
+slebaL
+=
+=
+Meta-algoritme Meta-modell
+slebaL
+slebaL
+Trenings
+data
+slebaL
+Test data
+Trening lgoritme Modell 1
+sbset 1
+Trening
+lgoritme Modell 2 sbset 2
+Trening
+sbset 3 lgoritme Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings
+data
+slebaL
+Test data
+Trening lgoritme 1 Modell 1
+sbset 1
+Trening
+lgoritme 2 Modell 2 sbset 2
+Trening
+sbset 3 lgoritme 3 Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings data slebaL
+Test data
+Trening lgoritme 1 Modell 1
+sbset 1
+Trening lgoritme 2 Modell 2 sbset 2
+Trening
+sbset 3 lgoritme 3 Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+-
+-
+nojskiderP
+nojskiderP
+Trenings data slebaL
+Test data
+lgoritme Modell 1
+lgoritme Modell 2
+lgoritme Modell 3
+Trening Inferens
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+gniregergg
+nojskiderp
+etsiS
+Trenings
+data
+tilpass dataektene
+Trenings data
+tilpass dataektene
+Trenings
+data
+slebaL
+slebaL
+slebaL
+Test data
+α1 Modell 1
+α2
+Modell 2
+α3
+Modell 3
+Trening
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+Inferens
+ttinsmonnejg
+tetkeV
+3α
+,2α
+,1α
+nojskiderp
+etsiS
+Trenings data
+endre target
+Trenings data
+endre target
+Trenings
+data
+slebaL
+slebaL
+slebaL
+Test data
+α1 Modell 1
+α2 Modell 2
+α3
+Modell 3
+Trening
+n
+ojskiderP
+n
+ojskiderP
+n
+ojskiderP
+Inferens
+ttinsmonnejg
+tetkeV
+3α ,2α
+,1α
+nojskiderp
+etsiS
+Trening
+sbset 1
+Trenings
+data
+slebaL
+eatres
+Trening
+sbset 2
+Trening
+sbset 3
+renojsaresb
+eatres
+Trekkin
+med tilbakelegging
+eatres
+renojsaresb
+eatres
+eatres
+Trekkin
+med tilbakelegging
+renojsaresb
+eatres
+Trekkin
+med tilbakelegging
+eatres
+renojsaresb
+Prediksjon Prediksjon Prediksjon
+12 1
+Siste prediksjon
+
+eatres
+Trekkin
+med tilbakelegging
+eatres
+renojsaresb
+Figure 18: Enkel illustrasjon av Gradient Boosting.
 Oppgave: Trebaserteensemblemodellerdubørhahørtom,oghelstbruktpåetdatasett,erCatBoost,
 LightGBM, AdaBoost, og XGBoost.
 Det er en god regelå alltid bruke en ensemble-modell som referanseverdi for hvor godt en modell kan
@@ -1568,7 +2053,7 @@ gjøre det, når du jobber med et maskinlæringsproblem med tabulære data (alts
 bruker i dette kurset).
 
 ## 2 Nevrale nettverk
-<!-- side 34 -->
+<!-- side 35 -->
 
 Nårvigjørmaskinlæringønskerviåtilpasseenfunksjonf somgirossetestimatbasertpåx,iveiledet
 læring et estimat av target y, altså yˆ=f(x). Vi har sett på flere måterå modellere f på:
@@ -1591,7 +2076,7 @@ perseptronbeståravénellerflereberegningsenheter, oftekaltnoder, ogidenopprinne
 gen var nodene threshold logic units (TLU). Disse mapper inputen x til en output f(x) som tar en
 binær verdi,
 f(x)=H(wx+b), (89)
-hvorH erHeavisidestegfunksjonen, sefigur18a, ogivårkontekstkallesenaktiveringsfunksjon. Både
+hvorH erHeavisidestegfunksjonen, sefigur20a, ogivårkontekstkallesenaktiveringsfunksjon. Både
 x og w er vektorer i det generelle tilfellet. En TLU, beskrevet av likningen over, er enten aktiv, altså
 har output = 1, eller ikke aktiv, altså har output = 0. Hvilke data x som gir hvilken aktivering av
 noden er avhengig av vektene (w,b). Siden output er binær, gjør denne en klassifiseringsoppgave,
@@ -1599,6 +2084,10 @@ og for at perseptronet skal ha høy treffsikkerhet i klassifiseringen må vekten
 Dette gjøres gjennom veiledet læring.
 Som før sendes instanser fra treningsdataene enkeltvis gjennom modellen, denne gjør en prediksjon
 yˆ og tapet beregnes basert på target y. Parametrene i modellen oppdateres forå redusere tapet per
+eatres
+Trekkin
+med tilbakelegging
+2 alse
 treningsinstans. Dette gjentas for alle instansene i treningsdataene, hvilket utgjør én epoke (epoch),
 og hele prosessen gjentas flere ganger (epochs). Vi kan implementere et perseptron vedå gjenbruke
 koden fra logistisk regresjon, med likning 89 som modell, altså:
@@ -1621,7 +2110,7 @@ i i i i
 I kode er det vanligå utvide x med et første element med verdi 1, og w har et tilsvarende ledd som
 representerer b, slik at vi får den mer kompakte operasjonen under.
 w = w + learning_rate * (expected - predicted) * x
-Sepådataeneifigur17a. Disserepresenterertofeaturesx ogx ,ogfargenangirdetomuligeklassene
+Sepådataeneifigur19a. Disserepresenterertofeaturesx ogx ,ogfargenangirdetomuligeklassene
 1 2
 y. De er generert ved hjelp av sklearn.datasets.make blobs, og forå tilpasse et perseptron som
 løser klassifiseringsoppgaven de representerer, kan vi bruke sklearn.linear model.Perceptron, se
@@ -1633,10 +2122,10 @@ og learning rate="constant". Vi finner de tilpassede parameterverdiene tilsvaren
 regresjon:
 ws = perceptron.coef_
 bs = perceptron.intercept_
-Sepådataeneifigur17b. Oppgave: Hvormangefeaturesogklasserhardataene? Hvormangevekter
+Sepådataeneifigur19b. Oppgave: Hvormangefeaturesogklasserhardataene? Hvormangevekter
 trenger et perseptron forå tilpasse dem? Det kan være nyttigå tegne en figur.
 (a) (b)
-Figure 17: Klassifiseringsdatasett med (a) to klasser, generert av sklearn.datasets.make blobs, og
+Figure 19: Klassifiseringsdatasett med (a) to klasser, generert av sklearn.datasets.make blobs, og
 (b) tre klasser, generert av sklearn.datasets.make classification.
 Forå gjøre denne klassifiseringsoppgaven, kan vi gjenbruke koden fra tidligere, og treningsprosedyren
 forblir den samme. Hvis man har implementert .fit() og .predict() selv, må koden eventuelt
@@ -1676,11 +2165,11 @@ sammen en kombinasjon av AND, NOT og OR.
 <!-- side 37 -->
 
 En ulempe ved perseptronet er at en liten endring i input kan føre til en stor endring i output. Dette
-skyldes Heaviside-funksjonen, som sender funksjonsverdien til enten 0 eller 1, se figur 18a. Et bedre
+skyldes Heaviside-funksjonen, som sender funksjonsverdien til enten 0 eller 1, se figur 20a. Et bedre
 alternativhaddeværtåginodenemulighetentilåreturnerekontinuerligeverdier,eventueltiintervallet
 [0,1]. OmvierstatterHeaviside-funksjonenmedenfunksjonsomreturnererkontinuerligeverdier, har
 vilagetdentypennodevifinnerimodernenevralenettverk. Vanligeaktiveringsfunksjonerersigmoid-
-funksjonen (som vi brukte for logistisk regresjon), se figur 18b, softmax, og ReLU, se figur 18c. Disse
+funksjonen (som vi brukte for logistisk regresjon), se figur 20b, softmax, og ReLU, se figur 20c. Disse
 aktiveringsfunksjonene brukes til ulike formål: Hvis modellen skal gjøre binær klassifisering, er det
 vanlig å ha en sigmoid-aktiveringsfunksjon i noden i nettverkets siste lag, for å sikre at modellens
 prediksjon havner i intervallet [0,1]. Sigmoid-funksjonen er den samme som tidligere, men gjentatt
@@ -1702,12 +2191,12 @@ linear unit (ReLU) aktiveringsfunksjonen:
 ReLU(x)=max(0,x). (95)
 MLP-modeller som ikke gjør klassifisering men regresjon, må ha output-noder som kan returnere
 kontinuerlige tallverdier som ikke er begrenset til et intervall (som [0,1] i klassifisering). Som regel
-brukes da en lineær aktiveringsfunksjon i output-laget.
+brukes da en ingen aktiveringsfunksjon (tilsvarende en lineær aktiveringsfunksjon) i output-laget.
 (a) (b) (c)
-Figure 18: De tre aktiveringsfunksjonene (a) Heaviside, (b) sigmoid, og (c) ReLU.
+Figure 20: De tre aktiveringsfunksjonene (a) Heaviside, (b) sigmoid, og (c) ReLU.
 
 ## 2.3 Arkitektur
-<!-- side 37 -->
+<!-- side 38 -->
 
 Somnevntoverkanvisettesammennoderpåulikemåterforålagenevralenettverk. Hvordannodene
 ersattsammenkallesnettverketsarkitektur. Nevralenettverkbeståravlag,somigjenbeståravnoder
@@ -1720,7 +2209,6 @@ features.
 • Output-lageterdetsistelagetidetnevralenettverket. Detterepresentererdetnevralenettver-
 kets prediksjon. I tilfellet veiledet læring må dette laget ha samme dimensjonalitet, dvs samme
 antall noder, som targtets i dataene.
-Figure 19: Skisse av et nevralt nettverk, som vist i forelesning.
 • Indre lag er alle lagene mellom input- og output-lagene. Disse omtales også som skjulte lag.
 Akkurat som med valg av aktiveringsfunksjon, står vi fritt tilå sette sammen nevrale nettverk med
 arkitekturen vi ønsker. Dette betyr ikke at hvilken som helst arkitektur er egnet forå løse problemet
@@ -1732,15 +2220,17 @@ som nevnt MLP’er, eller fully connected feed-forward nettverk. Her kommer full
 at alle nodene i nabolag har forbindelser vil hverandre, og feed forward av at informasjon sendes kun
 fremover i nettverket, hvor fremover er definert som retningen fra input til output. La oss se nærmere
 på hva som skjer med dataene på veien fra input- til output-laget.
-Bruk gjerne skissen i figur 19 til hjelp, eller lag din egen. Generelt har vi følgende uttrykk for ak-
+Bruk gjerne skissen i figur 21 til hjelp, eller lag din egen. Generelt har vi følgende uttrykk for ak-
 tiveringen a til en gitt node med indeks j i lag l av det nevrale nettverket
 (cid:32) n (cid:33)
 (cid:88)
-al =g wl al−1 . (96)
-j ij i
+al =g wl al−1+bl . (96)
+j ij i j
 i=0
 Her er
 • l indeks for lag, hvor indeks 0 angir input-laget
+Figure21: Skisseavetnevraltnettverk,somvistiforelesning. Herrepresentererf aktiveringsfunksjo-
+nen (g i teksten).
 • i indeks for node i forrige lag
 • j indeks for node i det aktuelle laget
 • al−1 aktivering av node i i forrige lag l−1
@@ -1750,30 +2240,30 @@ Forbedreintuisjonkandetværelurtåtaforsegénnodeoggåstegvisgjennomindekseneili
 Oppgave: Se på første (øverste) node i det første laget etter input-laget og skriv ned aktiveringen til
 denne noden. Du bør komme frem til følgende uttrykk:
 (cid:32) n (cid:33)
-a(1) =g (cid:88) w(1)x . (97)
-1 i1 i
+a(1) =g (cid:88) w(1)x +b(1) . (97)
+1 i1 i 1
 i=0
 Vi tar for oss tilfellet der vi har to input-features, og har bygget et skjult lag bestående av tre noder.
-Nettverkets videre arkitektur er uten betydning for den aktuelle diskusjonen. Vi har altså i ∈ {1,2}
-og j ∈{1,2,3}. Vi kan skrive aktiveringene i nettverkets første indre lag som
+Nettverkets videre arkitektur er uten betydning for den aktuelle diskusjonen. Vi har altså (i = 1,2),
+og (j =1,2,3). Vi kan skrive aktiveringene i nettverkets første indre lag som
 (cid:16) (cid:17)
-a =g w(1)x +w(1)x (98)
-1 11 1 21 2
+a(1) =g w(1)x +w(1)x +b(1) (98)
+1 11 1 21 2 1
 (cid:16) (cid:17)
-a =g w(1)x +w(1)x (99)
-2 12 1 22 2
+a(1) =g w(1)x +w(1)x +b(1) (99)
+2 12 1 22 2 2
 (cid:16) (cid:17)
-a =g w(1)x +w(1)x (100)
-3 13 1 23 2
+a(1) =g w(1)x +w(1)x +b(1) (100)
+3 13 1 23 2 3
 etterå ha skrevet ut summen over input-laget. De tre likningene over kan skrives på matriseform som
 følger
-    
-a(1) w(1) w(1)
-1 11 21 (cid:20) x (cid:21)
-a(1)=gw(1) w(1) 1  . (101)
- 2   12 22  x 
-a(1) w(1) w(1) 2
-3 13 23
+     
+a(1) w(1) w(1) b(1)
+1 11 21 (cid:20) x (cid:21) 1
+a(1)=gw(1) w(1) 1 +b(1) . (101)
+ 2   12 22  x  2 
+a(1) w(1) w(1) 2 b(1)
+3 13 23 3
 Kontroller at matrisemultiplikasjonen på høyre side skjer mellom to matriser med dimensjoner hen-
 holdsvis 3×2 og 2×1, hvilket resulterer i en matrise av dimensjon 3×1, som er det vi har på venstre
 side av likhetstegnet.
@@ -1784,3 +2274,398 @@ demottar, tiletnyttdataromavsammedimensjonsomantallnoderidetaktuellelaget. Pågr
 ikke-lineariteten til aktiveringsfunksjonen g, er transformasjonen ikke-lineær. Oppsummert gjør hvert
 lag i det nevrale nettverket en egen ikke-lineær transformasjon av dataene. Dette kan vi tolke som en
 automatisk feature-transformasjon som utvikles i takt med at det nevrale nettverket lærer fra data.
+
+## 2.4 Backpropagation
+<!-- side 40 -->
+
+Nårnevralenettverkgjørenprediksjon, altsåprodusererenoutput, sierviatdegjørenforward pass:
+de går fra data (input) til prediksjon (output) vedå transformere dataene gjennom de ulike lagene.
+Hvis vektene i nodene, som svarer til det nevrale nettverkets modellparametre, har riktige verdier, er
+detsmåavvikmellomoutputogtargetsidataene. Tenkoverhvordandisseparametrenekantilpasses,
+spesifikt: tenk over hvordan vi kan gjøre gradient descent for parametrene i et nevralt nettverk.
+Som tidligere bør vi bevege oss i parameterrommet, i den retningen der tapet mellom prediksjon
+og targets minker, altså langs gradienten til tapsfunksjonen. Denne gradienten er en vektor med
+like mange elementer som vi har parametre i nettverket. Formelt svarer dette til gradient descent
+for lineær regresjon, og igjen forteller størrelsen til hvert element i gradientvektoren oss hvor følsom
+tapsfunksjonenerfordentilsvarendeparameteren. Forskjellenfralineærregresjonliggeriatetnevralt
+nettverk bestående av mange lag, altså har mange noder der vi ikke kjenner den “riktige verdien”.
+Dette gjelder alle nodene i indre/skjulte lag, da disse ikke er direkte forbundet med både dataene og
+targets. Likevel finnes det en metode for å beregne gradienten til tapsfunksjonen som funksjon av
+parametrene. Dette kalles backpropagation, eller tilbakepropagering, og i dette kurset forventes det at
+dere utvikler en intuisjon for hvordan backpropagation fungerer.
+Vibrukereteksempelforåfåenintuitivforståelse,ogigjenanbefalesdetatdutegnerenfigur,gjerne
+inspirertavslidesbruktiforelesningen. Antaatviharetnevraltnettverkmedtoinput-noder,toindre
+lag med henholdsvis fire noder, og et output-lag med tre noder. Anta videre at det nevrale nettverket
+har gjort en prediksjon yˆ= (0.1,0.1,0.8) på et datapunkt med target y = (1,0,0). Vi ser at både yˆ
+ogyˆ harstoreavvikfratarget-verdienesine, mensyˆ haretliteavvikfrasintilsvarendetarget-verdi.
+3 2
+Vi bruker indeks l=0 for input-laget, l=1,2 for de to indre lagene, og l=3 for output-laget. Vi ser
+på aktiveringen til det første (øverste) nevronet i output-laget
+(cid:16) (cid:17)
+yˆ =a(3) =g w(3)a(2)+w(3)a(2)+w(3)a(2)+w(3)a(2)+b . (102)
+1 1 11 1 21 2 31 3 41 4
+Her går altså indeks i i likning 96 over i = (1,2,3,4), mens j = 1, siden vi ser på den første noden,
+og l = 3, siden vi ser på det siste laget. I likningen over er det flere ting vi kan endre forå minke
+tapet: vi kan endre på parametrene b og w(3) direkte, og aktiveringene av nodene i det tidligere laget,
+i1
+a(2), indirekte. Legg merke til at om vi endrer parametrene w(3), må disse endres proporsjonalt med
+i i1
+aktiveringenea(2). Viønskeråøkeoutputa(3),sombetyratvimåstyrkekoblingentilaktivenevroner
+i 1
+i lag 2, dvs nevroner med stor a(2). Enkelt sagt: Jo større a-ene er, jo større effekt har w-ene. Vi kan
+i
+gjøreentilsvarendeanalysefora(2),foromallea(2) sommultipliseresmedenpositivw(3) blesterkere,
+i i i1
+og alle a(2) som multipliseres med en negativ w(3) ble svakere, hadde a(3) blitt større, som er det vi
+i i1 1
+ønskerå oppnå. Enkelt sagt: Jo større w-ene er, jo større effekt har a-ene. Utfordringen er at vi ikke
+kan endre aktiveringene til indre lag direkte; vi kan kun endre dem indirekte gjennom parametrene
+deres. Vi må derfor endre på parametrene w(2) tilhørende alle nodene i lag l=2.
+ij
+Førvitardettestegetbakoverinettverketerdetlurtåzoomeut,oghuskepåatvikunharsettpåén
+avverdieneiyˆ-vektoren: bådeyˆ ogyˆ harsineegnepreferanserforhvordanvekteneogaktiveringene
+2 3
+i de foregående lagene bør endres for at disse to delene av prediksjonen skal komme nærmere targets.
+Det er ikke gitt at yˆ ,yˆ og yˆ er enige om hvilke endringer som bør gjøres, men vi samler uansett de
+1 2 3
+ønskedeendringeneilagl=2ienliste,førviflytterossetstegbakoverinettverket. Listeninneholder
+blant annet ønskede endringer for aktiveringene a(2), på samme måte som vi tidligere visste i hvilken
+retning vi ønsketå endre de ulike verdiene i yˆ, og basert på disse kan vi utføre samme analyse som
+vi gjorde under likning 102. Når vi har gjort dette for alle nodene i lag l = 2, lager vi en liste over
+ønskede endringer i lag l=1, før vi tar et ytterligere steg tilbake i nettverket.
+På dette tidspunktet har vi kommet til input-laget; det gir ikke meningå lage en liste over ønskede
+endringer i lag l = 0, siden dette er input-laget og aktiveringene svarer til verdiene i datasettet. Vi
+har derfor kommet til veis ende, vedå jobbe oss stegvis bakover i nettverket fra output, gjennom alle
+lagene,tilinput. Merformeltharvipropagert feileniprediksjonentilbake tilinput,oggjennomdenne
+prosessenfunnetenlisteoverhvordannettverketsparametrebørendreseg,altsågradienten vitrenger
+til parameteroppdateringen. Dette er essensen i backpropagation. Til slutt er det verdtå merke seg
+atdettemågjøresforalledatapunkteneitreningsdatasettet; vierikkeuteetteratmodellenskallære
+segå predikere at y = (1,0,0), men tilpasse prediksjonen til input-dataene. Akkurat som for lineær
+regresjon må vi altså sende alle treningsdataene (én epoch) gjennom nettverket, gjerne flere ganger
+(flere epochs).
+
+## 2.5 Bygge, trene og predikere
+<!-- side 41 -->
+
+DetfinnesflerePython-bibliotekervikanbrukeforålagenevralenettverk, ogidettekursetanbefales
+keras og tensorflow. De grunnleggende byggesteinene i tensorflow er keras-operasjoner. For
+eksperimenteringkanviforeksempellageen(10,3)-dimensjonaltensorxfyltmedettall,medfølgende
+kode.
+from keras import ops
+x = ops.ones((10,3))
+Videre kan vi lage et enkelt nevralt nettverk, se figur i slides fra forelesningene, med to indre lag
+bestående av henholdsvis 6 og 7 noder, samt et output-lag bestående av 2 noder, som følger
+from tensorflow.keras.models import Sequential()
+model = Sequential()
+model.add(Dense(6, activation="relu", name="layer1"))
+model.add(Dense(7, activation="relu", name="layer2"))
+model.add(Dense(2, activation="softmax", name="output"))
+model(x)
+Denne modellen heter Sequential fordi lagene kommer i en lineær sekvens, slik at dataene flyter
+sekvensielt fra input- til output-laget. Lagene heter Dense fordi alle nodene har koplinger til alle
+nodene i forrige og neste lag. Koplingen er så tett (dense) som den kan være. Alle disse lagene
+initialiseres med tilfeldige verdier. Hvis vi derfor kaller denne modellen på tensoren x som vi laget
+tidligere, får vi derfor en (10,2)-dimensjonal tensor med to ulike, men i utgangspunktet meningsløse,
+verdier gjentatt 10 ganger.
+Ved bruk av koden over lager vi en Sequential-modell, og bruker operasjonen add forå legge til lag
+til modellen. Vi kunne tilsvarende gjort
+model = Sequential(
+Dense(6, activation="relu", name="layer1"),
+Dense(7, activation="relu", name="layer2"),
+Dense(2, activation="softmax", name="output"),
+)
+model(x)
+Her lager vi hele modellen direkte, vedå gi den en liste bestående av lag som argument. Vi kunne
+også gjort følgende
+layer1 = Dense(6, activation="relu", name="layer1")
+layer2 = Dense(7, activation="relu", name="layer2")
+layer3 = Dense(2, activation="softmax", name="output")
+layer3(layer2(layer1(x)))
+Her lager vi sekvensen eksplisitt, utenå bruke Sequential. Siste lag evalueres rekursivt med input
+fra andre lag som argument, der input fra andre lag har input fra første lag som argument, og første
+lag har input x som argument. Merk at vi her ikke får et modell-objekt. Det viktigeå huske her er at
+lag oppfører seg som elementer i en liste. Kommandoen model.layers kan brukes forå få tilgang til
+listen over lag den aktuelle modellen model består av. Et enkelt mentalt bilde av et nevralt nettverk
+i python er lag stablet oppå hverandre, eller lstacked layers.
+Merkatomvikunlagermodellenvedåstablelagene,menikkeevaluererden(foreksempelpåtensoren
+vår x), har den ingen vekter. Om vi kaller
+model.weights
+model.summary()
+på en modell vi har bygget, men aldri evaluert, får vi ut en tom liste [] for vektene, og en tabell som
+viser Output shape=? for oppsummering av modellen. Modellparametrene finnes altså ikke.
+Oppgave: Hva er grunnen til dette?
+Legg merke til at vi har kjørt modellen(e) vi laget over, på en tensor av shape (10,3), selv om ingen
+av modellens lag består av 3 noder. Grunnen er at modellens input er et objekt, ikke av typen
+keras.layers, så input vises ikke som et lag. For at modellen skal kjenne input-dimensjonen, og
+følgelig hvor mange parametre den består av, må vi enten evaluere den på en input-tensor, eller vi må
+spesifisere modellens input-shape. Dette kan gjøres som følger
+model = keras.Sequential()
+model.add(keras.Input(shape=(3,)))
+model.add(Dense(6, activation="relu", name="layer1"))
+Om vi kaller model.summary() på denne, vil vi se at den har output-shape 6, og 24 parametre. Vi
+kan også evaluere denne modellen på vår tensor x og sjekke shape ved hjelp av følgende kode
+model(x).shape
+DennekodenreturnererTensorShape([10,6)],dainput-tensorenvårbestårav10instanser,ogmod-
+ellens nåværende output-lag består av 6 noder. Merk at dette følger vanlig matrisemultiplikasjon, og
+tegn gjerne opp tensordimensjonene om du er usikker. Vi kan fortsetteå legge til lag helt til vi er
+fornøyde med modellen – eller bare bygge en modell med antallet lag og noder vi ønsker, fra starten.
+Merk at shape på modellens output alltid svarer til antall noder i modellens siste lag.
+Når modellen er bygget, kan vi kompilere og trene den. Når modellen kompileres velger vi hvilken
+metode som skal brukes for å optimalisere parametrene under trening, hvilken tapsfunksjon som
+skal brukes, eventuelle metrikker som skal beregnes underveis, med mer. I dette kurset bruker vi
+operimizer=keras.optimizers.SGD(), og tapsfunksjonen må passe til oppgaven og dataene. Mod-
+ellen kan tilpasses som følger
+history = model.fit(x_train, y_train, batch_size=64,
+epochs=10, validation_data=(x_val, y_val))
+Her lagres beregnede metrikker i en history-variabel, hvert steg i SGD bruker 64 datapunkter, mod-
+ellen trenes i 10 epoker, og den evalueres på valideringsdata underveis. Vi kan for eksempel studere
+hvordan tapet utvikler seg på trenings- og valideringsdataene ved bruk av følgende kode
+train_losses = history.history["loss"]
+val_losses = history.history["val_loss"]
+epohcs = np.arange(1, len(losses)+1)
+plt.plot(epochs, train_losses, label="Train loss")
+plt.plot(epochs, val_losses, label="Validation loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.show()
+Som før er det lurtå stanse treningen når både trenings- og valideringstapet flater ut, men før tap
+på treningsdataene blir mye mindre enn tapet på valideringsdataene, siden dette er et typisk tegn
+på overtilpasning. keras gir muligheten for et early stopping-kriterium, hvor vi må angi hvilket
+kriterium som skal monitoreres, vanligst monitor="val loss", og hvor tålmodig læringsalgoritmen
+skal være før treningsprosessen stoppes.
+Prinsipieltjobbervimednevralenettverksommedandremaskinlæringsmodeller,menviharenstørre
+frihetivalgavarkitekturogantallparametre. Detkrevertreningålæreseghvilkearkitekturersomer
+egnet for hvilke læringsoppgaver og datastrukturer. Oppsummert koker treningsprosessen av nevrale
+nettverk ned til følgende steg:
+• Modellen bygges, og kompileres med valg av optimizer, tapsfunksjon, early stopping, med mer.
+model.compile()
+• Når modellen er bygget kan vi trene den.
+model.fit()
+• Deretter kan vi bruke den tilå predikere, altså gjøre inferens.
+model.predict()
+• Når modellen er trent, evaluerer vi den på egnet metrikk.
+model.evaluate()
+• Når vi går hjem for dagen kan vi lagre modellen med
+model.save(’sted/for/lagring/navn.keras’)
+• ...og laste den opp igjen neste morgen.
+model = keras.models.load model(sted/for/lagring/navn.keras).
+
+## 3 Uveiledet læring
+<!-- side 43 -->
+
+Vi har fremdeles som målå lage databaserte modeller ved hjelp av maskinlæring, men går nå over til
+tilfelletderviikkehardatasomfortellerosshvasomerriktigsvar imodelleringsoppgaven. Dasnakker
+vi om unlabeled data, altså data uten targets. Uveiledet læring – unsupervised learning – handler om
+å gjøre maskinlæring med læringsalgoritmer som finner mønstre i data uten targets. Vi skal se på tre
+kategorier uveiledet læring:
+• Clustering / klynging
+• Dimensionality reduction / dimensjonsreduksjon
+• Outlier detection / anomalideteksjon
+
+## 3.1 Clustering
+<!-- side 43 -->
+
+Clustering,altsåålageklynger,kantolkessomenformfor“klassifiseringutenlabels”,ogformåleterå
+finneegnedegrupperingeravlikedatapunkterietdatasett. Viharfleremuligevalgavlikhetsmetrikk,
+for eksempel avstand mellom datapunktene. For å kunne gjøre en optimaliseringsprosess, som er
+grunnleggende i maskinlæring, trenger vi et læringssignal, altså et tapå minimere. I forelesningene
+ser vi på to ulike algoritmer: k-means, hvor likhet defineres som avstand, og DBSCAN, hvor likhet
+defineres som tetthet.
+
+## 3.1.1 k-means
+<!-- side 43 -->
+
+Den uveiledede læringsalgoritmen k-means deler datasettet bestående av n datapunkter, inn i k klyn-
+ger. Hvert datapunkt tilordnes klyngen hvis klyngesentrum er nærmest datapunktet. Stegvis gjør
+denne algoritmen følgende
+1. Velg et tall k, som representerer antall klynger.
+2. Velgk tilfeldigeklyngesentroider. Ensentroideermidtenavenklyngen, altsåikkeetdatapunkt
+(selv om den kan sammenfalle med et faktisk datapunkt).
+3. Tildel hvert datapunkt en tilfeldig klynge.
+4. Beregn den Euklidske avstanden mellom hvert datapunkt og alle sentroidene.
+d2(p,q)=(p −q )2+(p −q )2+···+(p −q )2
+1 1 2 2 n n
+5. Tildel hvert datapunkt den nærmeste sentroiden fra steg 4.
+6. Velg nye sentroider vedå regne ut middelverdien (np.mean) for hver klynge.
+7. Gjenta steg 4, 5 og 6 inntil klyngene ikke endrer seg.
+Utfordringen med denne algoritmen er at sannsynligheten forå velge tilfeldige sentroider (i steg 2) på
+uegnedesteder,altsåpåenslikmåteatalgoritmenikkeklarerådannegodeklynger,økereksponensielt
+medk. Underdetoantakelseneatvi1)velgerriktigverdifork, og2)athversanneklyngeharetlikt
+antall datapunkter, kan vi anslå sannsynligheten for at de k sentroidene initialiseres i unike klynger,
+altså slik at hver sanne klynge har bare én sentroide. Vi husker at antallet måterå sortere k ulike
+elementer er k!, mens antallet måterå trekke k elementer fra en mengde på k elementer er kk. Da går
+sannsynligheten for at hver sentroide tilhører en unik klynge som
+k! 1·2·3...k 1 2 3 k
+= = · · ... . (103)
+kk k·k·k...k k k k k
+Intuitivt: Vi har k valg per tilfeldig plassering, altså kk like sannsynlige sekvenser av sentrioder.
+Sekvensene vi er ute etter er de hvor alle k sentroidene svarer til ulike labels, altså én sentroide per
+klynge. Dette er bare ulike ordninger av k klynger, og vi har til sammen k! av disse. Antall gunstige
+over mulige er derfor k!/kk.
+Enda mer intuitivt: Tenk at du trekker én sentroide av gangen.
+• Den første kan havne hvor som helst, så sannsynligheten er 1.
+• Den andre må unngå klyngen som allerede er tatt, så sannsynligheten er (k−1)/k.
+• Den tredje må unngå de to klyngene som allerede er tatt, så sannsynligheten er (k−2)/k.
+• Dette fortsetter til den siste sentroiden, som kun har én ledig klynge tilgjengelig, så sannsyn-
+ligheten er 1/k.
+• Multipliser alle disse sannynlighetene sammen og du får k·(k−1)·(k−2)...1/kk.
+Stirling’s approksimasjon lar oss skrive om fakultetet som
+√
+k!≈ 2πke−kkk. (104)
+Innsatt i likningen over får vi at sannsynligheten forå initialisere k sentroider i unike klynger går som
+√
+ke−k, altså eksponensielt avtakende med k.
+Enmermoderneløsningpåinitialiseringenerderforåplasseredenførstesentroidentilfeldig,ogplassere
+neste sentroide på datapunktet som er lengst borte fra den første, gjentatt til alle de k sentroidene
+er plassert. Generelt: sentroide j initialiseres på datapunktet der minste avstand fra den nærmeste
+sentroiden er størst.
+Oppgave: Beggemåteneåplasseresentroiderervisualisertforulikedatafordelingerpåwww.naftaliharris.com/blog/visualizing-
+k-means-clustering/. Det kan være lurtå leke litt med dette visualiseringsverktøyet forå få en følelse
+av hvordan k-means fungerer.
+Tilsluttskalvisepåkmeans++,sombrukerenmeravansertmåteåvelgeplasseringenetilsentroidene.
+Istedetforåvelgesentroidejpådatapunktetlengstbortefradeforrigesentroidene,velgesdatapunktet
+medenvisssannsynlighet,dersannsynlighetenerproporsjonalmedkvadrertavstandfradennærmeste
+initialiserte sentroiden. Grunnen til at dette er lurt, er at strategien der datapunktet lengst borte fra
+forrige sentroide velges som sentroide j, er at det som oftest vil plassere sentroiden i utkanten av en
+klynge. Med sannsynlighetstilnærmingen velges fremdeles et datapunkt som er langt borte fra forrige
+klynge – proporsjonal med kvadrert avstand – men med en viss tilfeldighet. Denne tilfeldigheten øker
+sannsynligheten for å havne nær midten av den faktiske klyngen. Det finnes et bevis på at denne
+fremgangsmåten for plassering av sentroider er forventetå være suboptimal med maksimalt en faktor
+log(k).
+Vi kan enkelt lage en k-means-modell ved hjelp av python-biblioteker som keras. Jeg abefalerå bruke
+keras.cluster.MiniBatchKmeans, særlig for store datasett. I stedet forå bruke hele datasettet hver
+iterasjon, bruker en den liten tilfeldig trekning (en mini batch). Vi kan angi k gjennom argumentet
+n clusters, og velge initialiseringsmetode for klyngesentrene gjennom argumentet init. Hvis vi ikke
+oppgir en verdi for k, vil algoritmen selv prøveå velge en optimal verdi for k. Dette kan fungere godt,
+men vil vel så ofte fungere mindre godt. Valg av k er blant de store utfordringene innen clustering, og
+detfinnesfleremetrikkerforåmålekvalitetenpåclusteringen. Biblioteketsklearn.metrics.cluster
+har flere metrikker innebygget, og dere bør ha hørt om tre av dem:
+• Inertia: Sum av kvadrert avstand mellom punkter og sentroide. Lav verdi betyr kompakte
+klynger, som er bra. Svakheten ved denne metoden er at den letteste måten å oppnå en lav
+verdi, er vedå plassere en sentroide på hvert datapunkt, altså ha størst mulig k.
+• Silhouette Coefficient: b−a , hvor a angir midlere avstand innad i klyngen, såkalt mean
+max(a,b)
+intra-clusterdistance,ogbangirmidlereavstandtilnærmesteklynge,såkaltmeannearest-cluster
+distance. Denmåleraltsåhvornærtetdatapunktertilsinegenklynge,sammenliknetmedandre
+klynger. Den beste verdien til denne metrikken er 1, som betyr at punktet er nærmere sin egen
+enn andre klynger, 0 betyr at klyngene overlapper eller at punktet er på randen mellom to
+klynger, og den dårligeste verdien er −1, som representerer at datapunktet er i feil klynge.
+• Calinski Harabasz score: Ratio mellom sum av kvadrert avstand mellom klynger, hvor en
+høy verdi er bra, og sum av kvadrert avstand mellom punkter i samme klynge, hvor en lav verdi
+er bra. Den måler altså hvor langt det er mellom klynger normalisert til hvor store klyngene er.
+En høy verdi av denne metrikken representerer tette klynger med god separasjon.
+Med utgangspunkt i et datasett uten labels og hvor vi ikke klarerå se hvilken verdi av k vi bør velge,
+kan det være nyttig å tilpasse flere k-means-modeller med ulike hyperparametre, og regne ut flere
+metrikker forå se om vi klarerå identifisere optimale verdier.
+Som vi ser eksempler på i forelesningene, finnes det tilfeller der k-means ikke klarer å identifisere
+klynger selv om vi oppgir korrekt verdi av k. Dette skjer typisk når avstanden innad i klyngen er
+større enn mellom naboklynger. Dette er en konsekvens av at k-means bruker avstand som et mål
+på likhet mellom punkter. Dette peker på en viktig detalj, som gjelder i all maskinlæring: Alle
+læringsalgoritmer har implisitte antakelser om problemet de skal løse. Oppgave: Hvilken implisitt
+antakelse ligger i k-means?
+Generelt har k-means følgende ulemper
+• følsom for antall sentroider valgt, automatisk valg fungerer ofte dårlig, og manuelt valg er kun
+så godt som utvalgsmetoden,
+• svak med outliers, siden disse kan trekke sentroidene vekk fra de faktiske klyngene,
+• fungererdårligihøydimensjonaleromfordidenbaserersegpåEuklidskavstand,somkonvergerer
+til en konstant for store d,
+og følgende fordeler
+• lettå forstå og implementere,
+• fungerer godt på store datasett (store n).
+
+## 3.1.2 DBSCAN
+<!-- side 45 -->
+
+DBSCAN ble utviklet av Martin Ester, Hans-Peter Kriegel, Jörg Sander og Xiaowei Xu i 1996, og er
+en uveiledet maskinlæringsalgoritme. Den baserer seg påå identifisere tre typer punkter i dataene:
+• Kjernepunkter: datapunkter som ligger nært midten av en klynge.
+• Ikke-kjernepunkter: datapunkter som tilhører klyngen, men ligger i utkanten.
+• Outliers: datapunkter som ikke tilhører noen klynger. En en hovedstyrke ved metoden at den
+ikke prøverå putte disse punktene i klynger.
+Relevante hyperparametre for DBSCAN er ϵ, som angir maksimal avstand mellom to nabopunkter
+som kan tilhøre samme klynge, og min samples, som angir minimum antall naboer et punkt må ha
+forå telle som et kjernepunkt. DBSCAN-algoritmen bruker følgende prosedyre:
+1. Identifiser kjernepunkter vedå telle antall naboer innenfor en avstand ϵ. Hvis dette antallet er
+større enn min samples, er datapunktene kjernepunkter.
+2. Gå gjennom kjernepunktene og spre klyngen til datapunkter i nærheten. Hvis punktet er et
+kjernepunkt, bruk det tilå utvide klyngen. Hvis ikke er datapunktet et ikke-kjernepunkt.
+3. Identifiser alle punkter som ikke tilordnes en klynge, som outliers.
+Vi vet altså om et datapunkt er et kjernepunkt basert på hyperparametrene, allerede i steg 1. Etter
+denne prosedyren vet vi også forskjellen mellom outliers og ikke-kjernepunkt. Ikke-kjernepunkter har
+færreennmin samplesnaboerinnenforenavstandϵ,mendeerinnenforenavstandϵavetkjernepunkt.
+Disse punktene er del av klyngen, men de bidrar ikke tilå utvide klyngen.
+Fordeler ved DBSCAN er at vi ikke trengerå spesifisere antall klynger, at algoritmen heller ikke gjør
+en antakelse om dette antallet, og at algoritmen har en metode forå identifisere outliers og dermed er
+robustforoutliers. Ulempeneerfølsomhetforvalgavϵogmin samples,ogdessutenatdisseerglobale
+variabler: det kan hende at vi får datasett der klyngene har ulik tetthet for ulike datapunkter. Siden
+vi bare kan velge én verdi av henholdsvis ϵ og min samples, er DBSCAN mindre egnet i tilfeller der
+klyngetettheten varierer. DBSCAN er også tregere for store datasett (stor n), fordi den må beregne
+avstander mellom samtlige punkter forå finne naboer og identifisere klyngepunkter, og er svakere i
+høydimensjonaledata,fordidenbaserersegpåetmålavavstand,somerutfordrendeihøydimensjonale
+rom, på grunn av dimensjonsforbannelsen.
+I forelesningen går vi stegvis igjennom to eksempler der DBSCAN identifiserer klynger. Oppgave:
+Prøv selv med verktøyet https://www.naftaliharris.com/blog/visualizing-dbscan-clustering/.
+
+## 3.1.3 Hovedkategorier
+<!-- side 46 -->
+
+Vi kan dele clustering-algoritmer inn i følgende fire hovedkategorier:
+• Sentroidebasert: Startermedsentroider,assosiererdatapunktermeddisseogtilpasserfremtil
+konvergens.
+• Tetthetsbasert: Klynger defineres basert på tettheten til datapunkter. Punkter som ligger
+nærme hverandre defineres som klynger, mens isolerte punkter defineres som outliers.
+• Fordelingsbasert. Gjør antakelsen at hver klynge består av punkter fra en sannsynlighets-
+fordeling, vanligvis en Gauss. Målet erå finne parametrene til denne fordelingen.
+• Hierarkibasert. Lager et hierarki av klynger. I starten er alle datapunktene en egen klynge,
+ogpåsluttentilhøreralledatapunktenesammeklynge. Klyngenesomdannesunderveissorteres
+i et hierarki, og man velger ut de genererte klyngene fra et steg i hierarkiet.
+Oppgave: Hvilke av disse kategoriene hører k-means og DBSCAN til? De øvrige to kategoriene er
+ikke en del av pensum, i den forstand at dere bør ha hørt om dem, men ikke trengerå kjenne til eller
+kunne beskrive læringsalgoritmer fra disse to kategoriene.
+
+## 3.1.4 Dimensjonsforbannelsen igjen
+<!-- side 46 -->
+
+For intuisjon ser vi for oss at vi sampler tilfeldige punkter fra enhentskuben, altså generelt fra [0,1]d i
+d dimensjoner. Slik kan vi fylle opp d-dimensjonale arrays som angir koordinater i det d-dimensjonale
+rommet, hvor vi havner i intervallet [0,1] langs alle d akser. Vi gjentar dette to ganger, slik at vi får
+koordinater til to punkter i det d-dimensjonale rommet, og så beregner vi den Euklidske avstanden
+mellom punktene. Dette kan vi gjøre for flere ulike valg av d, og så ofte vi orker. Koden nedenfor
+gjentar prosedyren 1000 ganger for seks ulike verdier av d, og resultatet er vist i figur 22.
+def get_cube_dist(dim):
+dims = range(dim)
+P1 = np.array([np.random.uniform() for _ in dims])
+P2 = np.array([np.random.uniform() for _ in dims])
+dist = np.linalg.norm(P1-P2)
+return dist
+Figure 22: Fordelingen av Euklidske distanser mellom to punkter i en d-dimensjonal enhetskube.
+n_iter = 1000
+grid = [2, 3]
+dims = [2, 3, 10, 100, 1000, 10000]
+fig, axs = plt.subplots(grid[0],grid[1])
+_i = 0
+for _x in range(grid[0]):
+for _y in range(grid[1]):
+dim = dims[_i]
+_i += 1
+dists = [get_cube_dist(dim) for _ in range(n_iter)]
+axs[_x,_y].hist(dists, label=f"d={dim}")
+axs[_x,_y].legend()
+axs[_x,_y].set_xlim(left=0)
+plt.show()
+Oppgave: Hvafortellerfordelingeneifigur22ossomhvordanavstandoppførersegihøydimensjonale
+rom?
+Det finnes flere liknende øvelser vi kan gjøre forå få intuisjon. I slides fra forelesningen vises hvor
+stor andel av en d-dimensjonal enhetskube eller -kule som ligger i et tynt ytre skall av tykkelse ϵ.
+Basert på disse enkle øvelsene forstår vi at avstander skalerer eksponensielt med d. Dette gir opphav
+til det såkalte Concentration of Distances-fenomenet, hvis direkte konsekvens er at relative avstander
+blir mindre i høye dimensjoner. Avstandene i seg selv blir veldig store, mens forskjellene mellom
+avstanderblirmindre. Dettevisestydeligifigur22:fordelingenesmiddelverdierblirstoremedøkende
+d, mens spredningene blir små. Tidligere, i diskusjonen om veiledet læring, forstod vi at dette betyr
+at mesteparten av datarommet er tomt når vi samler inn data med flere features enn O(10). I den
+nåværende diskusjonen forstår vi at konsekvensene også inkluderer at klynger i høydimensjonale rom
+ikkekanværekompakte. Clustering-algoritmereravhengigeavatdatapunkterbefinnerseginærheten
+avhverandrepåenellerannenmåte,hvilketgenereltikkevilværetilfelleihøydimensjonalerom. Forå
+omgådetteproblemetvilviinesteomgangsepåteknikkervikanbrukeforåreduseredimensjonaliteten
+i data.

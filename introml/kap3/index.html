@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 3 — Uveiledet læring</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Uveiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · Notater 3–3.1.4 · s. 43–47 · under arbeid</div>
+      <h1>Uveiledet <em>læring</em></h1>
+      <p class="lede">Maskinlæring på data uten targets. Clustering er «klassifisering uten labels»: k-means finner klynger rundt sentroider ved å minimere avstand, DBSCAN finner dem som tette områder og lar outliers stå utenfor. Notatene dekker foreløpig bare clustering (3.1); dimensjonsreduksjon og anomalideteksjon kommer.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgaver</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ─────────── Helhetsbilde ─────────── -->
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 1 og 2 hadde alltid en kolonne med riktig svar. Nå er den borte. <span class="term" data-term="uveiledet-laering">Uveiledet læring</span> er læringsalgoritmer som finner mønstre i data uten targets, og <span class="term" data-term="clustering">clustering</span> er den første av tre kategorier: finn grupper av like datapunkter. Spørsmålet «like hvordan?» gir to algoritmer.</p>
+
+      <ul>
+        <li><strong>k-means</strong> sier like = nær i euklidsk avstand. Velg \(k\), gjenta «tildel nærmeste sentroide, flytt sentroiden til midten» til ingenting endrer seg. Minimerer summen av kvadrerte avstander. Tilfeldig start feiler med sannsynlighet som vokser eksponensielt med \(k\); k-means++ fikser det med «langt unna, men tilfeldig».</li>
+        <li><strong>Valg av k</strong> har ingen fasit: inertia synker alltid, silhouette og Calinski–Harabasz kan peke på ulike \(k\).</li>
+        <li><strong>DBSCAN</strong> sier like = i samme tette område. Kjernepunkter (nok naboer innen \(\epsilon\)) sprer klyngen, ikke-kjernepunkter henger på, outliers holdes utenfor. Ingen \(k\), men \(\epsilon\) og <code>min_samples</code> er globale.</li>
+        <li><strong>Eksamen</strong> har fire spørsmål per sett om dette: hva k-means minimerer, k-means++, hvorfor \(k\) er vanskelig, DBSCANs definisjon av samme klynge, hva som gjør den robust, hva for lav \(\epsilon\) gjør, og hvilke kategorier de to tilhører.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Status</span>
+        <p>Siden bygger på notatene datert 7. oktober 2026, som slutter etter avsnitt 3.1.4. Dimensjonsreduksjon (PCA, t-SNE) og anomalideteksjon legges til når notatene utvides. Eksamensanalysen for kapittel 3 ble skrevet 8. oktober 2026 og er et forslag som venter på godkjenning.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Læringssti ─────────── -->
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Ingen forkunnskaper utover euklidsk avstand og dimensjonsforbannelsen fra 1A. Les 3A i rekkefølge; 3B er til øvingen.</p>
+
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="clustering.html#intro">Uten targets</a></div><div class="desc">Unlabeled data, tre kategorier uveiledet læring, clustering som klassifisering uten labels.</div></div><div class="min">~3 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="clustering.html#kmeans">k-means</a></div><div class="desc">De sju stegene, hva som minimeres, hvorfor tilfeldig start feiler (\(k!/k^k\)), k-means++. Kjør stepperen med ulike starter.</div></div><div class="min">~12 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="clustering.html#kvalitet">Valg av k</a></div><div class="desc">Inertia, silhouette, Calinski–Harabasz, og hvorfor de kan være uenige. Ulemper og fordeler.</div></div><div class="min">~6 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="clustering.html#dbscan">DBSCAN</a></div><div class="desc">Kjernepunkt, ikke-kjernepunkt, outlier; ε og min_samples; hva for lav og for høy ε gjør. Prøv knappene.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="clustering.html#kategorier">Kategorier</a></div><div class="desc">Sentroide-, tetthets-, fordelings- og hierarkibasert. Ett eksamensspørsmål, to svar.</div></div><div class="min">~3 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="clustering.html#dimensjoner">Høye dimensjoner</a></div><div class="desc">Avstander konsentreres når d vokser. Lav prioritet; bare konklusjonen.</div></div><div class="min">~3 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="koding.html#kmeans">Koding (til øvingen)</a></div><div class="desc">k-means og DBSCAN som pseudokode og sklearn-kall, metrikkløkka for k, avstandssimuleringen.</div></div><div class="min">~20 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Deler ─────────── -->
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="clustering.html" class="subpage-card">
+          <span class="sp-icon">3A</span>
+          <div class="sp-info">
+            <div class="sp-title">Clustering: k-means og DBSCAN</div>
+            <div class="sp-desc">Notater 3–3.1.4: uveiledet læring, k-means steg for steg, initialisering og k-means++, valg av k med tre metrikker, DBSCAN med kjernepunkter og outliers, de fire kategoriene, dimensjonsforbannelsen igjen. 8 eksamensoppgaver, 3 oppgaver fra notatene, 3 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="koding.html" class="subpage-card">
+          <span class="sp-icon">3B</span>
+          <div class="sp-info">
+            <div class="sp-title">Koding: clustering</div>
+            <div class="sp-desc">Øvingsstoff, ikke eksamensstoff: k-means og k-means++ fra bunnen, MiniBatchKMeans, metrikkløkke for å velge k, DBSCAN fra bunnen og med sklearn, simuleringen av avstander i enhetskuben.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <!-- ─────────── Begrepskart ─────────── -->
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">To svar på «like hvordan?» i midten; det hver algoritme optimaliserer til venstre, det den sliter med til høyre.</p>
+
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 3">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
+            </marker>
+          </defs>
+
+          <rect class="bh" x="290" y="18" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="38" text-anchor="middle">Clustering uten labels</text>
+          <text class="cap" x="380" y="54" text-anchor="middle">finn grupper av like punkter</text>
+
+          <rect class="bh" x="290" y="112" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="132" text-anchor="middle">k-means · sentroidebasert</text>
+          <text class="cap" x="380" y="148" text-anchor="middle">like = nær i avstand</text>
+
+          <rect class="bh" x="290" y="206" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="226" text-anchor="middle">DBSCAN · tetthetsbasert</text>
+          <text class="cap" x="380" y="242" text-anchor="middle">like = i samme tette område</text>
+
+          <path class="e" d="M380 64 L380 110"/>
+          <path class="e" d="M380 158 L380 204"/>
+
+          <rect class="b" x="40" y="18" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="38" text-anchor="middle">Uveiledet læring</text>
+          <text class="cap" x="135" y="54" text-anchor="middle">data uten targets · trenger et tap</text>
+          <path class="e-faded" d="M230 41 L290 41"/>
+
+          <rect class="b" x="40" y="112" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="132" text-anchor="middle">Minimerer inertia</text>
+          <text class="cap" x="135" y="148" text-anchor="middle">tildel nærmeste · flytt til midten</text>
+          <path class="e-faded" d="M230 135 L290 135"/>
+
+          <rect class="b" x="40" y="206" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="226" text-anchor="middle">Kjerne · ikke-kjerne · outlier</text>
+          <text class="cap" x="135" y="242" text-anchor="middle">kjede med steg ≤ ε</text>
+          <path class="e-faded" d="M230 229 L290 229"/>
+
+          <rect class="bw" x="530" y="18" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="38" text-anchor="middle">Fire kategorier</text>
+          <text class="cap" x="625" y="54" text-anchor="middle">sentroide · tetthet · fordeling · hierarki</text>
+          <path class="e-faded" d="M470 41 L530 41"/>
+
+          <rect class="bw" x="530" y="112" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="132" text-anchor="middle">Start og valg av k</text>
+          <text class="cap" x="625" y="148" text-anchor="middle">k!/kᵏ → k-means++ · metrikker uenige</text>
+          <path class="e-faded" d="M470 135 L530 135"/>
+
+          <rect class="bw" x="530" y="206" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="226" text-anchor="middle">ε og min_samples globale</text>
+          <text class="cap" x="625" y="242" text-anchor="middle">for lav ε → mange små klynger</text>
+          <path class="e-faded" d="M470 229 L530 229"/>
+
+          <rect class="b" x="290" y="282" width="180" height="40" rx="6" stroke-dasharray="4 3"/>
+          <text class="lbl" x="380" y="300" text-anchor="middle">Høye dimensjoner</text>
+          <text class="cap" x="380" y="314" text-anchor="middle">avstander konsentreres → reduser d (kommer)</text>
+          <path class="e-faded" d="M380 252 L380 280"/>
+        </svg>
+        <figcaption>Heltrukne piler: fra problemet til de to algoritmene. Stiplede: hva de bygger på og hva de sliter med.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────── Oppgaver ─────────── -->
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgaver</div>
+      <h2>Eksamensoppgaver og <em>«Oppgave:»</em>-avsnitt</h2>
+      <p class="section-intro">Alle boksene på 3A, lenket til stedet de står. Grønn status: svaret er fra notatene eller fra løsningsforslaget til eksamen. Gul: forslag skrevet for denne siden.</p>
+
+      <ul class="oppgave-index">
+        <li><a href="clustering.html#oppg-o25-6-1"><span class="oi-ref">Ord. 2025 · 6.1</span><span>Hvilken størrelse forsøker k-means å minimere?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-o24-29"><span class="oi-ref">Ord. 2024 · 29</span><span>Når bør vi bruke k-means?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-kmeans-antakelse"><span class="oi-ref">3.1.1 · s. 45</span><span>Hvilken implisitt antakelse ligger i k-means?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="clustering.html#oppg-o25-6-2"><span class="oi-ref">Ord. 2025 · 6.2</span><span>Hvorfor k-means++ framfor å alltid velge punktet lengst unna?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-o25-6-3"><span class="oi-ref">Ord. 2025 · 6.3</span><span>Hvorfor er det vanskelig å velge antall klynger k?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-o25-6-4"><span class="oi-ref">Ord. 2025 · 6.4</span><span>Ifølge DBSCAN tilhører to punkter samme klynge dersom …</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-o24-27"><span class="oi-ref">Ord. 2024 · 27</span><span>Hvilken egenskap gjør DBSCAN særlig robust?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-o24-30"><span class="oi-ref">Ord. 2024 · 30</span><span>DBSCAN-smilefjes delt i mange små klynger: hvilket parametervalg?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-kategorier"><span class="oi-ref">3.1.3 · s. 46</span><span>Hvilke kategorier hører k-means og DBSCAN til?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="clustering.html#oppg-o24-22"><span class="oi-ref">Ord. 2024 · 22</span><span>Hvilken kategori tilhører k-means? Og DBSCAN?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="clustering.html#oppg-avstand-hoydim"><span class="oi-ref">3.1.4 · s. 47</span><span>Hva forteller avstandsfordelingene om høydimensjonale rom?</span><span class="oi-status notes">Fra notatene</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">To «Oppgave:»-avsnitt ber deg leke med et visualiseringsverktøy. De har ikke noe svar, men er verdt ti minutter hver:</p>
+      <ul class="oppgave-index">
+        <li><a href="https://www.naftaliharris.com/blog/visualizing-k-means-clustering/" target="_blank" rel="noopener"><span class="oi-ref">3.1.1 · s. 44</span><span>Visualisering av k-means: prøv begge måtene å plassere sentroider på, for ulike datafordelinger.</span><span class="oi-status forslag">Ekstern</span></a></li>
+        <li><a href="https://www.naftaliharris.com/blog/visualizing-dbscan-clustering/" target="_blank" rel="noopener"><span class="oi-ref">3.1.2 · s. 46</span><span>Visualisering av DBSCAN: se klyngen spre seg fra kjernepunkt til kjernepunkt.</span><span class="oi-status forslag">Ekstern</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────── Quiz ─────────── -->
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapitlene</em></h2>
+      <p class="section-intro">Spørsmål som kobler kapittel 3 til kapittel 1 og 2.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">k-means har «tap» (inertia) og en iterativ oppdatering, akkurat som logistisk regresjon i 1A. Hva er likheten med gradient descent, og hva er den viktigste forskjellen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Likhet: begge starter tilfeldig, gjentar et steg som aldri øker tapet, og stopper når ingenting endrer seg; begge kan sette seg fast i et lokalt minimum. Forskjell: gradient descent følger gradienten med en læringsrate, mens k-means hopper rett til det optimale for hvert delproblem (nærmeste sentroide for gitte sentroider, middelverdi for gitte klynger) uten noen læringsrate. Og tapet for logistisk regresjon er konvekst, så startpunktet er uviktig; inertia er det ikke, derfor betyr initialiseringen (k-means++) så mye.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">I 1A ble «dimensjonsforbannelsen» brukt om at simultanfordelinger trenger eksponentielt mange datapunkter. Hva er den nye konsekvensen i kapittel 3, og hvorfor rammer den DBSCAN like hardt som k-means?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">I høye dimensjoner blir alle parvise avstander store og nesten like (concentration of distances), så «nærmeste» og «innenfor ε» mister mening. k-means bruker avstand til sentroiden, DBSCAN bruker avstand til naboer; begge bygger på at noen punkter er tydelig nærmere hverandre enn andre, og det er akkurat det som forsvinner. Løsningen er å redusere dimensjonaliteten først, som er neste tema i notatene.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et beslutningstre (1B) og DBSCAN deler begge opp datarommet i regioner uten å anta en funksjonsform. Hva er den prinsipielle forskjellen i hvordan regionene oppstår?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Treet splitter med akseparallelle terskler valgt for å redusere usikkerheten i <em>targets</em>; regionene er rektangler, og læringssignalet kommer fra labels. DBSCAN har ingen labels; regionene vokser fram av tettheten i <em>featurene</em> alene, kan ha vilkårlig form (en ring, en bue), og punkter uten tett nabolag får ingen region i det hele tatt. Treet må plassere alle punkter; DBSCAN kan si «dette punktet hører ikke hjemme noe sted».</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap2/koding.html" class="prev"><div class="pn-label">← Forrige · 2B</div><div class="pn-title">Koding: nevrale nettverk</div></a>
+        <a href="clustering.html" class="next"><div class="pn-label">Start · 3A</div><div class="pn-title">Clustering: k-means og DBSCAN →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

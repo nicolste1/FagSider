@@ -1,11 +1,11 @@
 {
-  "pdf": "TDT4172_forelesningsnotater.pdf",
-  "dato_i_pdf": "September 22, 2026",
-  "dato_norsk": "22. september 2026",
-  "sider": 39,
-  "sha256": "87105d7872ea50f11bf0a410daf253d481df835f960c36d969ea36fab161eccd",
-  "ekstrahert": "2026-09-26",
-  "antall_oppgaver": 37,
+  "pdf": "2026___TDT4172_Lecture_notes_and_equations-6.pdf",
+  "dato_i_pdf": "October 7, 2026",
+  "dato_norsk": "7. oktober 2026",
+  "sider": 47,
+  "sha256": "192b616b67e664f319a6bfdbd0f9c4e3845cc0398faf7d634b269a3a959b2761",
+  "ekstrahert": "2026-10-08",
+  "antall_oppgaver": 43,
   "seksjoner": [
     {
       "nummer": "1",
@@ -193,20 +193,20 @@
       "nummer": "1.5.1",
       "tittel": "Bagging",
       "side": 33,
-      "tegn": 3055,
+      "tegn": 5685,
       "oppgaver": 0
     },
     {
       "nummer": "1.5.2",
       "tittel": "Boosting",
       "side": 34,
-      "tegn": 2326,
+      "tegn": 5110,
       "oppgaver": 1
     },
     {
       "nummer": "2",
       "tittel": "Nevrale nettverk",
-      "side": 34,
+      "side": 35,
       "tegn": 833,
       "oppgaver": 0
     },
@@ -214,21 +214,77 @@
       "nummer": "2.1",
       "tittel": "Perceptron",
       "side": 35,
-      "tegn": 5110,
+      "tegn": 5151,
       "oppgaver": 3
     },
     {
       "nummer": "2.2",
       "tittel": "Aktiveringsfunksjoner",
       "side": 37,
-      "tegn": 2033,
+      "tegn": 2076,
       "oppgaver": 0
     },
     {
       "nummer": "2.3",
       "tittel": "Arkitektur",
-      "side": 37,
-      "tegn": 4273,
+      "side": 38,
+      "tegn": 4397,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "2.4",
+      "tittel": "Backpropagation",
+      "side": 40,
+      "tegn": 5048,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "2.5",
+      "tittel": "Bygge, trene og predikere",
+      "side": 41,
+      "tegn": 6435,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "3",
+      "tittel": "Uveiledet læring",
+      "side": 43,
+      "tegn": 533,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.1",
+      "tittel": "Clustering",
+      "side": 43,
+      "tegn": 496,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.1.1",
+      "tittel": "k-means",
+      "side": 43,
+      "tegn": 7192,
+      "oppgaver": 2
+    },
+    {
+      "nummer": "3.1.2",
+      "tittel": "DBSCAN",
+      "side": 45,
+      "tegn": 2517,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "3.1.3",
+      "tittel": "Hovedkategorier",
+      "side": 46,
+      "tegn": 1033,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "3.1.4",
+      "tittel": "Dimensjonsforbannelsen igjen",
+      "side": 46,
+      "tegn": 2490,
       "oppgaver": 1
     }
   ]

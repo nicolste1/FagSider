@@ -37,9 +37,9 @@
 <main data-chapter="Kapittel 2: Nevrale nettverk">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 2 · Notater 2.1–2.3 · s. 34–39 · under arbeid</div>
+      <div class="eyebrow">Kapittel 2 · Notater 2.1–2.5 · s. 35–43</div>
       <h1>Nevrale <em>nettverk</em></h1>
-      <p class="lede">Ikke-lineære modeller som transformerer dataene lag for lag. Perceptronet som utgangspunkt, aktiveringsfunksjonene som gjør det trenbart, og arkitekturen som bestemmer hva nettverket kan lære. Notatene dekker foreløpig bare 2.1–2.3; trening av nettverk (backpropagation) kommer.</p>
+      <p class="lede">Ikke-lineære modeller som transformerer dataene lag for lag. Perceptronet som utgangspunkt, aktiveringsfunksjonene som gjør det trenbart, arkitekturen som bestemmer hva nettverket kan lære, backpropagation som finner gradienten lag for lag bakover, og Keras-koden som bygger og trener nettverket.</p>
     </div>
   </header>
 
@@ -68,12 +68,13 @@
         <li><strong>Perceptronet</strong> er én node: \(\mathrm{H}(\mathbf{w}\mathbf{x} + b)\). Det kan lære AND, OR og NOT, men ikke XOR, og det kan ikke trenes med gradient descent fordi Heaviside ikke er deriverbar.</li>
         <li><strong>Aktiveringsfunksjonene</strong> løser det: sigmoid (binær klassifisering), softmax (flere klasser), ReLU (skjulte lag), lineær (regresjon). Deriverbar aktivering = trenbart nevron.</li>
         <li><strong>Arkitekturen</strong> er input-lag (én node per feature), skjulte lag og output-lag (én node per target), fully connected og feed-forward. Hvert lag er \(\mathbf{a}^{l} = g(W^{l} \mathbf{a}^{l-1})\), en ikke-lineær transformasjon.</li>
+        <li><strong>Backpropagation</strong> er treningen: en forward pass gir prediksjonen, så propageres feilen bakover fra output til input, og «ønskede endringer» samles lag for lag. Det er gradienten gradient descent trenger.</li>
         <li><strong>Eksamen</strong> spør «hvorfor» (Heaviside, XOR, sigmoid, backpropagation) og «hvor mange» (noder, vekter). Fem spørsmål i 2025, ett i 2024.</li>
       </ul>
 
       <div class="callout callout-warm">
         <span class="label">Status</span>
-        <p>Siden bygger på notatene datert 22. september 2026, som slutter etter avsnitt 2.3. Trening av nettverk, backpropagation og alt som kommer etter, legges til når notatene utvides. Backpropagation er likevel nevnt i 2A fordi begge eksamenssettene spør om det.</p>
+        <p>Siden bygger på notatene datert 7. oktober 2026 (avsnitt 2.1–2.5). Backpropagation (2.4) ligger på 2A, og Keras-koden for å bygge og trene nettverk (2.5) ligger på 2B som øvingsstoff. Eksamensanalysen ble utvidet med 2.4 og 2.5 den 8. oktober 2026; utvidelsen er et forslag som venter på godkjenning.</p>
       </div>
     </div>
   </section>
@@ -90,8 +91,9 @@
         <div class="path-step"><div class="num">02</div><div><div class="title"><a href="perceptron.html#perceptron">Perceptron</a></div><div class="desc">TLU, Heaviside, hvorfor gradienten forsvinner, Rosenblatts regel. Prøv stepperen.</div></div><div class="min">~10 min</div></div>
         <div class="path-step"><div class="num">03</div><div><div class="title"><a href="perceptron.html#logikk">Logiske operasjoner</a></div><div class="desc">AND, OR, NOT med tre tall. Hvorfor XOR trenger to lag. Bygg porten selv.</div></div><div class="min">~8 min</div></div>
         <div class="path-step"><div class="num">04</div><div><div class="title"><a href="perceptron.html#aktivering">Aktiveringsfunksjoner</a></div><div class="desc">Sigmoid, softmax, ReLU, lineær: hvilken hvor, og hvorfor.</div></div><div class="min">~6 min</div></div>
-        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="perceptron.html#arkitektur">Arkitektur</a></div><div class="desc">Lag, (96), matriseform (101), telle vekter, hva backpropagation gjør.</div></div><div class="min">~10 min</div></div>
-        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="koding.html#perceptron">Koding (til øvingen)</a></div><div class="desc">Perceptron, vektmatrise, porter, aktiveringer og forward pass i NumPy.</div></div><div class="min">~25 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="perceptron.html#arkitektur">Arkitektur</a></div><div class="desc">Lag, (96) med bias, matriseform (101), telle vekter.</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="perceptron.html#backpropagation">Backpropagation</a></div><div class="desc">Forward pass, eksempelet med ŷ = (0.1, 0.1, 0.8), «jo større a, jo større effekt har w», ønskede endringer lag for lag bakover. Prøv følsomhets-widgeten.</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="koding.html#perceptron">Koding (til øvingen)</a></div><div class="desc">Perceptron, vektmatrise, porter, aktiveringer og forward pass i NumPy; bygge, kompilere og trene i Keras.</div></div><div class="min">~35 min</div></div>
       </div>
     </div>
   </section>
@@ -106,7 +108,7 @@
           <span class="sp-icon">2A</span>
           <div class="sp-info">
             <div class="sp-title">Perceptron, aktivering og arkitektur</div>
-            <div class="sp-desc">Notater 2–2.3: parametrisk vs ikke-parametrisk, TLU og Heaviside, perceptron-regelen, logiske porter og XOR, sigmoid/softmax/ReLU, lag og matriseform. 5 eksamensoppgaver, 4 oppgaver fra notatene, 4 interaktive widgeter.</div>
+            <div class="sp-desc">Notater 2–2.4: parametrisk vs ikke-parametrisk, TLU og Heaviside, perceptron-regelen, logiske porter og XOR, sigmoid/softmax/ReLU, lag og matriseform, backpropagation som ønskede endringer lag for lag bakover. 5 eksamensoppgaver, 4 oppgaver fra notatene, 5 interaktive widgeter.</div>
           </div>
           <span class="sp-arrow">&rarr;</span>
         </a>
@@ -114,7 +116,7 @@
           <span class="sp-icon">2B</span>
           <div class="sp-info">
             <div class="sp-title">Koding: nevrale nettverk</div>
-            <div class="sp-desc">Øvingsstoff, ikke eksamensstoff: perceptron fra bunnen og med scikit-learn, vektmatrise for flere klasser, logiske porter, aktiveringsfunksjonene i NumPy og forward pass gjennom vilkårlig mange lag.</div>
+            <div class="sp-desc">Øvingsstoff, ikke eksamensstoff: perceptron fra bunnen og med scikit-learn, vektmatrise for flere klasser, logiske porter, aktiveringsfunksjonene i NumPy, forward pass gjennom vilkårlig mange lag, og Keras: Sequential/Dense, compile, fit, predict, evaluate, save. 1 oppgave fra notatene.</div>
           </div>
           <span class="sp-arrow">&rarr;</span>
         </a>
@@ -183,12 +185,12 @@
           <text class="cap" x="625" y="242" text-anchor="middle">n·m vekter + m bias per lag</text>
           <path class="e-faded" d="M470 229 L530 229"/>
 
-          <rect class="b" x="290" y="282" width="180" height="40" rx="6" stroke-dasharray="4 3"/>
-          <text class="lbl" x="380" y="300" text-anchor="middle">Backpropagation</text>
-          <text class="cap" x="380" y="314" text-anchor="middle">kommer i notatene · spurt på eksamen</text>
-          <path class="e-faded" d="M380 252 L380 280"/>
+          <rect class="bh" x="290" y="282" width="180" height="40" rx="6"/>
+          <text class="lbl-c" x="380" y="300" text-anchor="middle">Backpropagation</text>
+          <text class="cap" x="380" y="314" text-anchor="middle">feilen bakover lag for lag = gradienten</text>
+          <path class="e" d="M380 252 L380 280"/>
         </svg>
-        <figcaption>Heltrukne piler: utviklingen fra én terskel-enhet til et nettverk. Stiplede: begrunnelsen for hvert steg.</figcaption>
+        <figcaption>Heltrukne piler: utviklingen fra én terskel-enhet til et nettverk som kan trenes. Stiplede: begrunnelsen for hvert steg.</figcaption>
       </figure>
     </div>
   </section>
@@ -198,7 +200,7 @@
     <div class="container">
       <div class="section-badge">Oppgaver</div>
       <h2>Eksamensoppgaver og <em>«Oppgave:»</em>-avsnitt</h2>
-      <p class="section-intro">Alle boksene på 2A, lenket til stedet de står. Grønn status: svaret er fra notatene eller fra løsningsforslaget til eksamen. Gul: forslag skrevet for denne siden.</p>
+      <p class="section-intro">Alle boksene på 2A og 2B, lenket til stedet de står. Grønn status: svaret er fra notatene eller fra løsningsforslaget til eksamen. Gul: forslag skrevet for denne siden.</p>
 
       <ul class="oppgave-index">
         <li><a href="perceptron.html#oppg-heaviside-problem"><span class="oi-ref">2.1 · s. 35</span><span>Hva er problemet med å trene perceptronet med gradient descent?</span><span class="oi-status notes">Fra notatene</span></a></li>
@@ -208,8 +210,9 @@
         <li><a href="perceptron.html#oppg-o25-5-2"><span class="oi-ref">Ord. 2025 · 5.2</span><span>Hvorfor kan ikke ett perceptron lære XOR-tabellen?</span><span class="oi-status notes">Eksamen</span></a></li>
         <li><a href="perceptron.html#oppg-o25-5-3"><span class="oi-ref">Ord. 2025 · 5.3</span><span>Viktigste konsekvens av sigmoid i stedet for step-funksjonen?</span><span class="oi-status notes">Eksamen</span></a></li>
         <li><a href="perceptron.html#oppg-forste-node"><span class="oi-ref">2.3 · s. 38</span><span>Skriv ned aktiveringen til første node i første lag etter input.</span><span class="oi-status notes">Fra notatene</span></a></li>
-        <li><a href="perceptron.html#oppg-o24-19"><span class="oi-ref">Ord. 2024 · 19</span><span>Hovedformålet med backpropagation?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
-        <li><a href="perceptron.html#oppg-o25-5-4"><span class="oi-ref">Ord. 2025 · 5.4</span><span>Hovedformålet med backpropagation-algoritmen (kjerneregelen bakover)?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="perceptron.html#oppg-o24-19"><span class="oi-ref">Ord. 2024 · 19</span><span>Hovedformålet med backpropagation?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="perceptron.html#oppg-o25-5-4"><span class="oi-ref">Ord. 2025 · 5.4</span><span>Hovedformålet med backpropagation-algoritmen (kjerneregelen bakover)?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="koding.html#oppg-keras-vekter"><span class="oi-ref">2.5 · s. 42</span><span>Hvorfor har en Keras-modell ingen vekter før den er evaluert eller har fått input-shape?</span><span class="oi-status notes">Fra notatene</span></a></li>
       </ul>
     </div>
   </section>

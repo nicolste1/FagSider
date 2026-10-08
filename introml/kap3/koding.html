@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Koding: clustering — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fn-table { table-layout: fixed; width: 100%; }
+  .fn-table th:first-child, .fn-table td:first-child { width: 34%; font-family: var(--mono); font-size: 0.8rem; word-break: break-word; }
+  .fn-table th:last-child, .fn-table td:last-child { width: 14%; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faded); }
+  pre.pseudo { border-left: 3px solid var(--warm); }
+  pre.pseudo::before { content: 'PSEUDOKODE · forslag'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--warm); margin-bottom: 0.5rem; }
+  pre.notes::before { content: 'FRA NOTATENE'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Uveiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3B · Koden i notatene 3.1.1–3.1.4 · øvingsstoff · ~20 min</div>
+      <h1>Koding: <em>clustering</em></h1>
+      <p class="lede">k-means fra bunnen og med scikit-learn, de tre kvalitetsmetrikkene for å velge k, DBSCAN som pseudokode og som kall, og simuleringen av avstander i enhetskuben som viser dimensjonsforbannelsen.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#verktoy"><span>01</span> Verktøykassa</a>
+        <a href="#kmeans"><span>02</span> k-means</a>
+        <a href="#metrikker"><span>03</span> Velge k</a>
+        <a href="#dbscan"><span>04</span> DBSCAN</a>
+        <a href="#avstand"><span>05</span> Avstander i høye dimensjoner</a>
+        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Øvingsstoff, <em>ikke</em> eksamensstoff</h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · siden dekker koden i notatene 3.1; utvidelsen for kapittel 3 (8. oktober 2026) er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Øving</span><strong>For øvingen om uveiledet læring.</strong> Ingen kode fra kapittel 3 er spurt på eksamen så langt.</li>
+          <li><span class="tag">Forklar</span>Det som overlapper: <strong>hva algoritmene gjør steg for steg</strong>. Pseudokoden for k-means (<a href="#kmeans">02</a>) og DBSCAN (<a href="#dbscan">04</a>) er den samme stegvise beskrivelsen som eksamensspørsmålene bygger på, og metrikkene i <a href="#metrikker">03</a> er det Ord. 2025 del 6 spm. 1 og 3 handler om.</li>
+          <li><span class="tag">Lavere</span>Resten er oppslag.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 VERKTØY ─────────────────────────── -->
+  <section id="verktoy">
+    <div class="container">
+      <div class="section-badge">01 · Verktøykassa</div>
+      <h2>Funksjonene som <em>går igjen</em></h2>
+      <div class="source-note">Notatene · kodeeksemplene i 3.1.1–3.1.4</div>
+
+      <div class="table-wrap">
+        <table class="fn-table">
+          <thead><tr><th>Funksjon</th><th>Hva den gjør</th><th>Brukt i</th></tr></thead>
+          <tbody>
+            <tr><td>np.mean(X[labels == j], axis=0)</td><td>Ny sentroide: middelverdien av punktene i klynge j (steg 6 i k-means).</td><td>3.1.1</td></tr>
+            <tr><td>np.linalg.norm(P1 - P2)</td><td>Euklidsk avstand mellom to punkter (vektorer).</td><td>3.1.4</td></tr>
+            <tr><td>MiniBatchKMeans(n_clusters=k, init="k-means++")</td><td>k-means på en liten tilfeldig trekning per iterasjon; <code>init</code> velger initialisering. Uten <code>n_clusters</code> prøver biblioteket å velge k selv.</td><td>3.1.1</td></tr>
+            <tr><td>modell.inertia_, modell.cluster_centers_, modell.labels_</td><td>Sum av kvadrerte avstander, sentroidene, klyngetilhørighet per punkt etter <code>fit</code>.</td><td>3.1.1 (forslag)</td></tr>
+            <tr><td>sklearn.metrics.silhouette_score(X, labels)</td><td>Silhouette-koeffisienten, gjennomsnitt over punktene; 1 best, −1 verst.</td><td>3.1.1</td></tr>
+            <tr><td>sklearn.metrics.calinski_harabasz_score(X, labels)</td><td>Spredning mellom klynger delt på spredning innad; høy er bra.</td><td>3.1.1</td></tr>
+            <tr><td>DBSCAN(eps=0.5, min_samples=5).fit(X)</td><td>Tetthetsbasert clustering; <code>labels_</code> er −1 for outliers, <code>core_sample_indices_</code> er kjernepunktene.</td><td>3.1.2 (forslag)</td></tr>
+            <tr><td>np.random.uniform()</td><td>Tilfeldig tall i [0, 1): én koordinat i enhetskuben.</td><td>3.1.4</td></tr>
+            <tr><td>plt.subplots(2, 3), axs[i, j].hist(...)</td><td>Rutenett av histogrammer, ett per d.</td><td>3.1.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 K-MEANS ─────────────────────────── -->
+  <section id="kmeans">
+    <div class="container">
+      <div class="section-badge">02 · k-means</div>
+      <h2>Fra bunnen og <em>med sklearn</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.1 · s. 43–44 (stegene); koden er forslag</div>
+
+      <p class="dropcap">De sju stegene fra 3A oversatt til kode. Det eneste som trengs er avstander, <code>argmin</code> og <code>mean</code>; løkka stopper når ingen punkter bytter klynge.</p>
+<pre class="pseudo"><code>def kmeans(X, k, init="pp", max_iter=100, rng=np.random.default_rng(0)):
+    C = init_centroids(X, k, init, rng)                      # steg 1–2: k sentroider, shape (k, d)
+    labels = rng.integers(0, k, size=len(X))                 # steg 3: tilfeldig klynge til hvert punkt
+    for _ in range(max_iter):
+        dist = ((X[:, None, :] - C[None, :, :]) ** 2).sum(axis=2)   # steg 4: (n, k) kvadrerte avstander
+        new_labels = dist.argmin(axis=1)                     # steg 5: nærmeste sentroide
+        if np.all(new_labels == labels):                     # steg 7: ingen endring → ferdig
+            break
+        labels = new_labels
+        C = np.array([X[labels == j].mean(axis=0) if np.any(labels == j) else C[j]
+                      for j in range(k)])                    # steg 6: middelverdi per klynge
+    inertia = dist[np.arange(len(X)), labels].sum()          # det k-means minimerer
+    return C, labels, inertia
+
+
+def init_centroids(X, k, init, rng):
+    if init == "random":                                     # k tilfeldige datapunkter
+        return X[rng.choice(len(X), k, replace=False)].copy()
+    C = [X[rng.integers(len(X))]]                            # første alltid tilfeldig
+    while len(C) &lt; k:
+        d2 = np.min(((X[:, None, :] - np.array(C)[None, :, :]) ** 2).sum(axis=2), axis=1)  # avstand² til nærmeste sentroide
+        if init == "far":                                    # lengst unna: deterministisk, havner i utkanten
+            C.append(X[d2.argmax()])
+        else:                                                # k-means++: sannsynlighet ∝ d²
+            C.append(X[rng.choice(len(X), p=d2 / d2.sum())])
+    return np.array(C)</code></pre>
+      <p>Sannsynligheten for at tilfeldig start setter én sentroide i hver sanne klynge er \(k!/k^k\); det er grunnen til at <code>init="pp"</code> er standard.</p>
+
+      <h3>Det samme med scikit-learn</h3>
+<pre class="pseudo"><code>from sklearn.cluster import MiniBatchKMeans                   # klassen ligger i sklearn.cluster
+
+km = MiniBatchKMeans(n_clusters=3, init="k-means++", batch_size=256, random_state=0).fit(X)
+km.labels_            # klynge per punkt
+km.cluster_centers_   # sentroidene, shape (k, d)
+km.inertia_           # sum av kvadrerte avstander punkt–sentroide</code></pre>
+      <p>Særlig for store datasett: i stedet for hele datasettet brukes en liten tilfeldig trekning (en <span class="term" data-term="mini-batch">mini batch</span>) hver iterasjon. \(k\) angis med <code>n_clusters</code>, initialiseringsmetoden med <code>init</code>. Oppgir vi ikke \(k\), prøver algoritmen å velge en optimal verdi selv; det fungerer vel så ofte mindre godt.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 METRIKKER ─────────────────────────── -->
+  <section id="metrikker">
+    <div class="container">
+      <div class="section-badge">03 · Velge k</div>
+      <h2>Tre metrikker, <em>én løkke</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.1 · s. 45 (metrikkene); koden er forslag</div>
+
+      <p class="dropcap">Uten labels må \(k\) velges ved å tilpasse flere modeller og sammenlikne metrikker. <span class="term" data-term="inertia">Inertia</span> synker alltid med \(k\), så den brukes bare til å se etter en «albue». <span class="term" data-term="silhouette">Silhouette</span> og <span class="term" data-term="calinski-harabasz">Calinski–Harabasz</span> har et maksimum, men ikke nødvendigvis ved samme \(k\).</p>
+<pre class="pseudo"><code>from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+
+for k in range(2, 11):
+    km = KMeans(n_clusters=k, init="k-means++", n_init=10, random_state=0).fit(X)
+    print(k,
+          round(km.inertia_, 1),                                # lav er bra, men synker alltid med k
+          round(silhouette_score(X, km.labels_), 3),            # (b − a) / max(a, b), 1 er best
+          round(calinski_harabasz_score(X, km.labels_), 1))     # mellom / innad, høy er bra</code></pre>
+
+<pre class="pseudo"><code>def silhouette_one(i, X, labels):                             # for ett punkt, for å se formelen
+    same = X[(labels == labels[i])]
+    a = np.linalg.norm(same - X[i], axis=1).sum() / max(len(same) - 1, 1)   # midlere avstand innad
+    b = min(np.linalg.norm(X[labels == j] - X[i], axis=1).mean()
+            for j in set(labels) if j != labels[i])                         # midlere avstand til nærmeste andre klynge
+    return (b - a) / max(a, b)</code></pre>
+      <p>Skaler features før alt dette: euklidsk avstand domineres ellers av featuren med størst tallverdi, og det gjelder både k-means og metrikkene.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 DBSCAN ─────────────────────────── -->
+  <section id="dbscan">
+    <div class="container">
+      <div class="section-badge">04 · DBSCAN</div>
+      <h2>Kjernepunkter som <em>sprer</em> klyngen</h2>
+      <div class="source-note">Notatene · avsnitt 3.1.2 · s. 45–46 (prosedyren); koden er forslag</div>
+
+      <p class="dropcap">De tre stegene fra 3A: finn kjernepunkter (nok naboer innenfor \(\epsilon\)), spre klyngen fra kjernepunkt til kjernepunkt, og la alt som ikke ble nådd være outliers (label \(-1\)).</p>
+<pre class="pseudo"><code>def dbscan(X, eps, min_samples):
+    n = len(X)
+    dist = np.linalg.norm(X[:, None, :] - X[None, :, :], axis=2)    # (n, n): alle avstander, derfor treg for stor n
+    neighbors = [np.where((dist[i] &lt;= eps) &amp; (np.arange(n) != i))[0] for i in range(n)]
+    core = np.array([len(nb) &gt;= min_samples for nb in neighbors])  # steg 1: kjernepunkter
+    labels = np.full(n, -1)                                         # -1 = ikke tilordnet (outlier)
+    cluster = 0
+    for i in range(n):
+        if not core[i] or labels[i] != -1:
+            continue
+        labels[i] = cluster                                         # start ny klynge i et kjernepunkt
+        stack = [i]
+        while stack:                                                # steg 2: spre klyngen
+            p = stack.pop()
+            for q in neighbors[p]:
+                if labels[q] == -1:
+                    labels[q] = cluster                             # nås fra p: samme klynge
+                    if core[q]:
+                        stack.append(q)                             # bare kjernepunkter sprer videre
+        cluster += 1
+    return labels, core                                             # steg 3: labels == -1 er outliers</code></pre>
+      <p>Ikke-kjernepunktene er de med <code>labels != -1</code> og <code>core == False</code>: de ble nådd fra et kjernepunkt, men sprer ikke selv. Kjeden i løkka er nøyaktig definisjonen «to punkter er i samme klynge når det ene kan nås fra det andre med steg \(\le \epsilon\)».</p>
+
+      <h3>Det samme med scikit-learn</h3>
+<pre class="pseudo"><code>from sklearn.cluster import DBSCAN
+
+db = DBSCAN(eps=0.5, min_samples=5).fit(X)
+db.labels_                       # -1 for outliers, ellers klyngenummer
+db.core_sample_indices_          # indeksene til kjernepunktene
+n_clusters = len(set(db.labels_)) - (1 if -1 in db.labels_ else 0)
+n_outliers = np.sum(db.labels_ == -1)</code></pre>
+      <p>sklearn teller punktet selv med blant naboene, så <code>min_samples=5</code> der tilsvarer fire naboer i pseudokoden over. Prøv <code>eps</code> for lav og se antall klynger eksplodere og outliers fylle mellomrommene; det er figuren i Ord. 2024 spm. 30.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 AVSTAND ─────────────────────────── -->
+  <section id="avstand">
+    <div class="container">
+      <div class="section-badge">05 · Avstander i høye dimensjoner</div>
+      <h2>Simuleringen bak <em>figur 22</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.1.4 · s. 46–47</div>
+
+      <p class="dropcap">To tilfeldige punkter i enhetskuben \([0,1]^d\), avstanden mellom dem, gjentatt 1000 ganger for seks verdier av \(d\):</p>
+<pre class="notes"><code>def get_cube_dist(dim):
+    dims = range(dim)
+    P1 = np.array([np.random.uniform() for _ in dims])
+    P2 = np.array([np.random.uniform() for _ in dims])
+    dist = np.linalg.norm(P1 - P2)
+    return dist
+
+n_iter = 1000
+grid = [2, 3]
+dims = [2, 3, 10, 100, 1000, 10000]
+fig, axs = plt.subplots(grid[0], grid[1])
+
+_i = 0
+for _x in range(grid[0]):
+    for _y in range(grid[1]):
+        dim = dims[_i]
+        _i += 1
+        dists = [get_cube_dist(dim) for _ in range(n_iter)]
+        axs[_x, _y].hist(dists, label=f"d={dim}")
+        axs[_x, _y].legend()
+        axs[_x, _y].set_xlim(left=0)
+plt.show()</code></pre>
+      <p>Les av middelverdi og spredning per \(d\): middelverdien vokser omtrent som \(\sqrt{d/6}\), spredningen holder seg omtrent konstant, så spredning delt på middelverdi går mot null. Det er <span class="term" data-term="concentration-of-distances">concentration of distances</span>, og grunnen til at avstandsbaserte algoritmer trenger dimensjonsreduksjon først.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">06 · Oppsummering</div>
+      <h2>Det du bør <em>kunne skrive</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>k-means</strong><code>dist.argmin(axis=1)</code> for tildeling, <code>X[labels == j].mean(axis=0)</code> for nye sentroider, stopp når labels ikke endres.</div>
+        <div class="recap-pill"><strong>k-means++</strong>Første tilfeldig; neste med <code>rng.choice(n, p=d2 / d2.sum())</code>.</div>
+        <div class="recap-pill"><strong>Velge k</strong>Løkke over k med <code>inertia_</code>, <code>silhouette_score</code>, <code>calinski_harabasz_score</code>; de kan være uenige.</div>
+        <div class="recap-pill"><strong>DBSCAN</strong>Naboer innen eps → kjernepunkter → spre med en stack → resten er −1.</div>
+        <div class="recap-pill"><strong>sklearn</strong><code>MiniBatchKMeans(n_clusters, init)</code>, <code>DBSCAN(eps, min_samples)</code>, <code>labels_</code>.</div>
+        <div class="recap-pill"><strong>Avstand</strong><code>np.linalg.norm(P1 - P2)</code>; i høye d vokser den, spredningen gjør det ikke.</div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="clustering.html" class="prev"><div class="pn-label">← Forrige · 3A</div><div class="pn-title">Clustering: k-means og DBSCAN</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 3: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

@@ -54,9 +54,9 @@
 <main data-chapter="Kapittel 2: Nevrale nettverk">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 2 · 2A · Notater 2–2.3 · s. 34–39 · ~35 min</div>
+      <div class="eyebrow">Kapittel 2 · 2A · Notater 2–2.4 · s. 35–41 · ~40 min</div>
       <h1>Perceptron, aktivering og <em>arkitektur</em></h1>
-      <p class="lede">Fra én terskel-enhet til et nettverk av lag. Hvorfor Heaviside-funksjonen ikke lar seg trene med gradient descent, hvorfor ett perceptron ikke kan lære XOR, hva sigmoid, softmax og ReLU brukes til, og hvordan hvert lag i et nevralt nettverk gjør en ikke-lineær transformasjon av dataene.</p>
+      <p class="lede">Fra én terskel-enhet til et nettverk av lag. Hvorfor Heaviside-funksjonen ikke lar seg trene med gradient descent, hvorfor ett perceptron ikke kan lære XOR, hva sigmoid, softmax og ReLU brukes til, hvordan hvert lag i et nevralt nettverk gjør en ikke-lineær transformasjon av dataene, og hvordan backpropagation sender feilen bakover gjennom lagene for å finne gradienten.</p>
       <nav class="toc">
         <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#intro"><span>01</span> Hvorfor nettverk</a>
@@ -64,7 +64,8 @@
         <a href="#logikk"><span>03</span> Logiske operasjoner</a>
         <a href="#aktivering"><span>04</span> Aktiveringsfunksjoner</a>
         <a href="#arkitektur"><span>05</span> Arkitektur</a>
-        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+        <a href="#backpropagation"><span>06</span> Backpropagation</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
       </nav>
     </div>
   </header>
@@ -74,15 +75,15 @@
     <div class="container">
       <div class="section-badge">00 · Eksamensfokus</div>
       <h2>Hva du må <em>kunne fra denne siden</em></h2>
-      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · deltema 2.1 (prio 1), 2.2 og 2.3 (prio 2)</div>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · deltema 2.1 (prio 1), 2.2, 2.3 og 2.4 (prio 2) · utvidelsen for 2.4 (8. oktober 2026) er et forslag som venter på godkjenning</div>
       <div class="callout callout-warm">
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
           <li><span class="tag">Forklar</span><strong>Hvorfor Heaviside er uegnet for gradientbasert trening</strong>: ikke deriverbar i null, og derivert lik null overalt ellers (Ord. 2025 del 5 spm. 1). Rosenblatts regel \(w_i \leftarrow w_i + \eta(y_i - \hat{y}_i)\) unngår problemet ved å droppe den deriverte. Se <a href="#perceptron">02</a>.</li>
           <li><span class="tag">Forklar</span><strong>XOR</strong> kan ikke læres av ett perceptron fordi mønsteret ikke er lineært separerbart; AND, OR og NOT kan (Ord. 2025 del 5 spm. 2). Kjenn vektene for de tre portene. Se <a href="#logikk">03</a>.</li>
           <li><span class="tag">Forklar</span><strong>Sigmoid i stedet for step</strong> gjør nevronet deriverbart og trenbart med gradient descent (Ord. 2025 del 5 spm. 3). Sigmoid for binær klassifisering, softmax for flere klasser, ReLU i skjulte lag, lineær ut for regresjon. Se <a href="#aktivering">04</a>.</li>
-          <li><span class="tag regn">Regn</span><strong>Tell noder og vekter</strong>: input-laget har like mange noder som features, output-laget like mange som targets; to features og tre klasser gir seks vekter og tre bias. Aktiveringen \(a^l_j = g(\sum_i w^l_{ij} a^{l-1}_i)\) og matriseformen (101). Se <a href="#arkitektur">05</a>.</li>
-          <li><span class="tag">Forklar</span><strong>Backpropagation</strong> (Ord. 2024 spm. 19; Ord. 2025 del 5 spm. 4): beregner hvordan hver vekt påvirker tapet med kjerneregelen bakover gjennom nettverket, for å justere vektene. Står ikke i notatene ennå. Se <a href="#arkitektur">05</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Tell noder og vekter</strong>: input-laget har like mange noder som features, output-laget like mange som targets; to features og tre klasser gir seks vekter og tre bias. Aktiveringen \(a^l_j = g(\sum_i w^l_{ij} a^{l-1}_i + b^l_j)\) og matriseformen (101). Se <a href="#arkitektur">05</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Backpropagation</strong> (Ord. 2024 spm. 19; Ord. 2025 del 5 spm. 4): beregner hvordan hver vekt påvirker tapet ved å propagere feilen bakover gjennom lagene (kjerneregelen), slik at gradient descent kan justere vektene. Ha intuisjonen: «jo større \(a\), jo større effekt har \(w\)», og omvendt. Se <a href="#backpropagation">06</a>.</li>
           <li><span class="tag">Lavere</span>Historikken (McCulloch–Pitts 1943, Rosenblatt 1957, «maskin, ikke program»), sklearn-koden for <code>Perceptron</code>, og konvolusjons-/transformer-arkitekturer som notatene nevner men ikke dekker.</li>
         </ul>
       </div>
@@ -94,7 +95,7 @@
     <div class="container">
       <div class="section-badge">01 · Hvorfor nettverk</div>
       <h2>Modeller som <em>transformerer</em> dataene</h2>
-      <div class="source-note">Notatene · avsnitt 2 · s. 34–35</div>
+      <div class="source-note">Notatene · avsnitt 2 · s. 35</div>
 
       <p class="dropcap">Når vi gjør maskinlæring ønsker vi å tilpasse en funksjon \(f\) som gir et estimat basert på \(x\), i <span class="term" data-term="veiledet-laering">veiledet læring</span> et estimat av target \(y\), altså \(\hat{y} = f(x)\). Kapittel 1 viste to måter å modellere \(f\) på:</p>
       <div class="compare-grid">
@@ -171,7 +172,7 @@ prediction = 1.0 if activation &gt;= 0.0 else 0.0</code></pre>
 
       <div class="widget" id="w-perc">
         <div class="widget-label">Prøv selv · Perceptron-regelen steg for steg</div>
-        <p class="widget-intro">To klasser i planet (egen konstruert utgave av figur 17a). Klikk «Ett datapunkt» for å sende neste punkt gjennom \(\mathrm{H}(w_1 x_1 + w_2 x_2 + b)\) og oppdatere vektene med regelen \(w \leftarrow w + \eta\,(y - \hat{y})\,x\). Linja er beslutningsgrensen \(w_1 x_1 + w_2 x_2 + b = 0\). Riktig klassifiserte punkter endrer ingenting.</p>
+        <p class="widget-intro">To klasser i planet (egen konstruert utgave av figur 19a). Klikk «Ett datapunkt» for å sende neste punkt gjennom \(\mathrm{H}(w_1 x_1 + w_2 x_2 + b)\) og oppdatere vektene med regelen \(w \leftarrow w + \eta\,(y - \hat{y})\,x\). Linja er beslutningsgrensen \(w_1 x_1 + w_2 x_2 + b = 0\). Riktig klassifiserte punkter endrer ingenting.</p>
         <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="Perceptron-trening"></svg>
         <div class="legend-row"><span class="l-a">Klasse 1</span><span class="l-w">Klasse 0</span><span class="l-g">Beslutningsgrense</span></div>
         <div class="w-row">
@@ -184,13 +185,13 @@ prediction = 1.0 if activation &gt;= 0.0 else 0.0</code></pre>
       </div>
 
       <h3>Flere klasser: en vektmatrise</h3>
-      <p>Har dataene tre klasser (figur 17b i notatene), forblir treningsprosedyren den samme, men koden må håndtere en <span class="term" data-term="vektmatrise">vektmatrise</span> i stedet for en vektor. Parameteroppdateringen følger da</p>
+      <p>Har dataene tre klasser (figur 19b i notatene), forblir treningsprosedyren den samme, men koden må håndtere en <span class="term" data-term="vektmatrise">vektmatrise</span> i stedet for en vektor. Parameteroppdateringen følger da</p>
       \[ w_{i,j} \leftarrow w_{i,j} + \eta\,(y_j - \hat{y}_j)\, x_i, \tag{92} \]
       <p>der \(w_{i,j}\) er vekten på forbindelsen mellom input \(i\) og node \(j\), \(\eta\) er læringsraten, \(\hat{y}_j\) og \(y_j\) er output og target for klasse \(j\), og \(x_i\) er feature-verdi \(i\) for datapunktet.</p>
 
       <div class="oppgave" data-quiz id="oppg-vekter-tre-klasser">
         <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">2.1 · s. 36</span></div>
-        <div class="o-text"><p>Dataene i figur 17b har to features \(x_1, x_2\) og tre klasser (fargene). Hvor mange features og klasser har dataene? Hvor mange vekter trenger et perceptron for å tilpasse dem? Det kan være nyttig å tegne en figur.</p></div>
+        <div class="o-text"><p>Dataene i figur 19b har to features \(x_1, x_2\) og tre klasser (fargene). Hvor mange features og klasser har dataene? Hvor mange vekter trenger et perceptron for å tilpasse dem? Det kan være nyttig å tegne en figur.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
@@ -202,7 +203,7 @@ prediction = 1.0 if activation &gt;= 0.0 else 0.0</code></pre>
 
       <details>
         <summary>Utdypning · lavere prioritet: perceptron i scikit-learn</summary>
-        <p>Dataene i figur 17a er generert med <code>sklearn.datasets.make_blobs</code>, og tilpasses med <code>sklearn.linear_model.Perceptron</code>, en wrapper rundt <code>SGDClassifier</code> med <code>loss="perceptron"</code> og <code>learning_rate="constant"</code>:</p>
+        <p>Dataene i figur 19a er generert med <code>sklearn.datasets.make_blobs</code>, og tilpasses med <code>sklearn.linear_model.Perceptron</code>, en wrapper rundt <code>SGDClassifier</code> med <code>loss="perceptron"</code> og <code>learning_rate="constant"</code>:</p>
 <pre><code>perceptron = Perceptron().fit(X_train, y_train)
 y_pred = perceptron.predict(X_test)
 ws = perceptron.coef_
@@ -291,7 +292,7 @@ print("Biases:", bs.shape)</code></pre>
         <div class="fact-card"><div class="fc-key">Sigmoid · binær klassifisering</div><div class="fc-val">I noden i siste lag, så prediksjonen havner i \([0, 1]\). Samme funksjon som i logistisk regresjon, likning (93).</div></div>
         <div class="fact-card"><div class="fc-key">Softmax · flere klasser</div><div class="fc-val">I output-nodene, én node per klasse. Sikrer at aktiveringene summerer til 1, så hver output-node er predikert tilhørighet til sin klasse, likning (94).</div></div>
         <div class="fact-card"><div class="fc-key">ReLU · skjulte lag</div><div class="fc-val">Rectified linear unit, det vi holder oss til i indre lag i dette kurset, likning (95).</div></div>
-        <div class="fact-card"><div class="fc-key">Lineær · regresjon</div><div class="fc-val">MLP-modeller som gjør regresjon må kunne returnere tall som ikke er begrenset til et intervall, så output-laget får som regel en lineær aktiveringsfunksjon.</div></div>
+        <div class="fact-card"><div class="fc-key">Ingen (lineær) · regresjon</div><div class="fc-val">MLP-modeller som gjør regresjon må kunne returnere tall som ikke er begrenset til et intervall, så output-laget får som regel ingen aktiveringsfunksjon, som tilsvarer en lineær aktiveringsfunksjon.</div></div>
       </div>
       \[ \sigma(x) = \frac{1}{1 + e^{-x}}, \tag{93} \]
       \[ \mathrm{softmax}(\mathbf{x})_i = \frac{e^{x_i}}{\sum_j e^{x_j}}, \tag{94} \]
@@ -301,7 +302,7 @@ print("Biases:", bs.shape)</code></pre>
 
       <div class="widget" id="w-act">
         <div class="widget-label">Prøv selv · De tre aktiveringsfunksjonene og deres deriverte</div>
-        <p class="widget-intro">Figur 18 i notatene: Heaviside, sigmoid og ReLU. Dra i \(z\) og les av verdien og den deriverte. Legg merke til at Heaviside har derivert 0 overalt (og er udefinert i 0), mens sigmoid har \(\sigma'(z) = \sigma(z)(1 - \sigma(z)) \gt 0\) overalt.</p>
+        <p class="widget-intro">Figur 20 i notatene: Heaviside, sigmoid og ReLU. Dra i \(z\) og les av verdien og den deriverte. Legg merke til at Heaviside har derivert 0 overalt (og er udefinert i 0), mens sigmoid har \(\sigma'(z) = \sigma(z)(1 - \sigma(z)) \gt 0\) overalt.</p>
         <svg viewBox="0 0 560 240" data-w="560" data-h="240" aria-label="Aktiveringsfunksjoner"></svg>
         <div class="legend-row"><span class="l-a">Sigmoid</span><span class="l-w">Heaviside</span><span class="l-g">ReLU (skalert 1/4)</span></div>
         <div class="w-row">
@@ -349,7 +350,7 @@ print("Biases:", bs.shape)</code></pre>
     <div class="container">
       <div class="section-badge">05 · Arkitektur</div>
       <h2>Lag som gjør <em>ikke-lineære transformasjoner</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.3 · s. 37–39</div>
+      <div class="source-note">Notatene · avsnitt 2.3 · s. 38–40</div>
 
       <p class="dropcap">Hvordan nodene er satt sammen kalles nettverkets <span class="term" data-term="arkitektur">arkitektur</span>. Nevrale nettverk består av <span class="term" data-term="lag">lag</span>, som igjen består av noder stablet i høyden, altså noder som ikke mottar input fra hverandre. Informasjon går bare mellom noder i ulike lag, ikke mellom noder i samme lag. Alle nevrale nettverk består av:</p>
       <ol class="steps">
@@ -372,13 +373,13 @@ print("Biases:", bs.shape)</code></pre>
           <g id="nn-edges"></g>
           <g id="nn-nodes"></g>
         </svg>
-        <figcaption>Etter figur 19 i notatene: tre input-noder (grønn), to skjulte lag med fire noder (teal) og tre output-noder (rust). Hver node i et lag er koblet til alle nodene i nabolagene.</figcaption>
+        <figcaption>Etter figur 21 i notatene: tre input-noder (grønn), to skjulte lag med fire noder (teal) og tre output-noder (rust). Hver node i et lag er koblet til alle nodene i nabolagene.</figcaption>
       </figure>
 
       <h3>Aktiveringen til én node</h3>
       <p>Generelt er <span class="term" data-term="aktivering">aktiveringen</span> \(a\) til node \(j\) i lag \(l\)</p>
-      \[ a^{l}_j = g\!\left( \sum_{i=0}^{n} w^{l}_{ij}\, a^{l-1}_i \right), \tag{96} \]
-      <p>der \(l\) er lagindeks (0 er input-laget), \(i\) er node i forrige lag, \(j\) er node i det aktuelle laget, \(a^{l-1}_i\) er aktiveringen av node \(i\) i forrige lag, og \(g\) er aktiveringsfunksjonen i laget. Bias-leddet er bakt inn som \(i = 0\) med \(a^{l-1}_0 = 1\), slik vi gjorde for perceptronet.</p>
+      \[ a^{l}_j = g\!\left( \sum_{i=0}^{n} w^{l}_{ij}\, a^{l-1}_i + b^{l}_j \right), \tag{96} \]
+      <p>der \(l\) er lagindeks (0 er input-laget), \(i\) er node i forrige lag, \(j\) er node i det aktuelle laget, \(a^{l-1}_i\) er aktiveringen av node \(i\) i forrige lag, \(b^{l}_j\) er bias for noden, og \(g\) er aktiveringsfunksjonen i laget. Hver node har altså én vekt per node i laget før, pluss én bias.</p>
 
       <div class="oppgave" data-quiz id="oppg-forste-node">
         <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">2.3 · s. 38</span></div>
@@ -388,18 +389,18 @@ print("Biases:", bs.shape)</code></pre>
           <div class="answer">
             <span class="answer-src">Svar fra notatene</span>
             <p>Sett \(l = 1\), \(j = 1\) og \(a^{0}_i = x_i\) inn i (96):</p>
-            \[ a^{(1)}_1 = g\!\left( \sum_{i=0}^{n} w^{(1)}_{i1}\, x_i \right). \tag{97} \]
-            <p>Noden får alle \(n\) features inn, vekter hver med sin \(w^{(1)}_{i1}\), summerer, og sender summen gjennom \(g\).</p>
+            \[ a^{(1)}_1 = g\!\left( \sum_{i=0}^{n} w^{(1)}_{i1}\, x_i + b^{(1)}_1 \right). \tag{97} \]
+            <p>Noden får alle \(n\) features inn, vekter hver med sin \(w^{(1)}_{i1}\), summerer, legger til sin bias \(b^{(1)}_1\), og sender summen gjennom \(g\).</p>
           </div>
         </div>
       </div>
 
       <h3>Matriseform: to features, tre skjulte noder</h3>
       <p>Ta tilfellet med to input-features og et skjult lag med tre noder; resten av arkitekturen spiller ingen rolle. Da er \(i \in \{1, 2\}\) og \(j \in \{1, 2, 3\}\), og aktiveringene i første indre lag er</p>
-      \[ \begin{aligned} a_1 &amp;= g\big(w^{(1)}_{11} x_1 + w^{(1)}_{21} x_2\big) \\ a_2 &amp;= g\big(w^{(1)}_{12} x_1 + w^{(1)}_{22} x_2\big) \\ a_3 &amp;= g\big(w^{(1)}_{13} x_1 + w^{(1)}_{23} x_2\big) \end{aligned} \tag{98–100} \]
+      \[ \begin{aligned} a^{(1)}_1 &amp;= g\big(w^{(1)}_{11} x_1 + w^{(1)}_{21} x_2 + b^{(1)}_1\big) \\ a^{(1)}_2 &amp;= g\big(w^{(1)}_{12} x_1 + w^{(1)}_{22} x_2 + b^{(1)}_2\big) \\ a^{(1)}_3 &amp;= g\big(w^{(1)}_{13} x_1 + w^{(1)}_{23} x_2 + b^{(1)}_3\big) \end{aligned} \tag{98–100} \]
       <p>som på matriseform blir</p>
-      \[ \begin{bmatrix} a^{(1)}_1 \\ a^{(1)}_2 \\ a^{(1)}_3 \end{bmatrix} = g\!\left( \begin{bmatrix} w^{(1)}_{11} &amp; w^{(1)}_{21} \\ w^{(1)}_{12} &amp; w^{(1)}_{22} \\ w^{(1)}_{13} &amp; w^{(1)}_{23} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \right). \tag{101} \]
-      <p>Kontroller dimensjonene: en \(3 \times 2\)-matrise ganger en \(2 \times 1\)-vektor gir \(3 \times 1\), som er det vi har på venstre side. Generelt har input-laget \(n\) noder og første indre lag \(m\) noder, så overgangen er en transformasjon fra \(n\) features til \(m\) nye verdier. Dette gjelder alle lagene: hvert lag transformerer dataene det mottar til et nytt datarom med like mange dimensjoner som laget har noder, og på grunn av ikke-lineariteten i \(g\) er transformasjonen ikke-lineær.</p>
+      \[ \begin{bmatrix} a^{(1)}_1 \\ a^{(1)}_2 \\ a^{(1)}_3 \end{bmatrix} = g\!\left( \begin{bmatrix} w^{(1)}_{11} &amp; w^{(1)}_{21} \\ w^{(1)}_{12} &amp; w^{(1)}_{22} \\ w^{(1)}_{13} &amp; w^{(1)}_{23} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + \begin{bmatrix} b^{(1)}_1 \\ b^{(1)}_2 \\ b^{(1)}_3 \end{bmatrix} \right). \tag{101} \]
+      <p>Kontroller dimensjonene: en \(3 \times 2\)-matrise ganger en \(2 \times 1\)-vektor gir \(3 \times 1\), pluss bias-vektoren \(3 \times 1\), som er det vi har på venstre side. Generelt har input-laget \(n\) noder og første indre lag \(m\) noder, så overgangen er en transformasjon fra \(n\) features til \(m\) nye verdier. Dette gjelder alle lagene: hvert lag transformerer dataene det mottar til et nytt datarom med like mange dimensjoner som laget har noder, og på grunn av ikke-lineariteten i \(g\) er transformasjonen ikke-lineær.</p>
 
       <div class="callout">
         <span class="label">Nøkkelpoeng</span>
@@ -408,7 +409,7 @@ print("Biases:", bs.shape)</code></pre>
 
       <div class="widget" id="w-fwd">
         <div class="widget-label">Prøv selv · Forward pass gjennom (101)</div>
-        <p class="widget-intro">Vektmatrisen er fast (oppdiktede tall). Endre \(x_1, x_2\) og aktiveringsfunksjonen \(g\), og se hver rad i matriseproduktet bli til en aktivering. Sjekk at ReLU nuller ut negative summer og at sigmoid klemmer alt inn i (0, 1).</p>
+        <p class="widget-intro">Vektmatrisen og bias-vektoren er faste (oppdiktede tall). Endre \(x_1, x_2\) og aktiveringsfunksjonen \(g\), og se hver rad i matriseproduktet pluss bias bli til en aktivering. Sjekk at ReLU nuller ut negative summer og at sigmoid klemmer alt inn i (0, 1).</p>
         <div class="w-row">
           <div class="w-ctl"><label for="fw-x1">x₁</label><input type="range" id="fw-x1" min="-2" max="2" step="0.1" value="1"><span class="w-val" id="fw-x1-val">1.0</span></div>
           <div class="w-ctl"><label for="fw-x2">x₂</label><input type="range" id="fw-x2" min="-2" max="2" step="0.1" value="-0.5"><span class="w-val" id="fw-x2-val">-0.5</span></div>
@@ -417,11 +418,49 @@ print("Biases:", bs.shape)</code></pre>
         <div class="w-out" id="fw-out"></div>
       </div>
 
-      <h3>Backpropagation: hva eksamen spør om</h3>
-      <p>Treningen bruker gradient descent som før, men nå ligger tapet mange lag unna vektene i første lag. <span class="term" data-term="backpropagation">Backpropagation</span> er algoritmen som regner ut \(\partial \mathcal{L} / \partial w\) for hver vekt ved å bruke <span class="term" data-term="kjerneregelen">kjerneregelen</span> bakover gjennom nettverket, fra output mot input, og gradientene brukes så til å justere vektene. Dette står ikke i notatene ennå (per 22. september); beskrivelsen her er skrevet ut fra de to eksamensspørsmålene og merket som forslag.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 BACKPROPAGATION ─────────────────────────── -->
+  <section id="backpropagation">
+    <div class="container">
+      <div class="section-badge">06 · Backpropagation</div>
+      <h2>Feilen sendes <em>bakover</em> gjennom lagene</h2>
+      <div class="source-note">Notatene · avsnitt 2.4 · s. 40–41</div>
+
+      <p class="dropcap">Når nettverket gjør en prediksjon, sier vi at det gjør en <span class="term" data-term="forward-pass">forward pass</span>: fra data (input) til prediksjon (output) ved å transformere dataene gjennom lagene. Har vektene riktige verdier, er avviket mellom output og targets lite. Treningen er <span class="term" data-term="gradient-descent">gradient descent</span> som før: vi beveger oss i parameterrommet i den retningen der tapet minker, altså langs gradienten til tapsfunksjonen. Gradienten er en vektor med like mange elementer som nettverket har parametre, og størrelsen på hvert element sier hvor følsom tapsfunksjonen er for den parameteren.</p>
+      <p>Forskjellen fra lineær regresjon er at nettverket har mange noder der vi ikke kjenner «riktig verdi»: nodene i de skjulte lagene er ikke direkte forbundet med verken dataene eller targets. Likevel finnes det en metode for å beregne gradienten som funksjon av parametrene: <span class="term" data-term="backpropagation">backpropagation</span>, eller tilbakepropagering. Kurset forventer en intuisjon for hvordan den virker, ikke en utledning.</p>
+
+      <h3>Ett eksempel, én node om gangen</h3>
+      <p>Ta et nettverk med to input-noder, to indre lag med fire noder hver, og et output-lag med tre noder: \(l = 0\) er input, \(l = 1, 2\) de indre lagene og \(l = 3\) output. Nettverket har gitt prediksjonen \(\hat{\mathbf{y}} = (0.1, 0.1, 0.8)\) på et datapunkt med target \(\mathbf{y} = (1, 0, 0)\). Både \(\hat{y}_1\) og \(\hat{y}_3\) bommer mye, mens \(\hat{y}_2\) bommer lite. Aktiveringen til den øverste output-noden er, etter (96) med \(i = 1, \dots, 4\), \(j = 1\) og \(l = 3\),</p>
+      \[ \hat{y}_1 = a^{(3)}_1 = g\!\left( w^{(3)}_{11} a^{(2)}_1 + w^{(3)}_{21} a^{(2)}_2 + w^{(3)}_{31} a^{(2)}_3 + w^{(3)}_{41} a^{(2)}_4 + b \right). \tag{102} \]
+      <p>Her er det flere ting vi kan endre for å minke tapet: parametrene \(b\) og \(w^{(3)}_{i1}\) direkte, og aktiveringene \(a^{(2)}_i\) i laget før indirekte. Vi ønsker å øke \(a^{(3)}_1\):</p>
+      <ul>
+        <li><strong>Endre vektene.</strong> Endringen i \(w^{(3)}_{i1}\) må være proporsjonal med \(a^{(2)}_i\): vi styrker koblingen til de aktive nevronene i lag 2, de med stor \(a^{(2)}_i\). Enkelt sagt: <em>jo større \(a\)-ene er, jo større effekt har \(w\)-ene.</em></li>
+        <li><strong>Endre aktiveringene.</strong> Om alle \(a^{(2)}_i\) som multipliseres med en positiv \(w^{(3)}_{i1}\) ble sterkere, og alle som multipliseres med en negativ \(w^{(3)}_{i1}\) ble svakere, ville \(a^{(3)}_1\) øke. Enkelt sagt: <em>jo større \(w\)-ene er, jo større effekt har \(a\)-ene.</em> Men aktiveringene i indre lag kan vi ikke endre direkte, bare indirekte gjennom parametrene deres, \(w^{(2)}_{ij}\) for alle nodene i lag 2.</li>
+      </ul>
+      <p>Før vi tar steget bakover: vi har bare sett på \(\hat{y}_1\). Også \(\hat{y}_2\) og \(\hat{y}_3\) har sine egne preferanser for hvordan vektene og aktiveringene i lagene før bør endres, og de tre er ikke nødvendigvis enige. Vi samler uansett alle ønskede endringer for lag \(l = 2\) i en liste, inkludert ønskede endringer i aktiveringene \(\mathbf{a}^{(2)}\). Den lista spiller samme rolle for lag 2 som avviket \(\mathbf{y} - \hat{\mathbf{y}}\) gjorde for output-laget, så vi gjør den samme analysen for alle nodene i lag 2, lager en liste over ønskede endringer i lag 1, og tar enda et steg bakover.</p>
+      <p>Ved input-laget stopper vi: det gir ikke mening med ønskede endringer i \(l = 0\), siden aktiveringene der er verdiene i datasettet. Vi har da <strong>propagert feilen i prediksjonen bakover</strong> fra output, gjennom alle lagene, til input, og underveis funnet hvordan hver parameter bør endre seg: gradienten vi trenger til parameteroppdateringen (13). Det er essensen i backpropagation. Dette gjøres for alle datapunktene i treningssettet (én epoke), gjerne flere ganger; målet er ikke at modellen skal lære seg å svare \(\mathbf{y} = (1, 0, 0)\), men å tilpasse prediksjonen til input-dataene.</p>
+
+      <div class="callout">
+        <span class="label">Nøkkelpoeng</span>
+        <p>Backpropagation er <span class="term" data-term="kjerneregelen">kjerneregelen</span> brukt bakover: effekten en vekt i lag \(l\) har på tapet går via aktiveringene i alle lagene etter, så gradienten for hver vekt settes sammen av «ønsket endring i laget etter» ganger «hvor mye denne vekten påvirker det». Resultatet er gradienten, og gradient descent-steget bruker den til å justere vektene. Begge formuleringene brukes på eksamen: «beregne hvordan hver vekt påvirker tapet med kjerneregelen bakover» (2025) og «justere vektene for å minimere feilen» (2024).</p>
+      </div>
+
+      <div class="widget" id="w-bp">
+        <div class="widget-label">Prøv selv · Hvem får skylda? Følsomheten til én output-node</div>
+        <p class="widget-intro">Likning (102) med sigmoid som \(g\), target \(y_1 = 1\) og faste vekter (oppdiktede tall). Dra i aktiveringene \(a^{(2)}_i\) fra laget før. Lista viser hvor mye \(\hat{y}_1\) endrer seg per enhet endring i hver vekt (\(\partial \hat{y}_1 / \partial w_{i1} = \sigma'(z)\, a_i\)) og i hver aktivering (\(\partial \hat{y}_1 / \partial a_i = \sigma'(z)\, w_{i1}\)). Størst tall = der et steg hjelper mest. Legg merke til at en vekt til en node med \(a_i = 0\) ikke kan hjelpe uansett.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="bp-a1">a₁</label><input type="range" id="bp-a1" min="0" max="1" step="0.05" value="0.9"><span class="w-val" id="bp-a1-val">0.90</span></div>
+          <div class="w-ctl"><label for="bp-a2">a₂</label><input type="range" id="bp-a2" min="0" max="1" step="0.05" value="0.2"><span class="w-val" id="bp-a2-val">0.20</span></div>
+          <div class="w-ctl"><label for="bp-a3">a₃</label><input type="range" id="bp-a3" min="0" max="1" step="0.05" value="0.5"><span class="w-val" id="bp-a3-val">0.50</span></div>
+          <div class="w-ctl"><label for="bp-a4">a₄</label><input type="range" id="bp-a4" min="0" max="1" step="0.05" value="0"><span class="w-val" id="bp-a4-val">0.00</span></div>
+        </div>
+        <div class="w-out" id="bp-out"></div>
+      </div>
 
       <div class="oppgave" data-quiz id="oppg-o24-19">
-        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 19</span><span class="o-ref">2.3 · flervalg</span></div>
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 19</span><span class="o-ref">2.4 · flervalg</span></div>
         <div class="o-text">
           <p>Hva er hovedformålet med backpropagation i et nevralt nettverk?</p>
           <ol class="mcq-list" type="A">
@@ -433,15 +472,15 @@ print("Biases:", bs.shape)</code></pre>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer forslag">
-            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (backprop er ikke i notatene ennå)</span>
-            <p><strong>A.</strong> Backpropagation er bakover-delen av treningen: gradientene som trengs for å justere vektene. B er forward pass (det widgeten over gjør). C er et arkitekturvalg og D er initialisering, ingen av dem er læring.</p>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Backpropagation er bakover-delen av treningen: feilen propageres fra output til input og gir gradienten som trengs for å justere vektene. B er forward pass, altså motsatt retning. C er et arkitekturvalg og D er initialisering, ingen av dem er læring.</p>
           </div>
         </div>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-o25-5-4">
-        <div class="o-label"><span>Eksamen Ord. 2025 · del 5 · spm. 4</span><span class="o-ref">2.3 · flervalg, 2,5 p</span></div>
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 5 · spm. 4</span><span class="o-ref">2.4 · flervalg, 2,5 p</span></div>
         <div class="o-text">
           <p>Under trening av et nevralt nettverk med gradient descent brukes backpropagation for å oppdatere vektene. Hva er hovedformålet med backpropagation-algoritmen?</p>
           <ol class="mcq-list" type="A">
@@ -453,19 +492,28 @@ print("Biases:", bs.shape)</code></pre>
         </div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer forslag">
-            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (backprop er ikke i notatene ennå)</span>
-            <p><strong>A.</strong> Merk at 2024- og 2025-fasitene formulerer det litt ulikt: 2024 sier «justere vektene for å minimere feilen», 2025 sier «beregne hvordan hver vekt påvirker tapet med kjerneregelen». Begge er backpropagation sett fra hver sin side: gradientberegningen (kjerneregelen bakover) og bruken av den (gradient descent-steget). Husk begge formuleringene.</p>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Det er nettopp lista over ønskede endringer, lag for lag bakover: hvor mye hver vekt påvirker tapet via aktiveringene etter den. B er tilfeldig søk, C og D er ikke noe treningen gjør. Merk at 2024- og 2025-fasitene formulerer det litt ulikt: 2024 sier «justere vektene for å minimere feilen», 2025 sier «beregne hvordan hver vekt påvirker tapet med kjerneregelen». Begge er backpropagation sett fra hver sin side: gradientberegningen og bruken av den i gradient descent-steget. Husk begge formuleringene.</p>
           </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">I eksempelet er \(\hat{y}_2 = 0.1\) med target 0, mens \(\hat{y}_1 = 0.1\) med target 1. Node 1 i lag 2 har stor aktivering og positiv vekt til begge output-nodene. Hva «ønsker» \(\hat{y}_1\) og \(\hat{y}_2\) å gjøre med den aktiveringen, og hvordan løses uenigheten?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\hat{y}_1\) vil ha \(a^{(2)}_1\) større (positiv vekt, må opp), \(\hat{y}_2\) vil ha den litt mindre (positiv vekt, må ned, men avviket er bare 0.1). Ønskene summeres: hver output-node bidrar proporsjonalt med sitt avvik og sin vekt, så \(\hat{y}_1\) sitt store avvik dominerer, og netto ønske er «øk \(a^{(2)}_1\)». Det ønsket sendes så videre bakover til vektene \(w^{(2)}_{i1}\), som er det eneste som faktisk kan endre \(a^{(2)}_1\).</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
   <section id="oppsummering">
     <div class="container">
-      <div class="section-badge">06 · Oppsummering</div>
+      <div class="section-badge">07 · Oppsummering</div>
       <h2>Det du bør <em>kunne</em></h2>
 
       <div class="recap-grid">
@@ -475,8 +523,10 @@ print("Biases:", bs.shape)</code></pre>
         <div class="recap-pill"><strong>Aktivering</strong>Sigmoid ut for binær klassifisering, softmax ut for flere klasser (summerer til 1), ReLU i skjulte lag, lineær ut for regresjon.</div>
         <div class="recap-pill"><strong>Arkitektur</strong>Input-lag = antall features, output-lag = antall targets, skjulte lag imellom. Fully connected feed-forward = MLP.</div>
         <div class="recap-pill"><strong>Telle parametre</strong>\(n\) inn og \(m\) ut gir \(n \cdot m\) vekter og \(m\) bias per lag. 2 features, 3 klasser: 6 + 3.</div>
-        <div class="recap-pill"><strong>Én node</strong>\(a^l_j = g(\sum_i w^l_{ij} a^{l-1}_i)\); hele laget er \(\mathbf{a}^{(1)} = g(W \mathbf{x})\) med \(W\) som \(m \times n\).</div>
+        <div class="recap-pill"><strong>Én node</strong>\(a^l_j = g(\sum_i w^l_{ij} a^{l-1}_i + b^l_j)\); hele laget er \(\mathbf{a}^{(1)} = g(W \mathbf{x} + \mathbf{b})\) med \(W\) som \(m \times n\).</div>
         <div class="recap-pill"><strong>Hvert lag transformerer</strong>Ikke-lineær transformasjon til et rom med like mange dimensjoner som noder: automatisk feature engineering.</div>
+        <div class="recap-pill"><strong>Forward og backward</strong>Forward pass: data → prediksjon gjennom lagene. Backpropagation: feilen propageres bakover fra output til input og gir gradienten for hver parameter.</div>
+        <div class="recap-pill"><strong>Backprop-intuisjon</strong>Jo større \(a\), jo større effekt har \(w\); jo større \(w\), jo større effekt har \(a\). Skjulte aktiveringer endres bare via sine egne vekter, derfor går vi lag for lag bakover.</div>
       </div>
 
       <h3>Test deg selv</h3>
@@ -650,19 +700,43 @@ print("Biases:", bs.shape)</code></pre>
   /* ─── Forward pass ─── */
   (function () {
     var root = document.getElementById('w-fwd'); if (!root) return;
-    var W = [[0.8, -0.5], [-1.2, 0.4], [0.3, 0.9]];
+    var W = [[0.8, -0.5], [-1.2, 0.4], [0.3, 0.9]], B = [0.2, -0.3, 0.1];
     var out = document.getElementById('fw-out');
     function draw() {
       var x1 = +document.getElementById('fw-x1').value, x2 = +document.getElementById('fw-x2').value, gsel = document.getElementById('fw-g').value;
       document.getElementById('fw-x1-val').textContent = x1.toFixed(1); document.getElementById('fw-x2-val').textContent = x2.toFixed(1);
       var g = gsel === 'relu' ? function (z) { return Math.max(0, z); } : gsel === 'sigmoid' ? sig : function (z) { return z; };
       var lines = W.map(function (row, j) {
-        var z = row[0] * x1 + row[1] * x2;
-        return 'a' + (j + 1) + ' = g(' + f2(row[0]) + '·' + f2(x1) + ' + ' + f2(row[1]) + '·' + f2(x2) + ') = g(' + f2(z) + ') = <span class="hl">' + f2(g(z)) + '</span>';
+        var z = row[0] * x1 + row[1] * x2 + B[j];
+        return 'a' + (j + 1) + ' = g(' + f2(row[0]) + '·' + f2(x1) + ' + ' + f2(row[1]) + '·' + f2(x2) + ' + ' + f2(B[j]) + ') = g(' + f2(z) + ') = <span class="hl">' + f2(g(z)) + '</span>';
       });
-      out.innerHTML = 'W (3×2) · x (2×1) → a (3×1), g = ' + (gsel === 'lin' ? 'lineær' : gsel) + '\n' + lines.join('\n') + '\nTo features inn, tre nye verdier ut: laget har transformert punktet (x₁, x₂) til (a₁, a₂, a₃).';
+      out.innerHTML = 'W (3×2) · x (2×1) + b (3×1) → a (3×1), g = ' + (gsel === 'lin' ? 'lineær' : gsel) + '\n' + lines.join('\n') + '\nTo features inn, tre nye verdier ut: laget har transformert punktet (x₁, x₂) til (a₁, a₂, a₃).';
     }
     ['fw-x1', 'fw-x2', 'fw-g'].forEach(function (id) { document.getElementById(id).addEventListener('input', draw); document.getElementById(id).addEventListener('change', draw); });
+    draw();
+  })();
+
+  /* ─── Backpropagation: følsomhet for én output-node (102) ─── */
+  (function () {
+    var root = document.getElementById('w-bp'); if (!root) return;
+    var W = [0.9, -0.6, 0.3, 0.1], b = -0.2, ids = ['bp-a1', 'bp-a2', 'bp-a3', 'bp-a4'];
+    var out = document.getElementById('bp-out');
+    function draw() {
+      var a = ids.map(function (id) { var v = +document.getElementById(id).value; document.getElementById(id + '-val').textContent = v.toFixed(2); return v; });
+      var z = b; for (var i = 0; i < 4; i++) z += W[i] * a[i];
+      var y = sig(z), ds = y * (1 - y);
+      var dw = a.map(function (ai) { return ds * ai; }), da = W.map(function (wi) { return ds * wi; });
+      var bw = 0, ba = 0; for (var k = 1; k < 4; k++) { if (Math.abs(dw[k]) > Math.abs(dw[bw])) bw = k; if (Math.abs(da[k]) > Math.abs(da[ba])) ba = k; }
+      var lines = ['z = ' + W.map(function (w, i) { return f2(w) + '·' + f2(a[i]); }).join(' + ') + ' + (' + f2(b) + ') = ' + f2(z) + '   ·   ŷ₁ = σ(z) = ' + f2(y) + '   ·   avvik y₁ − ŷ₁ = <span class="hl">' + f2(1 - y) + '</span>', 'σ′(z) = ' + f2(ds), ''];
+      for (var j = 0; j < 4; j++) {
+        lines.push('i = ' + (j + 1) + ':  ∂ŷ₁/∂w' + (j + 1) + '₁ = σ′·a' + (j + 1) + ' = ' + (j === bw ? '<span class="hl">' + f2(dw[j]) + '</span>' : f2(dw[j])) + '      ∂ŷ₁/∂a' + (j + 1) + ' = σ′·w' + (j + 1) + '₁ = ' + (j === ba ? '<span class="hl">' + f2(da[j]) + '</span>' : f2(da[j])));
+      }
+      lines.push('');
+      lines.push('Vekten som hjelper mest: w' + (bw + 1) + '₁ (største a). Aktiveringen som hjelper mest: a' + (ba + 1) + ' (største |w|)' + (da[ba] < 0 ? ', men den bør ned, siden vekten er negativ.' : '.'));
+      lines.push('Ønsket endring i a-ene kan ikke gjøres direkte: den sendes bakover som «ønsker» til vektene i lag 2.');
+      out.innerHTML = lines.join('\n');
+    }
+    ids.forEach(function (id) { document.getElementById(id).addEventListener('input', draw); });
     draw();
   })();
 })();

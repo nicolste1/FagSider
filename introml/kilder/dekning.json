@@ -125,5 +125,36 @@
   "2.3": {
     "side": "kap2/perceptron.html",
     "anker": "arkitektur"
+  },
+  "2.4": {
+    "side": "kap2/perceptron.html",
+    "anker": "backpropagation"
+  },
+  "2.5": {
+    "side": "kap2/koding.html",
+    "anker": "keras"
+  },
+  "3": {
+    "side": "kap3/index.html"
+  },
+  "3.1": {
+    "side": "kap3/clustering.html",
+    "anker": "intro"
+  },
+  "3.1.1": {
+    "side": "kap3/clustering.html",
+    "anker": "kmeans"
+  },
+  "3.1.2": {
+    "side": "kap3/clustering.html",
+    "anker": "dbscan"
+  },
+  "3.1.3": {
+    "side": "kap3/clustering.html",
+    "anker": "kategorier"
+  },
+  "3.1.4": {
+    "side": "kap3/clustering.html",
+    "anker": "dimensjoner"
   }
 }
