@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Inferens i FOL — Kap 7</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fokus-list .tag.lav { background: var(--paper-dark); color: var(--ink-faded); }
+  .proof { font-family: var(--mono); font-size: 0.86rem; line-height: 1.7; }
+  /* Resolusjonstre */
+  .rtree .nd rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1; }
+  .rtree .nd.neg rect { stroke: var(--warm); stroke-width: 1.6; }
+  .rtree .nd.dv rect { fill: var(--accent-soft); stroke: var(--accent); }
+  .rtree .nd.fin rect { fill: var(--warm-soft); stroke: var(--warm); stroke-width: 1.6; }
+  .rtree-wrap { overflow-x: auto; }
+  .rtree { min-width: 860px; }
+  .rtree text { text-anchor: middle; }
+  .rtree .nd rect { rx: 4px; }
+  .rtree .nd text { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  .rtree .kbframe { fill: none; stroke: var(--line); stroke-dasharray: 4 3; }
+  .rtree .ed { fill: none; stroke: var(--ink-faded); stroke-width: 1.1; marker-end: url(#rt-ar); }
+  .rtree .th { font-family: var(--mono); font-size: 11px; fill: var(--warm); }
+  .rtree .cap { font-family: var(--sans); font-size: 11px; fill: var(--ink-faded); }
+  .rtree .empty { fill: var(--warm-soft); stroke: var(--warm); stroke-width: 1.6; }
+  /* Unifikasjons-trener */
+  #w-unify select, #w-unify input[type=text] { font-family: var(--mono); font-size: 0.88rem; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); max-width: 100%; }
+  #w-unify input[type=text] { width: 19rem; }
+  .un-log { font-family: var(--mono); font-size: 0.84rem; line-height: 1.6; margin: 0.8rem 0 0; padding-left: 1.6rem; }
+  .un-log li.bad { color: var(--red); }
+  .un-log li.new { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 7</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 7: Førsteordens logikk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 7 · 7B · Slides forelesning 7 · 1–78 · Boka kap. 9 · ~45 min</div>
+      <h1>Inferens i <em>førsteordens logikk</em></h1>
+      <p class="lede">Bevis i FOL: finn substitusjonen som gjør to setninger like (unifikasjon), og bruk Modus Ponens eller resolusjon med den. Eksamensoppgaven: konverter til CNF, legg til den negerte spørringen, og resolver til den tomme klausulen med substitusjonene skrevet ut.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#avgjorbarhet"><span>01</span> Semidecidable</a>
+        <a href="#propositionalisering"><span>02</span> Propositionalisering</a>
+        <a href="#instansiering"><span>03</span> Instansiering og Skolem</a>
+        <a href="#unifikasjon"><span>04</span> Unifikasjon</a>
+        <a href="#gmp"><span>05</span> Generalisert MP</a>
+        <a href="#cnf"><span>06</span> CNF i FOL</a>
+        <a href="#resolusjon"><span>07</span> Resolusjon</a>
+        <a href="#strategier"><span>08</span> Strategier og likhet</a>
+        <a href="#oppsummering"><span>09</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026, oppdatert 16. oktober 2026 · deltema 7.2 (prio 2, regn/forklar) og 7.3 (prio 1, regn)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Resolusjonsrefutasjon i FOL</strong> (7.3, prio 1): nummerer CNF-setningene, vis konverteringen, resolver med substitusjoner til □, og les av svaret. Tidligere: <a href="#oppg-o23-3-2b">Ord. 2023 oppg. 3.2b</a> (Fido/Snowy, 10 p sammen med a). Øv på <a href="#oppg-curiosity">Curiosity</a> og <a href="#oppg-egen-res">egen oppgave</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>CNF i FOL med skolemisering</strong> (7.3): de sju stegene, Skolem-funksjon når \(\exists\) står inni \(\forall\). <a href="#oppg-cnf-dyr">«Loves all animals»</a>, <a href="#oppg-egen-skolem">egen oppgave</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Unify og generalisert Modus Ponens</strong> (7.2, prio 2): finn \(\theta\) eller «failure», utled \(q\) med GMP og oppgi \(\theta\). <a href="#oppg-unify-fire">Fire Unify-eksempler</a>, <a href="#oppg-egen-unify">egen oppgave</a>, <a href="#oppg-gmp">GMP</a>.</li>
+          <li><span class="tag">Forklar</span>Skolem-konstant vs -funksjon, propositionalisering og ulempen, når GMP er sunn og fullstendig.</li>
+          <li><span class="tag lav">Lavere</span>Semidecidability (én setning), strategier for resolusjon (unit preference, set of support, input resolution, subsumption) og likhet (demodulation, paramodulation): kjenn navnene. Forward/backward chaining i FOL er GMP brukt gjentatt.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 AVGJØRBARHET ─────────────────────────── -->
+  <section id="avgjorbarhet">
+    <div class="container">
+      <div class="section-badge">01 · Semidecidable</div>
+      <h2>Hvorfor FOL-inferens kan gå <em>for alltid</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 3–6</div>
+
+      <p class="dropcap">Entailment i FOL er generelt <span class="term" data-term="semidesiderbar">semidecidable</span>: følger \(\alpha\), finner vi beviset på endelig tid, men er \(KB \not\models \alpha\), kan søket gå for alltid. For en KB med bare <span class="term" data-term="definite-clause">definite clauses</span> og ingen funksjoner er entailment derimot avgjørbart (decidable).</p>
+
+      <details>
+        <summary>Utdypning · lavere prioritet: Peano-eksempelet</summary>
+        <p>Ta Peano-KB-en fra <a href="fol.html#modeller">7A</a> (NatNum, Successor), og skriv \(S^2(0)\) for \(\text{Successor}(\text{Successor}(0))\).</p>
+        <p>\(KB \models \text{NatNum}(S^2(0))\) kan vises på endelig tid ved å sjekke mellom funksjonstilordninger av økende dybde: sjekk, \(\text{Successor} = \{0 = 1\}\), sjekk, \(\text{Successor} = \{0 = 1, 1 = 2\}\), sjekk, … Men \(KB \not\models \neg\text{NatNum}(S^2(0))\) kan ikke vises med motsigelsesbevis: \(KB \cup \{\neg\neg\text{NatNum}(\ldots)\}\) har ingen motsigelse, og alle modellene av KB er uendelige.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 PROPOSITIONALISERING ─────────────────────────── -->
+  <section id="propositionalisering">
+    <div class="container">
+      <div class="section-badge">02 · Propositionalisering</div>
+      <h2>Gjør FOL om til <em>PL</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 8–10, 23–24</div>
+      <span class="lm-pill">Deltema 7.2 · prio 2 · forklar</span>
+
+      <p class="dropcap">Den enkleste måten å bruke PL-algoritmene fra kapittel 6 på er <span class="term" data-term="propositionalisering">propositionalisering</span>, i to steg:</p>
+      <ol class="steps">
+        <li>Erstatt alle variabler med konstanter eller funksjoner (alle mulige).</li>
+        <li>Erstatt de atomære setningene som er igjen, med proposisjonssymboler.</li>
+      </ol>
+
+      <div class="oppgave" data-quiz id="oppg-prop">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 8–10, 23</span></div>
+        <div class="o-text"><p>Propositionaliser \(KB = \{\text{Student}(\text{Alice}),\ \text{Student}(\text{Bob}),\ \forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{Arithmetic})\}\). Hva er ulempen med metoden?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>Steg 1, sett inn hver konstant (Alice, Bob, Arithmetic) for \(x\):</p>
+            \[ \begin{aligned} &amp;\text{Student}(\text{Alice}) \Rightarrow \text{Knows}(\text{Alice}, \text{Arithmetic}),\\ &amp;\text{Student}(\text{Bob}) \Rightarrow \text{Knows}(\text{Bob}, \text{Arithmetic}),\\ &amp;\text{Student}(\text{Arithmetic}) \Rightarrow \text{Knows}(\text{Arithmetic}, \text{Arithmetic}) \end{aligned} \]
+            <p>Steg 2, gi hvert atom et symbol: AliceIsStudent, BobIsStudent, AliceIsStudent \(\Rightarrow\) AliceKnowsArithmetic, BobIsStudent \(\Rightarrow\) BobKnowsArithmetic, ArithmeticIsStudent \(\Rightarrow\) ArithmeticKnowsArithmetic.</p>
+            <p><strong>Ulempe:</strong> metoden lager blindt mange unødvendige avledninger. For å avgjøre \(KB \models \text{Knows}(\text{Alice}, \text{Arithmetic})\) trengs ikke \(\text{Student}(\text{Arithmetic}) \Rightarrow \ldots\), men den legges til likevel. Med funksjoner blir det uendelig mange termer (\(\text{Mother}(\text{Mother}(\ldots))\)). Bedre: utvid PL-algoritmene til FOL med unifikasjon.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 INSTANSIERING ─────────────────────────── -->
+  <section id="instansiering">
+    <div class="container">
+      <div class="section-badge">03 · Instansiering og Skolem</div>
+      <h2>Subst, ∀-instansiering og <em>Skolem</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 11–22 · regelen for Skolem-funksjonens argumenter: Boka kap. 9.5.1 (ikke i slidene)</div>
+      <span class="lm-pill">Deltema 7.2 · prio 2 · regn/forklar</span>
+
+      <p class="dropcap">En <span class="term" data-term="substitusjon">substitusjon</span> \(\theta\) avbilder variabler til termer (konstanter, variabler eller funksjoner). \(\text{Subst}(\theta, \alpha)\) er resultatet av å bruke \(\theta\) på setningen \(\alpha\):</p>
+      \[ \begin{aligned} \text{Subst}(\{x/\text{Alice}\}, \text{Knows}(x, \text{Arithmetic})) &amp;= \text{Knows}(\text{Alice}, \text{Arithmetic})\\ \text{Subst}(\{x/y\}, \text{Knows}(x, \text{Arithmetic})) &amp;= \text{Knows}(y, \text{Arithmetic})\\ \text{Subst}(\{x/\text{Mother}(\text{Alice})\}, \text{Knows}(x, \text{Arithmetic})) &amp;= \text{Knows}(\text{Mother}(\text{Alice}), \text{Arithmetic}) \end{aligned} \]
+
+      <h3>Universell instansiering (UI)</h3>
+      <p>For enhver variabel \(v\), setning \(\alpha\) og <span class="term" data-term="grunnterm">grunnterm</span> \(g\) (konstant eller funksjon uten variabler) gir <span class="term" data-term="universell-instansiering">universell instansiering</span>:</p>
+      \[ \frac{\forall v\ \alpha}{\text{Subst}(\{v/g\}, \alpha)} \]
+      <p>Fra \(\forall x\, \text{Student}(x) \Rightarrow \text{Knows}(x, \text{English})\) gir \(\{x/\text{Alice}\}\) setningen \(\text{Student}(\text{Alice}) \Rightarrow \text{Knows}(\text{Alice}, \text{English})\). \(\forall\)-setningen blir stående, så vi kan instansiere den igjen, f.eks. med \(\{x/\text{English}\}\).</p>
+
+      <h3>Eksistensiell instansiering (EI)</h3>
+      <p><span class="term" data-term="eksistensiell-instansiering">Eksistensiell instansiering</span> bytter variabelen med en <span class="term" data-term="skolem-konstant">Skolem-konstant</span> \(k\) som <em>ikke finnes i KB fra før</em>:</p>
+      \[ \frac{\exists v\ \alpha}{\text{Subst}(\{v/k\}, \alpha)} \qquad \frac{\exists x\, \text{Student}(x) \land \text{Knows}(x, \text{Norwegian})}{\text{Student}(C_1) \land \text{Knows}(C_1, \text{Norwegian})} \]
+      <p>Setningen er sann, så et slikt objekt må finnes; vi kaller det \(C_1\). Navnet må være nytt: \(\text{Alice}\) ville påstått noe vi ikke vet. Gjør KB allerede \(\exists\)-setningen sann (f.eks. med \(\text{Student}(\text{Alice})\) og \(\text{Knows}(\text{Alice}, \text{Norwegian})\)), trengs ingen Skolem-konstant.</p>
+
+      <h3>Skolem-funksjoner</h3>
+      <p>En konstant er ikke nok når \(\exists\) står inni en \(\forall\):</p>
+      \[ \begin{aligned} \forall x\, \exists y\, \text{Loves}(x, y) &amp;\quad\text{«alle elsker noen»}\\ \not\equiv\ \forall x\, \text{Loves}(x, C_1) &amp;\quad\text{«alle elsker } C_1\text{»}\\ \equiv\ \forall x\, \text{Loves}(x, F(x)) &amp;\quad\text{«alle elsker noen»} \end{aligned} \]
+      <p>\(y\) kan avhenge av \(x\), så den erstattes med en <span class="term" data-term="skolem-funksjon">Skolem-funksjon</span> \(F(x)\): «den \(x\) elsker». Regel: argumentene til Skolem-funksjonen er alle allkvantifiserte variabler som \(\exists\) står innenfor. Står \(\exists\) ikke inni noen \(\forall\), blir det en Skolem-konstant.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Skolemiser (a) \(\exists y\, \forall x\, \text{Loves}(x, y)\) og (b) \(\forall x\, \forall z\, \exists y\, \text{Between}(x, y, z)\).</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(a) \(\forall x\, \text{Loves}(x, C_1)\): \(\exists y\) står ytterst, så \(y\) avhenger ikke av noe, og en konstant holder. (b) \(\forall x\, \forall z\, \text{Between}(x, F(x, z), z)\): \(\exists y\) står inni både \(\forall x\) og \(\forall z\), så funksjonen får to argumenter.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 UNIFIKASJON ─────────────────────────── -->
+  <section id="unifikasjon">
+    <div class="container">
+      <div class="section-badge">04 · Unifikasjon</div>
+      <h2>Finn \(\theta\) som gjør to setninger <em>like</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 26–29 · algoritmen og occur check: Boka kap. 9.2.2, fig. 9.1 (ikke i slidene)</div>
+      <span class="lm-pill">Deltema 7.2 · prio 2 · regn</span>
+
+      <p class="dropcap"><span class="term" data-term="unifikasjon">Unifikasjon</span> er motoren i all FOL-inferens. \(\text{Unify}(\alpha, \beta)\) prøver å finne den <span class="term" data-term="mgu">mest generelle substitusjonen</span> \(\theta\) som gjør de to setningene identiske:</p>
+      \[ \text{Unify}(\alpha, \beta) = \theta \quad\text{slik at}\quad \text{Subst}(\theta, \alpha) = \text{Subst}(\theta, \beta) \]
+      <p>«Mest generell»: \(\theta\) binder så lite som mulig. \(\text{Unify}(\text{Loves}(x, y), \text{Loves}(\text{Alice}, z))\) gir \(\{x/\text{Alice}, y/z\}\), ikke \(\{x/\text{Alice}, y/\text{Bob}, z/\text{Bob}\}\), selv om begge gjør setningene like.</p>
+
+      <div class="callout">
+        <span class="label">Algoritmen for hånd</span>
+        <ol class="steps">
+          <li>Er de to uttrykkene identiske: ferdig, ingen ny binding.</li>
+          <li>Er det ene en variabel \(v\): er \(v\) bundet, unifiser bindingen med det andre. Forekommer \(v\) inni det andre (<span class="term" data-term="occur-check">occur check</span>, f.eks. \(x\) mot \(F(x)\)): <em>failure</em>. Ellers legg til \(v/\text{uttrykket}\).</li>
+          <li>Er begge sammensatte (predikat eller funksjon): samme navn og samme antall argumenter, ellers <em>failure</em>. Unifiser argumentene parvis fra venstre og ta med \(\theta\) videre.</li>
+          <li>To ulike konstanter: <em>failure</em>.</li>
+          <li>Til slutt: sett bindingene inn i hverandre, så \(y/\text{Mother}(x)\) med \(x/\text{Bob}\) blir \(y/\text{Mother}(\text{Bob})\).</li>
+        </ol>
+        <p>Det finnes algoritmer med lineær tid i størrelsen på uttrykkene.</p>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="label">Vanlig feil</span>
+        <p>To setninger fra KB kan bruke samme variabelnavn uten å ha noe med hverandre å gjøre. \(\text{Unify}(\text{Knows}(\text{John}, x), \text{Knows}(x, \text{Elizabeth}))\) feiler fordi \(x\) må være både John og Elizabeth. <span class="term" data-term="standardisere-variabler">Standardiser variablene</span> først (gi hver klausul egne navn): \(\text{Unify}(\text{Knows}(\text{John}, x), \text{Knows}(x_2, \text{Elizabeth})) = \{x_2/\text{John}, x/\text{Elizabeth}\}\).</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-unify-fire">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 26–28</span></div>
+        <div class="o-text"><p>Finn (a) \(\text{Unify}(\text{Loves}(x, \text{Arithmetic}), \text{Loves}(\text{Alice}, \text{Arithmetic}))\), (b) \(\text{Unify}(\text{Loves}(x, y), \text{Loves}(\text{Alice}, z))\), (c) \(\text{Unify}(\text{Loves}(\text{Bob}, y), \text{Loves}(\text{Alice}, z))\), (d) \(\text{Unify}(\text{Loves}(\text{Bob}, y), \text{Loves}(x, \text{Mother}(x)))\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene (stegene er vårt tillegg)</span>
+            <p>(a) \(\{x/\text{Alice}\}\): \(x\) mot Alice gir \(x/\text{Alice}\); Arithmetic mot Arithmetic er like.</p>
+            <p>(b) \(\{x/\text{Alice}, y/z\}\): \(x/\text{Alice}\), og to variabler \(y\) mot \(z\) gir \(y/z\).</p>
+            <p>(c) <em>failure</em>: første argument er to ulike konstanter, Bob \(\neq\) Alice.</p>
+            <p>(d) \(\{x/\text{Bob}, y/\text{Mother}(\text{Bob})\}\): Bob mot \(x\) gir \(x/\text{Bob}\). Så \(y\) mot \(\text{Mother}(x)\) gir \(y/\text{Mother}(x)\), og med \(x/\text{Bob}\) innsatt \(y/\text{Mother}(\text{Bob})\). Begge blir \(\text{Loves}(\text{Bob}, \text{Mother}(\text{Bob}))\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-unify">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.2</span></div>
+        <div class="o-text"><p>Finn \(\text{Unify}\) eller si hvorfor den feiler: (a) \(\text{Knows}(\text{John}, x)\) og \(\text{Knows}(y, \text{Mother}(y))\), (b) \(\text{Knows}(x, x)\) og \(\text{Knows}(\text{John}, \text{Mary})\), (c) \(\text{Likes}(x, F(x))\) og \(\text{Likes}(y, y)\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>(a) John mot \(y\): \(y/\text{John}\). \(x\) mot \(\text{Mother}(y)\): \(x/\text{Mother}(y)\), innsatt \(x/\text{Mother}(\text{John})\). \(\theta = \{y/\text{John}, x/\text{Mother}(\text{John})\}\); begge blir \(\text{Knows}(\text{John}, \text{Mother}(\text{John}))\).</p>
+            <p>(b) <em>failure</em> (konstantkonflikt): \(x\) mot John gir \(x/\text{John}\). Andre argument: \(x\) er bundet til John, og John mot Mary er to ulike konstanter.</p>
+            <p>(c) <em>failure</em> (occur check): \(x\) mot \(y\) gir \(x/y\). Andre argument: \(F(x)\) mot \(y\), med \(x/y\) blir det \(y\) mot \(F(y)\). \(y\) forekommer inni \(F(y)\), og ingen endelig term \(y\) er lik \(F(y)\).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-unify">
+        <div class="widget-label">Prøv selv · Unifikasjons-trener</div>
+        <p class="widget-intro">Velg et eksempel eller skriv to atomer selv. Variabler har liten forbokstav (x, y, z2), konstanter, predikater og funksjoner stor (Alice, Mother(x)). Tenk ut svaret, og følg så algoritmen med «Ett steg» eller «Unifiser».</p>
+        <div class="w-row"><select id="un-sel" aria-label="Velg eksempel"></select></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="un-a">α</label><input type="text" id="un-a" autocomplete="off" spellcheck="false"></div>
+          <div class="w-ctl"><label for="un-b">β</label><input type="text" id="un-b" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn" id="un-step" type="button">Ett steg</button>
+          <button class="w-btn secondary" id="un-all" type="button">Unifiser</button>
+          <button class="w-btn secondary" id="un-reset" type="button">Nullstill</button>
+        </div>
+        <ol class="un-log" id="un-log"></ol>
+        <div class="w-out" id="un-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 GMP ─────────────────────────── -->
+  <section id="gmp">
+    <div class="container">
+      <div class="section-badge">05 · Generalisert Modus Ponens</div>
+      <h2>Modus Ponens med <em>unifikasjon</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 30–38 · forward/backward chaining i FOL: Boka kap. 9.3–9.4.1 (ikke i slidene)</div>
+      <span class="lm-pill">Deltema 7.2 · prio 2 · regn</span>
+
+      <p class="dropcap">Uten kvantorer er <span class="term" data-term="generalisert-modus-ponens">generalisert Modus Ponens</span> (GMP) bare <span class="term" data-term="modus-ponens">Modus Ponens</span> med flere premisser: for atomære setninger \(p_1, \ldots, p_n, q\)</p>
+      \[ \frac{p_1,\ p_2,\ \ldots,\ p_n,\quad p_1 \land p_2 \land \ldots \land p_n \Rightarrow q}{q} \]
+      <p>Med kvantorer må faktaene \(p_i'\) bare kunne unifiseres med premissene \(p_i\):</p>
+      \[ \frac{p_1',\ p_2',\ \ldots,\ p_n',\quad \forall x_1, x_2, \ldots\ p_1 \land p_2 \land \ldots \land p_n \Rightarrow q}{\text{Subst}(\theta, q)} \]
+      \[ \text{der}\quad \theta = \text{Unify}(p_1' \land \ldots \land p_n',\ p_1 \land \ldots \land p_n) \]
+
+      <div class="oppgave" data-quiz id="oppg-gmp">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 30–35</span></div>
+        <div class="o-text"><p>\(KB = \{\text{Takes}(\text{Alice}, \text{TDT4136}),\ \text{Covers}(\text{TDT4136}, \text{Logic}),\ \forall x, y, z\ \text{Takes}(x, y) \land \text{Covers}(y, z) \Rightarrow \text{Knows}(x, z)\}\). Gjelder \(KB \models \text{Knows}(\text{Alice}, \text{Logic})\)? Bruk GMP og oppgi \(\theta\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>Unifiser faktaene med premissene: \(\text{Takes}(\text{Alice}, \text{TDT4136})\) mot \(\text{Takes}(x, y)\) gir \(\{x/\text{Alice}, y/\text{TDT4136}\}\); \(\text{Covers}(\text{TDT4136}, \text{Logic})\) mot \(\text{Covers}(y, z)\) gir (med \(y\) alt bundet til TDT4136) \(z/\text{Logic}\).</p>
+            \[ \theta = \{x/\text{Alice},\ y/\text{TDT4136},\ z/\text{Logic}\},\qquad \text{Subst}(\theta, \text{Knows}(x, z)) = \text{Knows}(\text{Alice}, \text{Logic}) \]
+            <p>Ja: \(KB \vdash_{GMP} \text{Knows}(\text{Alice}, \text{Logic})\), og siden GMP er sunn, \(KB \models \text{Knows}(\text{Alice}, \text{Logic})\).</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Når er GMP nok?</h3>
+      <p>En <span class="term" data-term="definite-clause">definite clause</span> i FOL er \(\forall x_1, x_2, \ldots\ p_1 \land \ldots \land p_n \Rightarrow q\) med atomære \(p_i, q\); et faktum er en definite clause med \(n = 0\) og uten variabler. KB-en over består bare av slike.</p>
+      <ul>
+        <li>Inneholder KB bare definite clauses, er gjentatt GMP både <span class="term" data-term="sunnhet">sunn</span> og <span class="term" data-term="fullstendig-inferens">fullstendig</span> for ethvert faktum \(q\): \(KB \models q \Leftrightarrow KB \vdash_{GMP} q\).</li>
+        <li>Inneholder KB i tillegg ingen funksjoner, kan \(KB \models q\) avgjøres i polynomisk tid.</li>
+      </ul>
+      <p><span class="term" data-term="forward-chaining">Forward chaining</span> og <span class="term" data-term="backward-chaining">backward chaining</span> er som i kapittel 6, men med GMP (egen tolkning).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 CNF ─────────────────────────── -->
+  <section id="cnf">
+    <div class="container">
+      <div class="section-badge">06 · CNF i FOL</div>
+      <h2>Sju steg til <em>konjunktiv normalform</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 40–56</div>
+      <span class="lm-pill">Deltema 7.3 · prio 1 · regn</span>
+
+      <p class="dropcap">Som i PL, men atomene har argumenter. En <span class="term" data-term="literal">literal</span> er en atomær setning eller en negert atomær setning, \(\neg\text{Loves}(x, F(x))\). En <span class="term" data-term="klausul">klausul</span> er en disjunksjon av literaler, \(\neg\text{Loves}(x, F(x)) \lor \text{Loves}(G(x), x)\). <span class="term" data-term="cnf">CNF</span> er en konjunksjon av klausuler:</p>
+      \[ (\text{Animal}(F(x)) \lor \text{Loves}(G(x), x)) \land (\neg\text{Loves}(x, F(x)) \lor \text{Loves}(G(x), x)) \]
+
+      <div class="callout">
+        <span class="label">Algoritmen</span>
+        <ol class="steps">
+          <li><strong>Fjern \(\Leftrightarrow\):</strong> \(\alpha \Leftrightarrow \beta\) blir \((\alpha \Rightarrow \beta) \land (\beta \Rightarrow \alpha)\).</li>
+          <li><strong>Fjern \(\Rightarrow\):</strong> \(\alpha \Rightarrow \beta\) blir \(\neg\alpha \lor \beta\).</li>
+          <li><strong>Flytt \(\neg\) inn</strong> og fjern dobbel negasjon: \(\neg(\alpha \land \beta) \equiv \neg\alpha \lor \neg\beta\), \(\neg(\alpha \lor \beta) \equiv \neg\alpha \land \neg\beta\), \(\neg\neg\alpha \equiv \alpha\), og <a href="fol.html#kvantorer">De Morgan for kvantorer</a>: \(\neg\forall x\, P \equiv \exists x\, \neg P\), \(\neg\exists x\, P \equiv \forall x\, \neg P\).</li>
+          <li><strong>Standardiser variabler:</strong> hver kvantor får sitt eget navn, \((\exists y \ldots) \lor (\exists y \ldots)\) blir \((\exists y \ldots) \lor (\exists z \ldots)\).</li>
+          <li><strong><span class="term" data-term="skolemisering">Skolemiser</span>:</strong> erstatt eksistensielt kvantifiserte variabler med Skolem-konstanter eller Skolem-funksjoner av de omsluttende \(\forall\)-variablene.</li>
+          <li><strong>Dropp \(\forall\):</strong> alle variabler er nå implisitt allkvantifisert.</li>
+          <li><strong>Distribuer \(\lor\) over \(\land\):</strong> \(\alpha \lor (\beta \land \gamma) \equiv (\alpha \lor \beta) \land (\alpha \lor \gamma)\), og så del opp i klausuler.</li>
+        </ol>
+      </div>
+
+      <h3>Hvorfor kan vi droppe \(\forall\)?</h3>
+      <p>En KB er en konjunksjon av setningene sine, og \(\forall\) kan flyttes ut av en konjunksjon:</p>
+      \[ \begin{aligned} &amp;\{\forall x\, \text{Animal}(F(x)) \lor \text{Loves}(G(x), x),\ \forall x\, \neg\text{Loves}(x, F(x)) \lor \text{Loves}(G(x), x)\}\\ \equiv\ &amp;\forall x\, (\text{Animal}(F(x)) \lor \text{Loves}(G(x), x)) \land (\neg\text{Loves}(x, F(x)) \lor \text{Loves}(G(x), x)) \end{aligned} \]
+      <p>Alle klausulene står under én felles \(\forall\), som vi lar være underforstått. Hver klausul gjelder for alle verdier av sine variabler, så vi kan gi hver klausul egne variabelnavn.</p>
+
+      <div class="oppgave" data-quiz id="oppg-cnf-dyr">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 47–56</span></div>
+        <div class="o-text"><p>Konverter «Everyone who loves all animals is loved by someone», \(\forall x\, (\forall y\, \text{Animal}(y) \Rightarrow \text{Loves}(x, y)) \Rightarrow (\exists y\, \text{Loves}(y, x))\), til CNF. Vis hvert steg.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            \[ \begin{aligned}
+            &amp;\text{Fjern } \Rightarrow: &amp;&amp; \forall x\, \neg(\forall y\, \neg\text{Animal}(y) \lor \text{Loves}(x, y)) \lor (\exists y\, \text{Loves}(y, x))\\
+            &amp;\text{Flytt } \neg \text{ inn}: &amp;&amp; \forall x\, (\exists y\, \neg(\neg\text{Animal}(y) \lor \text{Loves}(x, y))) \lor (\exists y\, \text{Loves}(y, x))\\
+            &amp; &amp;&amp; \forall x\, (\exists y\, \neg\neg\text{Animal}(y) \land \neg\text{Loves}(x, y)) \lor (\exists y\, \text{Loves}(y, x))\\
+            &amp;\text{Fjern } \neg\neg: &amp;&amp; \forall x\, (\exists y\, \text{Animal}(y) \land \neg\text{Loves}(x, y)) \lor (\exists y\, \text{Loves}(y, x))\\
+            &amp;\text{Standardiser}: &amp;&amp; \forall x\, (\exists y\, \text{Animal}(y) \land \neg\text{Loves}(x, y)) \lor (\exists z\, \text{Loves}(z, x))\\
+            &amp;\text{Skolemiser}: &amp;&amp; \forall x\, (\text{Animal}(F(x)) \land \neg\text{Loves}(x, F(x))) \lor \text{Loves}(G(x), x)\\
+            &amp;\text{Dropp } \forall: &amp;&amp; (\text{Animal}(F(x)) \land \neg\text{Loves}(x, F(x))) \lor \text{Loves}(G(x), x)\\
+            &amp;\text{Distribuer}: &amp;&amp; (\text{Animal}(F(x)) \lor \text{Loves}(G(x), x)) \land (\neg\text{Loves}(x, F(x)) \lor \text{Loves}(G(x), x))
+            \end{aligned} \]
+            <p>Ingen \(\Leftrightarrow\) i steg 1. Begge \(\exists\) står inni \(\forall x\), så de blir Skolem-funksjoner av \(x\): \(F(x)\) er «et dyr \(x\) ikke elsker», \(G(x)\) er «den som elsker \(x\)». Resultatet er to klausuler.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-skolem">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.3</span></div>
+        <div class="o-text"><p>Konverter til CNF: «Hver student har en venn som ikke er student», \(\forall x\, \text{Student}(x) \Rightarrow \exists y\, (\text{Venn}(x, y) \land \neg\text{Student}(y))\). Hvorfor holder det ikke med en Skolem-konstant?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[ \begin{aligned}
+            &amp;\text{Fjern } \Rightarrow: &amp;&amp; \forall x\, \neg\text{Student}(x) \lor \exists y\, (\text{Venn}(x, y) \land \neg\text{Student}(y))\\
+            &amp;\text{Skolemiser}: &amp;&amp; \forall x\, \neg\text{Student}(x) \lor (\text{Venn}(x, F(x)) \land \neg\text{Student}(F(x)))\\
+            &amp;\text{Dropp } \forall: &amp;&amp; \neg\text{Student}(x) \lor (\text{Venn}(x, F(x)) \land \neg\text{Student}(F(x)))\\
+            &amp;\text{Distribuer}: &amp;&amp; (\neg\text{Student}(x) \lor \text{Venn}(x, F(x))) \land (\neg\text{Student}(x) \lor \neg\text{Student}(F(x)))
+            \end{aligned} \]
+            <p>Steg 3–4 endrer ingenting (ingen \(\neg\) foran parenteser, bare én \(\exists\)). \(\exists y\) står inni \(\forall x\): hver student kan ha sin egen venn, så \(y\) erstattes med \(F(x)\). Med en konstant \(C_1\) ville vi sagt at <em>alle</em> studenter har samme venn \(C_1\), som er en sterkere påstand.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 RESOLUSJON ─────────────────────────── -->
+  <section id="resolusjon">
+    <div class="container">
+      <div class="section-badge">07 · Resolusjon</div>
+      <h2>Resolusjonsrefutasjon med <em>substitusjoner</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 57–70 · Eksamen Ord. 2023 oppg. 3.2b</div>
+      <span class="lm-pill">Deltema 7.3 · prio 1 · regn</span>
+
+      <p class="dropcap"><span class="term" data-term="resolusjon-fol">Resolusjonsregelen i FOL</span> er PL-regelen pluss unifikasjon. For literaler \(a_i, b_j, c, c'\):</p>
+      \[ \frac{a_1 \lor a_2 \lor \ldots \lor c,\quad \neg c' \lor b_1 \lor b_2 \lor \ldots}{\text{Subst}(\theta,\ a_1 \lor a_2 \lor \ldots \lor b_1 \lor b_2 \lor \ldots)} \quad\text{der } \theta = \text{Unify}(c, c') \]
+      <p>Eksempel: \(\text{Animal}(F(x)) \lor \text{Loves}(G(x), x)\) og \(\neg\text{Animal}(F(\text{Jack})) \lor \text{Loves}(G(\text{Jack}), \text{Jack})\) med \(\theta = \{x/\text{Jack}\}\) gir \(\text{Loves}(G(\text{Jack}), \text{Jack}) \lor \text{Loves}(G(\text{Jack}), \text{Jack})\), som er ekvivalent med \(\text{Loves}(G(\text{Jack}), \text{Jack})\).</p>
+
+      <div class="callout">
+        <span class="label">Algoritmen (som i PL)</span>
+        <ol class="steps">
+          <li>Legg \(\neg\alpha\) til KB og konverter alle setningene til CNF.</li>
+          <li>Del konjunksjonene opp i klausuler: \(\{(P(A) \lor P(B)) \land P(C)\}\) blir \(\{P(A) \lor P(B),\ P(C)\}\). Nummerer dem.</li>
+          <li>Bruk resolusjonsregelen gjentatt. Utledes den <span class="term" data-term="tom-klausul">tomme klausulen</span> (motsigelse, f.eks. fra \(P(A)\) og \(\neg P(A)\)), returner «unsatisfiable», altså \(KB \models \alpha\). Ellers «satisfiable», \(KB \not\models \alpha\).</li>
+        </ol>
+        <p>På eksamen: skriv for hvert steg hvilke to klausuler du bruker, \(\theta\), og resolventen med nytt nummer. Er spørringen \(\exists x\, \ldots\), følger du hva \(x\) i den negerte spørringen blir bundet til; det er svaret på «hvem».</p>
+      </div>
+
+      <h3>Eksempel: drepte Curiosity katten?</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Naturlig språk</th><th>FOL</th></tr></thead>
+        <tbody>
+          <tr><td>Everyone who loves all animals is loved by someone</td><td>\(\forall x\, (\forall y\, \text{Animal}(y) \Rightarrow \text{Loves}(x, y)) \Rightarrow (\exists y\, \text{Loves}(y, x))\)</td></tr>
+          <tr><td>Anyone who kills an animal is loved by no one</td><td>\(\forall x\, (\exists z\, \text{Animal}(z) \land \text{Kills}(x, z)) \Rightarrow (\forall y\, \neg\text{Loves}(y, x))\)</td></tr>
+          <tr><td>Jack loves all animals</td><td>\(\forall x\, \text{Animal}(x) \Rightarrow \text{Loves}(\text{Jack}, x)\)</td></tr>
+          <tr><td>Either Jack or Curiosity killed the cat</td><td>\(\text{Kills}(\text{Jack}, \text{Tuna}) \lor \text{Kills}(\text{Curiosity}, \text{Tuna})\)</td></tr>
+          <tr><td>who is named Tuna</td><td>\(\text{Cat}(\text{Tuna})\), \(\forall x\, \text{Cat}(x) \Rightarrow \text{Animal}(x)\)</td></tr>
+          <tr><td>Spørsmål: did Curiosity kill the cat?</td><td>\(\text{Kills}(\text{Curiosity}, \text{Tuna})\)</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="oppgave" data-quiz id="oppg-curiosity">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 60–70</span></div>
+        <div class="o-text"><p>Bruk resolusjonsrefutasjon på KB-en i tabellen til å avgjøre om Curiosity drepte katten. Konverter alle setningene og den negerte spørringen til CNF, og skriv \(\theta\) for hvert resolusjonssteg.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene (mellomstegene i CNF-konverteringen er vårt tillegg)</span>
+            <p><strong>CNF.</strong> Setning 1: se <a href="#oppg-cnf-dyr">over</a>. Setning 2: fjern \(\Rightarrow\) og flytt \(\neg\) inn, \(\forall x\, (\forall z\, \neg\text{Animal}(z) \lor \neg\text{Kills}(x, z)) \lor (\forall y\, \neg\text{Loves}(y, x))\); ingen \(\exists\) igjen, dropp \(\forall\). Setning 3 og 6: \(\alpha \Rightarrow \beta\) blir \(\neg\alpha \lor \beta\). Setning 4 og 5 er alt klausuler.</p>
+            <ol class="proof">
+              <li>\(\text{Animal}(F(x)) \lor \text{Loves}(G(x), x)\)</li>
+              <li>\(\neg\text{Loves}(x, F(x)) \lor \text{Loves}(G(x), x)\)</li>
+              <li>\(\neg\text{Loves}(y, x) \lor \neg\text{Animal}(z) \lor \neg\text{Kills}(x, z)\)</li>
+              <li>\(\neg\text{Animal}(u) \lor \text{Loves}(\text{Jack}, u)\) &ensp;(standardisert fra \(x\) til \(u\))</li>
+              <li>\(\text{Kills}(\text{Jack}, \text{Tuna}) \lor \text{Kills}(\text{Curiosity}, \text{Tuna})\)</li>
+              <li>\(\text{Cat}(\text{Tuna})\)</li>
+              <li>\(\neg\text{Cat}(x) \lor \text{Animal}(x)\)</li>
+              <li>\(\neg\text{Kills}(\text{Curiosity}, \text{Tuna})\) &ensp;(negert spørring)</li>
+            </ol>
+            <p><strong>Resolusjon.</strong></p>
+            <ol class="proof" start="9">
+              <li>6 + 7, \(\theta = \{x/\text{Tuna}\}\): \(\text{Animal}(\text{Tuna})\)</li>
+              <li>5 + 8, \(\theta = \{\}\): \(\text{Kills}(\text{Jack}, \text{Tuna})\)</li>
+              <li>2 + 4, \(\theta = \{x/\text{Jack}, u/F(\text{Jack})\}\): \(\neg\text{Animal}(F(\text{Jack})) \lor \text{Loves}(G(\text{Jack}), \text{Jack})\)</li>
+              <li>11 + 1, \(\theta = \{x/\text{Jack}\}\): \(\text{Loves}(G(\text{Jack}), \text{Jack})\) (\(A \lor A \equiv A\))</li>
+              <li>3 + 9, \(\theta = \{z/\text{Tuna}\}\): \(\neg\text{Loves}(y, x) \lor \neg\text{Kills}(x, \text{Tuna})\)</li>
+              <li>13 + 10, \(\theta = \{x/\text{Jack}\}\): \(\neg\text{Loves}(y, \text{Jack})\)</li>
+              <li>14 + 12, \(\theta = \{y/G(\text{Jack})\}\): □</li>
+            </ol>
+            <p>Den tomme klausulen er utledet, så \(KB \models \text{Kills}(\text{Curiosity}, \text{Tuna})\): ja, Curiosity drepte katten. Idé: Jack elsker alle dyr, så noen elsker Jack (12), men den som dreper et dyr, elskes ikke (14).</p>
+            <figure class="rtree-wrap">
+<svg class="rtree" viewBox="0 0 1020 430" aria-label="Resolusjonstre for Curiosity-eksemplet">
+<defs><marker id="rt-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6b6257"/></marker></defs>
+<rect class="kbframe" x="24" y="8" width="972" height="138" rx="6"/>
+<text class="cap" x="510" y="160">KB ∪ {¬Kills(Curiosity, Tuna)} på CNF</text>
+<path class="ed" d="M60 76 C 15 76, -11 196, 34 196"/>
+<path class="ed" d="M439 42 C 439 112, 386 196, 316 196"/>
+<path class="ed" d="M34 30 C -6 30, 30 256, 70 256"/>
+<path class="ed" d="M890 196 C 770 196, 402 256, 282 256"/>
+<path class="ed" d="M990 30 C 1020 30, 1020 196, 990 196"/>
+<path class="ed" d="M841 76 C 801 76, 940 144, 940 184"/>
+<path class="ed" d="M710 42 C 710 92, 624 134, 624 184"/>
+<path class="ed" d="M820 122 C 730 122, 778 196, 688 196"/>
+<path class="ed" d="M70 256 C 30 256, 110 316, 150 316"/>
+<path class="ed" d="M560 196 C 470 196, 354 316, 264 316"/>
+<path class="ed" d="M316 196 C 376 196, 544 244, 544 304"/>
+<path class="ed" d="M272 122 C 362 122, 544 214, 544 304"/>
+<path class="ed" d="M264 316 C 314 316, 272 380, 322 380"/>
+<path class="ed" d="M470 316 C 420 316, 388 380, 338 380"/>
+<g class="nd kb"><rect x="34" y="18" width="282" height="24"/><text x="175" y="34">¬Loves(y,x) ∨ ¬Animal(z) ∨ ¬Kills(x,z)</text></g>
+<g class="nd kb"><rect x="340" y="18" width="198" height="24"/><text x="439" y="34">¬Animal(u) ∨ Loves(Jack,u)</text></g>
+<g class="nd kb"><rect x="562" y="18" width="296" height="24"/><text x="710" y="34">Kills(Jack,Tuna) ∨ Kills(Curiosity,Tuna)</text></g>
+<g class="nd kb"><rect x="911" y="18" width="79" height="24"/><text x="950" y="34">Cat(Tuna)</text></g>
+<g class="nd kb"><rect x="60" y="64" width="226" height="24"/><text x="173" y="80">¬Loves(x,F(x)) ∨ Loves(G(x),x)</text></g>
+<g class="nd kb"><rect x="841" y="64" width="149" height="24"/><text x="916" y="80">¬Cat(x) ∨ Animal(x)</text></g>
+<g class="nd kb"><rect x="60" y="110" width="212" height="24"/><text x="166" y="126">Animal(F(x)) ∨ Loves(G(x),x)</text></g>
+<g class="nd neg"><rect x="820" y="110" width="170" height="24"/><text x="905" y="126">¬Kills(Curiosity,Tuna)</text></g>
+<g class="nd dv"><rect x="34" y="184" width="282" height="24"/><text x="175" y="200">¬Animal(F(Jack)) ∨ Loves(G(Jack),Jack)</text></g>
+<text class="th" x="175" y="221">θ = {x/Jack, u/F(Jack)}</text>
+<g class="nd dv"><rect x="560" y="184" width="128" height="24"/><text x="624" y="200">Kills(Jack,Tuna)</text></g>
+<text class="th" x="624" y="221">θ = {}</text>
+<g class="nd dv"><rect x="890" y="184" width="100" height="24"/><text x="940" y="200">Animal(Tuna)</text></g>
+<text class="th" x="940" y="221">θ = {x/Tuna}</text>
+<g class="nd dv"><rect x="70" y="244" width="212" height="24"/><text x="176" y="260">¬Loves(y,x) ∨ ¬Kills(x,Tuna)</text></g>
+<text class="th" x="176" y="281">θ = {z/Tuna}</text>
+<g class="nd fin"><rect x="150" y="304" width="114" height="24"/><text x="207" y="320">¬Loves(y,Jack)</text></g>
+<text class="th" x="207" y="341">θ = {x/Jack}</text>
+<g class="nd fin"><rect x="470" y="304" width="149" height="24"/><text x="544" y="320">Loves(G(Jack),Jack)</text></g>
+<text class="th" x="544" y="341">θ = {x/Jack}</text>
+<rect class="empty" x="322" y="372" width="16" height="16" rx="3"/>
+<text class="th" x="330" y="404">θ = {y/G(Jack)} · tom klausul □</text>
+<text class="cap" x="330" y="420">KB ⊨ Kills(Curiosity, Tuna)</text>
+</svg>
+              <figcaption>Resolusjonstreet. Grønne bokser: utledede klausuler, med \(\theta\) under. Oransje: de to siste klausulene som gir □.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o23-3-2b">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 3.2b</span><span class="o-ref">del av 10 p</span></div>
+        <div class="o-text">
+          <p>Fido is father of Snowy. Fido is alive. One’s father is one’s parent and vice versa. Somebody’s alive parent is older than them. Question: Is there anybody older than Snowy? (a-delen, <a href="fol.html#oppg-o23-3-2a">oversettelsen</a>, gir \(\text{Father}(\text{Fido}, \text{Snowy})\), \(\text{Alive}(\text{Fido})\), \(\forall x, y\ \text{Parent}(x, y) \Leftrightarrow \text{Father}(x, y)\), \(\forall x, y\ \text{Parent}(x, y) \land \text{Alive}(x) \Rightarrow \text{Older}(x, y)\) og \(Q = \exists x\ \text{Older}(x, \text{Snowy})\).)</p>
+          <p>b) Using resolution refutation answer if there is anybody older than Snowy? If there is, who is this? Number the CNF sentences starting from 1, and then employ resolution refutation. Show how you convert the FOL sentences to CNF sentences.</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget (fortegnet på ¬Q er rettet, ⇔-steget er skrevet ut)</span>
+            <p><strong>CNF.</strong> 3: fjern \(\Leftrightarrow\), \((\text{Parent}(x, y) \Rightarrow \text{Father}(x, y)) \land (\text{Father}(x, y) \Rightarrow \text{Parent}(x, y))\), fjern \(\Rightarrow\), og del i to klausuler 3 og 3.1. 4: \(\neg(\text{Parent}(x, y) \land \text{Alive}(x)) \lor \text{Older}(x, y)\), De Morgan gir én klausul. Negert spørring: \(\neg\exists x\, \text{Older}(x, \text{Snowy}) \equiv \forall x\, \neg\text{Older}(x, \text{Snowy})\), dropp \(\forall\).</p>
+            <ol class="proof">
+              <li>\(\text{Father}(\text{Fido}, \text{Snowy})\)</li>
+              <li>\(\text{Alive}(\text{Fido})\)</li>
+              <li>\(\neg\text{Parent}(x, y) \lor \text{Father}(x, y)\) &ensp;og 3.1 \(\neg\text{Father}(x, y) \lor \text{Parent}(x, y)\)</li>
+              <li>\(\neg\text{Parent}(x, y) \lor \neg\text{Alive}(x) \lor \text{Older}(x, y)\)</li>
+            </ol>
+            <p>\(\neg Q\): \(\neg\text{Older}(x, \text{Snowy})\)</p>
+            <p><strong>Resolusjon.</strong></p>
+            <ol class="proof" start="5">
+              <li>\(\neg Q\) + 4, \(\theta = \{y/\text{Snowy}\}\): \(\neg\text{Parent}(x, \text{Snowy}) \lor \neg\text{Alive}(x)\)</li>
+              <li>5 + 2, \(\theta = \{x/\text{Fido}\}\): \(\neg\text{Parent}(\text{Fido}, \text{Snowy})\)</li>
+              <li>6 + 3.1, \(\theta = \{x/\text{Fido}, y/\text{Snowy}\}\): \(\neg\text{Father}(\text{Fido}, \text{Snowy})\)</li>
+              <li>7 + 1, \(\theta = \{\}\): □</li>
+            </ol>
+            <p>Motsigelse, så noen er eldre enn Snowy. Variabelen \(x\) fra \(\neg Q\) ble bundet til Fido i steg 6, så svaret er <strong>Fido</strong>.</p>
+            <p>Med eget variabelnavn i \(\neg Q\), \(\neg\text{Older}(w, \text{Snowy})\), blir \(\theta\) i steg 5 \(\{w/x, y/\text{Snowy}\}\); resten er likt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-res">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">7.1 + 7.3</span></div>
+        <div class="o-text"><p>Alle hunder er dyr. Alle som eier en hund, er dyrevenner. Ola eier Rex. Rex er en hund. Er det noen som er dyrevenn, og i så fall hvem? Oversett til FOL, konverter til CNF og bruk resolusjonsrefutasjon.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            \[ \begin{aligned} &amp;\forall x\, \text{Hund}(x) \Rightarrow \text{Dyr}(x)\\ &amp;\forall x\, (\exists y\, \text{Eier}(x, y) \land \text{Hund}(y)) \Rightarrow \text{Dyrevenn}(x)\\ &amp;\text{Eier}(\text{Ola}, \text{Rex}),\quad \text{Hund}(\text{Rex}),\qquad Q = \exists z\, \text{Dyrevenn}(z) \end{aligned} \]
+            <p><strong>CNF.</strong> Andre setning: fjern \(\Rightarrow\), \(\forall x\, \neg(\exists y\, \text{Eier}(x, y) \land \text{Hund}(y)) \lor \text{Dyrevenn}(x)\); flytt \(\neg\) inn, \(\forall x\, (\forall y\, \neg\text{Eier}(x, y) \lor \neg\text{Hund}(y)) \lor \text{Dyrevenn}(x)\). En \(\exists\) i premisset blir altså \(\forall\), og det trengs ingen Skolem-funksjon.</p>
+            <ol class="proof">
+              <li>\(\neg\text{Hund}(x) \lor \text{Dyr}(x)\)</li>
+              <li>\(\neg\text{Eier}(x, y) \lor \neg\text{Hund}(y) \lor \text{Dyrevenn}(x)\)</li>
+              <li>\(\text{Eier}(\text{Ola}, \text{Rex})\)</li>
+              <li>\(\text{Hund}(\text{Rex})\)</li>
+              <li>\(\neg\text{Dyrevenn}(z)\) &ensp;(negert spørring)</li>
+              <li>5 + 2, \(\theta = \{x/z\}\): \(\neg\text{Eier}(z, y) \lor \neg\text{Hund}(y)\)</li>
+              <li>6 + 4, \(\theta = \{y/\text{Rex}\}\): \(\neg\text{Eier}(z, \text{Rex})\)</li>
+              <li>7 + 3, \(\theta = \{z/\text{Ola}\}\): □</li>
+            </ol>
+            <p>Ja, og \(z\) ble bundet til Ola: Ola er dyrevenn. Klausul 1 trengs ikke.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 STRATEGIER OG LIKHET ─────────────────────────── -->
+  <section id="strategier">
+    <div class="container">
+      <div class="section-badge">08 · Strategier og likhet</div>
+      <h2>Raskere resolusjon og <em>likhet</em></h2>
+      <div class="source-note">Slides forelesning 7 · s. 71–78</div>
+      <span class="lm-pill">Lavere prioritet · kjenn navnene</span>
+
+      <p class="dropcap">Hvilke to klausuler skal vi prøve? Strategier (heuristikker):</p>
+      <ul>
+        <li><span class="term" data-term="unit-preference">Unit preference</span>: korte klausuler først.</li>
+        <li><span class="term" data-term="set-of-support">Set of support</span>: foretrekk klausuler fra et håndplukket sett, f.eks. den negerte spørringen (målrettet bevis).</li>
+        <li><span class="term" data-term="input-resolusjon">Input resolution</span>: foretrekk klausuler fra den opprinnelige KB-en eller spørringen.</li>
+        <li><span class="term" data-term="subsumpsjon">Subsumption</span>: hold KB liten ved å ikke utlede klausuler som er mer spesifikke enn en som finnes; med \(\forall x\, P(x)\) i KB trengs ikke \(P(A)\) eller \(P(A) \lor Q(B)\).</li>
+        <li>Læring: velg klausuler med en maskinlæringsmodell trent på tidligere bevis; selv en unøyaktig modell hjelper.</li>
+      </ul>
+
+      <h3>Likhet</h3>
+      <ul>
+        <li><strong>Aksiomatiser likhet:</strong> skriv at \(=\) er refleksiv (\(\forall x\, x = x\)), symmetrisk, transitiv, og at like kan byttes med like i predikater og funksjoner (\(\forall x, y\, x = y \Rightarrow (P_1(x) \Leftrightarrow P_1(y))\), …). Da kan resolusjon brukes uendret.</li>
+        <li><strong>To ekstra inferensregler,</strong> <span class="term" data-term="demodulasjon">demodulation</span> og paramodulation, som utleder \(\text{Birthdate}(\text{PaternalGrandfather}(\text{Bella}), 1926)\) fra \(\forall x\, \text{Father}(\text{Father}(x)) = \text{PaternalGrandfather}(x)\) og \(\text{Birthdate}(\text{Father}(\text{Father}(\text{Bella})), 1926)\).</li>
+        <li><strong><span class="term" data-term="likhetsunifikasjon">Equational unification</span>:</strong> endre unifikasjonsalgoritmen så \(\text{Add}(1, 2)\) og \(\text{Add}(2, 1)\) kan unifiseres når \(\forall x, y\, \text{Add}(x, y) = \text{Add}(y, x)\) er kjent.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 09 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">09 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Subst og UI/EI</strong>∀ instansieres med en hvilken som helst grunnterm; ∃ med en ny Skolem-konstant.</div>
+        <div class="recap-pill"><strong>Skolem-funksjon</strong>∃ inni ∀x blir F(x): «alle elsker noen» ≠ «alle elsker C₁».</div>
+        <div class="recap-pill"><strong>Unify</strong>Mest generelle θ som gjør to atomer like. Feiler ved konstantkonflikt og occur check.</div>
+        <div class="recap-pill"><strong>GMP</strong>Modus Ponens med θ = Unify(fakta, premisser). Sunn og fullstendig for definite clauses.</div>
+        <div class="recap-pill"><strong>CNF i 7 steg</strong>⇔, ⇒, ¬ inn, standardiser, skolemiser, dropp ∀, distribuer.</div>
+        <div class="recap-pill"><strong>Resolusjon</strong>KB ∧ ¬α på CNF, resolver med θ til □. «Hvem» = bindingen av spørrevariabelen.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er forskjellen på hvordan universell og eksistensiell instansiering velger termen som settes inn?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">UI: en hvilken som helst grunnterm, så mange ganger vi vil. EI: én ny Skolem-konstant som ikke finnes i KB, fordi vi bare vet at <em>et</em> objekt finnes.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">\(KB = \{\text{Parent}(\text{Ann}, \text{Bo}),\ \text{Parent}(\text{Bo}, \text{Cy}),\ \forall x, y, z\ \text{Parent}(x, y) \land \text{Parent}(y, z) \Rightarrow \text{Grandparent}(x, z)\}\). Utled en ny setning med GMP og oppgi \(\theta\).</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\text{Parent}(\text{Ann}, \text{Bo})\) mot \(\text{Parent}(x, y)\): \(\{x/\text{Ann}, y/\text{Bo}\}\). \(\text{Parent}(\text{Bo}, \text{Cy})\) mot \(\text{Parent}(y, z)\) med \(y = \text{Bo}\): \(z/\text{Cy}\). \(\theta = \{x/\text{Ann}, y/\text{Bo}, z/\text{Cy}\}\) gir \(\text{Grandparent}(\text{Ann}, \text{Cy})\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">I en resolusjonsrefutasjon for \(\exists x\, \text{Older}(x, \text{Snowy})\) negerer du spørringen. Hvorfor blir den negerte spørringen en klausul med en <em>variabel</em>, og ikke med en Skolem-konstant?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\neg\exists x\, \text{Older}(x, \text{Snowy}) \equiv \forall x\, \neg\text{Older}(x, \text{Snowy})\): negasjonen gjør \(\exists\) til \(\forall\), og \(\forall\) droppes i CNF. Variabelen kan dermed unifiseres med hva som helst, og bindingen den får (Fido) er svaret.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="fol.html" class="prev"><div class="pn-label">← Forrige · 7A</div><div class="pn-title">Førsteordens logikk</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 7: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Unifikasjons-trener: Unify med stegvis logg og occur check ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-unify'); if (!root) return;
+  var EX = [
+    ['Loves(x, Arithmetic)', 'Loves(Alice, Arithmetic)'],
+    ['Loves(x, y)', 'Loves(Alice, z)'],
+    ['Loves(Bob, y)', 'Loves(Alice, z)'],
+    ['Loves(Bob, y)', 'Loves(x, Mother(x))'],
+    ['Knows(John, x)', 'Knows(x, Elizabeth)'],
+    ['Knows(John, x)', 'Knows(x2, Elizabeth)'],
+    ['P(x, F(x))', 'P(F(y), y)'],
+    ['Loves(x, F(x))', 'Loves(Jack, u)'],
+    ['Loves(y, Jack)', 'Loves(G(Jack), Jack)'],
+    ['Knows(x, y)', 'Likes(x, y)']
+  ];
+  var sel = document.getElementById('un-sel'), ia = document.getElementById('un-a'), ib = document.getElementById('un-b');
+  var logEl = document.getElementById('un-log'), out = document.getElementById('un-out');
+  sel.innerHTML = EX.map(function (e, i) { return '<option value="' + i + '">' + (i + 1) + '. ' + e[0] + '  ·  ' + e[1] + '</option>'; }).join('') + '<option value="-1">Egne atomer …</option>';
+
+  function parse(s) {
+    var toks = s.match(/[A-Za-z0-9_]+|[(),]|\S/g) || [], i = 0;
+    function term() {
+      var t = toks[i++];
+      if (!t || !/^[A-Za-z0-9_]+$/.test(t)) throw new Error('uventet «' + (t || 'slutt') + '»');
+      if (/^[a-z]/.test(t)) return { v: t };
+      var node = { f: t, a: [] };
+      if (toks[i] === '(') {
+        i++;
+        if (toks[i] === ')') throw new Error('tomme parenteser');
+        while (true) { node.a.push(term()); if (toks[i] === ',') { i++; continue; } if (toks[i] === ')') { i++; break; } throw new Error('mangler «)»'); }
+      }
+      return node;
+    }
+    var r = term(); if (i < toks.length) throw new Error('ekstra «' + toks[i] + '»');
+    return r;
+  }
+  function show(t) { return t.v || (t.f + (t.a.length ? '(' + t.a.map(show).join(', ') + ')' : '')); }
+  function sub(t, th) {
+    if (t.v) return th[t.v] ? sub(th[t.v], th) : t;
+    return { f: t.f, a: t.a.map(function (x) { return sub(x, th); }) };
+  }
+  function occurs(v, t, th) {
+    if (t.v) return t.v === v || (th[t.v] ? occurs(v, th[t.v], th) : false);
+    return t.a.some(function (x) { return occurs(v, x, th); });
+  }
+  function thStr(th) { return '{' + Object.keys(th).map(function (k) { return k + '/' + show(th[k]); }).join(', ') + '}'; }
+
+  var steps;
+  function L(t, c) { steps.push({ t: t, c: c }); }
+  function unify(a, b, th) {
+    if (th === null) return null;
+    L('Unify(' + show(a) + ', ' + show(b) + ')');
+    if (show(a) === show(b)) { L('  like uttrykk, ingen ny binding'); return th; }
+    if (a.v) return uvar(a, b, th);
+    if (b.v) return uvar(b, a, th);
+    if (a.f !== b.f) {
+      L('  failure: ' + (a.a.length || b.a.length ? 'ulike navn ' : 'ulike konstanter ') + a.f + ' ≠ ' + b.f, 'bad'); return null;
+    }
+    if (a.a.length !== b.a.length) { L('  failure: ulikt antall argumenter i ' + a.f + ' (' + a.a.length + ' mot ' + b.a.length + ')', 'bad'); return null; }
+    L('  samme navn ' + a.f + ' og ' + a.a.length + ' argumenter: unifiser argumentene parvis');
+    for (var i = 0; i < a.a.length; i++) { th = unify(a.a[i], b.a[i], th); if (th === null) return null; }
+    return th;
+  }
+  function uvar(v, x, th) {
+    if (th[v.v]) { L('  ' + v.v + ' er alt bundet til ' + show(th[v.v]) + ', unifiser den med ' + show(x)); return unify(th[v.v], x, th); }
+    if (x.v && th[x.v]) { L('  ' + x.v + ' er alt bundet til ' + show(th[x.v]) + ', unifiser den med ' + v.v); return unify(v, th[x.v], th); }
+    if (occurs(v.v, x, th)) { L('  failure (occur check): ' + v.v + ' forekommer i ' + show(sub(x, th)), 'bad'); return null; }
+    var n = Object.assign({}, th); n[v.v] = x;
+    L('  legg til ' + v.v + '/' + show(x) + ' → θ = ' + thStr(n), 'new');
+    return n;
+  }
+
+  var shown, result, A, B;
+  function run() {
+    steps = []; shown = 0; logEl.innerHTML = ''; out.classList.remove('warn');
+    try { A = parse(ia.value); B = parse(ib.value); }
+    catch (e) { steps = null; out.classList.add('warn'); out.innerHTML = '<span class="bad">Kunne ikke lese:</span> ' + e.message + '. Eksempel: Loves(x, Mother(Bob))'; return false; }
+    result = unify(A, B, {});
+    out.innerHTML = 'Unify(' + show(A) + ', ' + show(B) + ') = ?   ' + steps.length + ' steg.';
+    return true;
+  }
+  function finish() {
+    if (result === null) { out.classList.add('warn'); out.innerHTML = '<span class="bad">failure</span>: ingen substitusjon gjør de to uttrykkene like.'; return; }
+    var full = {}; Object.keys(result).forEach(function (k) { full[k] = sub(result[k], result); });
+    out.innerHTML = 'θ = <span class="hl">' + thStr(full) + '</span>' +
+      '\nSubst(θ, α) = ' + show(sub(A, result)) + '\nSubst(θ, β) = ' + show(sub(B, result)) + '   <span class="ok">identiske</span>';
+  }
+  function next() {
+    if (!steps) { if (!run()) return; }
+    if (shown >= steps.length) return;
+    var s = steps[shown++], li = document.createElement('li');
+    li.textContent = s.t.trim(); li.className = s.c || ''; logEl.appendChild(li);
+    if (shown === steps.length) finish();
+  }
+  function load() {
+    var i = +sel.value; if (i >= 0) { ia.value = EX[i][0]; ib.value = EX[i][1]; }
+    steps = null; logEl.innerHTML = ''; out.classList.remove('warn');
+    out.innerHTML = 'Hva blir Unify(α, β)? Klikk «Ett steg» eller «Unifiser».';
+  }
+  sel.addEventListener('change', function () { load(); if (+sel.value < 0) ia.focus(); });
+  [ia, ib].forEach(function (el) { el.addEventListener('input', function () { sel.value = '-1'; steps = null; logEl.innerHTML = ''; }); });
+  document.getElementById('un-step').addEventListener('click', next);
+  document.getElementById('un-all').addEventListener('click', function () { if (!run()) return; while (shown < steps.length) next(); });
+  document.getElementById('un-reset').addEventListener('click', function () { sel.value = '0'; load(); });
+  load();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 5 — Adversarialt søk og spill</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .bs { fill: #f4f1ea; stroke: #a39886; stroke-width: 1; stroke-dasharray: 4 3; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+  .subpage-card.kommer { opacity: 0.55; cursor: default; }
+  .subpage-card.kommer:hover { transform: none; background: var(--paper-dark); border-color: var(--line-soft); }
+  .subpage-card.kommer .sp-icon { background: var(--ink-ghost); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 5: Adversarialt søk og spill">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 5 · Slides forelesning 8 (+ spillteori kommer) · Boka kap. 6, 17.2</div>
+      <h1>Adversarialt søk og <em>spill</em></h1>
+      <p class="lede">Søk når en motstander trekker annenhver gang. Minimax og alpha-beta for to spillere, expectiminimax når terninger er med, MCTS når treet er for stort, og sannsynligheter over trekk når informasjonen er skjult. På eksamen: regn verdier i et gitt tre, steg for steg.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+      <p class="dropcap">Et <span class="term" data-term="spilltre">spilltre</span> er et søketre der nivåene veksler mellom spillere. Alle algoritmene i kapittelet regner verdier nedenfra og opp; forskjellen er hva en node gjør med barneverdiene: maks, min, vektet snitt eller simulering.</p>
+      <ul>
+        <li><strong>5.1 Minimax, alpha-beta, heuristisk minimax (prio 1).</strong> Regn verdier, \(\alpha\) og \(\beta\) per node, klippede grener. Ord. 2022 oppg. 1.6.</li>
+        <li><strong>5.2 Expectiminimax (prio 1).</strong> Sjansenoder som vektet snitt. Ord. 2023 oppg. 6 (5 p).</li>
+        <li><strong>5.3 MCTS (prio 2).</strong> Fire faser, UCB1, flest playouts. Ord. 2022 oppg. 1.7.</li>
+        <li><strong>5.4 Spillteori (prio 1).</strong> Kommer når temaet er forelest; her hører Ord. 2023 oppg. 5 (10 p) hjemme.</li>
+        <li><strong>5.5 Delvis observerbare spill (prio 3).</strong> Blandede strategier og regret, kort.</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Sidene bygger på forelesning 8 (Ole C. Eidheim, 8. okt. 2026). Produkteksemplene (AlphaZero, Pluribus, AlphaStar) står bare i utdypningsbokser. Alle slide-eksemplene med regning og eksamensoppgavene for 5.1–5.3 er tatt med som egne bokser.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Minimax først; alt annet er varianter av den. Regn alpha-beta for hånd minst to ganger før du går videre.</p>
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="minimax.html#spill">Spill og minimax</a></div><div class="desc">Seks deler, bøttespillet, minimax-formelen, Ord. 2022 oppg. 1.6.</div></div><div class="min">~10 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="minimax.html#alpha-beta">Alpha-beta</a></div><div class="desc">Pseudokoden, konvensjonen for α/β, bøttespillet.</div></div><div class="min">~12 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="minimax.html#halvering">Halveringsspillet og widgeten</a></div><div class="desc">Dypere tre med klipping; øv på egne trær.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="minimax.html#heuristisk">Heuristisk minimax</a></div><div class="desc">Cutoff og eval for sjakk.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="stokastiske-spill.html#expectiminimax">Expectimax og expectiminimax</a></div><div class="desc">Sjansenoder, modifisert bøttespill, Ord. 2023 oppg. 6.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="stokastiske-spill.html#mcts">MCTS og UCB1</a></div><div class="desc">Fire faser, hvilket trekk returneres, UCB1-regning.</div></div><div class="min">~15 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="stokastiske-spill.html#delvis-observerbare">Stein, saks, papir</a></div><div class="desc">Blandede strategier og regret etter én runde.</div></div><div class="min">~7 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="minimax.html" class="subpage-card">
+          <span class="sp-icon">5A</span>
+          <div class="sp-info">
+            <div class="sp-title">Minimax og alpha-beta</div>
+            <div class="sp-desc">Spilldefinisjon, minimax, alpha-beta med α/β per node, halveringsspillet, heuristisk minimax. 7 oppgaver, 1 widget (alpha-beta stegvis).</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="stokastiske-spill.html" class="subpage-card">
+          <span class="sp-icon">5B</span>
+          <div class="sp-info">
+            <div class="sp-title">Stokastiske spill, MCTS og imperfekt informasjon</div>
+            <div class="sp-desc">Expectimax, expectiminimax (Ord. 2023 oppg. 6), MCTS og UCB1, stein-saks-papir og regret. 8 oppgaver, 1 widget (expectiminimax).</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <div class="subpage-card kommer">
+          <span class="sp-icon">5C</span>
+          <div class="sp-info">
+            <div class="sp-title">Spillteori · kommer</div>
+            <div class="sp-desc">Dominante strategier, iterert eliminering, Nash-likevekt, sosial velferd. Prio 1: Ord. 2023 oppg. 5 (10 p). Lages når temaet er forelest.</div>
+          </div>
+          <span class="sp-arrow">&middot;</span>
+        </div>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Minimax er stammen. Alpha-beta og cutoff gjør den raskere, sjansenoder gjør den stokastisk, MCTS bytter regning mot simulering. Stiplet boks kommer i 5C.</p>
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for adversarialt søk">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/></marker>
+          </defs>
+          <rect class="b" x="20" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl" x="120" y="40" text-anchor="middle">Spill (6 deler)</text>
+          <text class="cap" x="120" y="56" text-anchor="middle">toMove · actions · result · utility</text>
+          <rect class="bh" x="280" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="40" text-anchor="middle">Minimax</text>
+          <text class="cap" x="380" y="56" text-anchor="middle">MAX tar maks, MIN tar min</text>
+          <path class="e" d="M220 43 L278 43"/>
+          <rect class="bh" x="540" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="640" y="40" text-anchor="middle">Alpha-beta</text>
+          <text class="cap" x="640" y="56" text-anchor="middle">klipp når v ≥ β / v ≤ α</text>
+          <path class="e" d="M480 43 L538 43"/>
+          <rect class="b" x="540" y="120" width="200" height="46" rx="6"/>
+          <text class="lbl" x="640" y="140" text-anchor="middle">Heuristisk minimax</text>
+          <text class="cap" x="640" y="156" text-anchor="middle">cutoff ved dybde d · eval(s)</text>
+          <path class="e" d="M480 60 L560 118"/>
+          <rect class="bw" x="280" y="120" width="200" height="46" rx="6"/>
+          <text class="lbl" x="380" y="140" text-anchor="middle">Expectiminimax</text>
+          <text class="cap" x="380" y="156" text-anchor="middle">+ sjansenode: Σ P · verdi</text>
+          <path class="e" d="M380 66 L380 118"/>
+          <rect class="b" x="20" y="120" width="200" height="46" rx="6"/>
+          <text class="lbl" x="120" y="140" text-anchor="middle">MCTS</text>
+          <text class="cap" x="120" y="156" text-anchor="middle">playouts · UCB1 · flest N</text>
+          <path class="e" d="M300 66 L200 118"/>
+          <rect class="b" x="20" y="220" width="200" height="46" rx="6"/>
+          <text class="lbl" x="120" y="240" text-anchor="middle">Imperfekt informasjon</text>
+          <text class="cap" x="120" y="256" text-anchor="middle">blandet strategi · regret</text>
+          <rect class="bs" x="280" y="220" width="200" height="46" rx="6"/>
+          <text class="lbl" x="380" y="240" text-anchor="middle">5C Spillteori (kommer)</text>
+          <text class="cap" x="380" y="256" text-anchor="middle">dominans · Nash · sosial velferd</text>
+          <path class="e-faded" d="M220 243 L278 243"/>
+          <path class="e-faded" d="M120 166 L120 218"/>
+        </svg>
+        <figcaption>Heltrukne piler: hver algoritme bygger på den forrige. Stiplede: sammenheng videre mot spillteori.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">Alle oppgavebokser i kapittelet, lenket til stedet på siden. Grønn status: oppgitt svar. Gul: forslag skrevet for denne siden.</p>
+      <ul class="oppgave-index">
+        <li><a href="minimax.html#oppg-botte-minimax"><span class="oi-ref">s. 10–12</span><span>Minimax i bøttespillet.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="minimax.html#oppg-o22-1-6"><span class="oi-ref">O22 1.6</span><span>Minimax for tre spillere (vektorer).</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="minimax.html#oppg-botte-alfabeta"><span class="oi-ref">s. 13–14</span><span>Alpha-beta i bøttespillet, α/β per node.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="minimax.html#oppg-rekkefolge"><span class="oi-ref">egen</span><span>Rekkefølge på barna for mest klipping.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="minimax.html#oppg-halvering"><span class="oi-ref">s. 16–17</span><span>Alpha-beta i halveringsspillet, N = 5.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="minimax.html#oppg-egen-atte-blader"><span class="oi-ref">egen</span><span>Alpha-beta på tre med åtte blader.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="minimax.html#oppg-sok-oppslag"><span class="oi-ref">s. 20</span><span>Søk eller oppslag for første sjakktrekk?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-modifisert-botte"><span class="oi-ref">s. 35–37</span><span>Expectiminimax i modifisert bøttespill.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-o23-6"><span class="oi-ref">O23 6</span><span>Expectiminimax i lønnsforhandling (5 p).</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-egen-expectiminimax"><span class="oi-ref">egen</span><span>Terning og skjev mynt, terskel for sannsynlighet.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-tictactoe"><span class="oi-ref">s. 25–26</span><span>Hvilket tic-tac-toe-trekk returnerer MCTS?</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-o22-1-7"><span class="oi-ref">O22 1.7</span><span>MCTS mindre følsom for feil i eval enn alpha-beta.</span><span class="oi-status notes">Fra LF</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-ucb1"><span class="oi-ref">egen</span><span>UCB1 for rotbarna i MCTS-figuren.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-stein-saks"><span class="oi-ref">s. 42–43</span><span>Utnytt at P2 spiller papir 50 %.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="stokastiske-spill.html#oppg-regret"><span class="oi-ref">s. 45–46</span><span>Regret-vektor etter én runde.</span><span class="oi-status notes">Fra slidene</span></a></li>
+      </ul>
+      <h3>Ekstra, ikke på siden</h3>
+      <ul>
+        <li><span class="oi-ref">O23 5</span> (kommer med spillteori i 5C): AI-akselerasjonsspillet US/Kina, 3×3-matrise; dominante strategier, iterert eliminering, Nash-likevekt, sosial velferd (10 p).</li>
+        <li><span class="oi-ref">O23 kort</span> (kommer med spillteori i 5C): «I noen konkurransepregede fleragentmiljøer er randomisert atferd rasjonell. Hvorfor?» Kort svar: randomisering gjør deg vanskelig å forutsi.</li>
+        <li><span class="oi-ref">Slide 38</span>: backgammon-stilling der svart har slått 6–5 og har fire lovlige trekk; bare illustrasjon av sjansenivået.</li>
+        <li><span class="oi-ref">Slide 29, 46–48</span>: tic-tac-toe-playouts og grafene for regret-minimering over 200 og 2000 iterasjoner; ingen regning.</li>
+        <li><span class="oi-ref">Slide 30–32, 49–50</span>: AlphaZero, Pluribus og AlphaStar; én linje i utdypningsboksene på 5B.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Bøttespillet gir tre ulike svar: minimax velger B, expectimax C og expectiminimax med mynt C. Forklar kort hvorfor.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Minimax antar en optimal motstander: B garanterer 1. Expectimax antar en tilfeldig motspiller: C har høyest snitt (5). Med mynten kan B havne i A (−50), så C (−2.0) blir best selv mot en optimal MIN.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Kan alpha-beta brukes på et tre med sjansenoder uten endring?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Ikke direkte. Verdien til en sjansenode er et snitt av alle barna, så ett barn kan ikke alene avgjøre at grenen er uinteressant, slik det kan i en MIN- eller MAX-node. Klipping krever i så fall grenser på utility (egen tolkning).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Du har 1 sekund per trekk i et spill med forgreiningsfaktor 250 og ingen god eval-funksjon. Alpha-beta med cutoff eller MCTS?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">MCTS. Alpha-beta kommer bare noen få nivåer ned og trenger eval i bladene; uten god eval er verdiene der nær meningsløse. MCTS bruker playouts til ekte terminaltilstander og fordeler søket med UCB1 mot de lovende trekkene.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="minimax.html" class="next"><div class="pn-label">Start · 5A</div><div class="pn-title">Minimax og alpha-beta →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

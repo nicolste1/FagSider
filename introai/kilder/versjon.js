@@ -2,10 +2,10 @@
 window.NOTATER_VERSJON = {
   "tekst": "",
   "kilde_navn": "forelesningsslidene",
-  "pdf": "Forelesning 1 (del 3), 2–6 og assignment-forelesning 1–2 (høst 2026)",
+  "pdf": "Forelesning 1 (del 3), 2–9 og assignment-forelesning 1–2 (høst 2026)",
   "dato_i_pdf": "",
-  "dato_norsk": "25. september 2026",
-  "sider": 583,
-  "ekstrahert": "2026-09-25",
-  "antall_oppgaver": 94
+  "dato_norsk": "16. oktober 2026",
+  "sider": 772,
+  "ekstrahert": "2026-10-16",
+  "antall_oppgaver": 127
 };

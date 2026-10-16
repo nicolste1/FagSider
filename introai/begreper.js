@@ -1468,5 +1468,536 @@
       more: 'oving/assignment2.html#feil',
       alias: ['arc consistency', 'arc-consistent']
     },
+    /* ── kap5 ── */
+    'perfekt-informasjon': {
+      term: 'Perfekt informasjon',
+      alias: 'perfect information',
+      def: '<p>Begge spillerne ser hele tilstanden (sjakk, go, backgammon). Turbaserte spill med perfekt informasjon løses med minimax og alpha-beta.</p>',
+      more: 'kap5/minimax.html#spill'
+    },
+    'imperfekt-informasjon': {
+      term: 'Imperfekt informasjon',
+      alias: 'imperfect information',
+      def: '<p>Spillerne ser ikke hele tilstanden eller trekker samtidig (senke slagskip, stein-saks-papir, poker). Minimax kan ikke brukes direkte.</p>',
+      more: 'kap5/minimax.html#spill'
+    },
+    'terminaltilstand': {
+      term: 'Terminaltilstand',
+      alias: 'terminal state, isTerminal',
+      def: '<p>En tilstand der spillet er slutt; isTerminal(<em>s</em>) er sann. Bare terminaltilstander har utility.</p>',
+      more: 'kap5/minimax.html#spill'
+    },
+    'utility-spill': {
+      term: 'Utility i spill',
+      alias: 'utility(s, p), utility function',
+      def: '<p>utility(<em>s</em>, <em>p</em>): verdien av terminaltilstanden <em>s</em> for spiller <em>p</em>, f.eks. +1 for seier, 0 for uavgjort og −1 for tap. Minimax regner med utility(<em>s</em>, MAX).</p>',
+      more: 'kap5/minimax.html#spill'
+    },
+    'spilltre': {
+      term: 'Spilltre',
+      alias: 'game tree',
+      def: '<p>Søketre der nivåene veksler mellom spillerne (MAX, MIN, eventuelt CHANCE). Kantene er trekk, bladene terminaltilstander med utility.</p>',
+      more: 'kap5/minimax.html#spill'
+    },
+    'bottespillet': {
+      term: 'Bøttespillet',
+      alias: 'bucket game',
+      def: '<p>Eksempelspill: MAX velger bøtte A {−50, 50}, B {3, 1} eller C {−5, 15}, så velger MIN et tall fra bøtta. Minimax gir B (verdi 1), expectimax C (5), med myntkast C (−2.0).</p>',
+      more: 'kap5/minimax.html#spill'
+    },
+    'minimax': {
+      term: 'Minimax',
+      alias: 'minimax search',
+      def: '<p>Gir hver node verdien MAX får når begge spiller optimalt: utility i bladene, største barneverdi i MAX-noder, minste i MIN-noder. MAX velger argmax i roten.</p>',
+      more: 'kap5/minimax.html#minimax'
+    },
+    'max-min': {
+      term: 'MAX- og MIN-node',
+      alias: 'MAX, MIN, max-node, min-node',
+      def: '<p>MAX er spilleren som vil ha høy verdi (tegnes som trekant opp), MIN spilleren som vil ha lav verdi (trekant ned). toMove(<em>s</em>) sier hvem som er i trekket.</p>',
+      more: 'kap5/minimax.html#minimax'
+    },
+    'alpha-beta': {
+      term: 'Alpha-beta pruning',
+      alias: 'alfa-beta, alpha-beta search',
+      def: '<p>Minimax som bærer med seg grensene α og β og hopper over grener som ikke kan endre rotverdien: MAX returnerer når v ≥ β, MIN når v ≤ α. Gir samme trekk som minimax.</p>',
+      more: 'kap5/minimax.html#alpha-beta'
+    },
+    'alfa': {
+      term: 'α (alfa)',
+      alias: 'alpha',
+      def: '<p>Beste verdi en MAX-node på stien så langt er garantert. Starter på −∞ og oppdateres bare i MAX-noder: α ← max(α, v).</p>',
+      more: 'kap5/minimax.html#alpha-beta'
+    },
+    'beta': {
+      term: 'β (beta)',
+      alias: 'beta',
+      def: '<p>Beste verdi en MIN-node på stien så langt er garantert. Starter på ∞ og oppdateres bare i MIN-noder: β ← min(β, v).</p>',
+      more: 'kap5/minimax.html#alpha-beta'
+    },
+    'klipping': {
+      term: 'Klipping',
+      alias: 'pruning, klippe',
+      def: '<p>Å la være å utforske resten av barna til en node fordi verdien allerede ligger utenfor [α, β] og ikke kan påvirke valget lenger opp.</p>',
+      more: 'kap5/minimax.html#alpha-beta'
+    },
+    'trekkordning': {
+      term: 'Trekkordning',
+      alias: 'move ordering',
+      def: '<p>Rekkefølgen barna utforskes i. Beste trekk først (høyest i MAX, lavest i MIN) gir mest klipping, omtrent O(<em>b</em><sup><em>m</em>/2</sup>) mot O(<em>b</em><sup><em>m</em></sup>).</p>',
+      more: 'kap5/minimax.html#oppg-rekkefolge'
+    },
+    'halveringsspillet': {
+      term: 'Halveringsspillet',
+      alias: 'halving game, Nim',
+      def: '<p>Variant av Nim: start med N, spillerne trekker fra 1 eller erstatter N med ⌊N/2⌋, og den som sitter igjen med 0 vinner. Med N = 5 vinner MAX ved å trekke fra 1.</p>',
+      more: 'kap5/minimax.html#halvering'
+    },
+    'heuristisk-minimax': {
+      term: 'Heuristisk minimax',
+      alias: 'hMinimax, heuristic minimax, H-minimax',
+      def: '<p>Minimax som stopper ved en cutoff-test (typisk dybde <em>d</em>) og bruker eval(<em>s</em>, MAX) som estimat av minimax-verdien der.</p>',
+      more: 'kap5/minimax.html#heuristisk'
+    },
+    'cutoff-test': {
+      term: 'Cutoff-test',
+      alias: 'isCutoff(s, d)',
+      def: '<p>isCutoff(<em>s</em>, <em>d</em>) avgjør når heuristisk minimax skal slutte å søke og bruke eval i stedet, typisk ved en fast dybde.</p>',
+      more: 'kap5/minimax.html#heuristisk'
+    },
+    'eval-spill': {
+      term: 'Eval-funksjon (spill)',
+      alias: 'eval(s, MAX), evaluation function',
+      def: '<p>Estimat av minimax(<em>s</em>) i en ikke-terminal tilstand. For sjakk en vektet sum av material, mobility, kingSafety og centerControl.</p>',
+      more: 'kap5/minimax.html#heuristisk'
+    },
+    'sjansenode': {
+      term: 'Sjansenode',
+      alias: 'CHANCE, chance node',
+      def: '<p>Node der utfallet avgjøres av tilfeldighet (mynt, terning). Verdien er det vektede snittet Σ P(a) · verdi(barn). Tegnes som sirkel.</p>',
+      more: 'kap5/stokastiske-spill.html#expectimax'
+    },
+    'expectimax': {
+      term: 'Expectimax',
+      def: '<p>Søk med MAX- og sjansenoder: MAX tar maks, sjansenoder tar forventet verdi. Brukes når motspilleren oppfører seg tilfeldig.</p>',
+      more: 'kap5/stokastiske-spill.html#expectimax'
+    },
+    'stokastisk-spill': {
+      term: 'Stokastisk spill',
+      alias: 'stochastic game',
+      def: '<p>Spill med ytre tilfeldighet, som terningkast, i tillegg til spillernes trekk. Eksempel: backgammon, det modifiserte bøttespillet.</p>',
+      more: 'kap5/stokastiske-spill.html#expectiminimax'
+    },
+    'expectiminimax': {
+      term: 'Expectiminimax',
+      def: '<p>Minimax med sjansenoder: MAX tar maks, MIN tar min og sjansenoder Σ P · verdi. Regnes nedenfra: MIN-noder først, så sjanse, så MAX. Ord. 2023 oppg. 6.</p>',
+      more: 'kap5/stokastiske-spill.html#expectiminimax'
+    },
+    'mcts': {
+      term: 'Monte Carlo tree search (MCTS)',
+      alias: 'Monte Carlo-tresøk',
+      def: '<p>Bygger søketreet gradvis og verdsetter noder med playouts i stedet for eval. Gjentar selection, expansion, simulation og backpropagation, og returnerer trekket med flest playouts.</p>',
+      more: 'kap5/stokastiske-spill.html#mcts'
+    },
+    'playout': {
+      term: 'Playout',
+      alias: 'simulering, simulation',
+      def: '<p>Én simulering fra en node til spillet er slutt, med tilfeldige (eller policy-styrte) trekk. Resultatet telles i U og N langs stien.</p>',
+      more: 'kap5/stokastiske-spill.html#mcts'
+    },
+    'mcts-faser': {
+      term: 'MCTS-fasene',
+      alias: 'selection, expansion, simulation, backpropagation',
+      def: '<p>(1) Selection: gå ned etter seleksjonspolicyen. (2) Expansion: legg til et nytt barn. (3) Simulation: playout til slutt. (4) Backpropagation: oppdater U og N opp til roten.</p>',
+      more: 'kap5/stokastiske-spill.html#mcts'
+    },
+    'seleksjonspolicy': {
+      term: 'Seleksjonspolicy',
+      alias: 'selection policy',
+      def: '<p>Regelen MCTS bruker for å velge barn i selection-fasen. Må balansere exploration og exploitation; UCB1 er standardvalget.</p>',
+      more: 'kap5/stokastiske-spill.html#mcts'
+    },
+    'ucb1': {
+      term: 'UCB1',
+      alias: 'upper confidence bound, UCT',
+      def: '<p>UCB1(<em>n</em>) = U(<em>n</em>)/N(<em>n</em>) + C·√(ln N(parent(<em>n</em>)) / N(<em>n</em>)). Barnet med høyest verdi velges. Vanlig C = √2; høy C gir mer utforsking.</p>',
+      more: 'kap5/stokastiske-spill.html#ucb1'
+    },
+    'exploration-exploitation': {
+      term: 'Exploration og exploitation',
+      alias: 'utforsking og utnytting',
+      def: '<p>Exploration: prøv tilstander med få playouts. Exploitation: bruk tilstander som har gjort det godt. UCB1 har ett ledd for hver.</p>',
+      more: 'kap5/stokastiske-spill.html#ucb1'
+    },
+    'delvis-observerbart-spill': {
+      term: 'Delvis observerbart spill',
+      alias: 'partially observable game, imperfect information game',
+      def: '<p>Spill der tilstanden ikke er fullt observerbar eller spillerne trekker samtidig. Minimax og lignende algoritmer kan ikke brukes; man regner med blandede strategier.</p>',
+      more: 'kap5/stokastiske-spill.html#delvis-observerbare'
+    },
+    'blandet-strategi': {
+      term: 'Blandet strategi',
+      alias: 'mixed strategy',
+      def: '<p>En sannsynlighetsfordeling over trekk, f.eks. ⅓ stein, ⅓ papir, ⅓ saks. Forventet verdi regnes som vektet snitt over begge spilleres sannsynligheter.</p>',
+      more: 'kap5/stokastiske-spill.html#delvis-observerbare'
+    },
+    'nash-likevekt': {
+      term: 'Nash-likevekt',
+      alias: 'Nash equilibrium',
+      def: '<p>Strategier der ingen spiller tjener på å endre sin egen strategi alene. I stein-saks-papir: ⅓ på hvert trekk for begge, forventet verdi 0. Behandles grundig i spillteorien.</p>',
+      more: 'kap5/stokastiske-spill.html#delvis-observerbare'
+    },
+    'regret': {
+      term: 'Regret',
+      def: '<p>Utilityen hvert trekk ville fått minus utilityen faktisk fått. Stein mot papir: (−1, 0, 1) − (−1) = (0, 1, 2) for (stein, papir, saks).</p>',
+      more: 'kap5/stokastiske-spill.html#oppg-regret'
+    },
+    'regret-minimering': {
+      term: 'Regret-minimering',
+      alias: 'regret minimization',
+      def: '<p>Summerer regret per trekk over alle spill og velger trekk etter dem (negative satt til 0, så normalisert). Gjennomsnittsstrategien konvergerer mot Nash-likevekten.</p>',
+      more: 'kap5/stokastiske-spill.html#delvis-observerbare'
+    },
+    /* ── kap7b ── */
+    'semidesiderbar': {
+      term: 'Semidecidable (entailment i FOL)',
+      alias: 'semidecidable, semi-avgjørbar',
+      def: '<p>Entailment i FOL er generelt semidecidable: følger α av KB, finnes et bevis som kan finnes på endelig tid, men er KB ⊭ α, kan søket gå for alltid. Avgjørbart (decidable) for KB med bare definite clauses og ingen funksjoner.</p>',
+      more: 'kap7/fol-inferens.html#avgjorbarhet'
+    },
+    'propositionalisering': {
+      term: 'Propositionalisering',
+      alias: 'propositionalization',
+      def: '<p>Gjør FOL om til PL: (1) erstatt alle variabler med konstanter eller funksjoner, (2) erstatt atomene med proposisjonssymboler. Ulempe: lager blindt mange unødvendige avledninger, f.eks. Student(Arithmetic) ⇒ Knows(Arithmetic, Arithmetic).</p>',
+      more: 'kap7/fol-inferens.html#propositionalisering'
+    },
+    'grunnterm': {
+      term: 'Grunnterm',
+      alias: 'ground term',
+      def: '<p>En term uten variabler: en konstant eller en funksjon av grunntermer, f.eks. Alice eller Mother(Alice).</p>',
+      more: 'kap7/fol-inferens.html#instansiering'
+    },
+    'universell-instansiering': {
+      term: 'Universell instansiering (UI)',
+      alias: 'universal instantiation',
+      def: '<p>Fra ∀v α kan vi utlede Subst({v/g}, α) for enhver grunnterm g, så mange ganger vi vil. Fra ∀x Student(x) ⇒ Knows(x, English) gir {x/Alice} Student(Alice) ⇒ Knows(Alice, English).</p>',
+      more: 'kap7/fol-inferens.html#instansiering'
+    },
+    'eksistensiell-instansiering': {
+      term: 'Eksistensiell instansiering (EI)',
+      alias: 'existential instantiation',
+      def: '<p>Fra ∃v α utledes Subst({v/k}, α), der k er en ny Skolem-konstant som ikke finnes i KB: ∃x Student(x) ∧ Knows(x, Norwegian) gir Student(C<sub>1</sub>) ∧ Knows(C<sub>1</sub>, Norwegian).</p>',
+      more: 'kap7/fol-inferens.html#instansiering'
+    },
+    'skolem-konstant': {
+      term: 'Skolem-konstant',
+      alias: 'Skolem constant',
+      def: '<p>Et nytt konstantnavn (C<sub>1</sub>) for objektet som en ∃-setning sier finnes. Brukes når ∃ ikke står inni noen ∀.</p>',
+      more: 'kap7/fol-inferens.html#instansiering'
+    },
+    'skolem-funksjon': {
+      term: 'Skolem-funksjon',
+      alias: 'Skolem function',
+      def: '<p>Erstatter en ∃-variabel som står inni ∀: ∀x ∃y Loves(x, y) blir ∀x Loves(x, F(x)). Argumentene er de omsluttende ∀-variablene. En konstant ville gitt «alle elsker C<sub>1</sub>», som er noe annet.</p>',
+      more: 'kap7/fol-inferens.html#instansiering'
+    },
+    'skolemisering': {
+      term: 'Skolemisering',
+      alias: 'skolemization',
+      def: '<p>Steg 5 i CNF-konverteringen: alle eksistensielt kvantifiserte variabler erstattes med Skolem-konstanter eller Skolem-funksjoner, slik at bare ∀ er igjen.</p>',
+      more: 'kap7/fol-inferens.html#cnf'
+    },
+    'unifikasjon': {
+      term: 'Unifikasjon (Unify)',
+      alias: 'unification, Unify',
+      def: '<p>Unify(α, β) finner den mest generelle substitusjonen θ slik at Subst(θ, α) = Subst(θ, β), eller failure. Unify(Loves(Bob, y), Loves(x, Mother(x))) = {x/Bob, y/Mother(Bob)}.</p>',
+      more: 'kap7/fol-inferens.html#unifikasjon'
+    },
+    'mgu': {
+      term: 'Mest generelle unifikator',
+      alias: 'most general unifier, MGU',
+      def: '<p>Den substitusjonen som gjør to uttrykk like med færrest mulige bindinger: Unify(Loves(x, y), Loves(Alice, z)) = {x/Alice, y/z}, ikke {x/Alice, y/Bob, z/Bob}.</p>',
+      more: 'kap7/fol-inferens.html#unifikasjon'
+    },
+    'occur-check': {
+      term: 'Occur check',
+      def: '<p>Del av unifikasjonsalgoritmen: en variabel kan ikke bindes til en term som inneholder den selv. x mot F(x) gir failure.</p>',
+      more: 'kap7/fol-inferens.html#unifikasjon'
+    },
+    'standardisere-variabler': {
+      term: 'Standardisere variabler',
+      alias: 'standardizing apart, standardize variables',
+      def: '<p>Gi hver kvantor (i CNF: hver klausul) egne variabelnavn, så like navn i ulike setninger ikke blandes. Knows(John, x) og Knows(x, Elizabeth) unifiserer først når den ene skrives Knows(x<sub>2</sub>, Elizabeth).</p>',
+      more: 'kap7/fol-inferens.html#unifikasjon'
+    },
+    'generalisert-modus-ponens': {
+      term: 'Generalisert Modus Ponens (GMP)',
+      alias: 'Generalized Modus Ponens',
+      def: '<p>Fra fakta p<sub>1</sub>′, …, p<sub>n</sub>′ og ∀x p<sub>1</sub> ∧ … ∧ p<sub>n</sub> ⇒ q utledes Subst(θ, q), der θ = Unify(p<sub>1</sub>′ ∧ … ∧ p<sub>n</sub>′, p<sub>1</sub> ∧ … ∧ p<sub>n</sub>). Sunn og fullstendig for KB med bare definite clauses.</p>',
+      more: 'kap7/fol-inferens.html#gmp'
+    },
+    'fullstendig-inferens': {
+      term: 'Fullstendig inferens',
+      alias: 'completeness (inferens), complete',
+      def: '<p>En inferensalgoritme er fullstendig hvis den kan utlede alt som følger: KB ⊨ α ⇒ KB ⊢ α. GMP er fullstendig for fakta når KB bare har definite clauses; resolusjon er refutasjonsfullstendig.</p>',
+      more: 'kap7/fol-inferens.html#gmp'
+    },
+    'resolusjon-fol': {
+      term: 'Resolusjon i FOL',
+      alias: 'first-order resolution',
+      def: '<p>Fra a<sub>1</sub> ∨ … ∨ c og ¬c′ ∨ b<sub>1</sub> ∨ … utledes Subst(θ, a<sub>1</sub> ∨ … ∨ b<sub>1</sub> ∨ …), der θ = Unify(c, c′). Brukes i resolusjonsrefutasjon: KB ∧ ¬α på CNF resolveres til den tomme klausulen.</p>',
+      more: 'kap7/fol-inferens.html#resolusjon'
+    },
+    'set-of-support': {
+      term: 'Set of support',
+      def: '<p>Resolusjonsstrategi: foretrekk klausuler fra et håndplukket sett, typisk den negerte spørringen, for mer målrettede bevis.</p>',
+      more: 'kap7/fol-inferens.html#strategier'
+    },
+    'input-resolusjon': {
+      term: 'Input resolution',
+      def: '<p>Resolusjonsstrategi: foretrekk klausuler fra den opprinnelige KB-en eller spørringen.</p>',
+      more: 'kap7/fol-inferens.html#strategier'
+    },
+    'subsumpsjon': {
+      term: 'Subsumption',
+      alias: 'subsumpsjon',
+      def: '<p>Hold KB liten ved å ikke utlede klausuler som er mer spesifikke enn en som finnes: med ∀x P(x) i KB trengs ikke P(A) eller P(A) ∨ Q(B).</p>',
+      more: 'kap7/fol-inferens.html#strategier'
+    },
+    'demodulasjon': {
+      term: 'Demodulation og paramodulation',
+      alias: 'demodulation, paramodulation',
+      def: '<p>To ekstra inferensregler for likhet som bytter like med like, f.eks. Birthdate(PaternalGrandfather(Bella), 1926) fra ∀x Father(Father(x)) = PaternalGrandfather(x) og Birthdate(Father(Father(Bella)), 1926).</p>',
+      more: 'kap7/fol-inferens.html#strategier'
+    },
+    'likhetsunifikasjon': {
+      term: 'Equational unification',
+      alias: 'likhetsunifikasjon',
+      def: '<p>Unifikasjon som tar hensyn til kjente likheter, så Add(1, 2) og Add(2, 1) kan unifiseres når ∀x, y Add(x, y) = Add(y, x) er kjent.</p>',
+      more: 'kap7/fol-inferens.html#strategier'
+    },
+    /* ── kap10 ── */
+    'nlp': {
+      term: 'Naturlig språkbehandling (NLP)',
+      def: '<p>Delen av AI som lar datamaskiner forstå, generere og samhandle med menneskelig språk. Vanskelig fordi språk er flertydig, vagt, kontekstavhengig og i endring.</p>',
+      more: 'kap10/nlp.html#vanskelig',
+      alias: 'NLP, natural language processing'
+    },
+    'sprakmodell': {
+      term: 'Språkmodell',
+      def: '<p>En sannsynlighetsfordeling over strenger, f.eks. \\(P(w_{1:N})\\). Brukes til å foreslå neste ord, rette stavefeil og rangere oversettelser. Alltid en tilnærming.</p>',
+      more: 'kap10/nlp.html#bag-of-words',
+      alias: 'language model'
+    },
+    'bag-of-words': {
+      term: 'Bag-of-words',
+      def: '<p>Språkmodell som ser en tekst som en uordnet samling ord. Med naiv Bayes: \\(P(\\text{Class} \\mid w_{1:N}) \\propto P(\\text{Class}) \\prod_j P(w_j \\mid \\text{Class})\\). God til klassifisering, ignorerer rekkefølge.</p>',
+      more: 'kap10/nlp.html#bag-of-words'
+    },
+    'naiv-bayes': {
+      term: 'Naiv Bayes',
+      def: '<p>Antakelsen at hvert ord (trekk) er uavhengig av de andre gitt klassen. Parametrene estimeres som relative frekvenser i et merket korpus, f.eks. \\(P(\\text{business}) = 300/3000\\).</p>',
+      more: 'kap10/nlp.html#bag-of-words',
+      alias: 'naive Bayes'
+    },
+    'n-gram': {
+      term: 'n-gram-modell',
+      def: '<p>Språkmodell der hvert ord bare avhenger av de \\(n-1\\) forrige: \\(P(w_{1:N}) \\approx \\prod_j P(w_j \\mid w_{j-n+1:j-1})\\). Estimeres fra tellinger.</p>',
+      more: 'kap10/nlp.html#ngram',
+      alias: 'n-gram'
+    },
+    'markov-antakelse': {
+      term: 'Markov-antakelse',
+      def: '<p>Antakelsen at neste element bare avhenger av et fast antall forrige: \\(P(w_j \\mid w_{1:j-1}) \\approx P(w_j \\mid w_{j-n+1:j-1})\\). Gjør kjederegelen praktisk med få parametre.</p>',
+      more: 'kap10/nlp.html#ngram',
+      alias: 'Markov assumption'
+    },
+    'unigram': {
+      term: 'Unigram',
+      def: '<p>n-gram med \\(n = 1\\): \\(P(w_j)\\). Bare ordfrekvenser, uten kontekst, som bag-of-words.</p>',
+      more: 'kap10/nlp.html#ngram'
+    },
+    'bigram': {
+      term: 'Bigram',
+      def: '<p>n-gram med \\(n = 2\\): \\(P(w_j \\mid w_{j-1}) = c(w_{j-1} w_j)/c(w_{j-1})\\). Hvert ord avhenger av ordet før.</p>',
+      more: 'kap10/nlp.html#ngram'
+    },
+    'trigram': {
+      term: 'Trigram',
+      def: '<p>n-gram med \\(n = 3\\): \\(P(w_j \\mid w_{j-2}, w_{j-1})\\), f.eks. \\(P(\\text{cat} \\mid \\text{a, black})\\).</p>',
+      more: 'kap10/nlp.html#ngram'
+    },
+    'tegn-n-gram': {
+      term: 'Tegnmodell (tegn-n-gram)',
+      def: '<p>n-gram over bokstaver: \\(P(c_j \\mid c_{j-n+1:j-1})\\). Håndterer ukjente ord og brukes til språkidentifikasjon.</p>',
+      more: 'kap10/nlp.html#ngram',
+      alias: 'character-level model'
+    },
+    'skip-gram': {
+      term: 'Skip-gram',
+      def: '<p>Par av nære ord som hopper over noen ord imellom, f.eks. 1-skip-bigrammene «je comprends» og «ne pas» fra «je ne comprends pas». Fanger avhengigheter over avstand.</p>',
+      more: 'kap10/nlp.html#ngram'
+    },
+    'glatting': {
+      term: 'Glatting',
+      def: '<p>Teknikker som flytter litt sannsynlighetsmasse fra sette til usette n-gram, så ett usett n-gram ikke gir \\(P = 0\\) for hele setningen. Laplace, backoff, lineær interpolasjon.</p>',
+      more: 'kap10/nlp.html#glatting',
+      alias: 'smoothing'
+    },
+    'unk': {
+      term: '&lt;UNK&gt;',
+      def: '<p>Token som erstatter sjeldne ord i treningen; ukjente ord i test får \\(P(\\langle\\text{UNK}\\rangle)\\). Typede varianter: &lt;NUM&gt;, &lt;EMAIL&gt;, &lt;URL&gt;.</p>',
+      more: 'kap10/nlp.html#glatting',
+      alias: 'UNK, ukjent ord'
+    },
+    'laplace-glatting': {
+      term: 'Laplace-glatting',
+      def: '<p>Add-one: \\(P(w_i \\mid w_{i-1}) = \\dfrac{c(w_{i-1} w_i) + 1}{c(w_{i-1}) + V}\\), med \\(V\\) = vokabularstørrelsen. Ingen null, men for mye masse til det usette når \\(V\\) er stor.</p>',
+      more: 'kap10/nlp.html#glatting',
+      alias: 'add-one smoothing, Laplace smoothing'
+    },
+    'backoff': {
+      term: 'Backoff',
+      def: '<p>Glatting én orden om gangen: bruk trigrammet hvis tellingen er høy nok, ellers bigrammet, ellers unigrammet.</p>',
+      more: 'kap10/nlp.html#glatting'
+    },
+    'lineaer-interpolasjon': {
+      term: 'Lineær interpolasjon',
+      def: '<p>Glatting som alltid blander alle ordener: \\(\\hat P = \\lambda_3 P_{\\text{tri}} + \\lambda_2 P_{\\text{bi}} + \\lambda_1 P_{\\text{uni}}\\), med \\(\\sum \\lambda = 1\\).</p>',
+      more: 'kap10/nlp.html#glatting',
+      alias: 'linear interpolation'
+    },
+    'wordnet': {
+      term: 'WordNet',
+      def: '<p>Håndlaget, maskinlesbar leksikalsk database med relasjoner som IS-A (hypernym), PART-OF og antonymer. Gir kategorier, ikke detaljer.</p>',
+      more: 'kap10/nlp.html#pos'
+    },
+    'pos-tagging': {
+      term: 'POS-tagging',
+      def: '<p>Å gi hvert ord sin ordklasse (part of speech): substantiv, verb, adjektiv … Taggen avhenger av konteksten, så hele sekvensen velges samlet.</p>',
+      more: 'kap10/nlp.html#pos',
+      alias: 'ordklassetagging, part-of-speech tagging'
+    },
+    'penn-treebank': {
+      term: 'Penn Treebank',
+      def: '<p>Korpus med over 3 millioner annoterte ord og et taggsett på 45 tagger (NN, VB, DT, IN, JJ, MD …).</p>',
+      more: 'kap10/nlp.html#pos'
+    },
+    'hmm': {
+      term: 'Skjult Markov-modell (HMM)',
+      def: '<p>Som tagger: taggene er skjulte tilstander, ordene evidens. \\(P(C_{1:N}, W_{1:N}) = P(C_1)\\prod P(C_t \\mid C_{t-1}) \\prod P(W_t \\mid C_t)\\). Generativ modell.</p>',
+      more: 'kap10/nlp.html#hmm',
+      alias: 'HMM, hidden Markov model'
+    },
+    'viterbi': {
+      term: 'Viterbi',
+      def: '<p>Dynamisk programmering som finner den mest sannsynlige taggsekvensen \\(\\arg\\max P(C_{1:N}, W_{1:N})\\): for hvert ord og hver tagg beholdes bare beste sti dit, med bakoverpekere.</p>',
+      more: 'kap10/nlp.html#hmm'
+    },
+    'logistisk-regresjon-tagger': {
+      term: 'Logistisk regresjon-tagger',
+      def: '<p>Diskriminativ tagger som lærer \\(P(C \\mid W)\\) direkte, \\(P(\\text{tag} \\mid \\mathbf{x}) = \\sigma(\\mathbf{w} \\cdot \\mathbf{x})\\), med vilkårlige trekk (suffiks, nabo-ord, forrige tagg). Dekodes grådig, med Viterbi eller beam search.</p>',
+      more: 'kap10/nlp.html#diskriminativ',
+      alias: 'logistisk regresjon'
+    },
+    'generativ-modell': {
+      term: 'Generativ modell',
+      def: '<p>Modellerer den felles fordelingen \\(P(W, C)\\) (naiv Bayes, HMM). Kan generere setninger, trener raskt, men har begrensede trekk og generelt høyere feilrate.</p>',
+      more: 'kap10/nlp.html#diskriminativ'
+    },
+    'diskriminativ-modell': {
+      term: 'Diskriminativ modell',
+      def: '<p>Modellerer bare \\(P(C \\mid W)\\) (logistisk regresjon). Kan ikke generere, men tillater vilkårlige trekk og har generelt lavere feilrate.</p>',
+      more: 'kap10/nlp.html#diskriminativ'
+    },
+    'grammatikk': {
+      term: 'Grammatikk',
+      def: '<p>Regler som definerer trestrukturen til lovlige fraser. Språket er mengden setninger som følger reglene.</p>',
+      more: 'kap10/nlp.html#grammatikk'
+    },
+    'pcfg': {
+      term: 'PCFG',
+      def: '<p>Probabilistisk kontekstfri grammatikk: hver regel har en sannsynlighet (alternativene for samme venstreside summerer til 1), og hver regel virker i enhver kontekst.</p>',
+      more: 'kap10/nlp.html#grammatikk',
+      alias: 'probabilistisk kontekstfri grammatikk'
+    },
+    'e0': {
+      term: 'E<sub>0</sub>',
+      def: '<p>En liten engelsklignende PCFG for agenter i wumpus-verdenen, med kategoriene S, NP, VP, Adjs, PP og RelClause.</p>',
+      more: 'kap10/nlp.html#grammatikk',
+      alias: 'E0'
+    },
+    'overgenerering': {
+      term: 'Overgenerering',
+      def: '<p>Grammatikken genererer setninger som ikke er grammatiske, f.eks. «Me go I».</p>',
+      more: 'kap10/nlp.html#grammatikk'
+    },
+    'undergenerering': {
+      term: 'Undergenerering',
+      def: '<p>Grammatikken avviser setninger som er gyldig språk, f.eks. «I think the wumpus is smelly».</p>',
+      more: 'kap10/nlp.html#grammatikk'
+    },
+    'parsing': {
+      term: 'Parsing',
+      def: '<p>Søk etter et parsetre der bladene er ordene i setningen. Top-down fra S mot ordene, bottom-up fra ordene mot S.</p>',
+      more: 'kap10/nlp.html#parsing'
+    },
+    'chart-parsing': {
+      term: 'Chart parsing',
+      def: '<p>Parsing som lagrer hver analysert frase i et chart og gjenbruker den i alle grener (mulig fordi grammatikken er kontekstfri), så arbeid ikke gjentas.</p>',
+      more: 'kap10/nlp.html#parsing'
+    },
+    'cyk': {
+      term: 'CYK',
+      def: '<p>Bottom-up probabilistisk chart-parser: \\(P[X,i,k] = \\max P[Y,i,j] \\cdot P[Z,j+1,k] \\cdot p\\). Krever Chomsky normalform. Tid \\(O(n^3 m)\\), plass \\(O(n^2 m)\\).</p>',
+      more: 'kap10/nlp.html#parsing'
+    },
+    'chomsky-normalform': {
+      term: 'Chomsky normalform',
+      def: '<p>Grammatikk med bare regler \\(X \\to \\text{word}\\) og \\(X \\to Y\\,Z\\). Enhver kontekstfri grammatikk kan konverteres automatisk.</p>',
+      more: 'kap10/nlp.html#parsing',
+      alias: 'CNF (grammatikk)'
+    },
+    'parsetre': {
+      term: 'Parsetre',
+      def: '<p>Tre som viser setningens frasestruktur. I en PCFG er sannsynligheten produktet av regelsannsynlighetene i alle nodene, f.eks. 0.0000675 for «every wumpus smells».</p>',
+      more: 'kap10/nlp.html#parsing',
+      alias: 'parse tree'
+    },
+    'shift-reduce': {
+      term: 'Shift-reduce',
+      def: '<p>Parser som tilsvarer beam search med \\(b = 1\\): skyv neste ord på en stakk, eller reduser toppen av stakken med en regel.</p>',
+      more: 'kap10/nlp.html#parsing'
+    },
+    'talegjenkjenning': {
+      term: 'Talegjenkjenning',
+      def: '<p>Lyd → tekst. Ordfeilrate rundt 3–5 %, på nivå med menneskelige transkribenter.</p>',
+      more: 'kap10/nlp.html#oppgaver-nlp',
+      alias: 'speech recognition'
+    },
+    'maskinoversettelse': {
+      term: 'Maskinoversettelse',
+      def: '<p>Tekst fra ett språk til et annet, trent på parallelle tekster uten annotering. Utvikling: n-gram, seq2seq, transformere.</p>',
+      more: 'kap10/nlp.html#oppgaver-nlp',
+      alias: 'machine translation'
+    },
+    'informasjonsekstraksjon': {
+      term: 'Informasjonsekstraksjon',
+      def: '<p>Finne objekter og relasjoner i tekst og gjøre dem om til strukturerte fakta, f.eks. adresse → (street, city, state, zip).</p>',
+      more: 'kap10/nlp.html#oppgaver-nlp',
+      alias: 'information extraction'
+    },
+    'informasjonsgjenfinning': {
+      term: 'Informasjonsgjenfinning',
+      def: '<p>Finne dokumentene som er relevante og viktige for en spørring, rangert. Kjernen i søkemotorer.</p>',
+      more: 'kap10/nlp.html#oppgaver-nlp',
+      alias: 'information retrieval'
+    },
+    'sporsmalsbesvarelse': {
+      term: 'Spørsmålsbesvarelse',
+      def: '<p>Gir et svar på et spørsmål, ikke en liste med dokumenter, f.eks. ved å søke etter mønstre som «[* founded the U.S. Coast Guard]».</p>',
+      more: 'kap10/nlp.html#oppgaver-nlp',
+      alias: 'question answering, QA'
+    },
   };
 })();

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Stokastiske spill og MCTS — Kap 5</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .tre { display: block; width: 100%; height: auto; margin: 1rem auto; }
+  .tre text { font-family: var(--mono); font-size: 12px; fill: var(--ink); text-anchor: middle; dominant-baseline: middle; }
+  .tre .ed { stroke: var(--ink-faded); stroke-width: 1.3; }
+  .tre .ed.hot { stroke: var(--green); stroke-width: 3; }
+  .tre .el { font-size: 11px; fill: var(--ink-faded); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round; }
+  .tre .an { font-size: 10px; fill: var(--accent); }
+  .tre .rw { font-size: 11px; fill: var(--ink-faded); text-anchor: start; }
+  .tre .sh { fill: var(--paper-dark); stroke: var(--ink); stroke-width: 1.3; }
+  .tre .C .sh, .tre .P .sh { fill: var(--paper); }
+  .tre .B .sh { fill: #cfc4dd; }
+  .tre .W .sh { fill: #e2c9b8; }
+  .tre .act .sh { fill: rgba(198,138,31,0.35); stroke: var(--ochre); stroke-width: 2.5; }
+  .tre .leaf.act text { fill: var(--ochre); font-weight: 700; }
+  .tre .pr { opacity: 0.35; }
+  .tre .ed.pr { stroke-dasharray: 4 3; }
+  .tre.sm text { font-size: 10px; }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.85rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .mcts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 0.4rem; margin: 1rem 0; }
+  .mcts-grid figure { margin: 0; text-align: center; }
+  .mcts-grid figcaption { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-faded); }
+  .ttt { display: grid; grid-template-columns: repeat(3, 84px); gap: 3px; justify-content: center; margin: 1rem auto; background: var(--ink-faded); width: max-content; }
+  .ttt div { background: var(--paper); font-family: var(--mono); font-size: 0.85rem; text-align: center; padding: 0.7rem 0; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 5</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 5: Adversarialt søk og spill">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 5 · 5B · Slides forelesning 8 · s. 6–8, 21–50 · Boka kap. 6.4–6.6 · ~45 min</div>
+      <h1>Sjanse, simulering og <em>skjult informasjon</em></h1>
+      <p class="lede">Når terninger eller mynter avgjør noe, blir sjansenoder et vektet gjennomsnitt: expectiminimax. Når treet er for stort, simulerer MCTS i stedet for å regne ut. Og når spillerne ikke ser hverandres trekk, trengs sannsynligheter over trekk. Expectiminimax ga 5 poeng på Ord. 2023.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#expectimax"><span>01</span> Expectimax</a>
+        <a href="#expectiminimax"><span>02</span> Expectiminimax</a>
+        <a href="#o23-6"><span>03</span> Eksamen</a>
+        <a href="#mcts"><span>04</span> MCTS</a>
+        <a href="#ucb1"><span>05</span> UCB1</a>
+        <a href="#delvis-observerbare"><span>06</span> Delvis observerbare spill</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne</em> fra denne siden</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026, oppdatert 16. oktober 2026 (kilder/eksamensanalyse.md, deltema 5.2, 5.3 og 5.5)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>5.2 Expectiminimax (prio 1):</strong> fyll inn bladverdier fra en tekst, regn MIN/MAX-noder og sjansenoder som vektet snitt, ta en beslutning. Tidligere: <a href="#oppg-o23-6">Ord. 2023 oppg. 6</a> (5 p). Øv også på <a href="#oppg-modifisert-botte">det modifiserte bøttespillet</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>5.3 MCTS (prio 2):</strong> de fire fasene, UCB1 for et barn, hvilket trekk som returneres (flest playouts). <a href="#oppg-o22-1-7">Ord. 2022 oppg. 1.7</a>: hvorfor MCTS er mindre følsom for feil i eval enn alpha-beta.</li>
+          <li><span class="tag">Lavere</span><strong>5.5 (prio 3):</strong> delvis observerbare spill, stein-saks-papir med sannsynligheter, regret etter én runde. Backgammon, AlphaZero, Pluribus og AlphaStar bare som navn.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="expectimax">
+    <div class="container">
+      <div class="section-badge">01 · Expectimax</div>
+      <h2>Når motstanderen er <em>tilfeldig</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 6–8 · Boka kap. 6.5</div>
+      <span class="lm-pill">Deltema 5.2 · prio 1</span>
+      <p class="dropcap">Anta at spiller 2 i <a href="minimax.html#spill">bøttespillet</a> ikke er en motstander, men velger tall fra bøtta helt tilfeldig. Da er nivået under MAX en <span class="term" data-term="sjansenode">sjansenode</span> (CHANCE), og verdien er <span class="term" data-term="forventet-nytte">forventet verdi</span> i stedet for minimum. Det gir <span class="term" data-term="expectimax">expectimax</span>:</p>
+      \[ \text{expectimax}(s) = \begin{cases} \text{utility}(s, \text{MAX}) &amp; \text{hvis isTerminal}(s) \\ \max_{a} \text{expectimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{MAX} \\ \sum_{a} P(a)\, \text{expectimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{CHANCE} \end{cases} \]
+      <p>Med sannsynlighet 0.5 for hvert tall: A \(= 0.5 \cdot (-50) + 0.5 \cdot 50 = 0\), B \(= 0.5 \cdot 3 + 0.5 \cdot 1 = 2\), C \(= 0.5 \cdot (-5) + 0.5 \cdot 15 = 5\). MAX velger C med verdi 5.0, mens minimax mot en optimal motstander valgte B.</p>
+      <svg class="tre" data-tre="X:5.0[A>C:0.0[0.5>−50,0.5>50],B>C:2.0[0.5>3,0.5>1],C>*C:5.0[0.5>−5,0.5>15]]" data-rows="MAX,CHANCE" data-r="19" data-dx="64" aria-label="Expectimax i bøttespillet"></svg>
+    </div>
+  </section>
+
+  <section id="expectiminimax">
+    <div class="container">
+      <div class="section-badge">02 · Expectiminimax</div>
+      <h2>MAX, MIN og <em>sjanse</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 34–38 · Boka kap. 6.5</div>
+      <p>Et <span class="term" data-term="stokastisk-spill">stokastisk spill</span> har ytre tilfeldighet, som terningkast, i tillegg til to spillere. <span class="term" data-term="expectiminimax">Expectiminimax</span> er minimax med en tredje nodetype:</p>
+      \[ \text{expectiminimax}(s) = \begin{cases} \text{utility}(s, \text{MAX}) &amp; \text{hvis isTerminal}(s) \\ \max_{a} \text{expectiminimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{MAX} \\ \min_{a} \text{expectiminimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{MIN} \\ \sum_{a} P(a)\, \text{expectiminimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{CHANCE} \end{cases} \]
+      <p>Søket starter med \(\arg\max_a \text{expectiminimax}(\text{result}(s, a))\). Oppskrift for hånd: regn nedenfra, MIN-noder først (minste blad), så sjansenodene som \(\sum P \cdot \text{verdi}\), så MAX i roten.</p>
+
+      <div class="oppgave" data-quiz id="oppg-modifisert-botte">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 35–37</span></div>
+        <div class="o-text"><p>Modifisert bøttespill: MAX velger bøtte A, B eller C. Så kastes en mynt; ved kron flyttes valget én bøtte til venstre, med omslag (fra A til C). Deretter velger MIN et tall fra bøtta. Bøttene er A = {−50, 50}, B = {3, 1}, C = {−5, 15}. Tegn treet, regn expectiminimax for alle noder og finn MAX sitt valg.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · mellomregning lagt til</span>
+            <p>MIN-nodene: A \(= -50\), B \(= 1\), C \(= -5\) (som i minimax). Sjansenodene, med 0.5 for å bli og 0.5 for å flytte:</p>
+            \[ \begin{aligned} A &amp;: 0.5 \cdot (-50) + 0.5 \cdot (-5) = -27.5 \quad (\text{A eller C}) \\ B &amp;: 0.5 \cdot 1 + 0.5 \cdot (-50) = -24.5 \quad (\text{B eller A}) \\ C &amp;: 0.5 \cdot (-5) + 0.5 \cdot 1 = -2.0 \quad (\text{C eller B}) \end{aligned} \]
+            <p>Roten: \(\max(-27.5, -24.5, -2.0) = -2.0\), så MAX velger <strong>C</strong>. Uten mynten var B best; nå risikerer B å havne i A.</p>
+            <svg class="tre" data-tre="X:−2.0[A>C:−27.5[0.5 A>N:−50[−50,50],0.5 C>N:−5[−5,15]],B>C:−24.5[0.5 B>N:1[3,1],0.5 A>N:−50[−50,50]],C>*C:−2.0[0.5 C>N:−5[−5,15],0.5 B>N:1[3,1]]]" data-rows="MAX,CHANCE,MIN" data-r="21" data-dx="50" aria-label="Expectiminimax i det modifiserte bøttespillet"></svg>
+          </div>
+        </div>
+      </div>
+      <p><strong>Backgammon</strong> er standardeksempelet: spilleren kaster to terninger før hvert trekk, så treet får et sjansenivå mellom hvert MAX- og MIN-nivå. Det gjør treet mye bredere; i praksis brukes cutoff med eval, eller MCTS der hver playout kaster terningene.</p>
+    </div>
+  </section>
+
+  <section id="o23-6">
+    <div class="container">
+      <div class="section-badge">03 · Eksamen</div>
+      <h2>Expectiminimax på <em>lønnsforhandling</em></h2>
+      <div class="source-note">Eksamen Ord. 2023 oppg. 6 · 5 poeng</div>
+
+      <div class="oppgave" data-quiz id="oppg-o23-6">
+        <div class="o-label"><span>Eksamen Ord. 2023 · oppg. 6</span><span class="o-ref">5 p</span></div>
+        <div class="o-text">
+          <p>En fagforening og en bedrift forhandler om årlig lønnsøkning. Fagforeningen (MAX, A) velger strategi 1: be om 6 %, eller strategi 2: be om 10 %. Ved krav om 6 % er det 50 % sjanse for at bedriften foreslår enda lavere, 3 % eller 4 %, og 50 % sjanse for at den møter kravet med 5 % eller 6 %. Ved krav om 10 % er det 25 % sjanse for at bedriften avviser det som urealistisk og foreslår 2 % eller 4 %, og 75 % sjanse for at den foreslår 8 % eller 10 %. Bedriften er MIN (D–G).</p>
+          <svg class="tre" data-tre="X:A[strategi 1 (6 %)>C:B[0.5>N:D[d1 = 3,d2],0.5>N:E[e1,e2]],strategi 2 (10 %)>C:C[0.25>N:F[f1,f2],0.75>N:G[g1,g2]]]" data-rows="MAX,CHANCE,MIN" data-r="19" data-dx="74" aria-label="Forhandlingstreet fra Ord. 2023 oppgave 6"></svg>
+          <p>1. Fyll inn verdiene for alle noder (A–G og d1–g2) ut fra teksten (1 %). 2. Regn expectiminimax for alle ikke-terminale noder, vis utregningen (3 %). 3. Hvilken strategi er best for fagforeningen? Forklar (1 %).</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p><strong>1.</strong> d1 = 3, d2 = 4, e1 = 5, e2 = 6, f1 = 2, f2 = 4, g1 = 8, g2 = 10. Sannsynlighetene står på kantene: 0.5/0.5 under B og 0.25/0.75 under C.</p>
+            <p><strong>2.</strong> MIN-nodene først, så sjansenodene, så roten:</p>
+            \[ \begin{aligned} D &amp;= \min(3, 4) = 3, \quad E = \min(5, 6) = 5, \quad F = \min(2, 4) = 2, \quad G = \min(8, 10) = 8 \\ B &amp;= 0.5 \cdot 3 + 0.5 \cdot 5 = 4 \\ C &amp;= 0.25 \cdot 2 + 0.75 \cdot 8 = 6.5 \\ A &amp;= \max(4, 6.5) = 6.5 \end{aligned} \]
+            <svg class="tre" data-tre="X:A;6.5[strategi 1 (6 %)>C:B;4[0.5>N:D;3[3,4],0.5>N:E;5[5,6]],strategi 2 (10 %)>*C:C;6.5[0.25>N:F;2[2,4],0.75>N:G;8[8,10]]]" data-rows="MAX,CHANCE,MIN" data-r="21" data-dx="74" aria-label="Løsning med expectiminimax-verdier"></svg>
+            <p><strong>3.</strong> Velg strategi 2 (be om 10 %), fordi den gir høyere forventet verdi (6.5) enn strategi 1 (4).</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <span class="label">Vanlig feil</span>
+        <p>Å ta snitt av alle fire blader under en sjansenode (\(0.5 \cdot 3.5 + 0.5 \cdot 5.5\)). Bedriften er MIN og velger det laveste tilbudet i hver gren, så MIN-nodene må regnes før sjansenoden.</p>
+      </div>
+
+      <div class="widget" id="w-em">
+        <div class="widget-label">Prøv selv · expectiminimax</div>
+        <p class="widget-intro">Endre sannsynligheten for venstre gren i hver sjansenode og bladverdiene. Alle verdier regnes på nytt med en gang; grønn kant er MAX sitt valg. Hvor lav må sannsynligheten for et urealistisk krav (F) være før strategi 1 lønner seg?</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="em-pre">Tre</label>
+            <select id="em-pre"><option value="o23">Lønnsforhandling (Ord. 2023)</option><option value="botte">Modifisert bøttespill</option></select></div>
+        </div>
+        <svg class="tre" id="em-svg" data-rows="MAX,CHANCE,MIN" data-r="21" data-dx="54" aria-label="Expectiminimax med justerbare verdier"></svg>
+        <div id="em-ctl"></div>
+        <div class="w-out" id="em-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-expectiminimax">
+        <div class="o-label"><span>Egen oppgave</span><span class="o-ref">eksamenstype</span></div>
+        <div class="o-text">
+          <p>MAX velger L eller R. Etter L kastes en terning: 1 gir D, 2–4 gir E, 5–6 gir F. Etter R gir en skjev mynt G med sannsynlighet 0.4 og H med 0.6. MIN velger så et blad. (a) Regn expectiminimax for alle noder og finn MAX sitt valg. (b) Hvor stor må sannsynligheten for G være før MAX heller velger L?</p>
+          <svg class="tre" data-tre="X:A[L>C:B[1/6>N:D[4,7],1/2>N:E[2,9],1/3>N:F[6,5]],R>C:C[0.4>N:G[8,1],0.6>N:H[5,6]]]" data-rows="MAX,CHANCE,MIN" data-r="19" data-dx="56" aria-label="Eget expectiminimax-tre"></svg>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>(a) MIN: D = 4, E = 2, F = 5, G = 1, H = 5. Sjanse: \(B = \tfrac16 \cdot 4 + \tfrac12 \cdot 2 + \tfrac13 \cdot 5 = \tfrac{4 + 6 + 10}{6} = \tfrac{10}{3} \approx 3.33\) og \(C = 0.4 \cdot 1 + 0.6 \cdot 5 = 3.4\). Roten: \(\max(3.33, 3.4) = 3.4\), MAX velger <strong>R</strong>.</p>
+            <p>(b) Med \(p = P(G)\) er \(C = p \cdot 1 + (1 - p) \cdot 5 = 5 - 4p\). L er bedre når \(5 - 4p \lt \tfrac{10}{3}\), altså \(p \gt \tfrac{5}{12} \approx 0.42\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="mcts">
+    <div class="container">
+      <div class="section-badge">04 · Monte Carlo-tresøk</div>
+      <h2>Simuler i stedet for å <em>regne</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 22–26, 29–32 · Boka kap. 6.4</div>
+      <span class="lm-pill">Deltema 5.3 · prio 2</span>
+      <p>Monte Carlo-metoder bruker gjentatt tilfeldig trekking for å få numeriske svar på problemer som er for kompliserte å løse analytisk. <span class="term" data-term="mcts">Monte Carlo tree search</span> (MCTS) bygger et søketre gradvis og verdsetter noder med <span class="term" data-term="playout">playouts</span>: spill tilfeldig til slutten og tell seire. Hver node lagrer \(U/N\): summert utility og antall playouts gjennom noden, regnet for spilleren som gjorde trekket <em>inn</em> i noden. Én iterasjon har fire faser:</p>
+      <ol class="steps">
+        <li><strong><span class="term" data-term="mcts-faser">Selection</span>:</strong> fra roten, velg barn etter en <span class="term" data-term="seleksjonspolicy">seleksjonspolicy</span> (f.eks. UCB1) til en node som ikke er fullt ekspandert.</li>
+        <li><strong>Expansion:</strong> legg til ett nytt barn (0/0).</li>
+        <li><strong>Simulation:</strong> playout fra det nye barnet til spillet er slutt.</li>
+        <li><strong>Backpropagation:</strong> gå opp stien til roten og øk \(N\) med 1 i hver node, og \(U\) i nodene der vinneren gjorde trekket inn.</li>
+      </ol>
+      <div class="mcts-grid">
+        <figure><svg class="tre sm" data-tre="B:37/100[*W:60/79[B:3/26,*B:16/53[*W:27/35,W:10/18]],W:1/10[B:6/6[W:0/3,W:0/3],B:3/4],W:2/11]" data-r="20" data-dx="46" data-dy="58" aria-label="MCTS selection"></svg><figcaption>(a) Selection</figcaption></figure>
+        <figure><svg class="tre sm" data-tre="B:37/100[W:60/79[B:3/26,B:16/53[W:27/35[*!B:0/0],W:10/18]],W:1/10[B:6/6[W:0/3,W:0/3],B:3/4],W:2/11]" data-r="20" data-dx="46" data-dy="58" aria-label="MCTS expansion og simulation"></svg><figcaption>(b) Expansion + simulation: svart vinner</figcaption></figure>
+        <figure><svg class="tre sm" data-tre="B:37/101[*W:61/80[B:3/26,*B:16/54[*W:28/36[*B:0/1],W:10/18]],W:1/10[B:6/6[W:0/3,W:0/3],B:3/4],W:2/11]" data-r="20" data-dx="46" data-dy="58" aria-label="MCTS backpropagation"></svg><figcaption>(c) Backpropagation</figcaption></figure>
+      </div>
+      <p>Svart er i trekket i roten (lilla). Lilla noder teller hvits seire, beige noder svarts seire: roten sier at hvit har vunnet 37 av 100 playouts. Etter at svart vinner playouten, får beige noder på stien +1 i begge tall (27/35 → 28/36, 60/79 → 61/80), lilla noder bare +1 i \(N\) (16/53 → 16/54, 37/100 → 37/101).</p>
+<pre><code>function MONTE-CARLO-TREE-SEARCH(state) returns an action
+  tree ← NODE(state)
+  while IS-TIME-REMAINING() do
+    leaf ← SELECT(tree)
+    child ← EXPAND(leaf)
+    result ← SIMULATE(child)
+    BACK-PROPAGATE(result, child)
+  return the move in ACTIONS(state) whose node has highest number of playouts</code></pre>
+
+      <div class="oppgave" data-quiz id="oppg-tictactoe">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 25–26</span></div>
+        <div class="o-text">
+          <p>Etter 1000 iterasjoner av MCTS i tomt tic-tac-toe-brett (x i trekket) har rotbarna disse \(U/N\)-verdiene, plassert der x settes. Roten står med −316/1000. Hvilket trekk returneres?</p>
+          <div class="ttt"><div>18/80</div><div>4/44</div><div>32/108</div><div>12/64</div><div>138/312</div><div>15/73</div><div>57/159</div><div>0/36</div><div>40/124</div></div>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · begrunnelse lagt til</span>
+            <p><strong>Sett x i midten.</strong> MCTS returnerer barnet med <em>flest playouts</em>, og midten har \(N = 312\). Her har midten også best snitt (\(138/312 \approx 0.44\)), men regelen er \(N\), ikke \(U/N\): seleksjonspolicyen sender flest playouts til det som ser best ut, så \(N\) er et robust mål, mens et snitt basert på få playouts (som 3/4 = 0.75 i figuren over) er usikkert.</p>
+            <p>Kontroll: \(\sum N = 80 + 44 + 108 + 64 + 312 + 73 + 159 + 36 + 124 = 1000\) og \(\sum U = 316\). Roten viser −316 fordi den teller for motspilleren o.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-1-7">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.7</span><span class="o-ref">kort spørsmål</span></div>
+        <div class="o-text"><p>Hvorfor er Monte Carlo-tresøk mindre følsomt for feil i evalueringsfunksjonen enn alpha-beta-søk?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>MCTS kjører mange simuleringer for å anslå verdien av hvert trekk, i stedet for å stole på en forhåndsdefinert evalueringsfunksjon.</p>
+            <p>Utdypet: heuristisk alpha-beta bruker eval i hvert blad ved cutoff, og én systematisk feil i eval kan bestemme hele valget. MCTS spiller til terminaltilstander og bruker ekte utility; verdien er et snitt over mange playouts, så enkeltfeil jevnes ut.</p>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>Utdypning · lavere prioritet: AlphaZero</summary>
+        <p>AlphaZero (2017) er MCTS med nevrale nett: et verdinett (hvor sannsynlig er det at tilstanden er en seier) erstatter playouts, og et policynett (sannsynligheter over trekk) forbedrer seleksjonspolicyen. Begge trenes ved selvspill. En tic-tac-toe-agent med vanlige playouts er ganske god etter 1000 iterasjoner.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="ucb1">
+    <div class="container">
+      <div class="section-badge">05 · UCB1</div>
+      <h2>Utforske eller <em>utnytte</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 27–28 · Boka kap. 6.4</div>
+      <p>Seleksjonspolicyen må balansere to ting: <span class="term" data-term="exploration-exploitation">exploration</span> (utforsk tilstander med få playouts) og exploitation (utnytt tilstander som har gjort det godt). <span class="term" data-term="ucb1">UCB1</span> gjør begge i én formel; noden med høyest UCB1 velges:</p>
+      \[ \text{UCB1}(n) = \frac{U(n)}{N(n)} + C \sqrt{\frac{\ln N(\text{parent}(n))}{N(n)}} \]
+      <ul>
+        <li>\(U(n)\): summert utility for alle playouts gjennom \(n\). \(N(n)\): antall playouts gjennom \(n\). parent\((n)\): forelderen.</li>
+        <li>Første ledd er exploitation (snittet), andre ledd er exploration: stort når \(N(n)\) er lite i forhold til forelderen.</li>
+        <li>\(C\) balanserer de to; høy \(C\) gir mer utforsking. Vanlig valg: \(C = \sqrt{2}\).</li>
+      </ul>
+
+      <div class="oppgave" data-quiz id="oppg-ucb1">
+        <div class="o-label"><span>Egen oppgave</span><span class="o-ref">figur (a) · s. 23</span></div>
+        <div class="o-text"><p>Regn UCB1 for de tre barna av roten i figur (a) over (60/79, 1/10, 2/11, roten har \(N = 100\)) med \(C = \sqrt{2}\). Hvilket barn velges?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>\(\ln 100 \approx 4.605\).</p>
+            \[ \begin{aligned} 60/79 &amp;: \tfrac{60}{79} + \sqrt{2}\sqrt{\tfrac{4.605}{79}} = 0.759 + 0.341 = 1.101 \\ 1/10 &amp;: \tfrac{1}{10} + \sqrt{2}\sqrt{\tfrac{4.605}{10}} = 0.100 + 0.960 = 1.060 \\ 2/11 &amp;: \tfrac{2}{11} + \sqrt{2}\sqrt{\tfrac{4.605}{11}} = 0.182 + 0.915 = 1.097 \end{aligned} \]
+            <p>60/79 velges (1.101), som i figuren. Legg merke til hvor tett det er: de to svake barna får nesten like høy UCB1 fordi de har få playouts. Med \(C = 2\) ville 1/10 vunnet (\(0.1 + 2 \cdot 0.679 = 1.457\) mot \(0.759 + 2 \cdot 0.241 = 1.242\)).</p>
+          </div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva skjer med UCB1 for et barn som aldri blir valgt, mens forelderen får stadig flere playouts?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">\(N(n)\) står stille mens \(\ln N(\text{parent})\) vokser, så exploration-leddet vokser uten grense. Før eller senere blir barnet valgt igjen: ingen gren blir glemt for alltid.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="delvis-observerbare">
+    <div class="container">
+      <div class="section-badge">06 · Imperfekt informasjon</div>
+      <h2>Stein, saks, papir og <em>regret</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 40–50 · Boka kap. 6.6</div>
+      <span class="lm-pill">Deltema 5.5 · prio 3</span>
+      <p>I <span class="term" data-term="delvis-observerbart-spill">delvis observerbare spill</span> ser ikke spillerne hele tilstanden, eller de trekker samtidig. Da kan ikke minimax brukes: P2 vet ikke hvilken node P1 valgte. I stedet regner vi med en <span class="term" data-term="blandet-strategi">blandet strategi</span>, en sannsynlighet per trekk. Med \(\tfrac13\) på hvert trekk for begge er forventet verdi 0 (<span class="term" data-term="nash-likevekt">Nash-likevekten</span>, mer om det i spillteorien). Under spiller P2 papir halve tiden, mens P1 fortsatt spiller \(\tfrac13\) på alt (kantene ut fra P2 er stein, papir, saks fra venstre):</p>
+      <svg class="tre" data-tre="P:0[stein ⅓>P:−0.25[.25>0,.5>−1,.25>1],papir ⅓>P:0[.25>1,.5>0,.25>−1],saks ⅓>P:0.25[.25>−1,.5>1,.25>0]]" data-rows="P1,P2" data-r="20" data-dx="72" aria-label="Stein-saks-papir der P2 spiller papir halve tiden"></svg>
+      <p>Hver P2-node er et vektet snitt: etter stein \(0.25 \cdot 0 + 0.5 \cdot (-1) + 0.25 \cdot 1 = -0.25\), etter papir \(0\), etter saks \(0.25 \cdot (-1) + 0.5 \cdot 1 + 0.25 \cdot 0 = 0.25\). Roten blir \(\tfrac13(-0.25 + 0 + 0.25) = 0\).</p>
+
+      <div class="oppgave" data-quiz id="oppg-stein-saks">
+        <div class="o-label"><span>Tenk over · fra slidene</span><span class="o-ref">s. 42–43</span></div>
+        <div class="o-text"><p>Hvordan kan P1 utnytte at P2 spiller papir 50 % av gangene? Regn forventet verdi hvis P1 spiller stein 0.25, papir 0.25, saks 0.5.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · mellomregning lagt til</span>
+            <p>Ved å spille saks oftere. \(0.25 \cdot (-0.25) + 0.25 \cdot 0 + 0.5 \cdot 0.25 = -0.0625 + 0.125 = 0.0625 \approx 0.062\). Ren saks ville gitt 0.25 (egen tolkning), men det kan P2 i sin tur utnytte.</p>
+          </div>
+        </div>
+      </div>
+
+      <p><span class="term" data-term="regret-minimering">Regret-minimering</span> lærer en slik strategi ved å spille mot seg selv. <span class="term" data-term="regret">Regret</span> for et trekk er utilityen trekket <em>ville</em> fått minus utilityen faktisk fått. Regrets summeres over alle spill, og en mulig algoritme velger trekket med høyest summert regret. Alternativt gjøres summene om til sannsynligheter: negative regrets settes til 0 og resten normaliseres, f.eks. \((-1, 1, 2) \mapsto (0, 1, 2) \mapsto (0, \tfrac13, \tfrac23)\).</p>
+
+      <div class="oppgave" data-quiz id="oppg-regret">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 45–46</span></div>
+        <div class="o-text"><p>P1 starter med regrets \((0, 0, 0)\) for (stein, papir, saks). Første runde velger P1 stein og P2 papir. Regn regret-vektoren, summen etter runden og sannsynlighetene P1 bruker i neste runde.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>Mot papir ville stein, papir og saks gitt \((-1, 0, 1)\). P1 fikk utility \(-1\). Regret \(= (-1, 0, 1) - (-1) = (0, 1, 2)\), og regrets \(= (0,0,0) + (0,1,2) = (0, 1, 2)\). Sannsynligheter: \((0, \tfrac13, \tfrac23)\), altså oftere saks, som slår papir.</p>
+          </div>
+        </div>
+      </div>
+      <p>Når begge spillere bruker regret-minimering, svinger strategiene, men <strong>gjennomsnittet</strong> av sannsynlighetene konvergerer mot Nash-likevekten (\(\tfrac13, \tfrac13, \tfrac13\)) når antall iterasjoner går mot uendelig.</p>
+      <details>
+        <summary>Utdypning · lavere prioritet: Pluribus og AlphaStar</summary>
+        <p>Pluribus (2019) slo profesjonelle pokerspillere i sekshånds no-limit Hold’em med regret-minimering, MCTS og selvspill. AlphaStar (2019) nådde grandmesternivå i StarCraft II; den lignet AlphaZero, men startet med å imitere de beste menneskene og brukte ikke MCTS.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Sjansenode</strong>Verdi = \(\sum P \cdot\) barneverdi. Expectimax: bare MAX + sjanse.</div>
+        <div class="recap-pill"><strong>Expectiminimax</strong>MIN-noder først, så sjanse, så MAX. Ord. 2023: 4 mot 6.5.</div>
+        <div class="recap-pill"><strong>MCTS</strong>Selection, expansion, simulation, backpropagation. Returner flest playouts.</div>
+        <div class="recap-pill"><strong>UCB1</strong>\(U/N + C\sqrt{\ln N_p / N}\), \(C = \sqrt2\). Høy \(C\) = mer utforsking.</div>
+        <div class="recap-pill"><strong>Imperfekt info</strong>Blandede strategier; regret = ville fått − fikk; snittet går mot Nash.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er forskjellen på expectimax og expectiminimax?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Expectimax har bare MAX- og sjansenoder (motstanderen behandles som tilfeldig). Expectiminimax har MAX, MIN og sjanse: en optimal motstander og ytre tilfeldighet, som i backgammon.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">I Ord. 2023 oppg. 6: hvor høy må sannsynligheten for et urealistisk krav (F) være før strategi 1 blir best?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">\(C = p \cdot 2 + (1 - p) \cdot 8 = 8 - 6p\). Strategi 1 gir 4, så \(8 - 6p \lt 4 \Rightarrow p \gt \tfrac23\). Sjekk med glidebryteren i widgeten.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Et rotbarn har 9/10 og et annet 300/600 etter MCTS. Hvilket trekk returneres, og hvorfor?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">300/600, fordi det har flest playouts. 0.9 bygger på bare 10 playouts og er usikkert; at UCB1 valgte det andre barnet 600 ganger betyr at det har sett godt ut gjennom hele søket.</div></div>
+      </div>
+      <nav class="page-nav">
+        <a href="minimax.html" class="prev"><div class="pn-label">← Forrige · 5A</div><div class="pn-title">Minimax og alpha-beta</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 5: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Figurer: spilltrær tegnes fra data-tre (kompakt notasjon, brukes også av widgeten) ─── */
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  /* node := [kantetikett '>'] [~ klippet | * uthevet kant | ! aktiv] [X|N|C|P|B|W ':'] verdi [{merknad}] [[barn,barn]] ; ';' i verdi blir ', ' */
+  function parse(s) {
+    var i = 0;
+    function node() {
+      var n = { kids: [] }, rest = s.slice(i), stop = rest.search(/[,\[\]:{]/), gt = rest.indexOf('>');
+      if (stop < 0) stop = rest.length;
+      if (gt >= 0 && gt < stop) { n.edge = rest.slice(0, gt); i += gt + 1; }
+      while (i < s.length && '~*!'.indexOf(s[i]) >= 0) { n[{ '~': 'pr', '*': 'hot', '!': 'act' }[s[i]]] = true; i++; }
+      var m = /^([XNCPBW]):/.exec(s.slice(i)); if (m) { n.type = m[1]; i += 2; }
+      var j = i; while (j < s.length && ',[]{'.indexOf(s[j]) < 0) j++;
+      n.val = s.slice(i, j).replace(/;/g, ', '); i = j;
+      if (s[i] === '{') { j = s.indexOf('}', i); n.ann = s.slice(i + 1, j); i = j + 1; }
+      if (s[i] === '[') { do { i++; n.kids.push(node()); } while (s[i] === ','); i++; }
+      return n;
+    }
+    return node();
+  }
+  function draw(svg, src) {
+    var t = parse(src), A = function (k, d) { return +(svg.getAttribute('data-' + k) || d); };
+    var dx = A('dx', 60), dy = A('dy', 72), r = A('r', 17);
+    var rows = (svg.getAttribute('data-rows') || '').split(',').filter(Boolean);
+    var L = rows.length ? 40 : 6, nl = 0, D = 0;
+    (function walk(n, d, pr) {
+      n.d = d; D = Math.max(D, d); if (pr) n.pr = true;
+      if (!n.kids.length) n.x = nl++;
+      else { n.kids.forEach(function (k) { walk(k, d + 1, n.pr); }); n.x = (n.kids[0].x + n.kids[n.kids.length - 1].x) / 2; }
+    })(t, 0, false);
+    var W = L + nl * dx + 6, H = D * dy + 2 * r + 40;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.style.maxWidth = W + 'px'; svg.innerHTML = '';
+    function X(n) { return L + n.x * dx + dx / 2; }
+    function Y(n) { return r + 26 + n.d * dy; }
+    function el(tag, a, txt, par) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; (par || svg).appendChild(e); return e; }
+    rows.forEach(function (lab, d) { if (d < D) el('text', { x: 4, y: Y({ d: d }), 'class': 'rw' }, lab); });
+    var gE = el('g', {}), gN = el('g', {});
+    (function vis(n) {
+      var x = X(n), y = Y(n);
+      n.kids.forEach(function (k) {
+        var kx = X(k), ky = Y(k) - (k.type ? r : 9), mx = (x + kx) / 2, my = (y + r * 0.85 + ky) / 2, h = kx - x;
+        el('line', { x1: x, y1: y + r * 0.85, x2: kx, y2: ky, 'class': 'ed' + (k.pr ? ' pr' : '') + (k.hot ? ' hot' : '') }, null, gE);
+        if (k.edge) el('text', { x: mx + (Math.abs(h) < 1 ? 5 : h < 0 ? -5 : 5), y: my, 'class': 'el' + (k.pr ? ' pr' : ''), 'text-anchor': Math.abs(h) < 1 || h > 0 ? 'start' : 'end' }, k.edge, gE);
+        vis(k);
+      });
+      var g = el('g', { 'class': 'nd' + (n.pr ? ' pr' : '') + (n.act ? ' act' : '') + (n.type ? ' ' + n.type : ' leaf') }, null, gN), ty = y;
+      if (n.type === 'X') { el('polygon', { 'class': 'sh', points: [x, y - r, x + 1.15 * r, y + 0.8 * r, x - 1.15 * r, y + 0.8 * r].join(' ') }, null, g); ty = y + r * 0.22; }
+      else if (n.type === 'N') { el('polygon', { 'class': 'sh', points: [x - 1.15 * r, y - 0.8 * r, x + 1.15 * r, y - 0.8 * r, x, y + r].join(' ') }, null, g); ty = y - r * 0.22; }
+      else if (n.type) el('circle', { 'class': 'sh', cx: x, cy: y, r: r }, null, g);
+      var v = el('text', { x: x, y: ty }, n.val, g);
+      if (n.type && n.val.length > 3) v.setAttribute('font-size', n.val.length > 5 ? '9.5' : '10.5');
+      if (n.ann) el('text', { x: x, y: y - r - 8, 'class': 'an' }, n.ann, g);
+    })(t);
+  }
+  window.SpillTre = { parse: parse, draw: draw };
+  document.querySelectorAll('svg[data-tre]').forEach(function (s) { draw(s, s.getAttribute('data-tre')); });
+})();
+/* ─── Widget: expectiminimax med justerbare sannsynligheter og blader ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-em'); if (!root || !window.SpillTre) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var PRE = {
+    o23: { navn: ['d1', 'd2', 'e1', 'e2', 'f1', 'f2', 'g1', 'g2'], vals: [3, 4, 5, 6, 2, 4, 8, 10], trekk: ['6 %', '10 %'],
+      ch: [{ p: 0.5, lab: ['D', 'E'], min: [[0, 1], [2, 3]] }, { p: 0.25, lab: ['F', 'G'], min: [[4, 5], [6, 7]] }] },
+    botte: { navn: ['A₁', 'A₂', 'B₁', 'B₂', 'C₁', 'C₂'], vals: [-50, 50, 3, 1, -5, 15], trekk: ['A', 'B', 'C'],
+      ch: [{ p: 0.5, lab: ['A', 'C'], min: [[0, 1], [4, 5]] }, { p: 0.5, lab: ['B', 'A'], min: [[2, 3], [0, 1]] }, { p: 0.5, lab: ['C', 'B'], min: [[4, 5], [2, 3]] }] }
+  };
+  var P, ctl = $('em-ctl'), svg = $('em-svg'), out = $('em-out');
+  function f(x) { return String(Math.round(x * 1000) / 1000).replace('-', '−'); }
+  function lag() {
+    P = JSON.parse(JSON.stringify(PRE[$('em-pre').value]));
+    var h = '<div class="w-row">';
+    P.ch.forEach(function (c, i) { h += '<div class="w-ctl"><label for="em-p' + i + '">P(' + c.lab[0] + ') etter ' + P.trekk[i] + '</label><input type="range" id="em-p' + i + '" min="0" max="1" step="0.05" value="' + c.p + '"><span id="em-pv' + i + '"></span></div>'; });
+    h += '</div><div class="w-row">';
+    P.vals.forEach(function (v, i) { h += '<div class="w-ctl"><label for="em-v' + i + '">' + P.navn[i] + '</label><input type="number" id="em-v' + i + '" value="' + v + '"></div>'; });
+    ctl.innerHTML = h + '</div>';
+    ctl.querySelectorAll('input').forEach(function (inp) { inp.addEventListener('input', regn); });
+    regn();
+  }
+  function regn() {
+    P.ch.forEach(function (c, i) { c.p = +$('em-p' + i).value; $('em-pv' + i).textContent = c.p.toFixed(2); });
+    P.vals = P.vals.map(function (v, i) { var x = parseFloat($('em-v' + i).value); return isNaN(x) ? 0 : x; });
+    var ev = P.ch.map(function (c) {
+      c.m = c.min.map(function (mm) { return Math.min(P.vals[mm[0]], P.vals[mm[1]]); });
+      return c.p * c.m[0] + (1 - c.p) * c.m[1];
+    });
+    var best = ev.indexOf(Math.max.apply(null, ev));
+    SpillTre.draw(svg, 'X:' + f(ev[best]) + '[' + P.ch.map(function (c, i) {
+      return P.trekk[i] + '>' + (i === best ? '*' : '') + 'C:' + f(ev[i]) + '[' + [0, 1].map(function (j) {
+        var mm = c.min[j];
+        return f(j ? 1 - c.p : c.p) + ' ' + c.lab[j] + '>N:' + f(c.m[j]) + '[' + f(P.vals[mm[0]]) + ',' + f(P.vals[mm[1]]) + ']';
+      }).join(',') + ']';
+    }).join(',') + ']');
+    out.innerHTML = P.ch.map(function (c, i) {
+      return P.trekk[i] + ': ' + f(c.p) + ' · ' + f(c.m[0]) + ' + ' + f(1 - c.p) + ' · ' + f(c.m[1]) + ' = ' + f(ev[i]);
+    }).join('<br>') + '<br><span class="hl">MAX velger ' + P.trekk[best] + ' med verdi ' + f(ev[best]) + '.</span>';
+  }
+  $('em-pre').addEventListener('change', lag);
+  lag();
+})();
+</script>
+</body>
+</html>

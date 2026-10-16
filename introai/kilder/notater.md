@@ -68,18 +68,6 @@ Slide 36: Lærende agent: ytelseselement, kritiker (fast ytre ytelsesstandard), 
 Slide 37: Oppsummering: tabell → enkel refleks → modellbasert → målbasert → nyttebasert, alle kan være lærende.
 Pseudokode for MODEL-BASED-REFLEX-AGENT og figuren av modellbasert agent er etter boka fig. 2.11–2.12.
 
-## 12.1 AI-historie og definisjoner
-
-Slide 3: Ingen enighet om definisjon; to akser (tenke/handle, menneskelig/rasjonell). Tenke menneskelig = kognitiv
-modellering; tenke rasjonelt = tankens lover; handle menneskelig = Turing-testen; handle rasjonelt = rasjonell agent
-(kursets tilnærming). Problemer med å tenke rasjonelt; to fordeler med å handle rasjonelt. McCarthy (1955).
-Newell og Simon / General Problem Solver (Ord. 2023, kort spørsmål) er fra boka kap. 1, ikke i slidene.
-
-# Kapittel 2 · Problemløsning ved søk — sporingsuttrekk
-
-Kilder: Lecture2-Fall2026 (3).pdf (Ruocco, 27. aug 2026, 202 PDF-sider / 86 slides), Lecture3-Fall2026 (1).pdf
-PDF-side 1–53 (Jekic, 3. sept 2026, slides 1–24), AssignmentLecture1-Fall2026.pdf (Jekic). Sidetall = PDF-sider.
-
 ## 2.1 Problemformulering og tilstandsrom
 
 Forelesning 2, PDF-side 1–83. Dekkes av kap2/sok-formulering.html.
@@ -400,6 +388,105 @@ Kilde: slides 39–43. Boka kap. 5.4 (5.5 ute av pensum 2026).
 - Slide 42–43 (tekstuttrekket): TREE-CSP-SOLVER med topologisk sortering (fig. 6.10–6.11) vises i bakgrunnen; boka 5.5 er ute av pensum 2026.
 - Prio 3: én linje på siden.
 
+## 5.1 Minimax og alfa-beta (Slides forelesning 8, Ole C. Eidheim, 8. okt. 2026, s. 1–20; boka kap. 6.1–6.3)
+
+Outline: expectimax · minimax og alpha-beta · heuristisk minimax · MCTS · expectiminimax · delvis observerbare spill.
+Spilltyper (s. 2): deterministisk/perfekt: sjakk, go; sjanse/perfekt: backgammon, monopol; deterministisk/imperfekt:
+senke slagskip, stein-saks-papir; sjanse/imperfekt: poker, scrabble.
+Minimax (s. 11): minimax(s) = utility(s, MAX) hvis isTerminal(s); max over actions hvis toMove(s) er MAX; min hvis MIN.
+Initielt kalles argmax_a minimax(result(s, a)).
+Bøttespillet med minimax (s. 12): MIN-noder −50, 1, −5; roten 1 (B).
+
+## 5.1.1 Turbaserte spill med perfekt informasjon og bøttespillet (s. 4–6, 10)
+
+Definisjoner: initialState (inkl. hvem som skal trekke), toMove(s), actions(s), result(s, a), isTerminal(s), utility(s, p).
+Mål: finn spiller p sine handlinger fra initialState til en terminaltilstand s som maksimerer utility(s, p).
+Bøttespillet: spiller 1 velger bøtte A, B eller C; spiller 2 velger et tall fra bøtta; spiller 1 vil maksimere tallet.
+A = {−50, 50}, B = {3, 1}, C = {−5, 15}. Spilltreet har MAX i roten, tre MIN-noder og seks blader.
+
+## 5.1.2 Alpha-beta pruning (s. 13–14)
+
+alphaBeta(s, α, β) = utility(s, MAX) hvis terminal; maxValue(s, α, β) hvis MAX; minValue(s, α, β) hvis MIN.
+α: beste verdi for en max-node så langt; β: beste verdi for en min-node.
+maxValue: v ← −∞; for hver a: v ← max(v, alphaBeta(result(s,a), α, β)); α ← max(α, v); if v ≥ β return v. return v.
+minValue: v ← ∞; for hver a: v ← min(v, alphaBeta(...)); β ← min(β, v); if v ≤ α return v. return v.
+Initielt maxValue(s, −∞, ∞); handlingen som gir høyest v returneres.
+Bøttespillet (s. 14, verdier etter at noden er ferdig): rot α=1, β=inf, verdi 1 (B);
+A: α=−inf, β=−50, verdi −50; B: α=−50, β=1, verdi 1; C: α=1, β=−5, verdi −5; bladet 15 klippes.
+
+## 5.1.3 Halveringsspillet (s. 15–17)
+
+Start med N; spillerne bytter på å trekke fra 1 (--) eller erstatte N med ⌊N/2⌋ (/2); den som sitter igjen med 0 vinner.
+N = 5 uten alpha-beta (s. 16): rot (5, 1); MIN (4, 1) og (2, −1); MAX (3, 1), (2, 1), (1, −1), (1, −1);
+MIN (2, −1), (1, 1), (1, 1), (1, 1); MAX (1, −1), (1, −1). 14 blader. Optimal sti: -- fra 5.
+Med alpha-beta (s. 17): rot α=1, β=inf; MIN(4) α=−inf, β=1; MIN(2) høyre α=1, β=−1; MAX(3) α=1, β=inf;
+MAX(2) α=1, β=1; MAX(1) høyre α=1, β=inf; MIN(2) α=−inf, β=−1; MIN(1) α=−1, β=1; MIN(1) α=−inf, β=1;
+MAX(1) α=−1, β=inf; MAX(1) α=−1, β=−1. Klippet: andre blad under andre MAX(1), andre MIN(1) under MAX(2),
+andre MAX(1) under høyre MIN(2). 9 av 14 blader evalueres.
+
+## 5.1.4 Heuristisk minimax (s. 19–20)
+
+hMinimax(s, d) = utility hvis terminal; eval(s, MAX) hvis isCutoff(s, d); max/min av hMinimax(result(s, a), d + 1).
+Initielt argmax_a hMinimax(result(s, a), 1). eval(s, MAX) estimerer minimax(s).
+Sjakk: eval(s) = W1 material(s) + W2 mobility(s) + W3 kingSafety(s) + W4 centerControl(s);
+material(s) = 16(Q_MAX − Q_MIN) + 8(R_MAX − R_MIN) + 5(B_MAX − B_MIN + N_MAX − N_MIN) + P_MAX − P_MIN;
+mobility(s) = numLegalMoves_MAX − numLegalMoves_MIN.
+s. 20: «Search versus lookup: Should we perform search on the first chess move in a new game?»
+
+## 5.2 Expectiminimax (s. 33–38)
+
+Stokastiske spill: ytre tilfeldighet som terningkast.
+Modifisert bøttespill (s. 35): MAX velger bøtte, så kastes en mynt; ved kron flyttes valget én bøtte til venstre
+(med omslag); så velger MIN et tall. expectiminimax(s) = utility hvis terminal; max hvis MAX; min hvis MIN;
+Σ P(a) expectiminimax(result(s, a)) hvis CHANCE. Initielt argmax.
+Treet (s. 37): sjansenoder A: 0.5 A / 0.5 C → −27.5; B: 0.5 B / 0.5 A → −24.5; C: 0.5 C / 0.5 B → −2.0.
+MIN-noder −50, −5, 1, −50, −5, 1. Roten −2.0, valg C.
+Backgammon (s. 38): bokfigur; svart har slått 6–5 og har fire lovlige trekk. For mer avanserte spill brukes MCTS
+der hver playout har terningkast.
+
+## 5.2.1 Expectimax (s. 6–8)
+
+expectimax(s) = utility hvis terminal; max hvis MAX; Σ_a P(a) expectimax(result(s, a)) hvis CHANCE. Initielt argmax.
+Bøttespillet der spiller 2 velger tilfeldig (0.5 hver): A 0.0, B 2.0, C 5.0; roten 5.0 (C).
+
+## 5.2.2 Eksamen Ord. 2023 oppg. 6 (lønnsforhandling)
+
+Fagforening (MAX, A) ber om 6 % (strategi 1) eller 10 % (strategi 2). Sjansenode B: 0.5 → D (3 % eller 4 %),
+0.5 → E (5 % eller 6 %). Sjansenode C: 0.25 → F (2 % eller 4 %), 0.75 → G (8 % eller 10 %). Bedriften er MIN.
+LF: D = 3, E = 5, F = 2, G = 8; B = 0.5·3 + 0.5·5 = 4; C = 0.25·2 + 0.75·8 = 6.5; A = 6.5 → strategi 2.
+
+## 5.3 Monte Carlo-tresøk (s. 21–32)
+
+Monte Carlo-metoder: gjentatt tilfeldig trekking for numeriske svar (Wikipedia-sitat s. 22).
+Figur (s. 23, boka fig. 5.10): én iterasjon etter 100 iterasjoner. Svart i trekket (roten svart); svarte noder viser hvits
+seire, hvite noder svarts seire; roten 37/100. (a) Selection 37/100 → 60/79 → 16/53 → 27/35. (b) Expansion 0/0 og
+simulation: svart vinner. (c) Backpropagation: 0/1, 28/36, 16/54, 61/80, 37/101.
+Pseudokode (s. 24): tree ← NODE(state); mens tid: leaf ← SELECT(tree); child ← EXPAND(leaf); result ← SIMULATE(child);
+BACK-PROPAGATE(result, child); returner trekket i ACTIONS(state) med flest playouts.
+Tic-tac-toe (s. 25–26): rot −316/1000; barna 18/80, 4/44, 32/108, 12/64, 138/312 (midten), 15/73, 57/159, 0/36, 40/124.
+Svar: sett x i midten. s. 29: en tic-tac-toe-agent er ganske god etter 1000 iterasjoner.
+AlphaZero (s. 30–32): verdinett i stedet for playouts, policynett forbedrer seleksjonspolicyen, trent ved selvspill.
+O22 1.7: MCTS mindre følsom for feil i evalueringsfunksjon enn alpha-beta (LF: simuleringer i stedet for eval).
+
+## 5.3.1 Seleksjonspolicy og UCB1 (s. 27–28)
+
+Exploration: utforsk tilstander med få playouts. Exploitation: utnytt tilstander som har gjort det godt.
+UCB1(n) = U(n)/N(n) + C √(ln N(parent(n)) / N(n)); noden med høyest UCB1 velges.
+U(n): total utility for playouts gjennom n; N(n): antall playouts; C balanserer, høy C gir mer utforsking; vanlig C = √2.
+
+## 5.5 Delvis observerbare spill og regret-minimering (s. 39–50)
+
+Tilstander ikke fullt observerbare eller samtidige trekk; minimax og lignende kan ikke brukes.
+Stein-saks-papir (s. 41): ⅓ på alt gir verdi 0 (Nash-likevekt, neste forelesning). P2 papir 0.5 (s. 42): P2-noder
+−0.25, 0, 0.25. P1 utnytter ved å spille saks oftere (s. 43): P1 (0.25, 0.25, 0.5) gir 0.062.
+Regret (s. 44): utilities handlingene ville fått minus utility faktisk fått; summeres over spill; mulig algoritme:
+velg handlingen med høyest summert regret. Eksempel (s. 45): regrets ← (0,0,0); P1 stein, P2 papir: utility −1,
+regret = (−1, 0, 1) − (−1); etter første runde regrets = (0, 1, 2).
+s. 46–47: regrets til sannsynligheter, negative satt til 0: (−1, 1, 2) → (0, 1, 2) → (0, 1/3, 2/3).
+s. 48: gjennomsnittlige sannsynligheter konvergerer mot Nash-likevekten når iterasjonene går mot uendelig.
+Pluribus (2019, s. 49): regret-minimering, MCTS, selvspill; slo proffer i 6-spiller no-limit Hold'em.
+AlphaStar (2019, s. 50): som AlphaZero, men imiterte først menneskelige toppspillere, ingen MCTS; grandmesternivå.
+
 ## 6 Proposisjonell logikk
 
 Slides forelesning 5 (Lecture5-PL-Fall2026.pdf, Ole C. Eidheim, 17. september 2026, 76 PDF-sider / 37 slides). Boka kap. 7; 7.7 er ute av pensum.
@@ -541,6 +628,209 @@ KB = {Student(Alice), Student(Bob), ∀x Student(x) ⇒ Knows(x, Arithmetic)}. W
 satisfy KB ⊨ Knows(x, Arithmetic)? Answer: Alice and Bob. Siden skriver svaret som substitusjoner {x/Alice}, {x/Bob}
 (bokas notasjon, ikke i slidene). Slide 49–50 (Prolog, Z3) not curriculum.
 
+## 7.2 FOL-inferens: propositionalisering, instansiering, unifikasjon, GMP (Slides forelesning 7, Ole C. Eidheim, 1. okt. 2026, s. 1–38; boka kap. 9.1–9.3)
+
+Outline: Introduction · Propositionalization · Generalized Modus Ponens · Resolution.
+Boka 9.4.2–9.4.5 og 9.5.4 er ute av pensum. Slide 20 (Z3) er not curriculum.
+
+## 7.2.1 Semidecidability (s. 3–6)
+
+Peano-delen KB = {NatNum(0), ∀x NatNum(x) ⇒ NatNum(Successor(x)), ∀x ¬(Successor(x) = 0),
+∀x, y ¬(x = y) ⇒ ¬(Successor(x) = Successor(y))}.
+KB ⊨ NatNum(Successor(Successor(0))) kan vises på endelig tid ved å sjekke mellom funksjonstilordninger av økende dybde
+(Successor = {0 = 1}, så {0 = 1, 1 = 2}, …). KB ⊭ ¬NatNum(Successor(Successor(0))) kan ikke vises med motsigelsesbevis:
+KB ∪ {¬¬NatNum(…)} har ingen motsigelse og alle modellene er uendelige.
+Entailment i FOL er generelt semidecidable: bare setninger som følger, kan bevises med sikkerhet på endelig tid.
+Decidable for KB med bare definite clauses og ingen funksjoner.
+
+## 7.2.2 Propositionalisering (s. 8–10, 23–24)
+
+1. Erstatt alle variabler med konstanter eller funksjoner. 2. Erstatt gjenværende atomer med proposisjonssymboler.
+Eksempel: {Student(Alice), Student(Bob), ∀x Student(x) ⇒ Knows(x, Arithmetic)} gir Student(Alice) ⇒ Knows(Alice, Arithmetic),
+Student(Bob) ⇒ …, Student(Arithmetic) ⇒ Knows(Arithmetic, Arithmetic), og så AliceIsStudent ⇒ AliceKnowsArithmetic osv.
+Ulempe: mange unødvendige avledninger fra ∀-setninger (Student(Arithmetic) ⇒ … trengs ikke for KB ⊨ Knows(Alice, Arithmetic)).
+PL-inferensalgoritmene kan i stedet utvides til FOL.
+
+## 7.2.3 Substitusjon, universell og eksistensiell instansiering, Skolem (s. 11–22)
+
+Substitusjon avbilder variabler til termer. Subst(θ, α): bruk θ på α. Subst({x/Alice}, Knows(x, Arithmetic)) = Knows(Alice, Arithmetic);
+{x/y} og {x/Mother(Alice)} tilsvarende.
+UI: ∀v α ⊢ Subst({v/g}, α) for grunnterm g (konstant eller funksjon). Eksempel {x/Alice} og {x/English} på Student(x) ⇒ Knows(x, English).
+EI: ∃v α ⊢ Subst({v/k}, α), k ny Skolem-konstant. ∃x Student(x) ∧ Knows(x, Norwegian) gir Student(C1) ∧ Knows(C1, Norwegian).
+Gjør KB alt ∃-setningen sann, trengs ingen Skolem-konstant.
+Skolem-konstant er ikke nok i ∀x ∃y Loves(x, y) («alle elsker noen» ≠ ∀x Loves(x, C1) «alle elsker C1»);
+bruk Skolem-funksjon: ∀x Loves(x, F(x)).
+
+## 7.2.4 Unifikasjon (s. 26–29)
+
+Unify(α, β) finner den mest generelle θ slik at Subst(θ, α) = Subst(θ, β).
+Unify(Loves(x, Arithmetic), Loves(Alice, Arithmetic)) = {x/Alice}; Unify(Loves(x, y), Loves(Alice, z)) = {x/Alice, y/z};
+Unify(Loves(Bob, y), Loves(Alice, z)) = failure; Unify(Loves(Bob, y), Loves(x, Mother(x))) = {x/Bob, y/Mother(Bob)}.
+Boka fig. 9.1 har algoritmen (occur check). Det finnes algoritmer med lineær tid i størrelsen på uttrykkene.
+
+## 7.2.5 Generalisert Modus Ponens (s. 30–38)
+
+Uten kvantorer: p1, …, pn, p1 ∧ … ∧ pn ⇒ q ⊢ q. Med kvantorer: p1′, …, pn′, ∀x1, x2, … p1 ∧ … ∧ pn ⇒ q ⊢ Subst(θ, q),
+θ = Unify(p1′ ∧ … ∧ pn′, p1 ∧ … ∧ pn).
+Eksempel: {Takes(Alice, TDT4136), Covers(TDT4136, Logic), ∀x, y, z Takes(x, y) ∧ Covers(y, z) ⇒ Knows(x, z)},
+θ = {x/Alice, y/TDT4136, z/Logic} gir KB ⊢GMP Knows(Alice, Logic), altså KB ⊨ Knows(Alice, Logic).
+Definite clause i FOL: ∀x1, … p1 ∧ … ∧ pn ⇒ q; faktum = definite clause med n = 0 uten variabler.
+Bare definite clauses: gjentatt GMP er sunn og fullstendig for fakta q (KB ⊨ q ⇔ KB ⊢GMP q). I tillegg ingen funksjoner: polynomisk tid.
+
+## 7.3 FOL-inferens: CNF, skolemisering, resolusjon (Slides forelesning 7, s. 39–78; boka kap. 9.5)
+
+Eksamen: O23 3.2b (Fido/Snowy, 10 p sammen med a): konverter til CNF, nummerer, resolusjonsrefutasjon med substitusjoner.
+
+## 7.3.1 Literal, klausul, CNF og CNF-algoritmen (s. 40–56)
+
+Literal: atomær eller negert atomær setning, ¬Loves(x, F(x)). Klausul: disjunksjon av literaler. CNF: konjunksjon av klausuler.
+Algoritme: 1 fjern ⇔, 2 fjern ⇒, 3 flytt ¬ inn og fjern dobbel negasjon, 4 standardiser variabler,
+5 erstatt ∃-variabler med Skolem-konstanter/-funksjoner, 6 dropp ∀, 7 distribuer ∨ over ∧.
+Hvorfor ∀ kan droppes (s. 44–46): KB {∀x A, ∀x B} = (∀x A) ∧ (∀x B) ≡ ∀x (A ∧ B), så ∀ kan stå implisitt.
+Eksempel «Everyone who loves all animals is loved by someone»: ∀x (∀y Animal(y) ⇒ Loves(x, y)) ⇒ (∃y Loves(y, x))
+→ … → (Animal(F(x)) ∨ Loves(G(x), x)) ∧ (¬Loves(x, F(x)) ∨ Loves(G(x), x)).
+
+## 7.3.2 Resolusjonsregelen og -algoritmen i FOL (s. 57–59)
+
+a1 ∨ a2 ∨ … ∨ c, ¬c′ ∨ b1 ∨ b2 ∨ … ⊢ Subst(θ, a1 ∨ … ∨ b1 ∨ …), θ = Unify(c, c′).
+Eksempel: Animal(F(x)) ∨ Loves(G(x), x) og ¬Animal(F(Jack)) ∨ Loves(G(Jack), Jack) med {x/Jack} gir Loves(G(Jack), Jack).
+Algoritme: 1 legg ¬α til KB og konverter til CNF, 2 del i klausuler, 3 resolver gjentatt; tom klausul ⇒ unsatisfiable (KB ⊨ α),
+ellers satisfiable (KB ⊭ α).
+
+## 7.3.3 Curiosity-eksempelet (s. 60–70)
+
+KB: alle som elsker alle dyr, elskes av noen; den som dreper et dyr, elskes av ingen; Jack elsker alle dyr;
+Kills(Jack, Tuna) ∨ Kills(Curiosity, Tuna); Cat(Tuna); ∀x Cat(x) ⇒ Animal(x). Spørsmål: Kills(Curiosity, Tuna)?
+CNF av KB ∪ {¬Kills(Curiosity, Tuna)} og resolusjonstre: Cat + ¬Cat∨Animal {x/Tuna} → Animal(Tuna);
+Kills∨Kills + ¬Kills(Curiosity, Tuna) {} → Kills(Jack, Tuna); ¬Loves(x, F(x)) ∨ Loves(G(x), x) + ¬Animal(u) ∨ Loves(Jack, u)
+{x/Jack, u/F(Jack)} → ¬Animal(F(Jack)) ∨ Loves(G(Jack), Jack); + Animal(F(x)) ∨ Loves(G(x), x) {x/Jack} → Loves(G(Jack), Jack);
+¬Loves(y, x) ∨ ¬Animal(z) ∨ ¬Kills(x, z) + Animal(Tuna) {z/Tuna} → ¬Loves(y, x) ∨ ¬Kills(x, Tuna); + Kills(Jack, Tuna) {x/Jack}
+→ ¬Loves(y, Jack); + Loves(G(Jack), Jack) {y/G(Jack)} → □. Svar: ja, Curiosity drepte katten.
+Merk (s. 65): variabler i ulike klausuler kan omdøpes, ∀x ¬Animal(x) ∨ Loves(Jack, x) ≡ ∀u ¬Animal(u) ∨ Loves(Jack, u).
+
+## 7.3.4 Strategier og likhet (s. 71–78)
+
+Strategier: unit preference (korte klausuler), set of support (f.eks. negert mål), input resolution (klausuler fra KB/mål),
+subsumption (ikke utled P(A) når ∀x P(x) finnes), læring (ML-modell trent på tidligere bevis).
+Likhet: aksiomatiser (refleksiv, symmetrisk, transitiv, bytte like med like i predikater og funksjoner);
+demodulation og paramodulation (Birthdate(PaternalGrandfather(Bella), 1926)); equational unification (Add(1, 2) og Add(2, 1)).
+
+## 10 Naturlig språkbehandling og persepsjon
+
+Forelesning 9 (Massimiliano Ruocco, høst 2026), boka kap. 24, unntatt 24.2.1 (leksikonet til E₀), 24.3.1 (dependency parsing),
+24.3.2 (lære parser fra eksempler), 24.4 (augmenterte grammatikker), 24.5 (komplikasjoner). Persepsjon (kap. 25) kommer.
+Oppsummering (s. 60): språkmodeller → ordrepresentasjoner → grammatikk → parsing → anvendelser.
+
+## 10.1 NLP: språkmodeller, n-gram, glatting, POS-tagging, PCFG, parsing
+
+NLP = AI-delen som lar datamaskiner forstå, generere og samhandle med menneskelig språk (s. 3–5).
+En språkmodell er en sannsynlighetsfordeling over strenger (s. 8). Seks deler: bag-of-words, n-gram, glatting,
+ordrepresentasjon og POS-tagging (HMM, logistisk regresjon), grammatikk (PCFG, E₀), parsing (CYK), NLP-oppgaver.
+Ingen eksamensoppgaver om NLP i Ord. 2022/2023 (prio 2).
+
+## 10.1.1 Hvorfor språk er vanskelig
+
+Slides s. 6: flertydig («He saw her duck», «I saw the man with the telescope»), vagt («It's kind of cold»),
+kontekstavhengig («I'm here today»), i endring («tweet», «cloud»), vurderinger varierer («Not to be invited is sad»
+vs «To be not invited is sad»), ingen fast referanse (to «Richard»).
+
+## 10.1.2 Bag-of-words og naiv Bayes
+
+Slides s. 8–11 (boka 24.1, 24.1.1). Setning = uordnet samling ord; naiv Bayes: hvert ord uavhengig gitt klassen.
+P(Class | w_{1:N}) ∝ P(Class) ∏_j P(w_j | Class). Generativ historie: velg pose, trekk ord med tilbakelegging til punktum.
+Feil (ordene er ikke uavhengige) men god for klassifisering. Trening ved telling:
+3 000 tekster, 300 business → P(business) = 0.1; 100 000 ord i business, 700 «stocks» → P(stocks | business) = 0.007.
+Sjeldne ord → glatting; tokenisering («aren't»).
+
+## 10.1.3 n-gram-modeller
+
+Slides s. 12–17, 22–23 (boka 24.1.2–24.1.3, 24.1.7). Rekkefølge betyr noe («first quarter earnings» vs «fourth quarter touchdown»).
+Kjederegel P(w_{1:N}) = ∏ P(w_j | w_{1:j-1}): ~10^200 parametre for 100 000 ord og 40-ords setninger.
+Markov-antakelse: P(w_j | w_{1:j-1}) ≈ P(w_j | w_{j-n+1:j-1}). Unigram P(w_j), bigram P(w_j | w_{j-1}), trigram P(w_j | w_{j-2}, w_{j-1}).
+Høyere n mer realistisk men glisne data. Bruk: avisseksjoner, spam, sentiment, forfatter.
+Tegnmodeller: P(c_j | c_{j-n+1:j-1}), ukjente ord, språkidentifikasjon >99 % (svensk/norsk ≈ 95 %).
+Skip-gram: «je ne comprends pas» → «je comprends», «ne pas». Utvalg fra 1–4-gram av læreboka; GPT-2 flytende men usammenhengende.
+
+## 10.1.4 Glatting
+
+Slides s. 18–21 (boka 24.1.4). Usett n-gram → P = 0 for hele setningen. Problem 1: ukjente ord → <UNK> (behold f.eks. topp 50 000),
+typede token <NUM>, <EMAIL>, <URL>, <S>. Problem 2: usette n-gram av kjente ord («colorless aquamarine ideas»).
+Laplace (add-one): P(w_i | w_{i-1}) = (c(w_{i-1} w_i) + 1) / (c(w_{i-1}) + V), V = vokabularstørrelse; summerer til 1,
+for mye masse til det usette (V = 100 000). Opphav: vil sola stå opp i morgen (N ≈ 2 mill. dager).
+Backoff: trigram hvis tellingen er høy nok, ellers bigram, ellers unigram.
+Lineær interpolasjon: P̂(w_i | w_{i-2:i-1}) = λ3 P(w_i | w_{i-2:i-1}) + λ2 P(w_i | w_{i-1}) + λ1 P(w_i), λ3 + λ2 + λ1 = 1
+(faste, lært med EM eller avhengige av tellingene).
+
+## 10.1.5 Ordrepresentasjon og POS-tagging
+
+Slides s. 25–31 (boka 24.1.5–24.1.6). n-gram er atomiske: «a black cat» sett, «cat black a» aldri; kan ikke generalisere til
+«the fulvous kitten». Mennesker bruker morfologi (-ous), syntaks (a/the), semantikk (kitten ~ cat).
+Strukturerte modeller: WordNet (IS-A/hypernym, PART-OF, antonym; kitten → young_mammal → mammal → animal; kategorier, ikke detaljer),
+POS-tagger, lærte embeddinger (25.1). POS-tagging = gi hvert ord ordklasse; første steg for QA, oversettelse, tekst-til-tale («record»).
+Penn Treebank: 45 tagger, >3 mill. ord. «From the start , it took a person with great qualities to succeed» =
+IN DT NN , PRP VBD DT NN IN JJ NNS TO VB. Flertydighet: can (NN/MD), flies (NNS/VBZ), record (NN/VB), cut (NN/VBD/VBP).
+Taggeren må velge hele sekvensen.
+
+## 10.1.6 HMM-tagger og Viterbi
+
+Slides s. 32–35. Skjulte tilstander = tagger C_{1:N}, evidens = ord W_{1:N}. Overgangsmodell P(C_t | C_{t-1}),
+sensormodell P(W_t | C_t). P(C_{1:N}, W_{1:N}) = P(C_1) ∏_{t=2}^N P(C_t | C_{t-1}) ∏_{t=1}^N P(W_t | C_t).
+Trening ved telling: P(VB | MD) = 10 471 / 13 124 ≈ 0.80; P(would | MD) = 0.1.
+Viterbi (14.2.3): dynamisk programmering, beste sti per (ord, tagg)-celle, bakoverpekere; Ĉ = argmax P(C_{1:N}, W_{1:N}).
+≈ 97 % nøyaktighet. Begrensning: bare nåværende ord og forrige tagg; vanskelig å legge inn kunnskap («-ous» → adjektiv).
+
+## 10.1.7 Logistisk regresjon og generativ vs diskriminativ
+
+Slides s. 36–38. Diskriminativ, lærer P(C | W); én klassifikator per tagg (45), gradient descent; P(tag | x) = σ(w · x);
+trekk: nabo-ord, suffiks/prefiks, forrige tagg, store bokstaver, sifre. Dekoding: grådig (c_i = argmax P(c' | w_{1:N}, c_{1:i-1}),
+rask men kan ikke angre), Viterbi (tregere, kan ombestemme seg), beam search (b beste).
+Tabell: generativ (naiv Bayes, HMM) lærer P(W, C), kan generere, begrensede trekk, høyere feilrate, konvergerer raskere;
+diskriminativ (logistisk regresjon) lærer P(C | W), kan ikke generere, vilkårlige trekk, lavere feilrate, konvergerer saktere.
+
+## 10.1.8 Grammatikk, PCFG og E₀
+
+Slides s. 40–45 (boka 24.2, fig. 24.2). Grammatikk = regler for trestruktur; språk = setningene som følger reglene.
+Naturlig språk: uskarp grense, flere parser. «Stocks rallied on Monday»: NP (subjekt) + VP (predikat), PP modifiserer VP.
+PCFG: regler med sannsynlighet, kontekstfrie. Adjs → Adjective [0.80] | Adjective Adjs [0.20].
+E₀-regler: S → NP VP 0.90 | S Conj S 0.10; NP → Pronoun 0.25 | Name 0.10 | Noun 0.10 | Article Noun 0.25 |
+Article Adjs Noun 0.05 | Digit Digit 0.05 | NP PP 0.10 | NP RelClause 0.05 | NP Conj NP 0.05;
+VP → Verb 0.40 | VP NP 0.35 | VP Adjective 0.05 | VP PP 0.10 | VP Adverb 0.10; Adjs → Adjective 0.80 | Adjective Adjs 0.20;
+PP → Prep NP 1.00; RelClause → RelPro VP 1.00. Overgenerering («Me go I»), undergenerering («I think the wumpus is smelly»).
+
+## 10.1.9 Parsing og CYK
+
+Slides s. 46–51 (boka 24.3, fig. 24.4–24.6). Parsing = søk etter parsetre med ordene som blader; top-down og bottom-up.
+Fig. 24.4: «the wumpus is dead» via S → NP VP, VP → VP Adjective, VP → Verb, Adjective → dead, Verb → is, NP → Article Noun,
+Noun → wumpus, Article → the. Chart parsing: «Have the students in section 2 of Computer Science 101 take/taken the exam» —
+lagre fraser og gjenbruk. CYK: bottom-up probabilistisk chart-parser, Chomsky normalform (X → word, X → Y Z),
+P[X, i, k] = max over j og regel av P[Y, i, j] · P[Z, j+1, k] · p; tid O(n³m), plass O(n²m).
+Fig. 24.6: «every wumpus smells» = 0.90 · 0.25 · 0.05 · 0.15 · 0.40 · 0.10 = 0.0000675.
+Raskere: A* (admissibel heuristikk → første parse mest sannsynlig), beam search (O(n)), shift-reduce (beam med b = 1).
+
+## 10.1.10 NLP-oppgaver
+
+Slides s. 53–59 (boka 24.6). Talegjenkjenning (lyd → tekst, ordfeil 3–5 %, ~30 % lavere feil med dype nett 2011, RNN + HMM),
+tekst-til-tale (uttale, pauser, stemmer; ⅔ foretrakk WaveNet 2016), maskinoversettelse (parallelle tekster;
+n-gram 2000-tallet → seq2seq 2014 → transformere 2017), informasjonsekstraksjon (tekst → strukturerte fakta; regex, TEXTRUNNER,
+HMM, NELL, nevrale nett), informasjonsgjenfinning (spørring → rangerte dokumenter), spørsmålsbesvarelse (svar, ikke dokumenter;
+1960-tallet parsing, START 1997, ASKMSR 2002 med søkemønstre «[* founded the U.S. Coast Guard]», TREC, AI2 ARC).
+
+## 10.2 Persepsjon / datasyn
+
+Boka kap. 25. Ikke forelest ennå; «kommer»-kort på kap10/index.html. Prio 3.
+
+## 12.1 AI-historie og definisjoner
+
+Slide 3: Ingen enighet om definisjon; to akser (tenke/handle, menneskelig/rasjonell). Tenke menneskelig = kognitiv
+modellering; tenke rasjonelt = tankens lover; handle menneskelig = Turing-testen; handle rasjonelt = rasjonell agent
+(kursets tilnærming). Problemer med å tenke rasjonelt; to fordeler med å handle rasjonelt. McCarthy (1955).
+Newell og Simon / General Problem Solver (Ord. 2023, kort spørsmål) er fra boka kap. 1, ikke i slidene.
+
+# Kapittel 2 · Problemløsning ved søk — sporingsuttrekk
+
+Kilder: Lecture2-Fall2026 (3).pdf (Ruocco, 27. aug 2026, 202 PDF-sider / 86 slides), Lecture3-Fall2026 (1).pdf
+PDF-side 1–53 (Jekic, 3. sept 2026, slides 1–24), AssignmentLecture1-Fall2026.pdf (Jekic). Sidetall = PDF-sider.
+
 ## A1 Assignment 1 · Søk
 Assignment-forelesning 1 (Aleksandra Jekic; slidene sier TDT4137, faget er TDT4136). Bygger på forelesning 2–3 og boka kap. 3.
 Slide 3: «If you look at the old exams, there is usually a lot on this topic.» Algoritmene må kunne gjøres for hånd.
@@ -583,3 +873,4 @@ B sitt domene blir {G, R}. Spørsmål: er MRV + LCV bedre enn tilfeldig nå? (ik
 
 ## A2.3 GA eller CSP for 8-dronninger (slide 6)
 «Would genetic algorithms or a CSP solver be more efficient? Why?» (ikke besvart på slidene)
+

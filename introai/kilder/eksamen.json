@@ -145,7 +145,7 @@
     "oppgaver": []
   },
   "5.1": {
-    "prio": 2,
+    "prio": 1,
     "type": [
       "regn",
       "forklar"
@@ -166,7 +166,8 @@
   "5.3": {
     "prio": 2,
     "type": [
-      "forklar"
+      "forklar",
+      "regn"
     ],
     "oppgaver": [
       "O22-1.7"
@@ -181,6 +182,13 @@
       "O23-5",
       "O23-1"
     ]
+  },
+  "5.5": {
+    "prio": 3,
+    "type": [
+      "forklar"
+    ],
+    "oppgaver": []
   },
   "6.1": {
     "prio": 1,
@@ -228,7 +236,8 @@
   "7.2": {
     "prio": 2,
     "type": [
-      "regn"
+      "regn",
+      "forklar"
     ],
     "oppgaver": []
   },
@@ -278,9 +287,10 @@
     "oppgaver": []
   },
   "10.1": {
-    "prio": 3,
+    "prio": 2,
     "type": [
-      "forklar"
+      "forklar",
+      "regn"
     ],
     "oppgaver": []
   },

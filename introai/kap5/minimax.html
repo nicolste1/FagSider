@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Minimax og alpha-beta — Kap 5</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .tre { display: block; width: 100%; height: auto; margin: 1rem auto; }
+  .tre text { font-family: var(--mono); font-size: 12px; fill: var(--ink); text-anchor: middle; dominant-baseline: middle; }
+  .tre .ed { stroke: var(--ink-faded); stroke-width: 1.3; }
+  .tre .ed.hot { stroke: var(--green); stroke-width: 3; }
+  .tre .el { font-size: 11px; fill: var(--ink-faded); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round; }
+  .tre .an { font-size: 10px; fill: var(--accent); }
+  .tre .rw { font-size: 11px; fill: var(--ink-faded); text-anchor: start; }
+  .tre .sh { fill: var(--paper-dark); stroke: var(--ink); stroke-width: 1.3; }
+  .tre .C .sh, .tre .P .sh { fill: var(--paper); }
+  .tre .B .sh { fill: #cfc4dd; }
+  .tre .W .sh { fill: #e2c9b8; }
+  .tre .act .sh { fill: rgba(198,138,31,0.35); stroke: var(--ochre); stroke-width: 2.5; }
+  .tre .leaf.act text { fill: var(--ochre); font-weight: 700; }
+  .tre .pr { opacity: 0.35; }
+  .tre .ed.pr { stroke-dasharray: 4 3; }
+  .tre.sm text { font-size: 10px; }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.85rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 5</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 5: Adversarialt søk og spill">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 5 · 5A · Slides forelesning 8 · s. 2–20 · Boka kap. 6.1–6.3 · ~45 min</div>
+      <h1>Minimax og <em>alpha-beta</em></h1>
+      <p class="lede">To spillere bytter på å trekke, og den ene vil ha høy verdi mens den andre vil ha lav. Minimax finner det beste trekket under antakelsen om at motstanderen spiller optimalt, og alpha-beta finner det samme trekket uten å se på grener som ikke kan endre svaret. Forvent å måtte kjøre begge for hånd og oppgi \(\alpha\) og \(\beta\) ved hver node.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#spill"><span>01</span> Spill</a>
+        <a href="#minimax"><span>02</span> Minimax</a>
+        <a href="#alpha-beta"><span>03</span> Alpha-beta</a>
+        <a href="#halvering"><span>04</span> Halveringsspillet</a>
+        <a href="#trening"><span>05</span> Øv selv</a>
+        <a href="#heuristisk"><span>06</span> Heuristisk minimax</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne</em> fra denne siden</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026, oppdatert 16. oktober 2026 (kilder/eksamensanalyse.md, deltema 5.1)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>5.1 Minimax og alpha-beta (prio 1):</strong> regn minimax-verdien for hver node i et gitt tre, kjør alpha-beta med \(\alpha\) og \(\beta\) per node, og si hvilke grener som klippes. Ikke regnet i O22/O23, men ventet som regneoppgave i 2026. Øv på <a href="#oppg-botte-alfabeta">bøttespillet</a>, <a href="#oppg-halvering">halveringsspillet</a>, <a href="#oppg-egen-atte-blader">åtte blader</a>.</li>
+          <li><span class="tag">Forklar</span>Minimax for flere enn to spillere: <a href="#oppg-o22-1-6">Ord. 2022 oppg. 1.6</a>. Hvorfor rekkefølgen på barna avgjør hvor mye som klippes. Heuristisk minimax: cutoff og eval.</li>
+          <li><span class="tag">Lavere</span>Tabellen over spilltyper, vektene i eval-funksjonen for sjakk, søk mot oppslag i åpningsbok.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="spill">
+    <div class="container">
+      <div class="section-badge">01 · Spill</div>
+      <h2>Spill som <em>søkeproblem</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 2, 4–6 · Boka kap. 6.1</div>
+      <span class="lm-pill">Deltema 5.1 · prio 1</span>
+      <p class="dropcap">I et <span class="term" data-term="fleragent">fleragentmiljø</span> med motstander er det ikke nok å finne en sti til målet: motstanderen velger annethvert trekk. Vi ser på turbaserte spill med <span class="term" data-term="perfekt-informasjon">perfekt informasjon</span>, der begge ser hele tilstanden. Et slikt spill er gitt ved seks deler:</p>
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Turbasert spill med perfekt informasjon</div>
+        <ul>
+          <li><strong>initialState</strong>: starttilstanden, inkludert hvem som skal trekke.</li>
+          <li><strong>toMove(s)</strong>: hvilken spiller som er i trekket i \(s\).</li>
+          <li><strong>actions(s)</strong>: lovlige trekk i \(s\). <strong>result(s, a)</strong>: tilstanden etter trekk \(a\).</li>
+          <li><strong>isTerminal(s)</strong>: er \(s\) en <span class="term" data-term="terminaltilstand">terminaltilstand</span>?</li>
+          <li><strong>utility(s, p)</strong>: <span class="term" data-term="utility-spill">verdien</span> av terminaltilstanden \(s\) for spiller \(p\).</li>
+        </ul>
+        <p>Mål: finn trekkene til spiller \(p\) fra initialState til en terminaltilstand \(s\) som maksimerer utility\((s, p)\).</p>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th></th><th>Deterministisk</th><th>Sjanse (ytre)</th></tr></thead>
+        <tbody>
+          <tr><td>Perfekt informasjon</td><td>sjakk, go</td><td>backgammon, monopol</td></tr>
+          <tr><td><span class="term" data-term="imperfekt-informasjon">Imperfekt informasjon</span></td><td>senke slagskip, stein-saks-papir</td><td>poker, scrabble</td></tr>
+        </tbody>
+      </table></div>
+      <p>Denne siden tar øverste venstre rute. Sjanse og imperfekt informasjon kommer i <a href="stokastiske-spill.html">5B</a>.</p>
+      <p><strong><span class="term" data-term="bottespillet">Bøttespillet</span>:</strong> spiller 1 (MAX) velger bøtte A, B eller C. Spiller 2 (MIN) velger så et tall fra den bøtta. MAX vil ha et høyt tall. Bøttene er A = {−50, 50}, B = {3, 1}, C = {−5, 15}. Det gir dette <span class="term" data-term="spilltre">spilltreet</span>:</p>
+      <svg class="tre" data-tre="X:[A>N:[−50,50],B>N:[3,1],C>N:[−5,15]]" data-rows="MAX,MIN" aria-label="Spilltreet for bøttespillet"></svg>
+    </div>
+  </section>
+
+  <section id="minimax">
+    <div class="container">
+      <div class="section-badge">02 · Minimax</div>
+      <h2>Verdier opp fra <em>bladene</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 10–12 · Boka kap. 6.2.1</div>
+      <p><span class="term" data-term="minimax">Minimax</span> gir hver node verdien MAX får hvis begge spiller optimalt fra der. Bladene får utility, en <span class="term" data-term="max-min">MAX-node</span> tar største barneverdi og en MIN-node minste:</p>
+      \[ \text{minimax}(s) = \begin{cases} \text{utility}(s, \text{MAX}) &amp; \text{hvis isTerminal}(s) \\ \max_{a} \text{minimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{MAX} \\ \min_{a} \text{minimax}(\text{result}(s, a)) &amp; \text{hvis toMove}(s) = \text{MIN} \end{cases} \]
+      <p>Søket starter med \(\arg\max_{a} \text{minimax}(\text{result}(s, a))\) i roten: MAX velger trekket med høyest verdi. Verdiene regnes dybde-først, så minnebruken er som for <span class="term" data-term="dfs">DFS</span>.</p>
+
+      <div class="oppgave" data-quiz id="oppg-botte-minimax">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 10–12</span></div>
+        <div class="o-text"><p>Regn minimax-verdien for alle nodene i bøttespillet. Hvilken bøtte velger MAX?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene</span>
+            <p>MIN-nodene: A \(= \min(-50, 50) = -50\), B \(= \min(3, 1) = 1\), C \(= \min(-5, 15) = -5\). Roten: \(\max(-50, 1, -5) = 1\), så MAX velger <strong>B</strong>.</p>
+            <svg class="tre" data-tre="X:1[A>N:−50[−50,50],*B>N:1[3,1],C>N:−5[−5,15]]" data-rows="MAX,MIN" aria-label="Minimax-verdier i bøttespillet"></svg>
+            <p>A har det høyeste tallet (50), men MIN velger −50 der. B er det eneste valget der MAX er garantert noe positivt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o22-1-6">
+        <div class="o-label"><span>Eksamen Ord. 2022 · oppg. 1.6</span><span class="o-ref">kort spørsmål</span></div>
+        <div class="o-text"><p>Hvordan kan vi bruke minimax i et spill med tre spillere?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget</span>
+            <p>Bruk en vektor av verdier i stedet for ett tall per node. I terminaltilstander gir vektoren utility sett fra hver spillers ståsted. I en ikke-terminal node er verdien den barnevektoren som er best sett fra spilleren som er i trekket der.</p>
+            <p>Eksempel (egen illustrasjon): spiller C er i trekket og barna har vektorene \((1, 2, 6)\) og \((4, 2, 3)\) for \((A, B, C)\). C ser bare på tredje komponent og velger \((1, 2, 6)\), som blir nodens verdi.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hva blir rotverdien i bøttespillet hvis MIN i stedet var en spiller som ville ha <em>høye</em> tall (begge maksimerer)?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Da tar alle noder maks: A = 50, B = 3, C = 15, og roten blir 50 (bøtte A). Det er nettopp antakelsen om en optimal <em>motstander</em> som gjør B til riktig trekk.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="alpha-beta">
+    <div class="container">
+      <div class="section-badge">03 · Alpha-beta</div>
+      <h2>Samme svar, færre <em>noder</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 13–14 · Boka kap. 6.2.3</div>
+      <p><span class="term" data-term="alpha-beta">Alpha-beta pruning</span> regner samme rotverdi som minimax, men hopper over grener som ikke kan påvirke valget. Søket bærer med seg to grenser:</p>
+      <ul>
+        <li>\(\alpha\): beste verdi en MAX-node på stien så langt er garantert (<span class="term" data-term="alfa">alfa</span>).</li>
+        <li>\(\beta\): beste verdi en MIN-node på stien så langt er garantert (<span class="term" data-term="beta">beta</span>).</li>
+      </ul>
+      \[ \text{alphaBeta}(s, \alpha, \beta) = \begin{cases} \text{utility}(s, \text{MAX}) &amp; \text{hvis isTerminal}(s) \\ \text{maxValue}(s, \alpha, \beta) &amp; \text{hvis toMove}(s) = \text{MAX} \\ \text{minValue}(s, \alpha, \beta) &amp; \text{hvis toMove}(s) = \text{MIN} \end{cases} \]
+<pre><code>function maxValue(s, α, β)              function minValue(s, α, β)
+  v ← −∞                                  v ← ∞
+  for each a in actions(s) do             for each a in actions(s) do
+    v ← max(v, alphaBeta(result(s,a),α,β))  v ← min(v, alphaBeta(result(s,a),α,β))
+    α ← max(α, v)                           β ← min(β, v)
+    if v ≥ β then return v                  if v ≤ α then return v
+  end for                                 end for
+  return v                                return v
+end function                            end function</code></pre>
+      <p>Søket starter med maxValue(rot, −∞, ∞) og returnerer trekket som ga høyest \(v\). En MAX-node oppdaterer bare \(\alpha\), en MIN-node bare \(\beta\). Når \(v \geq \beta\) i en MAX-node, vet vi at MIN-forelderen allerede har et alternativ som er minst like godt for MIN, så resten av barna kan <span class="term" data-term="klipping">klippes</span>. Tilsvarende i MIN-noder med \(v \leq \alpha\).</p>
+      <div class="callout">
+        <span class="label">Konvensjon for håndregning</span>
+        <p>Verdiene «\(\alpha = \dots, \beta = \dots\)» som skrives ved en node, er verdiene <strong>etter</strong> at noden er ferdig (eller har returnert tidlig). Inn til noden går forelderens \(\alpha\) og \(\beta\) slik de var da barnet ble kalt. Barna utforskes fra venstre mot høyre. Merk \(\geq\) og \(\leq\): også likhet gir klipping.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-botte-alfabeta">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 13–14</span></div>
+        <div class="o-text"><p>Kjør alpha-beta på bøttespillet. Oppgi \(v\), \(\alpha\) og \(\beta\) for hver indre node, og hvilke blader som ikke blir evaluert.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · mellomregning lagt til</span>
+            <ol>
+              <li>Rot: maxValue(rot, −∞, ∞).</li>
+              <li>A: minValue(A, −∞, ∞). Blad −50: \(v = -50\), \(\beta = -50\); \(-50 \leq -\infty\)? Nei. Blad 50: \(v = \min(-50, 50) = -50\). A returnerer −50 med \(\alpha = -\infty, \beta = -50\). Rot: \(v = -50\), \(\alpha = -50\).</li>
+              <li>B: minValue(B, −50, ∞). Blad 3: \(v = 3\), \(\beta = 3\). Blad 1: \(v = 1\), \(\beta = 1\); \(1 \leq -50\)? Nei. B returnerer 1 med \(\alpha = -50, \beta = 1\). Rot: \(v = 1\), \(\alpha = 1\).</li>
+              <li>C: minValue(C, 1, ∞). Blad −5: \(v = -5\), \(\beta = -5\); \(-5 \leq 1\): returner −5. Bladet 15 blir aldri evaluert. C står med \(\alpha = 1, \beta = -5\).</li>
+              <li>Rot: \(v = \max(1, -5) = 1\), \(\alpha = 1, \beta = \infty\). Trekk: B.</li>
+            </ol>
+            <svg class="tre" data-tre="X:1{α=1, β=∞}[A>N:−50{α=−∞, β=−50}[−50,50],*B>N:1{α=−50, β=1}[3,1],C>N:−5{α=1, β=−5}[−5,~15]]" data-rows="MAX,MIN" data-dx="76" aria-label="Alpha-beta i bøttespillet"></svg>
+            <p>Hvorfor er klippingen trygg? MAX har allerede 1 via B. Etter −5 vet vi at C er verdt høyst −5 for MAX, uansett hva som ligger i resten av bøtta.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-rekkefolge">
+        <div class="o-label"><span>Egen oppgave</span><span class="o-ref">eksamenstype</span></div>
+        <div class="o-text"><p>I hvilken rekkefølge bør barna ordnes for at alpha-beta skal klippe mest? Vis med bøttespillet hvor mange blader som slipper å evalueres hvis MAX prøver B først.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Beste trekk først: i MAX-noder barnet med høyest verdi først, i MIN-noder lavest først. Da blir \(\alpha\) og \(\beta\) stramme tidlig, og flere barn faller utenfor vinduet. Med perfekt <span class="term" data-term="trekkordning">trekkordning</span> må alpha-beta bare se på omtrent \(O(b^{m/2})\) noder mot \(O(b^m)\) for minimax, altså dobbelt så dypt på samme tid.</p>
+            <p>Rekkefølge B, A, C: B gir \(v = 1\), \(\alpha = 1\). I A gir −50 at \(-50 \leq 1\), så 50 klippes. I C gir −5 at \(-5 \leq 1\), så 15 klippes. To blader spart mot ett med A, B, C.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="halvering">
+    <div class="container">
+      <div class="section-badge">04 · Halveringsspillet</div>
+      <h2>Et dypere tre: <em>N = 5</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 15–17</div>
+      <p><span class="term" data-term="halveringsspillet">Halveringsspillet</span> (en variant av Nim): start med et tall \(N\). Spillerne bytter på enten å trekke fra 1 (<code>--</code>) eller erstatte \(N\) med \(\lfloor N/2 \rfloor\) (<code>/2</code>). Spilleren som sitter igjen med 0, vinner. Et blad under en MIN-node betyr at MIN sitter med 0, så utility er −1; under en MAX-node +1. Nodene viser «\(N\), minimax-verdi».</p>
+      <svg class="tre" data-tre="X:5;1[-->*N:4;1[-->X:3;1[-->N:2;−1[-->X:1;−1[-->−1,/2>−1],/2>X:1;−1[-->−1,/2>−1]],/2>*N:1;1[-->1,/2>1]],/2>X:2;1[-->*N:1;1[-->1,/2>1],/2>N:1;1[-->1,/2>1]]],/2>N:2;−1[-->X:1;−1[-->−1,/2>−1],/2>X:1;−1[-->−1,/2>−1]]]" data-rows="MAX,MIN,MAX,MIN,MAX" data-dx="52" data-r="19" data-dy="66" aria-label="Halveringsspillet N=5 med minimax-verdier"></svg>
+      <p>MAX vinner ved å trekke fra 1: fra 4 kan MIN bare gå til 3 eller 2, og MAX svarer med å gå til 1 der MIN må gi MAX nullen. Halvering til 2 taper, fordi MIN da kan gå til 1.</p>
+
+      <div class="oppgave" data-quiz id="oppg-halvering">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 16–17</span></div>
+        <div class="o-text"><p>Kjør alpha-beta på halveringsspillet med \(N = 5\) (venstre barn <code>--</code> før <code>/2</code>). Oppgi \(\alpha\) og \(\beta\) ved hver besøkte node og marker grenene som klippes. Hvor mange av de 14 bladene evalueres?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra slidene · mellomregning lagt til</span>
+            <ol>
+              <li>Venstre gren ned til MAX(1): bladene −1, −1 gir \(v = -1\), \(\alpha = -1\). Ferdig med \(\alpha = -1, \beta = \infty\).</li>
+              <li>MIN(2) får \(v = -1\), \(\beta = -1\). Andre MAX(1) kalles med \((-\infty, -1)\): første blad gir \(v = -1 \geq \beta = -1\), så andre blad klippes. MAX(1) står med \(\alpha = -1, \beta = -1\). MIN(2) ferdig: \(\alpha = -\infty, \beta = -1\).</li>
+              <li>MAX(3) får \(v = -1\), \(\alpha = -1\). MIN(1) kalles med \((-1, \infty)\): bladene 1, 1 gir \(v = 1\), \(\beta = 1\). MIN(1): \(\alpha = -1, \beta = 1\). MAX(3) får \(v = 1\): \(\alpha = 1, \beta = \infty\).</li>
+              <li>MIN(4) får \(v = 1\), \(\beta = 1\). MAX(2) kalles med \((-\infty, 1)\). Første MIN(1) gir 1 (\(\alpha = -\infty, \beta = 1\)). Da er \(v = 1 \geq \beta = 1\) i MAX(2): andre MIN(1) klippes. MAX(2): \(\alpha = 1, \beta = 1\). MIN(4): \(\alpha = -\infty, \beta = 1\).</li>
+              <li>Rot: \(v = 1\), \(\alpha = 1\). Høyre MIN(2) kalles med \((1, \infty)\). Første MAX(1) gir −1 (\(\alpha = 1, \beta = \infty\)). Da er \(v = -1 \leq \alpha = 1\): andre MAX(1) klippes. MIN(2): \(\alpha = 1, \beta = -1\).</li>
+              <li>Rot: \(\alpha = 1, \beta = \infty\), verdi 1, trekk <code>--</code>.</li>
+            </ol>
+            <svg class="tre" data-tre="X:5;1{α=1, β=∞}[-->*N:4;1{α=−∞, β=1}[-->X:3;1{α=1, β=∞}[-->N:2;−1{α=−∞, β=−1}[-->X:1;−1{α=−1, β=∞}[-->−1,/2>−1],/2>X:1;−1{α=−1, β=−1}[-->−1,/2>~−1]],/2>N:1;1{α=−1, β=1}[-->1,/2>1]],/2>X:2;1{α=1, β=1}[-->N:1;1{α=−∞, β=1}[-->1,/2>1],/2>~N:1[-->1,/2>1]]],/2>N:2;−1{α=1, β=−1}[-->X:1;−1{α=1, β=∞}[-->−1,/2>−1],/2>~X:1[-->−1,/2>−1]]]" data-rows="MAX,MIN,MAX,MIN,MAX" data-dx="56" data-r="19" data-dy="70" aria-label="Halveringsspillet med alpha-beta"></svg>
+            <p>Stiplet = klippet. <strong>9 av 14 blader</strong> evalueres: ett blad under MAX(1), to under MIN(1) og to under høyre MAX(1) slipper.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trening">
+    <div class="container">
+      <div class="section-badge">05 · Øv selv</div>
+      <h2>Alpha-beta <em>steg for steg</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 13–17 (egne trær i widgeten og oppgaven)</div>
+      <div class="widget" id="w-ab">
+        <div class="widget-label">Prøv selv · alpha-beta stegvis</div>
+        <p class="widget-intro">Velg et tre og trykk «Ett steg». Oransje node er den som behandles nå. Over hver besøkt node står \(\alpha\) og \(\beta\) slik de er akkurat nå; når noden er ferdig, er det verdiene etter behandling. Stiplede grener er klippet. Du kan skrive inn egne bladverdier (venstre mot høyre) og trykke «Bruk».</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ab-pre">Tre</label>
+            <select id="ab-pre">
+              <option value="botte">Bøttespillet</option>
+              <option value="halv">Halveringsspillet N = 5</option>
+              <option value="egen">Åtte blader (oppgaven under)</option>
+              <option value="tilf">Tilfeldig tre</option>
+            </select></div>
+          <div class="w-ctl"><label for="ab-seed">Frø</label><input type="number" id="ab-seed" value="7" min="1" max="9999"></div>
+        </div>
+        <svg class="tre" id="ab-svg" data-dx="50" data-r="19" data-dy="66" data-rows="MAX,MIN,MAX,MIN,MAX" aria-label="Alpha-beta på valgt tre"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ab-leaves">Blader</label><input type="text" id="ab-leaves" size="34"></div>
+          <button class="w-btn secondary" id="ab-apply" type="button">Bruk</button>
+        </div>
+        <div class="w-row">
+          <button class="w-btn" id="ab-step" type="button">Ett steg</button>
+          <button class="w-btn" id="ab-run" type="button">Kjør</button>
+          <button class="w-btn secondary" id="ab-reset" type="button">Nullstill</button>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><div class="m-name">Rotverdi</div><div class="m-val" id="ab-v">–</div></div>
+          <div class="metric"><div class="m-name">Blader evaluert</div><div class="m-val" id="ab-n">–</div></div>
+          <div class="metric"><div class="m-name">Trekk i roten</div><div class="m-val" id="ab-a">–</div></div>
+        </div>
+        <div class="w-out" id="ab-out"></div>
+        <div class="w-log" id="ab-log"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-egen-atte-blader">
+        <div class="o-label"><span>Egen oppgave</span><span class="o-ref">eksamenstype</span></div>
+        <div class="o-text">
+          <p>MAX er i roten A, MIN i B og C, MAX i D–G. Kjør alpha-beta (venstre mot høyre). Oppgi \(v\), \(\alpha\) og \(\beta\) for hver besøkt node, og hvilke blader som ikke evalueres.</p>
+          <svg class="tre" data-tre="X:A[N:B[X:D[3,5],X:E[6,9]],N:C[X:F[1,2],X:G[0,−1]]]" data-rows="MAX,MIN,MAX" data-dx="56" aria-label="Tre med åtte blader"></svg>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <ol>
+              <li>D \((-\infty, \infty)\): 3 gir \(\alpha = 3\), 5 gir \(v = 5\), \(\alpha = 5\). D = 5 med \(\alpha = 5, \beta = \infty\).</li>
+              <li>B: \(v = 5\), \(\beta = 5\). E kalles med \((-\infty, 5)\): 6 gir \(v = 6\), \(\alpha = 6\), og \(6 \geq 5\): returner 6, bladet 9 klippes. E: \(\alpha = 6, \beta = 5\).</li>
+              <li>B: \(v = \min(5, 6) = 5\). B = 5 med \(\alpha = -\infty, \beta = 5\). Rot: \(v = 5\), \(\alpha = 5\).</li>
+              <li>F kalles med \((5, \infty)\): 1 og 2 gir \(v = 2\), \(\alpha\) forblir 5. F = 2 med \(\alpha = 5, \beta = \infty\).</li>
+              <li>C: \(v = 2\), \(\beta = 2\), og \(2 \leq \alpha = 5\): returner 2, hele G klippes. C: \(\alpha = 5, \beta = 2\).</li>
+              <li>Rot: \(v = \max(5, 2) = 5\), \(\alpha = 5, \beta = \infty\). Trekk mot B.</li>
+            </ol>
+            <svg class="tre" data-tre="X:A;5{α=5, β=∞}[*N:B;5{α=−∞, β=5}[X:D;5{α=5, β=∞}[3,5],X:E;6{α=6, β=5}[6,~9]],N:C;2{α=5, β=2}[X:F;2{α=5, β=∞}[1,2],~X:G[0,−1]]]" data-rows="MAX,MIN,MAX" data-dx="64" aria-label="Løsning med alpha-beta på åtte blader"></svg>
+            <p>Ikke evaluert: 9 (under E), 0 og −1 (under G). Merk at E returnerer 6, ikke minimax-verdien 9: en klippet node gir bare en grense.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="heuristisk">
+    <div class="container">
+      <div class="section-badge">06 · Heuristisk minimax</div>
+      <h2>Kutt søket og <em>estimer</em></h2>
+      <div class="source-note">Slides forelesning 8 · s. 19–20 · Boka kap. 6.3</div>
+      <p>I sjakk er treet altfor stort til å søke til bladene. <span class="term" data-term="heuristisk-minimax">Heuristisk minimax</span> stopper ved en <span class="term" data-term="cutoff-test">cutoff-test</span> (typisk en dybdegrense \(d\)) og bruker en <span class="term" data-term="eval-spill">eval-funksjon</span> der i stedet for utility:</p>
+      \[ \text{hMinimax}(s, d) = \begin{cases} \text{utility}(s, \text{MAX}) &amp; \text{hvis isTerminal}(s) \\ \text{eval}(s, \text{MAX}) &amp; \text{hvis isCutoff}(s, d) \\ \max_{a} \text{hMinimax}(\text{result}(s, a), d + 1) &amp; \text{hvis toMove}(s) = \text{MAX} \\ \min_{a} \text{hMinimax}(\text{result}(s, a), d + 1) &amp; \text{hvis toMove}(s) = \text{MIN} \end{cases} \]
+      <p>Start: \(\arg\max_a \text{hMinimax}(\text{result}(s, a), 1)\). eval\((s, \text{MAX})\) er et estimat av minimax\((s)\), som en <span class="term" data-term="heuristikk">heuristikk</span> i søk. For sjakk, med \(Q_{\text{MAX}}\) = antall damer MAX har i \(s\):</p>
+      \[ \begin{aligned} \text{eval}(s) &amp;= W_1\,\text{material}(s) + W_2\,\text{mobility}(s) + W_3\,\text{kingSafety}(s) + W_4\,\text{centerControl}(s) \\ \text{material}(s) &amp;= 16(Q_{\text{MAX}} - Q_{\text{MIN}}) + 8(R_{\text{MAX}} - R_{\text{MIN}}) + 5(B_{\text{MAX}} - B_{\text{MIN}} + N_{\text{MAX}} - N_{\text{MIN}}) + P_{\text{MAX}} - P_{\text{MIN}} \\ \text{mobility}(s) &amp;= \text{numLegalMoves}_{\text{MAX}} - \text{numLegalMoves}_{\text{MIN}} \end{aligned} \]
+      <p>Alpha-beta virker uendret med cutoff. Svakheten er at feil i eval forplanter seg opp i treet; det er en av grunnene til at MCTS (<a href="stokastiske-spill.html#mcts">5B</a>) kan være mer robust.</p>
+
+      <div class="oppgave" data-quiz id="oppg-sok-oppslag">
+        <div class="o-label"><span>Tenk over · fra slidene</span><span class="o-ref">s. 20</span></div>
+        <div class="o-text"><p>Søk mot oppslag: bør vi gjøre et søk for første trekk i et nytt sjakkparti?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Nei. Åpningen er den samme i hvert parti og er analysert grundig på forhånd, så det er bedre å slå opp trekket i en tabell (åpningsbok) enn å bruke tid på et søk som uansett er for grunt til å se forskjell. Søket tar over når partiet er ute av kjente stillinger.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Seks deler</strong>initialState, toMove, actions, result, isTerminal, utility.</div>
+        <div class="recap-pill"><strong>Minimax</strong>MAX tar største, MIN minste barneverdi. Rotens argmax er trekket.</div>
+        <div class="recap-pill"><strong>α og β</strong>MAX oppdaterer α, MIN oppdaterer β. Klipp når v ≥ β (MAX) eller v ≤ α (MIN).</div>
+        <div class="recap-pill"><strong>Konvensjon</strong>α/β ved en node = verdiene etter at noden er ferdig. Venstre mot høyre.</div>
+        <div class="recap-pill"><strong>Trekkordning</strong>Beste barn først gir mest klipping, rundt \(O(b^{m/2})\).</div>
+        <div class="recap-pill"><strong>Cutoff + eval</strong>Heuristisk minimax: stopp ved dybde d og estimer med eval(s).</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Kan alpha-beta gi et annet trekk i roten enn minimax?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei. Den klipper bare grener som ikke kan endre rotverdien, så rotverdien og det valgte trekket er de samme (med samme tie-break). Verdiene i klippede indre noder kan derimot være grenser, ikke eksakte minimax-verdier.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">En MIN-node kalles med \(\alpha = 4\), \(\beta = \infty\). Første barn returnerer 3. Hva skjer?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">\(v = 3\), \(\beta = 3\), og \(3 \leq \alpha = 4\): noden returnerer 3 med en gang og resten av barna klippes. MAX har allerede 4 et annet sted, og MIN kan tvinge denne grenen ned til høyst 3.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Bytt rekkefølgen på barna til D i åtte-blad-oppgaven til \([5, 3]\). Endrer det hvilke blader som klippes?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei. D gir fortsatt 5 og B får \(\beta = 5\) før E, så 9 og hele G klippes som før. Rekkefølgen inne i en node uten klipping påvirker bare mellomverdiene, ikke hva forelderen får. Prøv det med «Blader» i widgeten.</div></div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 5: oversikt</div></a>
+        <a href="stokastiske-spill.html" class="next"><div class="pn-label">Neste · 5B</div><div class="pn-title">Stokastiske spill og MCTS →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Figurer: spilltrær tegnes fra data-tre (kompakt notasjon, brukes også av widgeten) ─── */
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  /* node := [kantetikett '>'] [~ klippet | * uthevet kant | ! aktiv] [X|N|C|P|B|W ':'] verdi [{merknad}] [[barn,barn]] ; ';' i verdi blir ', ' */
+  function parse(s) {
+    var i = 0;
+    function node() {
+      var n = { kids: [] }, rest = s.slice(i), stop = rest.search(/[,\[\]:{]/), gt = rest.indexOf('>');
+      if (stop < 0) stop = rest.length;
+      if (gt >= 0 && gt < stop) { n.edge = rest.slice(0, gt); i += gt + 1; }
+      while (i < s.length && '~*!'.indexOf(s[i]) >= 0) { n[{ '~': 'pr', '*': 'hot', '!': 'act' }[s[i]]] = true; i++; }
+      var m = /^([XNCPBW]):/.exec(s.slice(i)); if (m) { n.type = m[1]; i += 2; }
+      var j = i; while (j < s.length && ',[]{'.indexOf(s[j]) < 0) j++;
+      n.val = s.slice(i, j).replace(/;/g, ', '); i = j;
+      if (s[i] === '{') { j = s.indexOf('}', i); n.ann = s.slice(i + 1, j); i = j + 1; }
+      if (s[i] === '[') { do { i++; n.kids.push(node()); } while (s[i] === ','); i++; }
+      return n;
+    }
+    return node();
+  }
+  function draw(svg, src) {
+    var t = parse(src), A = function (k, d) { return +(svg.getAttribute('data-' + k) || d); };
+    var dx = A('dx', 60), dy = A('dy', 72), r = A('r', 17);
+    var rows = (svg.getAttribute('data-rows') || '').split(',').filter(Boolean);
+    var L = rows.length ? 40 : 6, nl = 0, D = 0;
+    (function walk(n, d, pr) {
+      n.d = d; D = Math.max(D, d); if (pr) n.pr = true;
+      if (!n.kids.length) n.x = nl++;
+      else { n.kids.forEach(function (k) { walk(k, d + 1, n.pr); }); n.x = (n.kids[0].x + n.kids[n.kids.length - 1].x) / 2; }
+    })(t, 0, false);
+    var W = L + nl * dx + 6, H = D * dy + 2 * r + 40;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.style.maxWidth = W + 'px'; svg.innerHTML = '';
+    function X(n) { return L + n.x * dx + dx / 2; }
+    function Y(n) { return r + 26 + n.d * dy; }
+    function el(tag, a, txt, par) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; (par || svg).appendChild(e); return e; }
+    rows.forEach(function (lab, d) { if (d < D) el('text', { x: 4, y: Y({ d: d }), 'class': 'rw' }, lab); });
+    var gE = el('g', {}), gN = el('g', {});
+    (function vis(n) {
+      var x = X(n), y = Y(n);
+      n.kids.forEach(function (k) {
+        var kx = X(k), ky = Y(k) - (k.type ? r : 9), mx = (x + kx) / 2, my = (y + r * 0.85 + ky) / 2, h = kx - x;
+        el('line', { x1: x, y1: y + r * 0.85, x2: kx, y2: ky, 'class': 'ed' + (k.pr ? ' pr' : '') + (k.hot ? ' hot' : '') }, null, gE);
+        if (k.edge) el('text', { x: mx + (Math.abs(h) < 1 ? 5 : h < 0 ? -5 : 5), y: my, 'class': 'el' + (k.pr ? ' pr' : ''), 'text-anchor': Math.abs(h) < 1 || h > 0 ? 'start' : 'end' }, k.edge, gE);
+        vis(k);
+      });
+      var g = el('g', { 'class': 'nd' + (n.pr ? ' pr' : '') + (n.act ? ' act' : '') + (n.type ? ' ' + n.type : ' leaf') }, null, gN), ty = y;
+      if (n.type === 'X') { el('polygon', { 'class': 'sh', points: [x, y - r, x + 1.15 * r, y + 0.8 * r, x - 1.15 * r, y + 0.8 * r].join(' ') }, null, g); ty = y + r * 0.22; }
+      else if (n.type === 'N') { el('polygon', { 'class': 'sh', points: [x - 1.15 * r, y - 0.8 * r, x + 1.15 * r, y - 0.8 * r, x, y + r].join(' ') }, null, g); ty = y - r * 0.22; }
+      else if (n.type) el('circle', { 'class': 'sh', cx: x, cy: y, r: r }, null, g);
+      var v = el('text', { x: x, y: ty }, n.val, g);
+      if (n.type && n.val.length > 3) v.setAttribute('font-size', n.val.length > 5 ? '9.5' : '10.5');
+      if (n.ann) el('text', { x: x, y: y - r - 8, 'class': 'an' }, n.ann, g);
+    })(t);
+  }
+  window.SpillTre = { parse: parse, draw: draw };
+  document.querySelectorAll('svg[data-tre]').forEach(function (s) { draw(s, s.getAttribute('data-tre')); });
+})();
+/* ─── Widget: alpha-beta stegvis ─── */
+(function () {
+  'use strict';
+  var root = document.getElementById('w-ab'); if (!root || !window.SpillTre) return;
+  var INF = Infinity, $ = function (id) { return document.getElementById(id); };
+  var svg = $('ab-svg'), sel = $('ab-pre'), seedIn = $('ab-seed'), leafIn = $('ab-leaves'), out = $('ab-out'), logEl = $('ab-log');
+  var T, nodes, steps, k, leaves;
+  function f(x) { return x === INF ? '∞' : x === -INF ? '−∞' : String(x).replace('-', '−'); }
+  function rng(a) { return function () { a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function lag(spec, mx) { return Array.isArray(spec) ? { mx: mx, kids: spec.map(function (s) { return lag(s, !mx); }) } : { leaf: spec }; }
+  function halv(n, mx) { return n === 0 ? { leaf: mx ? 1 : -1 } : { mx: mx, name: n, edges: ['--', '/2'], kids: [halv(n - 1, !mx), halv(n >> 1, !mx)] }; }
+  function tilf(seed) {
+    var R = rng(seed);
+    function g(d, mx) { if (d === 3) return { leaf: Math.floor(R() * 19) - 9 }; var b = d < 2 && R() < 0.35 ? 3 : 2, kk = []; for (var i = 0; i < b; i++) kk.push(g(d + 1, !mx)); return { mx: mx, kids: kk }; }
+    return g(0, true);
+  }
+  function velg() {
+    var v = sel.value;
+    if (v === 'botte') { T = lag([[-50, 50], [3, 1], [-5, 15]], true); T.edges = ['A', 'B', 'C']; }
+    else if (v === 'halv') T = halv(5, true);
+    else if (v === 'egen') T = lag([[[3, 5], [6, 9]], [[1, 2], [0, -1]]], true);
+    else T = tilf(+seedIn.value || 1);
+    seedIn.disabled = v !== 'tilf';
+    leaves = []; (function c(n) { if (n.kids) n.kids.forEach(c); else leaves.push(n); })(T);
+    leafIn.value = leaves.map(function (l) { return l.leaf; }).join(', ');
+    bygg();
+  }
+  function bygg() {
+    nodes = []; (function idx(n) { n.id = nodes.length; nodes.push(n); (n.kids || []).forEach(idx); })(T);
+    var S = nodes.map(function () { return { st: '' }; });
+    steps = [];
+    function push(msg, act, cls) { steps.push({ S: S.map(function (o) { return { v: o.v, a: o.a, b: o.b, st: o.st }; }), msg: msg, act: act, cls: cls }); }
+    function prune(n) { S[n.id].st = 'pr'; (n.kids || []).forEach(prune); }
+    function navn(n) { return (n.mx ? 'MAX' : 'MIN') + (n.name != null ? '(' + n.name + ')' : ''); }
+    push('Start: maxValue(rot, −∞, ∞).', -1);
+    (function ab(n, a, b) {
+      var s = S[n.id];
+      if (!n.kids) { s.st = 'done'; push('Blad evaluert: ' + f(n.leaf) + '.', n.id); return n.leaf; }
+      s.st = 'act'; s.a = a; s.b = b; s.v = n.mx ? -INF : INF;
+      push(navn(n) + ' kalles med α = ' + f(a) + ', β = ' + f(b) + '; v = ' + f(s.v) + '.', n.id);
+      for (var i = 0; i < n.kids.length; i++) {
+        var c = ab(n.kids[i], s.a, s.b), gml = s.v;
+        if (n.mx) { s.v = Math.max(s.v, c); s.a = Math.max(s.a, s.v); } else { s.v = Math.min(s.v, c); s.b = Math.min(s.b, s.v); }
+        var cut = n.mx ? s.v >= s.b : s.v <= s.a, rest = n.kids.length - 1 - i;
+        var msg = navn(n) + ': v = ' + (n.mx ? 'max' : 'min') + '(' + f(gml) + ', ' + f(c) + ') = ' + f(s.v) + ', ' + (n.mx ? 'α = ' + f(s.a) : 'β = ' + f(s.b)) + '.';
+        if (cut && rest) { for (var j = i + 1; j < n.kids.length; j++) prune(n.kids[j]); msg += ' ' + (n.mx ? 'v ≥ β' : 'v ≤ α') + ': returner, klipp ' + rest + (rest > 1 ? ' grener.' : ' gren.'); }
+        push(msg, n.id, cut && rest ? 'bad' : '');
+        if (cut) break;
+      }
+      s.st = 'done'; push(navn(n) + ' ferdig: v = ' + f(s.v) + ' (α = ' + f(s.a) + ', β = ' + f(s.b) + ').', n.id, 'ok');
+      return s.v;
+    })(T, -INF, INF);
+    k = 0; tegn();
+  }
+  function spec(n, edge, s, act) {
+    var o = s[n.id], str = (edge != null ? edge + '>' : '') + (o.st === 'pr' ? '~' : '') + (n.id === act ? '!' : '');
+    if (!n.kids) return str + f(n.leaf);
+    var v = o.v != null && o.st !== 'pr' ? f(o.v) : '';
+    str += (n.mx ? 'X:' : 'N:') + (n.name != null ? n.name + (v ? ';' + v : '') : v);
+    if (o.a !== undefined && o.st !== 'pr') str += '{α=' + f(o.a) + ', β=' + f(o.b) + '}';
+    return str + '[' + n.kids.map(function (c, i) { return spec(c, n.edges ? n.edges[i] : null, s, act); }).join(',') + ']';
+  }
+  function tegn() {
+    var s = steps[k], ferdig = k === steps.length - 1, rs = s.S[0];
+    SpillTre.draw(svg, spec(T, null, s.S, s.act));
+    var ev = leaves.filter(function (l) { return s.S[l.id].st === 'done'; }).length;
+    $('ab-v').textContent = ferdig ? f(rs.v) : '–';
+    $('ab-n').textContent = ev + ' / ' + leaves.length;
+    var best = -1; if (ferdig) T.kids.some(function (c, i) { if (s.S[c.id].v === rs.v) { best = i; return true; } });
+    $('ab-a').textContent = best < 0 ? '–' : (T.edges ? T.edges[best] : 'barn ' + (best + 1));
+    out.innerHTML = 'Steg ' + k + ' av ' + (steps.length - 1) + '. ' + s.msg;
+    logEl.innerHTML = steps.slice(1, k + 1).map(function (t, n) { return '<span class="entry ' + (t.cls || '') + '">' + (n + 1) + '. ' + t.msg + '</span>'; }).join('');
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  $('ab-apply').addEventListener('click', function () {
+    var v = leafIn.value.replace(/−/g, '-').split(/[\s,;]+/).filter(Boolean).map(Number);
+    if (v.length !== leaves.length || v.some(isNaN)) { out.innerHTML = '<span class="bad">Skriv nøyaktig ' + leaves.length + ' tall, skilt med komma.</span>'; return; }
+    leaves.forEach(function (l, i) { l.leaf = v[i]; }); bygg();
+  });
+  $('ab-step').addEventListener('click', function () { if (k < steps.length - 1) { k++; tegn(); } });
+  $('ab-run').addEventListener('click', function () { k = steps.length - 1; tegn(); });
+  $('ab-reset').addEventListener('click', function () { k = 0; tegn(); });
+  sel.addEventListener('change', velg);
+  seedIn.addEventListener('change', velg);
+  velg();
+})();
+</script>
+</body>
+</html>

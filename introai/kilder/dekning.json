@@ -195,6 +195,50 @@
     "side": "kap4/backtracking.html",
     "anker": "lokalt-sok"
   },
+  "5.1": {
+    "side": "kap5/minimax.html",
+    "anker": "minimax"
+  },
+  "5.1.1": {
+    "side": "kap5/minimax.html",
+    "anker": "spill"
+  },
+  "5.1.2": {
+    "side": "kap5/minimax.html",
+    "anker": "alpha-beta"
+  },
+  "5.1.3": {
+    "side": "kap5/minimax.html",
+    "anker": "halvering"
+  },
+  "5.1.4": {
+    "side": "kap5/minimax.html",
+    "anker": "heuristisk"
+  },
+  "5.2": {
+    "side": "kap5/stokastiske-spill.html",
+    "anker": "expectiminimax"
+  },
+  "5.2.1": {
+    "side": "kap5/stokastiske-spill.html",
+    "anker": "expectimax"
+  },
+  "5.2.2": {
+    "side": "kap5/stokastiske-spill.html",
+    "anker": "o23-6"
+  },
+  "5.3": {
+    "side": "kap5/stokastiske-spill.html",
+    "anker": "mcts"
+  },
+  "5.3.1": {
+    "side": "kap5/stokastiske-spill.html",
+    "anker": "ucb1"
+  },
+  "5.5": {
+    "side": "kap5/stokastiske-spill.html",
+    "anker": "delvis-observerbare"
+  },
   "6": {
     "side": "kap6/index.html"
   },
@@ -281,6 +325,101 @@
   "7.1.6": {
     "side": "kap7/fol.html",
     "anker": "sporringer"
+  },
+  "7.2": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "propositionalisering"
+  },
+  "7.2.1": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "avgjorbarhet"
+  },
+  "7.2.2": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "propositionalisering"
+  },
+  "7.2.3": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "instansiering"
+  },
+  "7.2.4": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "unifikasjon"
+  },
+  "7.2.5": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "gmp"
+  },
+  "7.3": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "cnf"
+  },
+  "7.3.1": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "cnf"
+  },
+  "7.3.2": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "resolusjon"
+  },
+  "7.3.3": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "resolusjon"
+  },
+  "7.3.4": {
+    "side": "kap7/fol-inferens.html",
+    "anker": "strategier"
+  },
+  "10": {
+    "side": "kap10/index.html"
+  },
+  "10.1": {
+    "side": "kap10/nlp.html",
+    "anker": "bag-of-words"
+  },
+  "10.1.1": {
+    "side": "kap10/nlp.html",
+    "anker": "vanskelig"
+  },
+  "10.1.2": {
+    "side": "kap10/nlp.html",
+    "anker": "bag-of-words"
+  },
+  "10.1.3": {
+    "side": "kap10/nlp.html",
+    "anker": "ngram"
+  },
+  "10.1.4": {
+    "side": "kap10/nlp.html",
+    "anker": "glatting"
+  },
+  "10.1.5": {
+    "side": "kap10/nlp.html",
+    "anker": "pos"
+  },
+  "10.1.6": {
+    "side": "kap10/nlp.html",
+    "anker": "hmm"
+  },
+  "10.1.7": {
+    "side": "kap10/nlp.html",
+    "anker": "diskriminativ"
+  },
+  "10.1.8": {
+    "side": "kap10/nlp.html",
+    "anker": "grammatikk"
+  },
+  "10.1.9": {
+    "side": "kap10/nlp.html",
+    "anker": "parsing"
+  },
+  "10.1.10": {
+    "side": "kap10/nlp.html",
+    "anker": "oppgaver-nlp"
+  },
+  "10.2": {
+    "side": "kap10/index.html",
+    "anker": "deler"
   },
   "12.1": {
     "side": "kap1/agenter.html",

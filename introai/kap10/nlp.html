@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Naturlig språkbehandling — Kap 10</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .tagged { font-family: var(--mono); font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 1rem 0; }
+  .tagged span { display: inline-flex; flex-direction: column; align-items: center; }
+  .tagged b { font-weight: 400; color: var(--warm); font-size: 0.75rem; }
+  .ptree { display: block; max-width: 460px; margin: 1rem auto; }
+  .ptree line { stroke: var(--ink-faded); stroke-width: 1.3; }
+  .ptree text { font-family: var(--mono); font-size: 13px; fill: var(--ink); text-anchor: middle; }
+  .ptree .p { fill: var(--warm); font-size: 11px; }
+  .ptree .w { fill: var(--accent); font-style: italic; }
+  .w-ctl select { font-family: var(--sans); font-size: 0.88rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  .mono { font-family: var(--mono); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="./" class="nav-back">&larr; Kap 10</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 10: Naturlig språkbehandling">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 10 · 10A · Slides forelesning 9 · s. 3–61 · Boka kap. 24 · ~35 min</div>
+      <h1>Naturlig <em>språkbehandling</em></h1>
+      <p class="lede">Språkmodeller fra tellinger, glatting, ordklassetagging og parsing med en probabilistisk grammatikk. Prio 2: korte forklaringer og små regnestykker.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#vanskelig"><span>01</span> Hvorfor vanskelig</a>
+        <a href="#bag-of-words"><span>02</span> Bag-of-words</a>
+        <a href="#ngram"><span>03</span> n-gram</a>
+        <a href="#glatting"><span>04</span> Glatting</a>
+        <a href="#pos"><span>05</span> Ord og POS</a>
+        <a href="#hmm"><span>06</span> HMM-tagger</a>
+        <a href="#diskriminativ"><span>07</span> Logistisk regresjon</a>
+        <a href="#grammatikk"><span>08</span> PCFG og E<sub>0</sub></a>
+        <a href="#parsing"><span>09</span> Parsing</a>
+        <a href="#oppgaver-nlp"><span>10</span> NLP-oppgaver</a>
+        <a href="#oppsummering"><span>11</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne</em> fra denne siden</h2>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 25. september 2026, oppdatert 16. oktober 2026 (kilder/eksamensanalyse.md, deltema 10.1)</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering · deltema 10.1 · prio 2</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span>Laplace-glatting \((c+1)/(c+V)\), lineær interpolasjon med gitte \(\lambda\), sannsynligheten for et parsetre (produkt av regelsannsynligheter), HMM-estimat fra tellinger. Ingen tidligere eksamensoppgaver i Ord. 2022/2023; oppgavene under er av samme type som korte eksamensspørsmål.</li>
+          <li><span class="tag">Forklar</span>Markov-antakelsen, hvorfor glatting trengs, generativ vs diskriminativ tagger, hvorfor Viterbi og ikke grådig, top-down vs bottom-up, hvorfor CYK krever Chomsky normalform, over- og undergenerering.</li>
+          <li><span class="tag">Lavere</span>Tegn-n-gram, skip-gram, WordNet, A*/beam/shift-reduce, NLP-oppgavene. Unntatt: 24.2.1, 24.3.1–24.3.2, 24.4, 24.5.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="vanskelig">
+    <div class="container">
+      <div class="section-badge">01 · Innledning</div>
+      <h2>Hvorfor språk er <em>vanskelig</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 3–6 · Boka kap. 24 (innledning)</div>
+      <p class="dropcap"><span class="term" data-term="nlp">Naturlig språkbehandling</span> (NLP) er delen av AI som lar datamaskiner forstå, generere og samhandle med menneskelig språk. Taleren har et mål og velger ord; lytteren må slutte seg til den tiltenkte meningen. Det er vanskelig fordi språk er:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Egenskap</th><th>Eksempel</th></tr></thead>
+        <tbody>
+          <tr><td>Flertydig</td><td>«He saw her duck», «I saw the man with the telescope»</td></tr>
+          <tr><td>Vagt</td><td>«That's great!», «It's kind of cold»</td></tr>
+          <tr><td>Kontekstavhengig</td><td>«I'm here today», «Let's meet after lunch»</td></tr>
+          <tr><td>I endring</td><td>nye ord og betydninger: «tweet», «cloud», «stream»</td></tr>
+          <tr><td>Uten fast referanse</td><td>to «Richard» kan være ulike personer</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="bag-of-words">
+    <div class="container">
+      <div class="section-badge">02 · Språkmodeller</div>
+      <h2>Bag-of-words og <em>naiv Bayes</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 8–11 · Boka kap. 24.1, 24.1.1</div>
+      <span class="lm-pill">Deltema 10.1 · prio 2</span>
+      <div class="def-box">
+        <span class="def-label">Definisjon</span>
+        <div class="def-term">Språkmodell</div>
+        <p>En <span class="term" data-term="sprakmodell">språkmodell</span> er en sannsynlighetsfordeling over strenger: \(P(\text{«Do I dare disturb the universe?»}) \gg P(\text{«Universe dare the I disturb do?»})\). Den foreslår neste ord, retter stavefeil og rangerer oversettelser.</p>
+      </div>
+      <p><span class="term" data-term="bag-of-words">Bag-of-words</span> ser en setning som en uordnet samling ord. Med <span class="term" data-term="naiv-bayes">naiv Bayes</span>-antakelsen genereres hvert ord uavhengig gitt klassen (temaet):</p>
+      \[ P(\text{Class} \mid w_{1:N}) \propto P(\text{Class}) \prod_{j} P(w_j \mid \text{Class}) \]
+      <p>Generativ historie: velg en pose (kategori), trekk ord med tilbakelegging til et punktum trekkes. Teksten blir usammenhengende, men modellen klassifiserer godt («stocks» → business, «rain» → weather). Parametrene estimeres ved å telle i et merket korpus.</p>
+      <div class="oppgave" data-quiz id="oppg-bow-telling">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 11</span></div>
+        <div class="o-text"><p>Et merket korpus har 3 000 tekster, hvorav 300 er merket business. Business-tekstene har til sammen 100 000 ord, og 700 av dem er «stocks». Estimer \(P(\text{business})\) og \(P(\text{stocks} \mid \text{business})\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene</span>
+            <p>\(P(\text{business}) \approx 300 / 3\,000 = 0.1\) og \(P(\text{stocks} \mid \text{business}) \approx 700 / 100\,000 = 0.007\). Begge er relative frekvenser: antall gunstige delt på antall mulige i riktig delmengde.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ngram">
+    <div class="container">
+      <div class="section-badge">03 · n-gram</div>
+      <h2>Fra kjederegel til <em>Markov</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 12–17, 22–23 · Boka kap. 24.1.2–24.1.3, 24.1.7</div>
+      <p>Bag-of-words ignorerer rekkefølge, men «first quarter earnings» (business) og «fourth quarter touchdown» (sport) skilles nettopp av nabolagene. Kjederegelen er eksakt:</p>
+      \[ P(w_{1:N}) = \prod_{j=1}^{N} P(w_j \mid w_{1:j-1}) \]
+      <p>men med 100 000 ord i vokabularet og setninger på 40 ord gir den rundt \(10^{200}\) parametre. En <span class="term" data-term="n-gram">n-gram-modell</span> gjør <span class="term" data-term="markov-antakelse">Markov-antakelsen</span>: bare de \(n-1\) forrige ordene betyr noe.</p>
+      \[ P(w_j \mid w_{1:j-1}) \approx P(w_j \mid w_{j-n+1:j-1}) \quad\Rightarrow\quad P(w_{1:N}) \approx \prod_{j} P(w_j \mid w_{j-n+1:j-1}) \]
+      <div class="table-wrap"><table>
+        <thead><tr><th>\(n\)</th><th>Navn</th><th>Modell</th><th>Eksempel</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><span class="term" data-term="unigram">Unigram</span></td><td>\(P(w_j)\)</td><td>bare ordfrekvenser, som bag-of-words</td></tr>
+          <tr><td>2</td><td><span class="term" data-term="bigram">Bigram</span></td><td>\(P(w_j \mid w_{j-1})\)</td><td>\(P(\text{cat} \mid \text{black})\)</td></tr>
+          <tr><td>3</td><td><span class="term" data-term="trigram">Trigram</span></td><td>\(P(w_j \mid w_{j-2}, w_{j-1})\)</td><td>\(P(\text{cat} \mid \text{a, black})\)</td></tr>
+        </tbody>
+      </table></div>
+      <p>Høyere \(n\) gir mer flytende tekst, men gir glisne data (de fleste lange n-gram er aldri sett) og kopierer etter hvert treningsteksten. Estimatet er en relativ frekvens: \(P(w_j \mid w_{j-1}) = c(w_{j-1} w_j) / c(w_{j-1})\).</p>
+      <ul>
+        <li><strong><span class="term" data-term="tegn-n-gram">Tegnmodell</span>:</strong> \(P(c_j \mid c_{j-n+1:j-1})\) over bokstaver; håndterer ukjente ord og identifiserer språk (over 99 %, svensk mot norsk ca. 95 %).</li>
+        <li><strong><span class="term" data-term="skip-gram">Skip-gram</span>:</strong> par av nære ord som hopper over noen imellom; «je ne comprends pas» gir 1-skip-bigrammene «je comprends» og «ne pas».</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="glatting">
+    <div class="container">
+      <div class="section-badge">04 · Glatting</div>
+      <h2>Når tellingen er <em>null</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 18–21 · Boka kap. 24.1.4</div>
+      <p>Ett usett n-gram gir \(P = 0\) for hele setningen, fordi sannsynligheten er et produkt. <span class="term" data-term="glatting">Glatting</span> flytter litt masse fra sette til usette hendelser. To problemer:</p>
+      <ol>
+        <li><strong>Ukjente ord.</strong> Erstatt sjeldne ord i treningen med <span class="term" data-term="unk">&lt;UNK&gt;</span> (f.eks. behold de 50 000 vanligste); et ukjent ord i test får \(P(\langle\text{UNK}\rangle)\). Typede token: &lt;NUM&gt;, &lt;EMAIL&gt;, &lt;URL&gt;, &lt;S&gt;.</li>
+        <li><strong>Usette n-gram av kjente ord</strong> («colorless aquamarine ideas»): krever glatting av tellingene.</li>
+      </ol>
+      <p><span class="term" data-term="laplace-glatting">Laplace-glatting</span> (add-one) legger 1 til hver telling og \(V\) (vokabularstørrelsen) til nevneren, så summen fortsatt blir 1:</p>
+      \[ P(w_i \mid w_{i-1}) = \frac{c(w_{i-1} w_i) + 1}{c(w_{i-1}) + V} \]
+      <p>Ingenting blir null, men med \(V = 100\,000\) får det usette altfor mye masse.</p>
+      <div class="compare-grid">
+        <div><h4><span class="term" data-term="backoff">Backoff</span></h4><p>Én orden om gangen: bruk trigrammet hvis tellingen er høy nok, ellers bigrammet, ellers unigrammet.</p></div>
+        <div><h4><span class="term" data-term="lineaer-interpolasjon">Lineær interpolasjon</span></h4><p>Bland alltid alle ordener. \(\lambda\)-ene er faste, lært med EM eller avhengige av tellingene.</p></div>
+      </div>
+      \[ \hat P(w_i \mid w_{i-2:i-1}) = \lambda_3 P(w_i \mid w_{i-2:i-1}) + \lambda_2 P(w_i \mid w_{i-1}) + \lambda_1 P(w_i) \]
+      \[ \lambda_3 + \lambda_2 + \lambda_1 = 1 \]
+      <div class="oppgave" data-quiz id="oppg-laplace">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 20 · tall oppgitt i oppgaven</span></div>
+        <div class="o-text"><p>\(V = 100\,000\). I treningsdata er \(c(\text{black}) = 500\), \(c(\text{black cat}) = 9\) og \(c(\text{black aquamarine}) = 0\). Regn \(P(\text{cat} \mid \text{black})\) og \(P(\text{aquamarine} \mid \text{black})\) uten glatting og med Laplace-glatting. Hva viser tallene?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Uten glatting: \(9/500 = 0.018\) og \(0/500 = 0\).</p>
+            <p>Laplace: \(\dfrac{9+1}{500 + 100\,000} = \dfrac{10}{100\,500} \approx 9.95 \cdot 10^{-5}\) og \(\dfrac{0+1}{100\,500} \approx 9.95 \cdot 10^{-6}\).</p>
+            <p>Det usette er ikke lenger null, men det sette falt fra 0.018 til 0.0001: med stor \(V\) får det usette for mye masse.</p>
+          </div>
+        </div>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-interpolasjon">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">s. 21</span></div>
+        <div class="o-text"><p>Oppgitt: \(\lambda_3 = 0.6\), \(\lambda_2 = 0.3\), \(\lambda_1 = 0.1\), \(P(\text{cat} \mid \text{a, black}) = 0\) (usett), \(P(\text{cat} \mid \text{black}) = 0.02\) og \(P(\text{cat}) = 0.001\). Regn \(\hat P(\text{cat} \mid \text{a, black})\). Hva ville backoff gjort?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>\(\hat P = 0.6 \cdot 0 + 0.3 \cdot 0.02 + 0.1 \cdot 0.001 = 0 + 0.006 + 0.0001 = 0.0061\).</p>
+            <p>Backoff ser at trigramtellingen er null og bruker bigrammet, \(0.02\) (skalert så fordelingen summerer til 1).</p>
+          </div>
+        </div>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-null-setning">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">s. 18–21</span></div>
+        <div class="o-text"><p>En bigram-modell trent på et lite korpus gir \(P(\text{the wumpus smells dead}) = 0\), selv om alle fire ordene finnes i korpuset. Forklar hvorfor, og hva vi gjør med det.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Sannsynligheten er produktet \(\prod_j P(w_j \mid w_{j-1})\). Er «smells dead» aldri sett, er \(c(\text{smells dead}) = 0\), så faktoren og hele produktet blir 0. Løsning: glatting. Laplace gir \(1/(c(\text{smells}) + V) \gt 0\); backoff faller tilbake til \(P(\text{dead})\); interpolasjon blander inn unigrammet, som aldri er null. Ukjente ord håndteres med &lt;UNK&gt;.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-ngram">
+        <div class="widget-label">Prøv selv · n-gram-generator</div>
+        <p class="widget-intro">Korpus på åtte wumpus-setninger. Velg \(n\) og trykk «Generer»: hvert steg viser kontekst, tellinger og trukket ord. Nederst: et bigram uten og med Laplace.</p>
+        <div class="w-out mono" id="ng-korpus"></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ng-n">n</label>
+            <select id="ng-n"><option value="1">1 · unigram</option><option value="2" selected>2 · bigram</option><option value="3">3 · trigram</option></select></div>
+          <button class="w-btn" id="ng-gen" type="button">Generer</button>
+        </div>
+        <div class="w-out" id="ng-out"></div>
+        <div class="w-log" id="ng-log"></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ng-a">\(w_{i-1}\)</label><select id="ng-a"></select></div>
+          <div class="w-ctl"><label for="ng-b">\(w_i\)</label><select id="ng-b"></select></div>
+        </div>
+        <div class="w-out" id="ng-lap"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pos">
+    <div class="container">
+      <div class="section-badge">05 · Ordrepresentasjon</div>
+      <h2>Ordklasser og <em>POS-tagging</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 25–31 · Boka kap. 24.1.5–24.1.6</div>
+      <p>n-gram-modeller er atomiske: hvert ord er et eget symbol uten struktur, så «a black cat» sier ingenting om «the fulvous kitten». Mennesker generaliserer via morfologi («-ous» → adjektiv), syntaks («a» og «the» har samme rolle) og semantikk («kitten» ligner «cat»). Løsningen er strukturerte ordmodeller: håndlagde ordbøker som <span class="term" data-term="wordnet">WordNet</span> (IS-A, PART-OF; kategorier, ikke detaljer), ordklassetagger og lærte ord-embeddinger.</p>
+      <p><span class="term" data-term="pos-tagging">POS-tagging</span> gir hvert ord sin ordklasse (part of speech). Det er et første steg for spørsmålsbesvarelse, oversettelse og tale-til-tekst («record»). <span class="term" data-term="penn-treebank">Penn Treebank</span> har 45 tagger og over 3 millioner annoterte ord:</p>
+      <div class="tagged">
+        <span>From<b>IN</b></span><span>the<b>DT</b></span><span>start<b>NN</b></span><span>,<b>,</b></span><span>it<b>PRP</b></span><span>took<b>VBD</b></span><span>a<b>DT</b></span><span>person<b>NN</b></span><span>with<b>IN</b></span><span>great<b>JJ</b></span><span>qualities<b>NNS</b></span><span>to<b>TO</b></span><span>succeed<b>VB</b></span>
+      </div>
+      <p class="mono">IN preposisjon · DT determinativ · NN/NNS substantiv entall/flertall · PRP pronomen · VBD verb preteritum · JJ adjektiv · VB verb grunnform · MD modalverb</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Ord</th><th>Mulige tagger</th><th>Eksempler</th></tr></thead>
+        <tbody>
+          <tr><td>can</td><td>NN, MD</td><td>a tin can (NN) · I can swim (MD)</td></tr>
+          <tr><td>flies</td><td>NNS, VBZ</td><td>fruit flies (NNS) · time flies (VBZ)</td></tr>
+          <tr><td>record</td><td>NN, VB</td><td>play the record (NN) · record the song (VB)</td></tr>
+          <tr><td>cut</td><td>NN, VBD, VBP</td><td>Yesterday I cut the rope (VBD) · Now I cut the rope (VBP)</td></tr>
+        </tbody>
+      </table></div>
+      <p>Taggen avhenger av konteksten, så taggeren må velge hele <em>sekvensen</em> av tagger samlet.</p>
+      <div class="oppgave" data-quiz id="oppg-penn-tag">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">s. 30–31</span></div>
+        <div class="o-text"><p>Tagg «I can record the song» med Penn Treebank-taggene over. Hvilke ord er flertydige, og hva avgjør taggen?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>I/PRP can/MD record/VB the/DT song/NN.</p>
+            <p>«can» (NN/MD) og «record» (NN/VB) er flertydige. Konteksten avgjør: etter et pronomen er modalverb sannsynlig, og etter MD kommer VB. Det er overgangene en HMM-tagger bruker.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="hmm">
+    <div class="container">
+      <div class="section-badge">06 · HMM</div>
+      <h2>HMM-tagger og <em>Viterbi</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 32–35 · Boka kap. 24.1.6</div>
+      <p>I en <span class="term" data-term="hmm">skjult Markov-modell</span> er taggene \(C_{1:N}\) skjulte tilstander og ordene \(W_{1:N}\) evidens. To modeller: <span class="term" data-term="overgangsmodell">overgangsmodellen</span> \(P(C_t \mid C_{t-1})\) (tagg → neste tagg) og <span class="term" data-term="sensormodell">sensormodellen</span> \(P(W_t \mid C_t)\) (tagg → ord).</p>
+      \[ P(C_{1:N}, W_{1:N}) = P(C_1) \prod_{t=2}^{N} P(C_t \mid C_{t-1}) \prod_{t=1}^{N} P(W_t \mid C_t) \]
+      <p>Begge estimeres ved telling med glatting. Eksempel: \(P(W_t = \text{would} \mid C_t = \text{MD}) = 0.1\).</p>
+      <div class="oppgave" data-quiz id="oppg-hmm-telling">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 33</span></div>
+        <div class="o-text"><p>Penn Treebank har 13 124 MD-token, og 10 471 av dem følges av VB. Estimer \(P(C_t = \text{VB} \mid C_{t-1} = \text{MD})\). Hvilken av de to HMM-modellene er dette?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene</span>
+            <p>\(P(\text{VB} \mid \text{MD}) \approx 10\,471 / 13\,124 \approx 0.80\). Det er overgangsmodellen: etter et modalverb (would) følger et verb i grunnform (think) 80 % av gangene.</p>
+          </div>
+        </div>
+      </div>
+      <p><span class="term" data-term="viterbi">Viterbi</span> finner den mest sannsynlige taggsekvensen \(\hat C_{1:N} = \arg\max_{C_{1:N}} P(C_{1:N}, W_{1:N})\) med dynamisk programmering: i et rutenett med én celle per ord og tagg beholdes bare den beste stien som ender i hver celle (forrige celle × overgang × emisjon), med bakoverpekere for å lese ut sekvensen.</p>
+      <div class="callout callout-warn">
+        <span class="label">Begrensning</span>
+        <p>En tagg avhenger bare av ordet og forrige tagg, og kunnskap som «ord på -ous er trolig adjektiv» kan ikke enkelt legges inn. Det kan logistisk regresjon.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="diskriminativ">
+    <div class="container">
+      <div class="section-badge">07 · Diskriminativ</div>
+      <h2>Logistisk regresjon og <em>dekoding</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 36–38 · Boka kap. 24.1.6</div>
+      <p>En <span class="term" data-term="logistisk-regresjon-tagger">logistisk regresjon-tagger</span> er diskriminativ: den lærer \(P(C \mid W)\) direkte, med én klassifikator per tagg (45) trent med gradient descent. Binære trekk \(\mathbf{x}\) kan være nabo-ord, suffiks og prefiks, forrige tagg, store bokstaver, sifre og tid på nabo-verb:</p>
+      \[ P(\text{tag} \mid \mathbf{x}) = \sigma(\mathbf{w} \cdot \mathbf{x}) \]
+      <p>For en hel setning trengs søk:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Dekoding</th><th>Hvordan</th><th>Egenskap</th></tr></thead>
+        <tbody>
+          <tr><td>Grådig</td><td>\(c_i = \arg\max_{c'} P(c' \mid w_{1:N}, c_{1:i-1})\), venstre mot høyre</td><td>rask, kan ikke angre</td></tr>
+          <tr><td>Viterbi</td><td>beste sti til hver tagg</td><td>kan «ombestemme seg», tregere</td></tr>
+          <tr><td><span class="term" data-term="beam-search">Beam search</span></td><td>behold de \(b\) beste</td><td>\(b\) bytter fart mot nøyaktighet</td></tr>
+        </tbody>
+      </table></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Aspekt</th><th><span class="term" data-term="generativ-modell">Generativ</span> (naiv Bayes, HMM)</th><th><span class="term" data-term="diskriminativ-modell">Diskriminativ</span> (logistisk regresjon)</th></tr></thead>
+        <tbody>
+          <tr><td>Lærer</td><td>felles \(P(W, C)\)</td><td>betinget \(P(C \mid W)\)</td></tr>
+          <tr><td>Kan generere setninger?</td><td>ja, ved sampling</td><td>nei</td></tr>
+          <tr><td>Trekk</td><td>begrenset av modellstrukturen</td><td>vilkårlige håndlagde trekk</td></tr>
+          <tr><td>Feilrate</td><td>generelt høyere</td><td>generelt lavere</td></tr>
+          <tr><td>Trening</td><td>konvergerer raskere; foretrukket med lite data eller tid</td><td>konvergerer saktere</td></tr>
+        </tbody>
+      </table></div>
+      <div class="oppgave" data-quiz id="oppg-gen-disk">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">s. 38</span></div>
+        <div class="o-text"><p>Forklar forskjellen mellom en generativ og en diskriminativ POS-tagger. Gi ett eksempel på hver og én fordel ved hver.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>En generativ tagger (HMM) modellerer den felles fordelingen \(P(W, C) = P(C_1)\prod P(C_t \mid C_{t-1}) \prod P(W_t \mid C_t)\), altså hvordan tagger og ord <em>genereres</em>; den kan sample setninger og trenes raskt, så den er god med lite data. En diskriminativ tagger (logistisk regresjon) modellerer bare \(P(C \mid W)\) og kan ikke generere, men kan bruke vilkårlige trekk (suffikser, store bokstaver, nabo-ord), og har generelt lavere feilrate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="grammatikk">
+    <div class="container">
+      <div class="section-badge">08 · Grammatikk</div>
+      <h2>PCFG og <em>E<sub>0</sub></em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 40–45 · Boka kap. 24.2, fig. 24.2</div>
+      <p>En <span class="term" data-term="grammatikk">grammatikk</span> er regler som definerer trestrukturen til lovlige fraser; språket er mengden setninger som følger reglene. I naturlig språk er grensen uskarp, og en setning har ofte flere parsetrær: «Stocks rallied on Monday» = NP + VP, med PP-en «on Monday» inni VP.</p>
+      <p>En <span class="term" data-term="pcfg">probabilistisk kontekstfri grammatikk</span> (PCFG) har en sannsynlighet på hver regel (probabilistisk), og hver regel virker i enhver kontekst (kontekstfri). Alternativene for samme venstreside summerer til 1: \(\text{Adjs} \to \text{Adjective}\ [0.80] \mid \text{Adjective Adjs}\ [0.20]\).</p>
+      <p><span class="term" data-term="e0">E<sub>0</sub></span> er en liten engelsklignende PCFG for agenter i wumpus-verdenen («I feel a breeze», «It stinks», «The smelly dead wumpus is in 1 3»):</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Regel</th><th>p</th><th>Eksempel</th><th>Regel</th><th>p</th><th>Eksempel</th></tr></thead>
+        <tbody class="mono">
+          <tr><td>S → NP VP</td><td>0.90</td><td>I + feel a breeze</td><td>VP → Verb</td><td>0.40</td><td>stinks</td></tr>
+          <tr><td>S → S Conj S</td><td>0.10</td><td>… and It stinks</td><td>VP → VP NP</td><td>0.35</td><td>feel + a breeze</td></tr>
+          <tr><td>NP → Pronoun</td><td>0.25</td><td>I</td><td>VP → VP Adjective</td><td>0.05</td><td>smells + dead</td></tr>
+          <tr><td>NP → Name</td><td>0.10</td><td>Ali</td><td>VP → VP PP</td><td>0.10</td><td>is + in 1 3</td></tr>
+          <tr><td>NP → Noun</td><td>0.10</td><td>pits</td><td>VP → VP Adverb</td><td>0.10</td><td>go + ahead</td></tr>
+          <tr><td>NP → Article Noun</td><td>0.25</td><td>the + wumpus</td><td>Adjs → Adjective</td><td>0.80</td><td>smelly</td></tr>
+          <tr><td>NP → Article Adjs Noun</td><td>0.05</td><td>the + smelly dead + wumpus</td><td>Adjs → Adjective Adjs</td><td>0.20</td><td>smelly + dead</td></tr>
+          <tr><td>NP → Digit Digit</td><td>0.05</td><td>3 4</td><td>PP → Prep NP</td><td>1.00</td><td>to + the east</td></tr>
+          <tr><td>NP → NP PP</td><td>0.10</td><td>the wumpus + in 1 3</td><td>RelClause → RelPro VP</td><td>1.00</td><td>that + is smelly</td></tr>
+          <tr><td>NP → NP RelClause</td><td>0.05</td><td>the wumpus + that is smelly</td><td></td><td></td><td></td></tr>
+          <tr><td>NP → NP Conj NP</td><td>0.05</td><td>the wumpus + and + I</td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table></div>
+      <div class="compare-grid">
+        <div><h4><span class="term" data-term="overgenerering">Overgenerering</span></h4><p>Grammatikken lager setninger som ikke er grammatiske: «Me go I.»</p></div>
+        <div><h4><span class="term" data-term="undergenerering">Undergenerering</span></h4><p>Grammatikken avviser gyldig engelsk: «I think the wumpus is smelly.»</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="parsing">
+    <div class="container">
+      <div class="section-badge">09 · Parsing</div>
+      <h2>Parsing som <em>søk</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 46–51 · Boka kap. 24.3, fig. 24.4–24.6</div>
+      <p><span class="term" data-term="parsing">Parsing</span> er søk etter et parsetre der bladene er ordene. Top-down går fra S ned til ordene (erstatt en ikke-terminal \(X\) med høyresiden i en regel \(X \to Y\ldots\)); bottom-up går fra ordene opp til S (erstatt en sekvens \(Y\ldots\) med \(X\)). Begge kan gjenta arbeid.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Liste av elementer</th><th>Regel brukt</th></tr></thead>
+        <tbody class="mono">
+          <tr><td>S</td><td></td></tr>
+          <tr><td>NP VP</td><td>S → NP VP</td></tr>
+          <tr><td>NP VP Adjective</td><td>VP → VP Adjective</td></tr>
+          <tr><td>NP Verb Adjective</td><td>VP → Verb</td></tr>
+          <tr><td>NP Verb dead</td><td>Adjective → dead</td></tr>
+          <tr><td>NP is dead</td><td>Verb → is</td></tr>
+          <tr><td>Article Noun is dead</td><td>NP → Article Noun</td></tr>
+          <tr><td>Article wumpus is dead</td><td>Noun → wumpus</td></tr>
+          <tr><td>the wumpus is dead</td><td>Article → the</td></tr>
+        </tbody>
+      </table></div>
+      <p>Lest nedover er tabellen top-down, oppover bottom-up. I «Have the students in section 2 of Computer Science 101 take/taken the exam» oppdages en feil gjetning på ord 1 først ved ord 11. <span class="term" data-term="chart-parsing">Chart parsing</span> lagrer hver frase i et chart («the students in … 101» = NP); fordi grammatikken er kontekstfri, kan den gjenbrukes i alle grener.</p>
+      <div class="def-box">
+        <span class="def-label">Algoritme</span>
+        <div class="def-term">CYK</div>
+        <p><span class="term" data-term="cyk">CYK</span> er en bottom-up, probabilistisk chart-parser som finner beste parse for setningen og hver delstreng. Den krever <span class="term" data-term="chomsky-normalform">Chomsky normalform</span>: bare regler \(X \to \text{word}\ [p]\) og \(X \to Y\,Z\ [p]\) (enhver CFG kan konverteres automatisk).</p>
+        \[ P[X, i, k] = \max_{j,\; X \to Y Z\,[p]} P[Y, i, j] \cdot P[Z, j+1, k] \cdot p \]
+        <p>Tid \(O(n^3 m)\), plass \(O(n^2 m)\), med \(n\) ord og \(m\) ikke-terminaler.</p>
+      </div>
+      <p>Sannsynligheten til et <span class="term" data-term="parsetre">parsetre</span> er produktet av sannsynlighetene til reglene brukt i hver node, inkludert de leksikalske reglene nederst.</p>
+      <svg class="ptree" viewBox="0 0 420 230" aria-label="Parsetre for every wumpus smells">
+        <line x1="210" y1="28" x2="110" y2="70"/><line x1="210" y1="28" x2="310" y2="70"/>
+        <line x1="110" y1="91" x2="60" y2="133"/><line x1="110" y1="91" x2="160" y2="133"/>
+        <line x1="310" y1="91" x2="310" y2="133"/>
+        <line x1="60" y1="153" x2="60" y2="192"/><line x1="160" y1="153" x2="160" y2="192"/><line x1="310" y1="153" x2="310" y2="192"/>
+        <text x="210" y="22">S</text><text class="p" x="240" y="22">0.90</text>
+        <text x="110" y="85">NP</text><text class="p" x="110" y="70" dx="-34">0.25</text>
+        <text x="310" y="85">VP</text><text class="p" x="344" y="70">0.40</text>
+        <text x="60" y="147">Article</text><text class="p" x="60" y="132" dx="-36">0.05</text>
+        <text x="160" y="147">Noun</text><text class="p" x="194" y="132">0.15</text>
+        <text x="310" y="147">Verb</text><text class="p" x="344" y="132">0.10</text>
+        <text class="w" x="60" y="207">every</text><text class="w" x="160" y="207">wumpus</text><text class="w" x="310" y="207">smells</text>
+      </svg>
+      <div class="oppgave" data-quiz id="oppg-parsetre">
+        <div class="o-label"><span>Oppgave fra slidene</span><span class="o-ref">s. 50 · fig. 24.6</span></div>
+        <div class="o-text"><p>Regn sannsynligheten til parsetreet over for «every wumpus smells», <code>[S [NP [Article every] [Noun wumpus]] [VP [Verb smells]]]</code>.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><span class="answer-src">Svar fra slidene</span>
+            <p>\(\underbrace{0.90}_{\text{S → NP VP}} \cdot \underbrace{0.25}_{\text{NP → Article Noun}} \cdot \underbrace{0.05}_{\text{every}} \cdot \underbrace{0.15}_{\text{wumpus}} \cdot \underbrace{0.40}_{\text{VP → Verb}} \cdot \underbrace{0.10}_{\text{smells}} = 0.0000675\)</p>
+            <p>Mellomregning: \(0.90 \cdot 0.25 = 0.225\); \(\cdot 0.05 = 0.01125\); \(\cdot 0.15 = 0.0016875\); \(\cdot 0.40 = 0.000675\); \(\cdot 0.10 = 0.0000675\).</p>
+          </div>
+        </div>
+      </div>
+      <div class="oppgave" data-quiz id="oppg-breeze">
+        <div class="o-label"><span>Egen oppgave · eksamenstype</span><span class="o-ref">s. 44, 50</span></div>
+        <div class="o-text"><p>Tegn parsetreet for «I feel a breeze» med E<sub>0</sub>-reglene i tabellen og regn sannsynligheten. Leksikalske sannsynligheter (oppgitt i oppgaven): Pronoun → I 0.10, Verb → feel 0.10, Article → a 0.30, Noun → breeze 0.10.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag"><span class="answer-src">Forslag til svar · ikke fasit fra slidene</span>
+            <p>Tre: <code>[S [NP [Pronoun I]] [VP [VP [Verb feel]] [NP [Article a] [Noun breeze]]]]</code>.</p>
+            <p>Regler: S → NP VP 0.90, NP → Pronoun 0.25, VP → VP NP 0.35, VP → Verb 0.40, NP → Article Noun 0.25. Leksikalsk: 0.10 · 0.10 · 0.30 · 0.10.</p>
+            <p>\(0.90 \cdot 0.25 \cdot 0.35 \cdot 0.40 \cdot 0.25 = 0.007875\) og \(0.10 \cdot 0.10 \cdot 0.30 \cdot 0.10 = 0.0003\), så \(P = 0.007875 \cdot 0.0003 \approx 2.36 \cdot 10^{-6}\).</p>
+          </div>
+        </div>
+      </div>
+      <ul>
+        <li><strong><span class="term" data-term="a-stjerne">A*</span>-parsing:</strong> start = ordene, mål = S, kostnad fra regelsannsynlighetene; med admissibel heuristikk er første parse den mest sannsynlige.</li>
+        <li><strong>Beam search:</strong> behold de \(b\) beste delparsene; \(O(n)\), finner som regel den beste.</li>
+        <li><strong><span class="term" data-term="shift-reduce">Shift-reduce</span>:</strong> beam med \(b = 1\); skyv et ord på en stakk, eller reduser med en regel.</li>
+      </ul>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor krever CYK Chomsky normalform, og hvorfor er kjøretiden \(O(n^3 m)\)?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Med bare \(X \to Y\,Z\) og \(X \to \text{word}\) kan hver delstreng \(i..k\) deles i nøyaktig to deler ved et punkt \(j\), og tabellen fylles fra korte til lange delstrenger. Det er \(O(n^2)\) par \((i, k)\), \(O(n)\) delepunkter for hvert og \(m\) ikke-terminaler: \(O(n^3 m)\).</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oppgaver-nlp">
+    <div class="container">
+      <div class="section-badge">10 · Anvendelser</div>
+      <h2>NLP-<em>oppgaver</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 53–59 · Boka kap. 24.6</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Oppgave</th><th>Fra → til</th><th>Stikkord</th></tr></thead>
+        <tbody>
+          <tr><td><span class="term" data-term="talegjenkjenning">Talegjenkjenning</span></td><td>lyd → tekst</td><td>ordfeil 3–5 %, som menneskelige transkribenter; RNN + HMM</td></tr>
+          <tr><td>Tekst-til-tale</td><td>tekst → lyd</td><td>uttale («record»), pauser og trykk, ulike stemmer</td></tr>
+          <tr><td><span class="term" data-term="maskinoversettelse">Maskinoversettelse</span></td><td>språk → språk</td><td>trent på parallelle tekster uten annotering; n-gram → seq2seq → transformere</td></tr>
+          <tr><td><span class="term" data-term="informasjonsekstraksjon">Informasjonsekstraksjon</span></td><td>tekst → strukturerte fakta</td><td>adresse → (street, city, state, zip); regulære uttrykk, HMM, nevrale nett</td></tr>
+          <tr><td><span class="term" data-term="informasjonsgjenfinning">Informasjonsgjenfinning</span></td><td>spørring → relevante dokumenter</td><td>kjernen i søkemotorer; rangert etter relevans og viktighet</td></tr>
+          <tr><td><span class="term" data-term="sporsmalsbesvarelse">Spørsmålsbesvarelse</span></td><td>spørsmål → svar</td><td>gir et svar, ikke en dokumentliste; søkemønstre som «[* founded the U.S. Coast Guard]»</td></tr>
+        </tbody>
+      </table></div>
+      <details><summary>Utdypning · lavere prioritet</summary>
+        <p>Dype nevrale nett ga ca. 30 % lavere feilrate i talegjenkjenning (2011). Ca. ⅔ av lytterne foretrakk nevral WaveNet-tale (2016). HMM-tagger: ca. 97 % nøyaktighet.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">11 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="source-note">Slides forelesning 9 · s. 60–61</div>
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Språkmodeller</strong>Bag-of-words/naiv Bayes; n-gram med Markov-antakelsen; &lt;UNK&gt;; glatting (Laplace, backoff, interpolasjon).</div>
+        <div class="recap-pill"><strong>Ord og tagger</strong>WordNet; POS-tagging med HMM + Viterbi og logistisk regresjon; generativ vs diskriminativ.</div>
+        <div class="recap-pill"><strong>Struktur</strong>Grammatikk, PCFG, E<sub>0</sub>. Treets sannsynlighet = produkt av regelsannsynlighetene.</div>
+        <div class="recap-pill"><strong>Parsing</strong>Top-down/bottom-up, chart parsing, CYK \(O(n^3 m)\); A*, beam search, shift-reduce.</div>
+        <div class="recap-pill"><strong>Anvendelser</strong>Talegjenkjenning, tekst-til-tale, oversettelse, IE, IR, QA.</div>
+      </div>
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er Markov-antakelsen i en trigram-modell, og hvorfor gjør vi den?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">\(P(w_j \mid w_{1:j-1}) \approx P(w_j \mid w_{j-2}, w_{j-1})\): bare de to forrige ordene betyr noe. Den eksakte kjederegelen krever omtrent \(10^{200}\) parametre; med kort kontekst kan parametrene estimeres fra tellinger.</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">\(V = 10\), \(c(\text{the}) = 4\), \(c(\text{the pit}) = 0\). Hva er Laplace-glattet \(P(\text{pit} \mid \text{the})\)?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">\((0 + 1)/(4 + 10) = 1/14 \approx 0.071\).</div></div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvorfor velger vi Viterbi framfor grådig dekoding i en tagger?</div>
+        <div class="quiz-reveal"><button class="reveal-btn">Se svar</button>
+          <div class="answer">Grådig dekoding låser hver tagg venstre mot høyre og kan ikke angre når et senere ord viser at et tidligere valg var feil («time flies»). Viterbi holder beste sti til hver tagg for hvert ord og finner den globalt mest sannsynlige sekvensen, til lineær kostnad i setningslengden.</div></div>
+      </div>
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 10: oversikt</div></a>
+        <a href="../" class="next"><div class="pn-label">Neste</div><div class="pn-title">Alle kapitler →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+/* ─── Widget: n-gram-generator ─── */
+(function () {
+  if (!document.getElementById('w-ngram')) return;
+  var KORPUS = ['the wumpus is dead', 'the wumpus smells', 'i feel a breeze', 'i smell a wumpus',
+    'the pit is in 1 3', 'a breeze is in 2 1', 'the smelly wumpus is in 1 3', 'i feel a stench'];
+  var S = KORPUS.map(function (s) { return s.split(' '); });
+  var seed = 7;
+  function rng() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  function counts(ctx, n) {
+    var c = {};
+    S.forEach(function (w) {
+      var t = []; for (var i = 1; i < n; i++) t.push('<s>');
+      t = t.concat(w, ['</s>']);
+      for (var j = n - 1; j < t.length; j++) {
+        if (t.slice(j - n + 1, j).join(' ') === ctx) c[t[j]] = (c[t[j]] || 0) + 1;
+      }
+    });
+    return c;
+  }
+  function esc(s) { return s.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  document.getElementById('ng-korpus').innerHTML = KORPUS.map(function (s) { return '&lt;s&gt; ' + s + ' &lt;/s&gt;'; }).join('<br>');
+  function gen() {
+    var n = +document.getElementById('ng-n').value, hist = [], log = [];
+    for (var i = 1; i < n; i++) hist.push('<s>');
+    for (var step = 0; step < 14; step++) {
+      var ctx = n === 1 ? '' : hist.slice(hist.length - n + 1).join(' ');
+      var c = counts(ctx, n), keys = Object.keys(c), tot = 0;
+      keys.forEach(function (k) { tot += c[k]; });
+      var r = rng() * tot, pick = keys[keys.length - 1], acc = 0;
+      for (var k = 0; k < keys.length; k++) { acc += c[keys[k]]; if (r < acc) { pick = keys[k]; break; } }
+      log.push('<span class="entry">' + (n === 1 ? '(ingen kontekst)' : 'etter «' + esc(ctx) + '»') + ': ' +
+        keys.map(function (k) { return esc(k) + ' ' + c[k]; }).join(', ') + ' → <strong>' + esc(pick) + '</strong> (' + c[pick] + '/' + tot + ')</span>');
+      if (pick === '</s>') break;
+      hist.push(pick);
+    }
+    var ord = hist.filter(function (w) { return w !== '<s>'; }).join(' ');
+    document.getElementById('ng-out').innerHTML = 'Generert: <span class="hl">' + esc(ord || '(tom)') + '</span>' +
+      (KORPUS.indexOf(ord) < 0 ? ' · ny setning' : ' · fra korpuset');
+    document.getElementById('ng-log').innerHTML = log.join('');
+  }
+  var vocab = {}; S.forEach(function (w) { w.forEach(function (x) { vocab[x] = 1; }); });
+  var V = Object.keys(vocab).sort();
+  var selA = document.getElementById('ng-a'), selB = document.getElementById('ng-b');
+  V.forEach(function (w) { selA.add(new Option(w, w)); selB.add(new Option(w, w)); });
+  selA.value = 'wumpus'; selB.value = 'is';
+  function lap() {
+    var a = selA.value, b = selB.value, c1 = counts(a, 2), ca = 0;
+    S.forEach(function (w) { w.forEach(function (x) { if (x === a) ca++; }); });
+    var cab = c1[b] || 0, v = V.length;
+    document.getElementById('ng-lap').innerHTML = 'c(' + a + ') = ' + ca + ', c(' + a + ' ' + b + ') = ' + cab + ', V = ' + v +
+      '<br>Uten glatting: ' + cab + '/' + ca + ' = <span class="hl">' + (ca ? (cab / ca).toFixed(3) : '–') + '</span>' +
+      ' · Laplace: (' + cab + ' + 1)/(' + ca + ' + ' + v + ') = <span class="hl">' + ((cab + 1) / (ca + v)).toFixed(3) + '</span>';
+  }
+  document.getElementById('ng-gen').addEventListener('click', gen);
+  document.getElementById('ng-n').addEventListener('change', gen);
+  selA.addEventListener('change', lap); selB.addEventListener('change', lap);
+  gen(); lap();
+})();
+</script>
+</body>
+</html>

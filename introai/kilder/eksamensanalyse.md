@@ -1,6 +1,6 @@
 # Eksamensanalyse — TDT4136 Introduksjon til kunstig intelligens
 
-**Godkjent av brukeren 25. september 2026** (prioriteter og kapittelinndeling). Bygger på løsningsforslagene til Ord. 2022 og
+**Godkjent av brukeren 25. september 2026** (prioriteter og kapittelinndeling). Oppdatert 16. oktober 2026 med forelesning 7–9. Bygger på løsningsforslagene til Ord. 2022 og
 Ord. 2023 (begge i `kilder/`), pensumlista for 2026 (fra brukeren), og assignment-forelesning 1 og 2 der
 læringsassistenten sier hva som «pleier å komme». Forelesning 1–6 er lest for å se hva som er dekket så langt.
 Den maskinlesbare varianten ligger i `eksamen.json`.
@@ -60,7 +60,10 @@ Unntatt: 5.3.3, 5.3.4, 5.5, 7.7, 9.4.2–9.4.5, 9.5.4, 10.2.3, 10.4, 10.6, 11.1.
 | L4 | CSP: formulering, AC-3, forward checking, backtracking, MRV/LCV, min-conflicts | kap. 5 (6 i eldre utg.) |
 | L5 | Proposisjonell logikk: modeller, entailment, inferensregler, Horn, chaining, CNF, resolusjon | kap. 7 |
 | L6 | Førsteordens logikk: syntaks, kvantorer, modeller, oversettelse | kap. 8 |
-| Kommer | FOL-inferens (unifikasjon, resolusjon), kunnskapsrepresentasjon, planlegging, adversarialt søk, spillteori, NLP, persepsjon, etikk | kap. 9–11, 6, 17.2, 24–25, 28 |
+| L7 (1. okt) | FOL-inferens: propositionalisering, substitusjon, UI/EI, Skolem, unifikasjon, generalisert modus ponens, CNF og resolusjon i FOL, strategier, likhet | kap. 9 |
+| L8 (8. okt) | Adversarialt søk: spilldefinisjon, expectimax, minimax, alfa-beta, heuristisk minimax, MCTS/UCB1, expectiminimax, delvis observerbare spill, regret-minimering | kap. 6 (5 i 3. utg.) |
+| L9 | NLP: språkmodeller (bag-of-words, n-gram, glatting), WordNet, POS-tagging (HMM/Viterbi, logistisk regresjon), PCFG og E₀, parsing (CYK), NLP-oppgaver | kap. 24 (unntak 24.2.1, 24.3.1–2, 24.4, 24.5) |
+| Kommer | Spillteori (17.2), kunnskapsrepresentasjon, planlegging, persepsjon, etikk | kap. 10–11, 17.2, 25, 28 |
 
 Assignment 1 = søkealgoritmer for hånd (Doom-graf) + admissibilitet/konsistens. Assignment 2 = AC-3 og backtracking i
 Python på Sudoku. Læringsassistenten sier begge temaer «pleier å komme mye på eksamen».
@@ -86,21 +89,22 @@ Type: regn / forklar / tegn / kode. Nøklene brukes i `eksamen.json` og `dekning
 | 4.2 AC-3, forward checking | 1 | regn | O23 · 4.2 (6 p, er startilstanden arc-consistent, kjør AC-3, gi domenene) | «Kjør AC-3 og skriv ned reduserte domener» |
 | 4.3 Backtracking med MRV og LCV | 1 | regn | O22 · 4.2; O23 · 4.3 (7 p) | «Løs med backtracking, MRV for variabel, LCV for verdi, vis hvert steg med domener» |
 | 4.4 Lokalt søk for CSP (min-conflicts), tre-strukturerte CSP | 3 | forklar | O25 skal ha hatt topologisk sortering (5.5), men 5.5 er ute i 2026 | Én linje |
-| 5.1 Minimax, alfa-beta | 2 | regn, forklar | O22 · 1.6 (minimax for 3 spillere) | Ikke direkte regnet i O22/O23, men klassisk; forvent «kjør alfa-beta, hvilke grener klippes» |
+| 5.1 Minimax, alfa-beta, heuristisk minimax | 1 | regn, forklar | O22 · 1.6 (minimax for 3 spillere) | Ikke direkte regnet i O22/O23, men L8 bruker en hel forelesning på det med bøttespill og halveringsspill: forvent «kjør minimax/alfa-beta, oppgi α/β per node, hvilke grener klippes» |
 | 5.2 Expectiminimax | 1 | regn | O23 · 6 (5 p, forhandlingstre med sjansenoder) | «Fyll inn verdier, regn expectiminimax for alle noder, ta beslutning» |
-| 5.3 Monte Carlo-tresøk | 2 | forklar | O22 · 1.7 (hvorfor mindre følsom for evalueringsfeil) | Kort spørsmål |
-| 5.4 Spillteori: dominans, IESDS, Nash, sosial velferd | 1 | regn | O23 · 5 (10 p, 3×3-matrise); O23 · 1 (hvorfor randomisert atferd er rasjonelt) | «Finnes dominant strategi? Iterert eliminering, Nash-likevekt, hvilken maksimerer sosial velferd» |
+| 5.3 Monte Carlo-tresøk | 2 | forklar, regn | O22 · 1.7 (hvorfor mindre følsom for evalueringsfeil) | Kort spørsmål; L8 har UCB1-formelen og «hvilket trekk returneres» (flest playouts), så små regnestykker kan komme |
+| 5.4 Spillteori: dominans, IESDS, Nash, sosial velferd (slides kommer) | 1 | regn | O23 · 5 (10 p, 3×3-matrise); O23 · 1 (hvorfor randomisert atferd er rasjonelt) | «Finnes dominant strategi? Iterert eliminering, Nash-likevekt, hvilken maksimerer sosial velferd» |
+| 5.5 Delvis observerbare spill, blandede strategier, regret-minimering | 3 | forklar | ingen | L8 slides 40–50: stein-saks-papir med sannsynligheter, regret-vektor etter én runde; Pluribus/AlphaStar kuttes |
 | 6.1 PL: syntaks, modeller, entailment, sannhetstabell | 1 | regn, forklar | O22 · 5.1–5.2 (formaliser gullkasse-puslespill, sannhetstabell); O22 · 1.9 (hva er entailment) | «Formaliser utsagnene, lag sannhetstabell, slutt hvem som har gullet» |
 | 6.2 PL: inferensregler, Horn, forward/backward chaining | 1 | regn | O23 · 3.1 (10 p, bok-gåte med MP, MT, disjunktiv syllogisme); O23 · 1 (Horn + modus ponens); O22 · 1.9 | «Oversett hintene, utled med navngitte regler, må bruke modus tollens» |
 | 6.3 PL: CNF og resolusjon | 1 | regn, forklar | O22 · 5.3 (KB og spørring for resolusjonsrefutasjon) | «Hvordan defineres KB og α, hva må oppnås for å vise KB ⊨ α» |
 | 7.1 FOL: syntaks, kvantorer, oversettelse fra naturlig språk | 1 | regn | O23 · 3.2a; O22 · 1.10 (fire nye elementer i FOL) | «Representer informasjonen som FOL-setninger» |
-| 7.2 FOL: unifikasjon, forward/backward chaining | 2 | regn | ingen direkte | Forvent lite regning, men begreper |
+| 7.2 FOL: propositionalisering, instansiering, unifikasjon, generalisert modus ponens | 2 | regn, forklar | ingen direkte | L7: «finn Unify(α, β)», «utled q med GMP og oppgi θ», Skolem-konstant vs -funksjon |
 | 7.3 FOL: CNF, skolemisering, resolusjon | 1 | regn | O23 · 3.2b (10 p, Fido/Snowy: konverter til CNF, resolusjonsrefutasjon med substitusjoner) | «Nummerer CNF-setningene, vis konverteringen, utfør resolusjon med substitusjoner» |
 | 8.1 Kunnskapsrepresentasjon (ontologier, kategorier, hendelser) | 3 | forklar | ingen | Kap. 10, ikke forelest ennå; kanskje kort spørsmål |
 | 9.1 Planlegging: PDDL (init, goal, action schemas) | 1 | regn | O22 · 7.1 (apekatt og bananer); O23 · 8.1 (julegave, 2 p) | «Spesifiser problemet i PDDL med init, goal og action schemas» |
 | 9.2 Planlegging: forover/bakoversøk, heuristikker | 1 | regn, forklar | O22 · 7.2 (regresjon, 3 steg); O23 · 8.2 (3 p); O22 · 1.8 (ignore-delete-list admissibel) | «Løs med bakoversøk, vis første 3 steg med handlinger og tilstander» |
 | 9.3 Hierarkisk planlegging (HTN) | 3 | forklar | ingen | Kap. 11.4, GraphPlan er ute |
-| 10.1 NLP (kap. 24, delene som er igjen) | 3 | forklar | ingen | Grammatikk/parsing-basics; sjekk når slides kommer |
+| 10.1 NLP: språkmodeller, n-gram, glatting, POS-tagging, PCFG, parsing | 2 | forklar, regn | ingen i O22/O23 | L9 er en hel forelesning; forvent kort spørsmål (generativ vs diskriminativ, hvorfor glatting, Markov-antakelsen) eller lite regnestykke (Laplace-glatting, sannsynlighet for et parsetre) |
 | 10.2 Persepsjon / datasyn (kap. 25) | 3 | forklar | ingen | Sjekk når slides kommer |
 | 11.1 Etikk og AI-sikkerhet (kap. 28) | 2 | forklar | O23 · 1 (individuell rettferdighet, metoder for å realisere den) | Kort spørsmål, 2 p |
 | 12.1 AI-historie og filosofi (kap. 1) | 3 | forklar | O23 · 1 (Newell og Simon, General Problem Solver) | Kort faktaspørsmål; lav uttelling |
@@ -130,9 +134,9 @@ Oppgaver med figur (merket *) må få figuren gjenskapt som SVG på siden.
 | O23 · 7 belief states i labyrint * | 3.3 | kap3/delvis-observerbart.html | ferdig |
 | O22 · 4.1–4.2 firesifret tall (CSP, graf, backtracking) | 4.1, 4.3 | kap4/csp-formulering.html + backtracking.html | ferdig |
 | O23 · 4 gartnere (constraints, AC-3, backtracking) | 4.1–4.3 | kap4/csp-formulering.html + backtracking.html | ferdig |
-| O22 · 1.6 minimax for 3 spillere | 5.1 | kap5/ (kommer) | planlagt |
-| O22 · 1.7 MCTS vs alfa-beta | 5.3 | kap5/ (kommer) | planlagt |
-| O23 · 6 expectiminimax lønnsforhandling * | 5.2 | kap5/ (kommer) | planlagt |
+| O22 · 1.6 minimax for 3 spillere | 5.1 | kap5/minimax.html | ferdig |
+| O22 · 1.7 MCTS vs alfa-beta | 5.3 | kap5/stokastiske-spill.html | ferdig |
+| O23 · 6 expectiminimax lønnsforhandling * | 5.2 | kap5/stokastiske-spill.html | ferdig |
 | O23 · 5 spillteori US/Kina AGI | 5.4 | kap5/ (kommer) | planlagt |
 | O23 · 1 randomisert atferd i multiagent | 5.4 | kap5/ (kommer) | planlagt |
 | O22 · 5.1–5.2 gullkasser (PL, sannhetstabell) | 6.1 | kap6/pl-grunnlag.html | ferdig |
@@ -141,7 +145,7 @@ Oppgaver med figur (merket *) må få figuren gjenskapt som SVG på siden.
 | O23 · 3.1 bok-gåte med inferensregler | 6.2 | kap6/pl-grunnlag.html | ferdig |
 | O23 · 1 Horn-klausuler og modus ponens | 6.2 | kap6/pl-grunnlag.html | ferdig |
 | O22 · 1.10 ulempe med PL, fire nye elementer i FOL | 7.1 | kap7/fol.html | ferdig |
-| O23 · 3.2 Fido/Snowy FOL + resolusjon | 7.1, 7.3 | kap7/fol.html (7.3 kommer) | ferdig |
+| O23 · 3.2 Fido/Snowy FOL + resolusjon | 7.1, 7.3 | kap7/fol.html (a) + kap7/fol-inferens.html (b) | ferdig |
 | O22 · 1.8 ignore-delete-list admissibel | 9.2 | kap9/ (kommer) | planlagt |
 | O22 · 7.1–7.2 apekatt og bananer (PDDL, regresjon) | 9.1, 9.2 | kap9/ (kommer) | planlagt |
 | O23 · 8 julegave (PDDL, bakoversøk) | 9.1, 9.2 | kap9/ (kommer) | planlagt |
@@ -156,12 +160,12 @@ Oppgaver med figur (merket *) må få figuren gjenskapt som SVG på siden.
 | 2 | Problemløsning ved søk | 3 | L2, L3 | ferdig: sok-formulering, uinformert-sok, informert-sok, heuristikker |
 | 3 | Søk i komplekse miljøer | 4 | L3 | ferdig: lokalt-sok, delvis-observerbart |
 | 4 | CSP | 5 | L4 | ferdig: csp-formulering, backtracking |
-| 5 | Adversarialt søk og spillteori | 6, 17.2 | venter | vent på slides |
+| 5 | Adversarialt søk og spillteori | 6, 17.2 | L8 (+ spillteori kommer) | 5.1–5.3, 5.5 fra L8; 5.4 når slides kommer |
 | 6 | Proposisjonell logikk | 7 | L5 | ferdig: pl-grunnlag, resolusjon |
-| 7 | Førsteordens logikk og inferens | 8, 9 | L6 (+ kommer) | 7.1 ferdig: fol.html; 7.2–7.3 når slides kommer |
+| 7 | Førsteordens logikk og inferens | 8, 9 | L6, L7 | 7.1 ferdig: fol.html; 7.2–7.3: fol-inferens.html fra L7 |
 | 8 | Kunnskapsrepresentasjon | 10 | venter | vent |
 | 9 | Planlegging | 11 | venter | vent |
-| 10 | NLP og persepsjon | 24, 25 | venter | vent |
+| 10 | NLP og persepsjon | 24, 25 | L9 (+ persepsjon kommer) | 10.1 fra L9: kap10/nlp.html; 10.2 når slides kommer |
 | 11 | Etikk | 28 | venter | vent |
 | Øvinger | Én kort side per assignment (1: søk, 2: CSP, …) | | AssignmentLecture 1–2 | ferdig: oving/assignment1, assignment2 |
 

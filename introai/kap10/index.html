@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 10 — Naturlig språkbehandling</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .bs { fill: #f4f1ea; stroke: #a39886; stroke-width: 1; stroke-dasharray: 4 3; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .subpage-card.kommer { opacity: 0.55; cursor: default; }
+  .subpage-card.kommer:hover { transform: none; background: var(--paper-dark); border-color: var(--line-soft); }
+  .subpage-card.kommer .sp-icon { background: var(--ink-ghost); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4136</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 10: Naturlig språkbehandling">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 10 · Slides forelesning 9 (+ persepsjon kommer) · Boka kap. 24–25</div>
+      <h1>Naturlig <em>språkbehandling</em></h1>
+      <p class="lede">Hvordan en maskin regner sannsynligheter for ord, ordklasser og setningsstruktur. Prio 2 uten tidligere eksamensoppgaver: forvent et kort forklaringsspørsmål eller et lite regnestykke (Laplace, interpolasjon, parsetre).</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+      <p class="dropcap"><span class="term" data-term="nlp">NLP</span> bygges opp i lag: en <span class="term" data-term="sprakmodell">språkmodell</span> gir sannsynligheter for ordsekvenser, <span class="term" data-term="pos-tagging">POS-tagging</span> gir ordene en klasse, en <span class="term" data-term="pcfg">PCFG</span> gir setningen en trestruktur, og anvendelsene (oversettelse, QA, tale) bygger på alt dette.</p>
+      <ul>
+        <li><strong>10.1 NLP (prio 2).</strong> n-gram og glatting, HMM/Viterbi og logistisk regresjon, E<sub>0</sub> og parsing med CYK. Små regnestykker og korte forklaringer.</li>
+        <li><strong>10.2 Persepsjon (prio 3).</strong> Kommer når temaet er forelest.</li>
+      </ul>
+      <div class="callout callout-warm">
+        <span class="label">Kilde</span>
+        <p>Sidene bygger på forelesning 9 (Massimiliano Ruocco, høst 2026) og boka kap. 24, unntatt 24.2.1, 24.3.1, 24.3.2, 24.4 og 24.5. Ingen eksamensoppgaver om NLP i Ord. 2022/2023; egne oppgaver av eksamenstype er merket «Forslag».</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Fra ord til struktur. Regnestykkene ligger i glatting og parsing; resten er forklaring.</p>
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="nlp.html#bag-of-words">Bag-of-words</a></div><div class="desc">Naiv Bayes, telle-estimater.</div></div><div class="min">~4 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="nlp.html#ngram">n-gram</a></div><div class="desc">Kjederegel → Markov-antakelse.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="nlp.html#glatting">Glatting</a></div><div class="desc">&lt;UNK&gt;, Laplace, backoff, interpolasjon, n-gram-generatoren.</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="nlp.html#pos">POS-tagging</a></div><div class="desc">Penn Treebank, flertydighet.</div></div><div class="min">~4 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="nlp.html#hmm">HMM og Viterbi</a></div><div class="desc">Overgangs- og sensormodell, estimat fra tellinger.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="nlp.html#diskriminativ">Generativ vs diskriminativ</a></div><div class="desc">Logistisk regresjon, dekoding.</div></div><div class="min">~4 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="nlp.html#grammatikk">PCFG og E<sub>0</sub></a></div><div class="desc">Regeltabellen, over-/undergenerering.</div></div><div class="min">~3 min</div></div>
+        <div class="path-step"><div class="num">08</div><div><div class="title"><a href="nlp.html#parsing">Parsing og CYK</a></div><div class="desc">Top-down/bottom-up, CYK, parsetre-sannsynlighet.</div></div><div class="min">~7 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="nlp.html" class="subpage-card">
+          <span class="sp-icon">10A</span>
+          <div class="sp-info">
+            <div class="sp-title">Naturlig språkbehandling</div>
+            <div class="sp-desc">Språkmodeller, glatting, POS-tagging, PCFG og parsing, NLP-oppgaver. 9 oppgaver, 1 widget (n-gram-generator med Laplace).</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <div class="subpage-card kommer">
+          <span class="sp-icon">10B</span>
+          <div class="sp-info">
+            <div class="sp-title">Persepsjon · kommer</div>
+            <div class="sp-desc">Datasyn, kap. 25. Prio 3. Lages når temaet er forelest.</div>
+          </div>
+          <span class="sp-arrow">&middot;</span>
+        </div>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Tellinger gir modellene, glatting redder nullene, og samme idé (sannsynlighet som produkt) går igjen fra n-gram via HMM til parsetrær.</p>
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for NLP">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/></marker>
+          </defs>
+          <rect class="b" x="20" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl" x="120" y="40" text-anchor="middle">Tellinger i korpus</text>
+          <text class="cap" x="120" y="56" text-anchor="middle">relative frekvenser</text>
+          <rect class="bh" x="280" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="40" text-anchor="middle">Språkmodell</text>
+          <text class="cap" x="380" y="56" text-anchor="middle">bag-of-words · n-gram (Markov)</text>
+          <rect class="bw" x="540" y="20" width="200" height="46" rx="6"/>
+          <text class="lbl" x="640" y="40" text-anchor="middle">Glatting</text>
+          <text class="cap" x="640" y="56" text-anchor="middle">&lt;UNK&gt; · Laplace · backoff · λ</text>
+          <path class="e" d="M220 43 L278 43"/>
+          <path class="e" d="M480 43 L538 43"/>
+          <rect class="bh" x="280" y="120" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="140" text-anchor="middle">POS-tagging</text>
+          <text class="cap" x="380" y="156" text-anchor="middle">HMM + Viterbi · logistisk regresjon</text>
+          <path class="e" d="M120 66 L300 118"/>
+          <rect class="b" x="540" y="120" width="200" height="46" rx="6"/>
+          <text class="lbl" x="640" y="140" text-anchor="middle">Generativ vs diskriminativ</text>
+          <text class="cap" x="640" y="156" text-anchor="middle">P(W, C) mot P(C | W)</text>
+          <path class="e" d="M480 143 L538 143"/>
+          <rect class="bh" x="280" y="220" width="200" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="240" text-anchor="middle">PCFG (E₀)</text>
+          <text class="cap" x="380" y="256" text-anchor="middle">regler med sannsynlighet</text>
+          <path class="e" d="M380 166 L380 218"/>
+          <rect class="bw" x="540" y="220" width="200" height="46" rx="6"/>
+          <text class="lbl" x="640" y="240" text-anchor="middle">Parsing · CYK</text>
+          <text class="cap" x="640" y="256" text-anchor="middle">P(tre) = produkt av regler</text>
+          <path class="e" d="M480 243 L538 243"/>
+          <rect class="bs" x="20" y="220" width="200" height="46" rx="6"/>
+          <text class="lbl" x="120" y="240" text-anchor="middle">NLP-oppgaver</text>
+          <text class="cap" x="120" y="256" text-anchor="middle">tale · MT · IE · IR · QA</text>
+          <path class="e" d="M280 243 L222 243"/>
+        </svg>
+        <figcaption>Fargede bokser er der regnestykkene ligger. Stiplet: anvendelser, bare forklaring.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">Alle oppgavebokser i kapittelet, lenket til stedet på siden. Grønn status: oppgitt svar. Gul: forslag skrevet for denne siden.</p>
+      <ul class="oppgave-index">
+        <li><a href="nlp.html#oppg-bow-telling"><span class="oi-ref">s. 11</span><span>P(business) og P(stocks | business) fra tellinger.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="nlp.html#oppg-laplace"><span class="oi-ref">s. 20</span><span>Laplace-glatting av et sett og et usett bigram, V = 100 000.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="nlp.html#oppg-interpolasjon"><span class="oi-ref">egen</span><span>Lineær interpolasjon med gitte λ.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="nlp.html#oppg-null-setning"><span class="oi-ref">egen</span><span>Hvorfor bigram-modellen gir 0, og hva vi gjør.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="nlp.html#oppg-penn-tag"><span class="oi-ref">egen</span><span>Tagg «I can record the song» med Penn-tagger.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="nlp.html#oppg-hmm-telling"><span class="oi-ref">s. 33</span><span>P(VB | MD) = 10 471 / 13 124.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="nlp.html#oppg-gen-disk"><span class="oi-ref">egen</span><span>Generativ vs diskriminativ tagger.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="nlp.html#oppg-parsetre"><span class="oi-ref">s. 50</span><span>Sannsynligheten for «every wumpus smells» = 0.0000675.</span><span class="oi-status notes">Fra slidene</span></a></li>
+        <li><a href="nlp.html#oppg-breeze"><span class="oi-ref">egen</span><span>Parsetre og sannsynlighet for «I feel a breeze».</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+      <h3>Ekstra, ikke på siden</h3>
+      <ul>
+        <li><span class="oi-ref">Slide 22–23</span>: tilfeldige utvalg fra 1-, 2-, 3- og 4-gram-modeller av læreboka, og at GPT-2 er flytende men ikke bygger et sammenhengende resonnement.</li>
+        <li><span class="oi-ref">Slide 28</span>: WordNet-oppslaget for «kitten» (noun.animal og verbet «kittened»).</li>
+        <li><span class="oi-ref">Slide 56, 59</span>: historikken for maskinoversettelse (n-gram → seq2seq → transformere) og spørsmålsbesvarelse (START 1997, ASKMSR 2002, TREC, AI2 ARC). Tallene står i en utdypningsboks på siden.</li>
+        <li><span class="oi-ref">Slide 61</span>: unntatt fra pensum: leksikonet til E<sub>0</sub> (24.2.1), dependency parsing (24.3.1), læring av parser (24.3.2), augmenterte grammatikker (24.4), komplikasjoner (24.5).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Hvilken felles idé har en bigram-modell, en HMM-tagger og en PCFG når de regner sannsynlighet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Alle skriver sannsynligheten som et produkt av lokale faktorer estimert fra tellinger: \(\prod_j P(w_j \mid w_{j-1})\), \(P(C_1)\prod P(C_t \mid C_{t-1}) \prod P(W_t \mid C_t)\), og produktet av regelsannsynlighetene i treet. Derfor kan én null-faktor ødelegge alt, og derfor trengs glatting.</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Med \(\lambda_3 = 0.5\), \(\lambda_2 = 0.4\), \(\lambda_1 = 0.1\), trigram 0.2, bigram 0.1 og unigram 0.01: hva er det interpolerte estimatet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(0.5 \cdot 0.2 + 0.4 \cdot 0.1 + 0.1 \cdot 0.01 = 0.1 + 0.04 + 0.001 = 0.141\).</div>
+        </div>
+      </div>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Hva er forskjellen på at en grammatikk overgenererer og undergenererer, og hvorfor er chart parsing nyttig for kontekstfrie grammatikker?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Overgenerering: grammatikken godtar ugrammatiske setninger («Me go I»). Undergenerering: den avviser gyldige («I think the wumpus is smelly»). Chart parsing lagrer hver analysert frase; fordi en kontekstfri regel gjelder uansett omgivelser, kan en NP som er funnet én gang gjenbrukes i alle grener i stedet for å parses på nytt etter en feil gjetning.</div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <a href="../" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Alle kapitler</div></a>
+        <a href="nlp.html" class="next"><div class="pn-label">Start · 10A</div><div class="pn-title">Naturlig språkbehandling →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4136 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>
