@@ -1,6 +1,6 @@
 {
   "_kommentar": "Maskinlesbar del av eksamensanalyse.md (godkjent av brukeren 26. sept 2026; utvidelsen med 2.4, 2.5 og 3.1 fra 8. okt 2026 er et forslag). Nøkkel = deltema som i dekning.json (to nivåer). prio 1–3, type flervalg/regn/kode, oppgaver = tidligere eksamensoppgaver: O24-5 = Ord. 2024 spm. 5, O25-2.4 = Ord. 2025 del 2 spm. 4. Begge settene er rene flervalgseksamener.",
-  "status": "godkjent 26. sept 2026; utvidelse 8. okt 2026 (2.4, 2.5, 3.1) er forslag",
+  "status": "godkjent 26. sept 2026; utvidelsene 8. okt (2.4, 2.5, 3.1) og 21. okt 2026 (2.5 SGD, 2.6, 3.2, 3.3, 4) er forslag",
   "sett": [
     "O24",
     "O25"
@@ -152,6 +152,22 @@
     "status": "forslag 8. okt 2026"
   },
   "2.5": {
+    "prio": 1,
+    "type": [
+      "regn",
+      "flervalg"
+    ],
+    "oppgaver": [
+      "O24-13",
+      "O24-14"
+    ],
+    "merk": "Full-batch GD: 1 oppdatering per epoke; SGD (ett punkt): N; mini-batch SGD: N/B. Batch size er en hyperparameter (32, 64, 128); støyete gradient → lavere læringsrate. O24-13/14 står som bokser under 1.2.3 og er bare kryssreferert her.",
+    "lavere": [
+      "Robbins og Monro 1951"
+    ],
+    "status": "forslag 21. okt 2026"
+  },
+  "2.6": {
     "prio": 3,
     "type": [
       "kode"
@@ -161,7 +177,7 @@
     "lavere": [
       "all Keras-koden; ligger på kap2/koding.html"
     ],
-    "status": "forslag 8. okt 2026"
+    "status": "forslag 8. okt 2026 (var 2.5, heter 2.6 fra 19. okt)"
   },
   "3.1": {
     "prio": 1,
@@ -187,6 +203,120 @@
     ],
     "status": "forslag 8. okt 2026"
   },
+  "3.2": {
+    "prio": 1,
+    "type": [
+      "flervalg",
+      "regn"
+    ],
+    "oppgaver": [
+      "O24-24",
+      "O24-25",
+      "O25-7.1",
+      "O24-26",
+      "O24-28",
+      "O25-7.3",
+      "O25-7.2"
+    ],
+    "merk": "PCA: PC-ene er egenvektorene til kovariansmatrisen, ortogonale → hver forklarer ulik del av variansen; reduserer dimensjoner og bevarer mest mulig varians; regn kovarians/egenverdier for 2×2. t-SNE: visualisering, KL-divergens mellom P (høy dim) og Q (lav dim) minimeres for å bevare nabolag, ikke-parametrisk → kan ikke brukes på nye data.",
+    "lavere": [
+      "Pearson 1901",
+      "S-kurve- og MNIST-koden",
+      "perplexity-detaljer"
+    ],
+    "status": "forslag 21. okt 2026"
+  },
+  "3.3": {
+    "prio": 1,
+    "type": [
+      "flervalg"
+    ],
+    "oppgaver": [
+      "O24-21",
+      "O24-23",
+      "O25-7.4"
+    ],
+    "merk": "Falske positive = normale punkter stemplet som anomalier. k-means: avstand til nærmeste sentroide over en prosentil. DBSCAN: labels_ == -1. Isolation Forest: tilfeldige splitt til hvert punkt er alene; anomalier isoleres tidlig → kort sti → høy score (lav tetthet også godkjent i 7.4).",
+    "lavere": [
+      "percentile-detaljer",
+      "contamination"
+    ],
+    "status": "forslag 21. okt 2026"
+  },
+  "4.1": {
+    "prio": 1,
+    "type": [
+      "flervalg"
+    ],
+    "oppgaver": [
+      "O24-31",
+      "O25-8.2",
+      "O25-8.1"
+    ],
+    "merk": "RL-loopen (state, action, reward), Markov-egenskapen (neste tilstand avhenger bare av nåværende tilstand og handling), MDP som 4-tuppel, policy = strategi som gir handling per tilstand, verdi vs reward.",
+    "lavere": [
+      "AlphaZero"
+    ],
+    "status": "forslag 21. okt 2026"
+  },
+  "4.2": {
+    "prio": 1,
+    "type": [
+      "flervalg",
+      "regn"
+    ],
+    "oppgaver": [
+      "O24-32",
+      "O25-8.4"
+    ],
+    "merk": "Bellman-likningen (115): Q_new = (1−α)Q + α(R + γ max Q_next). α = læringsrate (hvor mye gammel verdi beholdes), γ = discount factor; høy γ → fremtidige estimater dominerer. Regn ett steg for hånd.",
+    "status": "forslag 21. okt 2026"
+  },
+  "4.3": {
+    "prio": 3,
+    "type": [
+      "kode"
+    ],
+    "oppgaver": [],
+    "merk": "env.reset() og env.step(action) → (state, reward, done, info); tre-på-rad-miljøet. Øvingsstoff på kap4/koding.html.",
+    "lavere": [
+      "Gym-miljøene",
+      "render"
+    ],
+    "status": "forslag 21. okt 2026"
+  },
+  "4.4": {
+    "prio": 1,
+    "type": [
+      "flervalg"
+    ],
+    "oppgaver": [
+      "O25-8.3",
+      "O25-9.4"
+    ],
+    "merk": "Exploration factor ε: med sannsynlighet ε tilfeldig action, ellers høyest Q. Exploration/exploitation-tradeoff, epsilon greedy med epsilon decay, behold liten ε > 0. Reward hacking (9.4) er ikke i notatene; forslag.",
+    "status": "forslag 21. okt 2026"
+  },
+  "4.5": {
+    "prio": 1,
+    "type": [
+      "flervalg",
+      "kode"
+    ],
+    "oppgaver": [
+      "O24-33",
+      "O25-9.1",
+      "O25-9.2",
+      "O25-9.3",
+      "O25-10.4"
+    ],
+    "merk": "Q-tabell som dictionary, learn() med td_target og td_delta, update_exp_factor, lese Q-verdier for tomt brett (midten høyest). Loss vs reward: ingen nødvendig sammenheng. DQN (target network, replay buffer, vektdeling, random.sample(buffer, k=32)) er ikke i notatene; svarene er forslag.",
+    "lavere": [
+      "gitlab-lenken",
+      "heatmap-figurene"
+    ],
+    "status": "forslag 21. okt 2026"
+  },
   "senere": {
     "prio": 1,
     "type": [
@@ -194,35 +324,13 @@
       "regn"
     ],
     "oppgaver": [
-      "O24-21",
-      "O24-23",
-      "O24-24",
-      "O24-25",
-      "O24-26",
-      "O24-28",
-      "O24-31",
-      "O24-32",
-      "O24-33",
       "O24-34",
       "O24-35",
       "O24-36",
       "O24-37",
       "O24-38",
-      "O24-39",
-      "O25-7.1",
-      "O25-7.2",
-      "O25-7.3",
-      "O25-7.4",
-      "O25-8.1",
-      "O25-8.2",
-      "O25-8.3",
-      "O25-8.4",
-      "O25-9.1",
-      "O25-9.2",
-      "O25-9.3",
-      "O25-9.4",
-      "O25-10.4"
+      "O24-39"
     ],
-    "merk": "PCA/t-SNE, anomalideteksjon (Isolation Forest), reinforcement learning/DQN, LIME/SHAP/Shapley, etikk og AI Act. Venter på at notatene får disse kapitlene."
+    "merk": "Forklarbarhet (LIME, SHAP, Shapley-verdier) og etikk/AI Act. Venter på at notatene får disse kapitlene."
   }
 }

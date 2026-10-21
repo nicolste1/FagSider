@@ -1,16 +1,16 @@
 # Tekstuttrekk av kilden
 
-Kilde: `2026___TDT4172_Lecture_notes_and_equations-6.pdf` · datert October 7, 2026 · 47 sider · sha256 `192b616b67e6…`
+Kilde: `2026___TDT4172_Lecture_notes_and_equations 19.10.pdf` · datert October 19, 2026 · 62 sider · sha256 `26e628aa433a…`
 
 > Generert av `tools/pdf_til_tekst.py`. Formler er uleselige her; filen brukes til å diffe versjoner.
 
 ## 1 Veiledet læring
-<!-- side 2 -->
+<!-- side 3 -->
 
 
 
 ## 1.1 Data
-<!-- side 2 -->
+<!-- side 3 -->
 
 Maskinlæring går ut påå programmere datamaskiner slik at de kan lære fra data. Arthur Samuel
 (1959) ga definisjonen
@@ -48,10 +48,11 @@ supervised learning.
 VikanforeksempelbrukedatasettetTitanic fraKaggle1,hvoravetutvalgervistitabell2. Herrepre-
 senterer PassengerId, Pclass, Name, Sex og Age datasettets fem features, mens Survived representerer
 target – hvis målet erå lage en modell som beregner sjansen for at en person overlever.
-Oppgave: (Tenk deg om før du sjekker svaret på oppgaven, på neste side)
-1. Hvilke variabler er kategoriske?
-2. Hvilke variabler er binære?
-3. Hvilke variabler er kontinuerlige?
+Grunnen til at vi ikke bør bruker PassengerId, er at denne variabelen ikke inneholder informasjon om
+egenskapene til en passasjer, og sannsynligvis er tilfeldig valgt. Name bør kun brukes hvis vi ønskerå
+lageenmodellsomforstårspråktilstrekkeliggodttilåkunnefinneenrelasjonmellomtypiskenavnog
+for eksempel dyktighet i redningsbåter. For modellene vil skal lage, vil ikke Name inneholde relevant
+informasjon.
 1https://www.kaggle.com/c/titanic
 Table 2: Titanic-datasettet fra Kaggle.
 PassengerId Pclass Name Sex Age Survived
@@ -64,17 +65,6 @@ PassengerId Pclass Name Sex Age Survived
 7 1 McCarthy, Mr. Timothy J male 54 0
 8 3 Palsson, Master. Gosta Leonard male 2 0
 9 2 Montvila, Rev. Juozas male 27 1
-4. Hvilken variabel bør vi ikke bruke?
-Svar på oppgaven:
-1. Pclass, Name, Sex, Survived, (PassengerId, om vi anser de ulike Id’ene som hver sin kategori)
-2. Sex, Survived
-3. Age
-4. PassengerId, Name
-Grunnen til at vi ikke bør bruker PassengerId, er at denne variabelen ikke inneholder informasjon om
-egenskapene til en passasjer, og sannsynligvis er tilfeldig valgt. Name bør kun brukes hvis vi ønskerå
-lageenmodellsomforstårspråktilstrekkeliggodttilåkunnefinneenrelasjonmellomtypiskenavnog
-for eksempel dyktighet i redningsbåter. For modellene vil skal lage, vil ikke Name inneholde relevant
-informasjon.
 Førvikanbegynnepåmodelleringen,fjernervivariableneviikkevilbruke,oginnførernyttignotasjon,
 setabell3. Hverradidataenerepresentereretdatapunkt,ogvibrukerindeksioppeforåanginummer
 Table 3: Titanic-datasettet etter at vi har valgt ut hvilke variable vi vil beholde, og innført notasjon.
@@ -102,13 +92,7 @@ og siden vi har en target per datapunkt, kan vi altså gjøre veiledet læring f
 løser denne oppgaven. Forå oppsummere:
 • Vi har features x og targets y
 • Vi ønskerå estimere y for nye x, basert på relasjonene representert mellom kjente x og y.
-Før vi begynnerå lage en modell bør vi få en oversikt over sammenhenger i dataene. Oppgave: Se
-på tabell 3 igjen. Hva bør vi gjøre før vi plotter disse dataene? Svaret lyder:
-• Rad 6 mangler en verdi for feature 3; dette vil gi en feilmelding når vi prøverå plotte dataene,
-• feature 2 er strenger (strings), altså ikke-numeriske verdier, som en datamaskin ikke kan plotte
-uten videre,
-• feature3eravenheltannenstørrelsesordenennfeatures1og2,ogkaniverstefallgimisvisende
-plott.
+Før vi begynnerå lage en modell bør vi få en oversikt over sammenhenger i dataene.
 Vi kan løse disse problemene ved hjelp av innebygget funksjonalitet i pandas og sklearn. En enkel
 måteå bli kvitt rader med manglende verdier er med pandas-metoden dropna(), som fjerner rader
 der minimum én verdi mangler. For å gjøre om feature 2 til numeriske verdier, kan vi bruke en
@@ -130,6 +114,9 @@ almenngyldig regel for hvor store (hhv hvor mange) bins et histogram bør ha, si
 av dataenes underliggende fordeling. Hvis et histogram ser veldig hakkete ut har man ofte valgt for
 mange bins, som følgelig inneholder for få datapunkter, og hvis det er vanskeligå få øye på en form i
 fordelingen, har man ofte valgt for få bins, som følgelig inneholder for mange datapunkter. Kun ved
+(a) (b)
+(c) (d)
+Figure 1: Bar-plot (a, b) og histogrammer (c, d) fra Titanic-dataene. Se beskrivelse i teksten.
 å se på plottene i figur 1 får vi allerede en idé om at passasjerer i Pclass=0, kvinnelige passasjerer og
 yngre passasjerer ofte overlever. Dette passer godt med det vi vet fra filmen :).
 Når vi er ferdige medå preprosessere dataene og har studert dem gjennom plott, er vi klare for å
@@ -139,7 +126,7 @@ En modell som gjør dette gir oss prediksjoner f(x)=y .
 pred
 
 ## 1.2 Logistisk regresjon
-<!-- side 4 -->
+<!-- side 5 -->
 
 Den enkleste modellen vi kan tenke oss er lineær regresjon,
 n
@@ -150,6 +137,7 @@ i=1
 hvor vektene w forteller oss hvor viktig hver feature x er for utfallet, altså verdien til z. En nyttig
 i i
 mental øvelse erå tenke over om z er et tall eller en vektor. Dette kan vi se basert på hvordan w og
+Figure 2: Sigmoid-funksjonen.
 x, som begge er vektorer, kombineres i uttrykket.
 I likning 2 ser vi at z kan bli et hvilket som helst tall, mens vi er ute etter en sannsynlighet for
 overlevelse, altså et tall mellom 0 og 1. En enkel løsning på dette erå bruke den logistiske funksjonen
@@ -157,9 +145,6 @@ overlevelse, altså et tall mellom 0 og 1. En enkel løsning på dette erå bruk
 til domenet (0,1):
 σ(z)= . (3)
 1+e−z
-(a) (b)
-(c) (d)
-Figure 1: Bar-plot (a, b) og histogrammer (c, d) fra Titanic-dataene. Se beskrivelse i teksten.
 Det kan være lurt å huske denne funksjonen, da vi kommer til å møte den igjen når vi diskuterer
 nevrale nettverk, da under navnet aktiveringsfunksjon. Vetå sette uttrykket i likning 2 inn i likning 3
 får vi følgende uttrykk, som representerer modellens prediksjon for target y:
@@ -169,7 +154,7 @@ i
 wixi+b
 
 ## 1.2.1 Trening og tapsfunksjon
-<!-- side 5 -->
+<!-- side 6 -->
 
 Før en modell kan gi oss gode prediksjoner for x må den tilpasses til dataene våre, og denne prosessen
 omtalessomlæring ellertrening innenmaskinlæring. Læringsprosessengårutpåatmodellentilpasses
@@ -190,11 +175,6 @@ pred pred
 som
 yy (1−y )1−y. (6)
 pred pred
-Oppgave: Studer dette uttrykket. Hva er verdien hvis y = 1 og y = 1? Hva med de andre
-pred
-kombinasjonene av de mulige verdiene til y og y?
-pred
-Figure 2: Sigmoid-funksjonen.
 Vi har ikke lyst tilå endre dataene slik at predikert sannsynlighet for overlevelse endrer seg. I stedet
 ønsker viå endre modellen slik at den estimerte sannsynligheten for overlevelse passer med den virke-
 lige. Vi er altså i den situasjonen at dataene er gitt, mens modellen kan endres (det er det vi gjør
@@ -234,8 +214,6 @@ N
 i=1
 Forå løse dette optimaliseringsproblemet skal vi bruke gradient descent. Vi skal bruke den samme
 metoden senere i kurset når vi trener nevrale nettverk.
-(a) (b)
-Figure 3: Eksempler på en (a) konveks, og en (b) ikke-konveks funksjon.
 
 ## 1.2.2 Gradient descent
 <!-- side 7 -->
@@ -260,6 +238,8 @@ trenger er altså et mål på hvordan L endrer seg som funksjon av endring i θ.
 av L med hensyn på θ, altså gradienten (dette er gradienten i “gradient descent”). Her lærer vi noe
 viktig, som du bør huske til senere: Siden gradient descent er veldig utbredt innen maskinlæring, også
 til trening av nevrale nettverk, forstår vi at tapsfunksjonen må være deriverbar.
+(a) (b)
+Figure 3: Eksempler på en (a) konveks, og en (b) ikke-konveks funksjon.
 I starten av treningen har alle parametrene en tilfeldig verdi, og vi oppdaterer verdiene iterativt,
 gjennom flere steg. Gradienten til tapsfunksjonen peker i retning av økende tap, og siden vi ønsker
 å minke tapet må vi bevege oss i motsatt retning. Dette representerer vi gjennom et minustegn, og
@@ -317,7 +297,7 @@ pred j
 pred
 
 ## 1.2.3 Trening
-<!-- side 8 -->
+<!-- side 9 -->
 
 Viharalleredekommetlangtpåveiforågjøremaskinlæring: Viharenmodell,vivethvilkeparametre
 som definerer den, vi har en tapsfunksjon, og vi har et uttrykk forå oppdatere parameterverdiene slik
@@ -378,7 +358,7 @@ log_reg.fit(X_train, y_train)
 predictions = log_reg.predict(X_test)
 
 ## 1.2.4 Evaluering
-<!-- side 9 -->
+<!-- side 10 -->
 
 Tenk på definisjonen av maskinlæring gitt i starten av kurset: Forå vite at programmet faktisk blir
 bedretilåløseoppgavengjennomerfaring(data),trengervienmåteåmåleytelsen. Sometminimum
@@ -391,6 +371,13 @@ plt.legend()
 plt.show()
 og et eksempel på resulterende plott fra en vellykket treningsprosedyre er vist i figur 4. På dette
 plottet ser vi at tapet er høyt i starten, og minker jevnt før det flater ut. Dette er bra; vi ønsker at
+tapet skal minke. Treffsikkerheten starter derimot lavt, og øker før den flater ut. Dette er også bra; vi
+ønsker økende treffsikkerhet. Til sammen gir disse to kurvene oss et bilde av en modell som lærer av
+dataene, og en treningsprosedyre som har foregått lenge nok. Hadde kurvene ikke flatet ut, hadde vi
+trengt flere epoker for at modellen skulle lære ferdig. I dette tilfellet kunne vi også stoppet treningen
+tidligere, etter rundt 20-25 epoker.
+Selv om tap og treffsikkerhet kan fortelle oss om modellen lærer fra dataene, forteller de mildt sagt
+kun en liten del av historien, og gir oss ikke et godt bilde på hva modellen er god på eller hvilke typer
 Figure 4: Eksempel på plott som viser tap (rød) og treffsikkerhet (blå) over epokene i en tren-
 ingsprosedyre.
 Table 4: Et utvalg metrikker vi kan beregne basert på verdiene i confusion matrix.
@@ -403,18 +390,10 @@ False Positive Rate (FPR) FP = FP Sannsynlighet for falsk alarm, (1 - spesifisit
 N FP+TN
 Positive Predictive Value (PPV) TP Precision
 TP+FP
-tapet skal minke. Treffsikkerheten starter derimot lavt, og øker før den flater ut. Dette er også bra; vi
-ønsker økende treffsikkerhet. Til sammen gir disse to kurvene oss et bilde av en modell som lærer av
-dataene, og en treningsprosedyre som har foregått lenge nok. Hadde kurvene ikke flatet ut, hadde vi
-trengt flere epoker for at modellen skulle lære ferdig. I dette tilfellet kunne vi også stoppet treningen
-tidligere, etter rundt 20-25 epoker.
-Selv om tap og treffsikkerhet kan fortelle oss om modellen lærer fra dataene, forteller de mildt sagt
-kun en liten del av historien, og gir oss ikke et godt bilde på hva modellen er god på eller hvilke typer
 datapunkter den typisk gjør feil på. De gir oss ikke en god anledning tilå analysere modellens styrker
 ogsvakheter. Videregirikketallsomangirtapogtreffsikkerhetintuitivtmeningformennesker. Vibør
 derfor velge en eller flere metrikker forå angi modellens ytelse, og disse metrikkene bør gi mening for
 mennesker. I motsetning til tapsfunksjonen trenger ikke metrikken(e) vi velgerå være deriverbar(e).
-Oppgave: Hva er flere grunner til at vi ikke bør velge samme tapsfunksjon og evalueringsmetrikk?
 Forklassifiseringsmodellerbaseresmangemetrikkerpåconfusionmatrix,hvisinnholdangirhvormange
 av datapunktene klassifiseres riktig (true) og feilaktig (false) i de ulike klassene. I vårt tilfelle har vi
 to klasser: 0 (negative), og 1 (positive), og vi kan sette opp en confusion matrix etter malen i figur 5.
@@ -422,14 +401,6 @@ Her plasseres de sanne prediksjonene (true positive/negative), altså prediksjon
 target,pådiagonalen,ogdefalskeprediksjonene(falsepositive/negative)utenfordiagonalenimatrisen.
 Basertpåverdieneiconfusionmatrixkanviregneutfleremetrikker, foreksempeldeangittitabell4.
 Figure 5: Confusion matrix for binær klassifisering.
-Oppgave: Du skal levere en maskinlæringsmodell til et sykehus som vil finne ut hvilke pasienter som
-lider av en dødelig sykdom. (I dette scenariet er det veldig alvorlig om modellen får en falsk negativ.)
-Hvilken metrikk bør modellen skåre høyt på? Senere skal du (du har myeå gjøre, ja) levere en modell
-(a) (b)
-Figure 6: ROC-kurven, som viser FPR og TPR for ulike klassifiseringsterskler i [0,1].
-til klimaaktivister som vil skyte raketter på tomme passasjerfly. (I dette scenariet er det alvorlig om
-modellen får en falsk positiv, fordi raketter er dyre.) Hvilken metrikk bør denne modellen skåre lavt
-på?
 
 ## 1.2.5 Klassifiseringsterskel
 <!-- side 11 -->
@@ -440,19 +411,19 @@ er det vi gjorde i koden for fit og predict, nemlig følgende linje
 hvor vi tolker en prediksjon som Survived=1 hvis y pred>0.5, og ellers Survived=0. Her er tallet 0.5
 klassifiseringsterskelen, og vi kunne i prinsippet valgt et annet tall. Hvis det var viktig for osså være
 forsiktig, altså ikke predikere at en person vil overleve med mindre modellen er helt sikker, kunne vi
+(a) (b)
+Figure 6: ROC-kurven, som viser FPR og TPR for ulike klassifiseringsterskler i [0,1].
 valgt en terskel på for eksempel 0.7 i stedet. Hvilken terskel som bør velges er avhengig av problemet,
 og vi kan studere hvilket utslag ulike terskler har på ulike metrikker.
 Det vanligste erå studere FPR og TPR som funksjon av klassifiseringsterskelen. Det gir oss Receiver
 Operating Characteristic (ROC)- kurven, se figur 6a. Her beregner vi både FPR og TPR for mange
-ulike klassifiseringsterskler fra 1 til 0. Oppgave: Ønsker vi høy eller lav verdi for henholdsvis FPR
-og TPR? Hva blir FPR og TPR for klassifiseringsterskel 0? Tilsvarende for 1?
+ulike klassifiseringsterskler fra 1 til 0.
 Vi ønsker en høy TPR, altså sann positiv rate, mens vi ønsker at FPR, altså falsk positiv rate, holder
 seglav. Hvisklassifiseringsterskelener1,vilnærmestingenprediksjonertolkessompositivklasse,slik
 atbådeFPRogTPRerlave. Klassifiseringsterskelpå0tilsieratnærmestalleprediksjonertolkessom
 positiv klasse, hvilket vil gi høye verdier for både FPR og TPR. Derfor starter ROC-kurven i (0,0) og
 ender i (1,1). Det interessante er hva som skjer mellom disse punktene, særlig om TPR øker raskere
-enn FPR, og for hvilke klassifiseringsterskel som gir best trade-off mellom de to. Oppgave: Hvordan
-ser ROC-kurven ut for en modell som kaster mynt?
+enn FPR, og for hvilke klassifiseringsterskel som gir best trade-off mellom de to.
 Uansett hvilken oppgave vi løser, ønsker vi en modell som har høy TPR og lav FPR: Des høyere
 TPR per FPR, des bedre er modellen, for alle terskler. Tilfeldig gjetning (myntkast) gir diagonalen
 (0,0)−(1,1), den stiplede linjen i figur 6b. Forå være bedre enn tilfeldig gjetning må kurven som
@@ -477,12 +448,11 @@ Når vi justerer klassifiseringsterskelen ser vi at det finnes en tradeoff mello
 deneneøker,minkerdenandre. Hvasomerengodbalansemellomdeto,eravhengigavhvamodellen
 skal brukes til. Hvis falsk alarm er dyrt (for eksempel fører til en utrykning), er høy presisjon viktig.
 Hvis kostnaden medå bomme på en positiv instans er høy (for eksempel diagnostisering av alvorlige
-sykdommer), er høy recall viktig. Oppgave: Når er presisjon = recall? Hvilken av disse metrikkene
-er avhengig av fordelingen mellom klassene?
+sykdommer), er høy recall viktig.
 Figure 7: Precision-recall-kurven for ulike klassifiseringsterskler i [0,1].
 
 ## 1.2.6 Kort om entropi og cross entropy loss
-<!-- side 12 -->
+<!-- side 13 -->
 
 I informasjonsteori er entropi (også kalt Shannon entropy) en måte å kvantisere usikkerheten eller
 mengden informasjon forbundet med de mulige tilstandene x til en tilfeldig variabel X:
@@ -499,7 +469,6 @@ kan skrive dette som
 H(p)=− p(x )logp(x )). (30)
 i i
 i
-Figure 8: To delvis overlappende mengder A og B.
 Altså: observasjonene kommer fra fordelingen p – alltid. I eksempelet med Titanic-dataene represen-
 tererpfordelingenavtargets(Survived)idatasettet. Itilleggharvienfordelingq,somrepresenterer
 hva vi tror, det vil si hva modellen vår predikerer. Kryss-entropien (cross entropy) representerer da
@@ -521,9 +490,10 @@ L(yˆ,y)=− y log(yˆ), (32)
 i i
 i
 hvor summen går over alle klassene i.
+Figure 8: To delvis overlappende mengder A og B.
 
 ## 1.2.7 Bayes’ teorem
-<!-- side 13 -->
+<!-- side 14 -->
 
 Se på de to delvis overlappende mengdene A og B i figur 8. Sannsynligheten forå trekke et element
 fra overlappet A∩B er
@@ -612,13 +582,6 @@ begge på samme måte (og antakelsene våre holder!), er vi good.
 <!-- side 15 -->
 
 Om vi studerer featurene i Titanic-dataene ser vi at enkelte features sannsynligvis ikke er uavhengige.
-Oppgave: Hvilke features er ikke uavhengige? Hint: bruk følgende kode tilå plotte Passenger class
-vs Sex, som vi gjorde i forelesningen. Hva ser du? (sånn utover at livet er lettere når man lærer segå
-bruke panda’s innebygde funksjoner)
-p_cond = pd.crosstab(df.Pclass, df.Sex, normalize="index")
-p_marg = df.Sex.value_counts(normalize=True)
-ax = p_cond.plot.bar(rot=0)
-plt.show()
 Naïv Bayes er fint så lenge antakelsen om uavhengige features holder, i det minste tilnærmingsvis.
 Menhvaomfeaturesikkeeruavhengige? Laossgåtilbaketiluttrykketfralikning35, gjentattunder,
 p(x|C )p(C )
@@ -635,14 +598,6 @@ p(x|C )p(C )
 1 1
 Det vi trengerå estimere er altså simultanfordelingen av features betinget på hver klasse. Konkret i
 vårt lille Titanic-tilfelle altså p(Sex,Age,Pclass|Survived=0) og p(Sex,Age,Pclass|Survived=1).
-Oppgave: Du kan gjøre disse estimatene selv, og det beste erå lage en tabell. Da må du kombinere
-hververdiavx medhververdiavx ,ogsåigjenmedx (derdukanvelgeselvhvilkenfeaturex ,x ,x
-1 2 3 1 2 3
-erhenholdsvisSex,AgeogPclass. Detspilleringenrolleforresultatet.) SidenAgeerkontinuerligkan
-duforeksempeldeledenneinnitikategoriervedhjelpnumpy.histogram(data[feature], bins=10).
-Det du får ut av dette er et bedre estimat av yˆenn vi fikk ved bruk av naïv Bayes, men forskjellen er
-ikke veldig stor. Du kan også inspisere tabellen og observere at mange av cellene inneholder svært få
-datapunkter. Dette er en miniversjon av dimensjonsforbannelsen, som er neste tema.
 La oss anta at vi har tre kontinuerlige features, i stedet for Titanic-tilfellet der både Sex og Pclass er
 kategoriske, og at vi har lyst tilå estimere simultanfordelingen til disse tre. Vi klarer ikkeå finne et
 analytisk uttrykk for denne simultanfordelingen, men vi prøver oss altså på et estimat. Vi kan lage
@@ -654,7 +609,7 @@ Du kommer nok frem til at dette er en simultanfordeling som beregningsmessig lar
 vi bare trenger 10,000 datapunkter.
 
 ## 1.2.9 Dimensjonsforbannelsen
-<!-- side 15 -->
+<!-- side 16 -->
 
 Om vi ønsker å estimere en d-dimensjonal fordeling, er antallet datapunkter som må samles inn
 avhengig av d. For å få en intuisjon kan vi tenke oss at vi igjen estimerer fordelingen ved hjelp
@@ -664,26 +619,20 @@ Sjekk tabellen under når du tror du har svaret.
 Tabell 5 viser antall nødvendige datapunkter for fire ulike verdier av d. Vedien d = 784 er tatt med
 fordidetteerdimensjonalitetentildetmyebruktedatasettetMNIST,sombeståravhåndskrevnesifre
 i sort-hvitt (gjerne sjekk det ut). Til sammenlikning er det ∼1082 atomer i universet.
-Oppgave: Finn ut hvor stor andel av en d-dimensjonal sfære (kule) som ligger i et tynt skall med
-tykkelse ϵ. Volumet til en 3-dimensjonal kule er 4πr3, og den D-dimensjonale generaliseringen er
 Table 5
 Dimensjoner d Bins Datapunkter
 1 10 102
 3 103 104
 10 1010 1011
 784 10784 10785
-K rD. Du trenger ikkeå tenke på prefaktoren siden du kun er ute etterå finne ut hvor stor andel
-D
-som ligger i et ϵ-skall. Hint: Velg en enhetskube (r =1) og lag et uttrykk for andel volum. Svaret blir
-en funksjon av ϵ.
 
 ## 1.2.10 Trening på ubalanserte data
-<!-- side 16 -->
+<!-- side 17 -->
 
 En masterstudent blir invitert til jobbintervju som ML-utvikler. Under intervjuet får kandidaten
 følgende spørsmål: “Vi har et datasett fra det norske helsevesenet, og skal lage en modell som klassi-
 fiserer friske og syke personer. Modellen vår får en treffsikkerhet (accuracy) på 99%, men den klarer
-nesten ikkeå identifisere syke personer. Hva har skjedd?” Oppgave: Hva vil du svare på dette?
+nesten ikkeå identifisere syke personer. Hva har skjedd?”
 Detteviltypiskskjeomdeneneklassen(foreksempeldensomrepresenterersykepersoner)inneholder
 mangefærredatapunkterenndenandre. Førstnevneklasseerdaunderrepresentert,mensklassenmed
 flere datapunkter er overrepresentert. Hvis forskjellen mellom antall datapunkter i de to klassene er
@@ -717,9 +666,7 @@ underrepresenterte klassen. Dette kan føre til at modellen som trenes på datae
 (overfit).
 Dissetoteknikkenekannaturligviskombineres,altsåatmanbådeundersamplerdenoverrepresenterte
 klassen og oversampler fra den underrepresenterte klassen, slik at man til sammen har balanserte
-klasser i det resulterende datasettet. Oppgave: Vi har et datasett med 100 datapunkter fra den ene
-klassen, og 1000 fra den andre. Hvor mange datapunkter får vi totalt om vi gjør kun undersampling?
-Hvor mange får vi totalt om vi gjør kun oversampling, og hvor mange duplikater får vi?
+klasser i det resulterende datasettet.
 Vektet tapsfunksjon
 Istedetforåendrehvilkedatamodellenfårtilgangtil, kanvifortellemodellenatenavklassene(ofte
 den underrepresenterte) er ekstra viktig. Dette gjør vi gjennomå straffe feilprediksjoner (gi høyere
@@ -740,12 +687,12 @@ verdien på w vil modellen prioritereå predikere riktig verdi for datapunkter m
 versa.
 
 ## 1.3 Beslutningstrær
-<!-- side 17 -->
+<!-- side 18 -->
 
 
 
 ## 1.3.1 Noder
-<!-- side 17 -->
+<!-- side 18 -->
 
 Beslutningstrær hjelper osså ta beslutninger for datasett vedå splitte dataene i noder som til sam-
 men utgjør en trestruktur, se figur 9a. Rotnoden (root node) er starten på treet, der data med alle
@@ -772,7 +719,7 @@ Den første av disse, log loss, kjenner vi fra før, se likning 10 for binær kl
 multiklasse.
 
 ## 1.3.2 Gini Impurity
-<!-- side 18 -->
+<!-- side 19 -->
 
 Gini-urenheten er et tall i [0,0.5] som angir sannsynligheten for at et nytt, tilfeldig datapunkt feilklas-
 sifiseres hvis det gis et tilfeldig label i henhold til klassedistribusjonen i datasettet. Gitt et datasett D
@@ -804,11 +751,9 @@ n n p p 1−p2−p2
 Alt A 0 10 0 1 1−02−12 =0
 Alt B 3 7 0.3 0.7 1−0.32−0.72 =0.42
 Alt C 5 5 0.5 0.5 1−0.52−0.52 =0.5
-Oppgave: Se på tabell 6. Hvilken splitt bør vi velge, og hvorfor? Svar: Vi bør velgeå splitte på den
-featuren som gir lavest Gini-urenhet.
 
 ## 1.3.3 Entropi
-<!-- side 18 -->
+<!-- side 19 -->
 
 Gitt en sannsynlighetsfordeling over k klasser, er sannsynligheten for hver klasse p . Entropien til
 i
@@ -818,7 +763,6 @@ k
 I(p ,...,p )=− p log (p ). (46)
 1 k i 2 i
 i=1
-Oppgave: Hva er entropien til fordelingen (0.5,0.5), og fordelingen (0.01,0.99)?
 Den maksimale entropien til en binær fordeling er 1, som svarer til lik sannsynlighet per klasse. Den
 minimale entropien er 0, som svarer til at alle datapunktene tilhører samme klasse.
 Før vi splitter på en feature har vi et datasett D med p positive og n negative instanser. Dette svarer
@@ -866,31 +810,18 @@ før etter p+n p+n p+n p +n p +n
 i i i i
 i=1
 og vi bør velge den splitten som gir størst endring i entropi.
-Oppgave: Vi har en beslutningsnode bestående av p = 9 positive og n = 5 negative datapunkter.
-VisatI =0.94. Antaderetteratvisplitterdatasettetslikatvifårtonyedatasettmedhenholdsvis
-før
-(p = 4,n = 5) og (p = 5,n = 0). Regn ut endringen i entropi (svaret står rett under, men prøv
-1 1 2 2
-selv).
-(cid:18) (cid:19) (cid:18) (cid:19) (cid:18) (cid:19)
-4+5 4 5 5 5 0 9 4 4 5 5
-E[I ]= I , + I , =− log + log +0≈0.64. (50)
-etter 9+5 9 9 9+5 5 5 14 9 2 9 9 2 9
 
 ## 1.3.4 Bygge beslutningstrær
-<!-- side 19 -->
+<!-- side 20 -->
 
 Idettekursettrengerdereikkebyggebeslutningstrærselv, menderebørkunneangipseudokodeforå
 byggeetbeslutningstre. Forålagebeslutningstrærbrukervisomoftestbiblioteketsklearn, medden
 innebygde DecisionTreeClassifier. Denne lar oss velge mellom de splitt-kriteriene Gini impurity,
 entropy og log loss.
-Oppgave: Plott Gini impurity og entropi i intervallet [0,1]. Er kurvene like?
 Gini impurity og entropi oppfører seg likt, og vil i hovedsak gi opphav til samme feature splits. Hov-
 edforskjellen mellom de to ligger i at beregning av entropi krever en ekstra logaritme, som koster mer
 å beregne. Gini impurity er derfor mindre beregningstungt, altså raskereå regne ut. Denne er også
 default i sklearn.DecisionTreeClassifier.
-Oppgave: Sammenliknuttrykkeneforlogloss,entropiogGini-urenhet. Liknernoenavdisse? Hvilken
-går raskestå evaluere?
 Utover valg av beslutningskriterier, må vi besvare to ytterligere spørsmål:
 • Når skal vi slutteå splitte, selv om nederste node har instanser fra begge klassene?
 • Hva gjør vi med eventuelle løvnoder som har instanser fra begge klassene?
@@ -925,30 +856,14 @@ choose best_feature f for split
 partition data based on f
 for each data partition:
 build_decision_tree(data partition, features - best_feature, depth+1)
-I forelesningen brukes datasettet Palmer Penguins som eksempel. Dette datasettet er superpopulært
-innenformaskinlæring,ogkanbrukestilmyemerennålageetbeslutningstresomfinnerpingvinkjønn
-basertpåkroppsektogflipperlength. Hvisduvilreproduserenoenaveksemplene,finnerduen.csv-fil
-på internett som inneholder dataene, og kommer i gang med koden under.
-df = pd.read_csv("data/penguins_lter.csv")
-df = df[["Flipper Length (mm)" , "Body Mass (g)", "Sex"]].dropna()
-label_encoder = LabelEncoder()
-df["Sex"] = label_encoder.fit_transform(df["Sex"])
-X_data = df[["Flipper Length (mm)" , "Body Mass (g)"]].values
-y_data = df[’Sex’].values
-X_train, X_test, y_train, y_test = train_test_split(X_data, y_data,
-test_size=0.3)
-clf = tree.DecisionTreeClassifier(max_depth=7, criterion="log_loss")
-clf.fit(X_train, y_train)
-Ogsåerdetbareåkoseseg. Foråvisualiserebeslutningsflatenslikvisåpåiforelesning,kandubruke
-from sklearn.inspection import DecisionBoundaryDisplay.
 
 ## 1.4 Regresjon
-<!-- side 20 -->
+<!-- side 21 -->
 
 
 
 ## 1.4.1 Data og tapsfunksjon
-<!-- side 20 -->
+<!-- side 21 -->
 
 Se på datasettet i tabell 7, og tilhørende figur 10a. Igjen representerer y targets (“riktig svar”), så vi
 holder oss i regimet til veiledet læring. Men da vi gjorde klassifisering hadde vi targets som fordelte
@@ -957,75 +872,6 @@ ikkekategorier,menharkontinuerligeverdier. Viharaltsåikkelengermedenklassifiser
 gjøre. Prediksjontilkontinuerligeverdierkallesregresjon. Eksemplerpåregresjonsoppgaverinkluderer
 å predikere skåren til en film, estimere formuesverdien til en bolig, forutse sykefraværet til en ansatt,
 osv. Generelt: estimering av en (eller flere) kontinuerlig(e) verdi(er). Vi starter igjen med det
-(a) (b)
-Figure 10: (a) Datasett til lineær regresjon, og (b) en lineær regresjonsmodell med høy bias.
-enkleste tilfellet, og den enkleste regresjonsmodellen er en lineær modell. Likningen for en lineær
-regresjonsmodell er
-f(x)=β +β x +β x +...β x . (51)
-0 1 1 2 2 n n
-Modellen har en parameter β per feature x (kolonne i datasettet), og en parameter β kalt bias.
-i i 0
-Til sammen har vi (n +1) parametre for n features. Vi kan gjenbruke mesteparten av koden fra
-klassifiseringen forå trene denne modellen, altså tilpasse parametrene basert på dataene. Vi må igjen
-bruke gradient descent forå optimalisere parametrene.
-Oppgave: Hva kan vi ikke gjenbruke fra klassifiseringstilfellet?
-Vi trenger en tapsfunksjon som guider læringsalgoritmens justering av modellparametrene, altså et
-kvantitativt mål på hvor godt modellprediksjonen passer med target per datainstans. Men regresjons-
-modellenvårgjørikkeklassifisering,såvikanikkegjenbruketapsfuksjonenfratidligere. Denvanligste
-tapsfunksjonen for regresjon er mean squared error:
-N
-1 (cid:88)(cid:16) (cid:17)2
-MSE(x)= y(i)−f(x(i)) . (52)
-2N
-i=1
-Her er y(i) er target for datapunkt x(i), f er modellen, og summen (hhv gjennomsnittet) går over alle
-N instansene (radene) i datasettet. Faktoren 1 er kun for convenience, og det finnes definisjoner av
-MSE der den ikke er med. MSE er liten hvis modellens prediksjon f(x) er nærme den sanne verdien
-y, og stor hvis de to er ulike.
-Hvis vi har et datasett med én feature x , har den lineære regresjonsmodellen to parametre, og kan
-skrives som
-f(x)=β +β x . (53)
-0 1 1
-Dennelikningenerpåsammeformsomlikning2,menmedandreparameternavn,valgtkunforåskille
-dettetilfellettydeligfralogistiskregresjon. Bias-parameterenβ ilikning53angirhvorregresjonslinjen
-krysser y-aksen; det er funksjonsverdien i x = 0. Dette leddet forflytter alle modellens prediksjoner
-med en konstant verdi. Tenk på det som en “baseline”-funksjonsverdi uten kjennkap til noen verdier
-av featurene, som justeres til modellens prediksjon når featureverdiene tas i betraktning. Da kommer
-den andre parameteren, β , i spill. Denne angir stigningstallet til linja.
-Den deriverte av tapsfunksjonen med hensyn på de to parametrene er
-N
-∂L 1 (cid:88) ∂ (cid:16) (cid:17)2
-= y(i)−β x(i)−β (54)
-∂β 2N ∂β 1 0
-0 0
-i=1
-N
-1 (cid:88)(cid:16) (cid:17)
-= β x(i)+β −y(i) (55)
-N 1 0
-i=1
-N
-∂L 1 (cid:88) (cid:16) (cid:17)
-= x(i) β x(i)+β −y(i) . (56)
-∂β N 1 0
-i=1
-Her ser vi nytten av faktoren 1: den oppheves av potensen under derivasjonen. Vi kan kontrollere
-at de deriverte gir mening gjennom kontrollspørsmål. Oppgave: Modellen oppfører seg som vist i
-figur 10b, altså den overestimerer konsekvent for alle verdier av x . Har modellen for lav eller for høy
-verdi av β ? Er verdien til ∂L større eller mindre enn 0? Tenk over dette før du leser videre.
-0 ∂β0
-Svaret er at β er for stor. En modell med for høy bias har ∂L > 0, som vil si at tapet øker når β
-0 ∂β0 0
-øker. Oppgave: Hilken tilsvarende sjekk kan vi gjøre for β ?
-Fragradiententiltapsfunksjonenfårvifølgendeoppdateringsregeltilparametreneiregresjonsmodellen
-vår
-N N
-1 (cid:88) 1 (cid:88)
-β ←β −η (f(x(i))−y(i)) β ←β −η x(i)(f(x(i))−y(i)). (57)
-0 0 N 1 1 N
-i=1 i=1
-Mye av koden fra klassifiseringsoppgaven kan gjenbrukes forå tilpasse modellen i likning 53 til et gitt
-datasett.
 Table 7: Datasett for regresjon.
 Datapunkt x y
 1 -10.0 -6.359354964838024
@@ -1068,9 +914,70 @@ Datapunkt x y
 38 8.5 12.898017911956575
 39 9.0 10.838245427992971
 40 9.5 9.886185758809033
+enkleste tilfellet, og den enkleste regresjonsmodellen er en lineær modell. Likningen for en lineær
+(a) (b)
+Figure 10: (a) Datasett til lineær regresjon, og (b) en lineær regresjonsmodell med høy bias.
+regresjonsmodell er
+f(x)=β +β x +β x +...β x . (50)
+0 1 1 2 2 n n
+Modellen har en parameter β per feature x (kolonne i datasettet), og en parameter β kalt bias.
+i i 0
+Til sammen har vi (n +1) parametre for n features. Vi kan gjenbruke mesteparten av koden fra
+klassifiseringen forå trene denne modellen, altså tilpasse parametrene basert på dataene. Vi må igjen
+bruke gradient descent forå optimalisere parametrene.
+Vi trenger en tapsfunksjon som guider læringsalgoritmens justering av modellparametrene, altså et
+kvantitativt mål på hvor godt modellprediksjonen passer med target per datainstans. Men regresjons-
+modellenvårgjørikkeklassifisering,såvikanikkegjenbruketapsfuksjonenfratidligere. Denvanligste
+tapsfunksjonen for regresjon er mean squared error:
+N
+1 (cid:88)(cid:16) (cid:17)2
+MSE(x)= y(i)−f(x(i)) . (51)
+2N
+i=1
+Her er y(i) er target for datapunkt x(i), f er modellen, og summen (hhv gjennomsnittet) går over alle
+N instansene (radene) i datasettet. Faktoren 1 er kun for convenience, og det finnes definisjoner av
+MSE der den ikke er med. MSE er liten hvis modellens prediksjon f(x) er nærme den sanne verdien
+y, og stor hvis de to er ulike.
+Hvis vi har et datasett med én feature x , har den lineære regresjonsmodellen to parametre, og kan
+skrives som
+f(x)=β +β x . (52)
+0 1 1
+Dennelikningenerpåsammeformsomlikning2,menmedandreparameternavn,valgtkunforåskille
+dettetilfellettydeligfralogistiskregresjon. Bias-parameterenβ ilikning52angirhvorregresjonslinjen
+krysser y-aksen; det er funksjonsverdien i x = 0. Dette leddet forflytter alle modellens prediksjoner
+med en konstant verdi. Tenk på det som en “baseline”-funksjonsverdi uten kjennkap til noen verdier
+av featurene, som justeres til modellens prediksjon når featureverdiene tas i betraktning. Da kommer
+den andre parameteren, β , i spill. Denne angir stigningstallet til linja.
+Den deriverte av tapsfunksjonen med hensyn på de to parametrene er
+N
+∂L 1 (cid:88) ∂ (cid:16) (cid:17)2
+= y(i)−β x(i)−β (53)
+∂β 2N ∂β 1 0
+0 0
+i=1
+N
+1 (cid:88)(cid:16) (cid:17)
+= β x(i)+β −y(i) (54)
+N 1 0
+i=1
+N
+∂L 1 (cid:88) (cid:16) (cid:17)
+= x(i) β x(i)+β −y(i) . (55)
+∂β N 1 0
+i=1
+Her ser vi nytten av faktoren 1: den oppheves av potensen under derivasjonen.
+Fragradiententiltapsfunksjonenfårvifølgendeoppdateringsregeltilparametreneiregresjonsmodellen
+vår
+N N
+1 (cid:88) 1 (cid:88)
+β ←β −η (f(x(i))−y(i)) β ←β −η x(i)(f(x(i))−y(i)). (56)
+0 0 N 1 1 N
+i=1 i=1
+Mye av koden fra klassifiseringsoppgaven kan gjenbrukes forå tilpasse modellen i likning 52 til et gitt
+datasett.
 
 ## 1.4.2 Polynomisk regresjon og feature engineering
-<!-- side 24 -->
+<!-- side 23 -->
 
 Sepådatasettetvistifigur11a. Denoransjelinjenrepresentererdenunderliggendefordelingen, ogde
 blå punktene representerer datapunkter generert fra denne fordelingen, med tilfeldig støy trukket fra
@@ -1078,15 +985,8 @@ en gaussisk fordeling (med forventningsverdi µ=0 og standardavvik σ =0.5) lagt
 (a) (b)
 Figure11: (a)Datasett(blåpunkter)generertavenpolynomisklikningavgradto(oransjelinje)med
 gaussisk støy, og (b) en lineær regresjonsmodell tilpasset dette datasettet.
-Oppgave: Hvor godt vil lineær regresjon fungere for å lage en modell som predikerer y for nye
-datapunkterx? Hvorfor? Prøvåformuleresvaretvedhjelpavantakelsen somliggerilineærregresjon.
 Figur 11b viser en lineær modell tilpasset til disse dataene, og denne bekrefter det vi nok forventet:
 Lineær regresjon fungerer dårlig forå modellere en parabel.
-Oppgave: For akkurat min implementasjon fant jeg at modellens MSE ligger rundt 960. Er dette
-et høyt eller lavt tall? Kan vi si generelt hva som er en høy verdi for MSE? For mine data er
-gjennomsnittsverdien av targets ca 28.15, og gjennomsnittsverdien av prediksjonene ca 32.07. MSE
-står for mean squared error, og vi får den avå kvadrere avvik. 302 = 900, så det kvadrerte avviket
-tilsvarer ca størrelsen på targets og prediksjoner. Dette er et forholdsvis stort tap.
 Viharfleremuligheterforålageenbedremodell, ogidetaktuelletilfelletkjennervifunksjonsformen
 til fordelingen som genererte dataene. At vi kjenner funksjonen som ble brukt tilå generere dataene
 vil så godt som aldri være tilfelle, men bare vedå plotte dataene kunne vi se at de fordeler seg som et
@@ -1101,7 +1001,7 @@ Etter transformasjonen har vi generert en ny feature, og der vi før hadde én f
 features {x ,x } = {x,x2}, og har dermed økt dimensjonaliteten til dataene fra én til to. Vi skal
 1 2
 derfor gjøre en ny lineær regresjon, denne gangen med to features, og modellen som skal tilpasses er
-y =β +β x +β x . (58)
+y =β +β x +β x . (57)
 0 1 1 2 2
 Merk at vi fremdeles gjør lineær regresjon, men nå med en generert feature. Merk også at feature
 engineering kan gjøres i alle tilfeller; ikke kun for veiledet læring, og ikke kun for regresjon.
@@ -1117,22 +1017,19 @@ Detfinnesmangemetoderogtriksforfeatureengineering,ogvikommermildtsagtikketilåde
 i dette kurset. Dere kan ta i bruk metoder etter eget ønske og fantasi når dere løser øvingsoppgavene,
 gitt at dere forstår og kan forklare hva dere har gjort og hvorfor.
 For én variabel x kan vi skrive et polynom av grad M som
-f(x)=β +β x+β x2+···+β xM. (59)
+f(x)=β +β x+β x2+···+β xM. (58)
 0 1 2 M
 og figur 12 viser data generert fra et polynom av ukjent grad.
 Figure 12: Datasett generert fra polynom av ukjent grad, med gaussisk støy
-Oppgave: Er det muligå se fra dataene i figuren hvilken grad vi bør generere features til?
 (a) (b) (c)
 Figure13: (a)Lineærregresjonogregresjonmedgenerertefeaturestilgrad(b)3og(c)15,tildatasettet
 representert av de blå punktene.
 Figurene 13a, 13b og 13c viser lineær regresjon til dataene i figur 12, med feature transformasjoner
 til ulike grader. Her ser vi at en mer kompleks modell (høyere grads polynom) ikke nødvendigvis gir
 lavere tap (MSE), men at både for lav og for høy kompleksitet i modellen er problematiske.
-Oppgave: Ergradenpåpolynometvitransformererfeaturestilenmodellparameter,enhyperparam-
-eter eller en feature?
 
 ## 1.4.3 Trening, testing og validering
-<!-- side 25 -->
+<!-- side 24 -->
 
 Overtilpasningskjernårmodellenharkapasitettilåtilpassesegsågodttiltreningsdataeneatdetgår
 utover generaliseringsevnen på testdataene. Det er viktigå kunne detektere overtilpasning, slik at vi
@@ -1188,9 +1085,9 @@ ulike metrikker, inkludert tap, på trenings- og valideringsdataene.
 flater ut, overtilpasser modellen.
 • Hvis begge kurvene flater ut med høy loss, undertilpasser modellen. Det betyr som oftest at den
 ikke har kapasitet eller riktig form tilå tilpasse seg til dataene. Det meståpenbare tegnet på
+undertilpasning er høy loss på treningsdataene.
 (a) (b) (c)
 Figure 14: Trenings- og valideringstap for tre ulike modeller, se beskrivelse i teksten.
-undertilpasning er høy loss på treningsdataene.
 • Hvis begge kurvene synker jevnt og flater ut, betyr det at modellen klarerå modellere trenings-
 dataene, og samtidig klarerå generalisere til nye data.
 Disse metrikkene kan også brukes tilå justere hyperparametre underveis i treningen. For eksempel er
@@ -1200,10 +1097,8 @@ I stedet kan man lage et early stopping criterion som stanser treningen for ekse
 valideringsdataene ikke har minket innenfor en toleranse i løpet av de siste n epokene.
 
 ## 1.4.4 Kryssvalidering
-<!-- side 27 -->
+<!-- side 26 -->
 
-Oppgave: Hvordan velger vi hvilke datapunkter som havner i henholdsvis trenings-, test og valider-
-ingsdatasettet, og påvirker dette testresultatet?
 Inndelingavdatasettetitrenings-,test-ogvalideringsdata(skal)gjørestilfeldig,mendennesplittenkan
 påvirketestresultatet. Vimåaltsåforventenoevarianspåtestresultatet,avhengigavdatasplitt. Dette
 erenutfordringvimåhåndtere. Itilleggerdetutfordrendeatvifårfærredatapunkteråtrenepånår
@@ -1222,10 +1117,9 @@ treningsdatapunkt. Enmerutbredtmetodeerderfork-fold cross validation,medk splitt
 n. Man velger da en verdi for k, og splitter datasettet i k deler. Hvor hver iterasjon k spiller en annen
 del av datasettet rollen som testdata, mens resten brukes til trening, modellen tilpasses k ganger, og
 man oppnår k testresulater som brukes tilå beregne det endelige estimatet av testresultatet.
-Oppgave: Hva er fordeler og ulemper ved k-fold cross validation sammenliknet med LOOCV?
 
 ## 1.4.5 Bias variance tradeoff
-<!-- side 27 -->
+<!-- side 26 -->
 
 Når vi velger en læringsalgoritme velger vi en estimator for prediksjonsproblemet vårt. For både
 logistisk og lineær regresjon har vi brukt (og for nevrale nettverk kommer vi til å bruke) gradient
@@ -1235,7 +1129,7 @@ Vi antar at target-verdiene vi observerer (for både klassifisering og regresjon
 funksjon som ingen unntatt universet kjenner til, la oss kalle denne F. Basert på observasjoner x
 gir denne funksjonen den sanne verdien av y, utover støy som er utenfor vår kontroll (for eksempel
 måleapparatet, eksterne faktorer, osv),
-y =F(x)+ε. (60)
+y =F(x)+ε. (59)
 Dettesåkalteirredusible støyetblirviikkekvitt,menvikanantaatdeternormalfordelt,medforvent-
 ningsverdiµ=0ogstandardavvikσ =1. Nårvigjørmaskinlæringsamlerviinntreningsdatasettgjen-
 nomå trekke tilfeldige n observasjoner fra virkeligheten; D = {(x ,y ),(x ,y ),...(x ,y )}. Basert
@@ -1246,17 +1140,17 @@ et datasett, vi har bare ikke skrevet det inn eksplisitt, siden vi har forholdt 
 nå skal vi se hvordan estimatoren oppfører seg under ulike trekninger av dataene, og da er det veldig
 nyttigå ta med D eksplisitt inni f, slik at vi skjønner når vårt (tilfeldige) utvalg av data har noeå si.
 Når vi bruker en læringsalgoritme tilå minimere et tap, i bunn og grunn avviket
-(y−f(x;D))2, (61)
+(y−f(x;D))2, (60)
 ønsker viå ende opp med en modell f som også har lavt tap på nye datapunkter, altså datapunkter
 som ikke finnes i D. Det betyr at vi bryr oss om forventningsverdien over mange ulike trekninger av
 treningsdatasetet,
 (cid:104) (cid:105)
-E (y−f(x;D))2 . (62)
+E (y−f(x;D))2 . (61)
 D
 Det viser seg at uansett hvilken funksjon f vi velger, kan vi dekomponere uttrykket over – altså feilen
 vi forventer at den gjør på et nytt datapunkt x – som følger,
 (cid:104) (cid:105)
-E (y−f(x;D))2 =(Bias [f(x;D])2+Var [f(x;D)]+σ2. (63)
+E (y−f(x;D))2 =(Bias [f(x;D])2+Var [f(x;D)]+σ2. (62)
 D D D
 Dette er opphavet til bias-variance tradeoff, som forteller oss at tapet en læringsalgoritme ikke klarer
 å minimere vekkstammerfra tre ulike typerfeil, nemlig bias, variansog irredusibeltstøy. La oss først
@@ -1264,31 +1158,21 @@ se på bias og varians hver for seg, og så se hvordan vi kan utlede denne dekom
 Bias til en læringsalgoritme har ingenting med det konstante leddet i lineære modeller å gjøre, og
 heter det samme kun forå forvirre studenter. Biasen som representerer det systematiske avviket til
 estimatoren beregnes over ulike trekninger av treningsdata,
-Bias [f(x;D)]=E [f(x;D)−F(x)] (64)
+Bias [f(x;D)]=E [f(x;D)−F(x)] (63)
 D D
-=E [f(x;D)]−F(x). (65)
+=E [f(x;D)]−F(x). (64)
 D
 Dette er altså det forventede avviket mellom modellen tilpasset på et gitt datasett og den faktiske
 target-verdien, begge evaluert på datapunktet x. Enkelt sagt: hvor mye vi må forvente at modellen
 bommer på nye data. Vi kan tenke på dette som feilen som følger av de innebyggede forenklingene i
 modellen.
-Oppgave: Hvakommerdenandrelikhetenav,altsåhvorforkanviflytteF(x)utenforforventningsver-
-dien? TENK OVER DETTE FØR DU LESER VIDERE. Fordi den sanne sammenhengen, se likning
-60, ikke er avhengig av datasettet D, som vi tar forventningsverdien over. F(x) er en konstant når x
-er gitt.
-Oppgave: For intuisjon kan vi tenke oss en litt rar situasjon: Vi finner ut at den faktiske gjennom-
-snittshøyden til norske kvinner er 167 cm. Vi måler egenskapene og høyden til mange ulike tilfeldige
-utvalg av norske kvinner, som gir oss flere treningsdatasett. For hvert datasett trener vi en modell (vi
-trener altså flere regresjonsmodeller ved bruk av gradient descent) som estimerer kvinnehøyde basert
-på de andre egenskapene. Vi finner ut at modellene i gjennomsnitt predikerer at kvinner er 165 cm
-høye. Hvor stor bias har læringsalgoritmen?
 En læringsalgoritme med liten bias (i absoluttverdi) har typisk tilstrekkelig kompleksitet forå tilpasse
 seg til treningsdataene. Høy bias tyder typisk på at læringsalgoritmen ikke klarerå modellere alle
 sammenhengene i dataene. Veldig enkelt kan vi tenke på bias som en tendens tilå alltid bomme i
 samme retning.
 Variansen til en læringsalgoritme over ulike trekninger av data er
 (cid:104) (cid:105)
-Var [f(x;D)]=E (E [f(x;D)]−f(x;D))2 (66)
+Var [f(x;D)]=E (E [f(x;D)]−f(x;D))2 (65)
 D D D
 altså hvor mye vi kan forvente at modellen varierer rundt sitt eget gjennomsnitt. En læringsalgoritme
 medhøyvariansertypiskforsensitivtilsmåfluktuasjoneritreningsdataene,ogharkanskjemodellert
@@ -1297,48 +1181,48 @@ mange parametre, har en tendens tilå ende opp med ulike parameterverdier for hv
 hvert treningsdatasett. Slike modeller har stor varians i de estimerte parameterverdiene.
 Nå som vi kjenner uttrykkene for bias og varians kan vi utlede sammenhengen over, gjennomå bruke
 følgende nyttige relasjoner
-E[ε]=0 (67)
-E[c]=c (68)
-E[cX]=cE[X] (69)
-E[X+Y]=E[X]+E[Y] (70)
-E[XY]= ! E[X]E[Y] for statistisk uavhengige X og Y. (71)
+E[ε]=0 (66)
+E[c]=c (67)
+E[cX]=cE[X] (68)
+E[X+Y]=E[X]+E[Y] (69)
+E[XY]= ! E[X]E[Y] for statistisk uavhengige X og Y. (70)
 tilå skrive om MSE-tapsfunksjonen. Her er X og Y hvilke som helst tilfeldige variabler, men greier
 som har en sannsynlighetsfordeling vi kan gjøre trekninger fra.
 Vidropperherkonstanten 1 ogindeksen påforventningsverdienforenenklerenotasjoniutledningen,
 2 D
 og skriver
 (cid:20)(cid:16) (cid:17)2 (cid:21)
-MSE=E y−f(x;D) (72)
+MSE=E y−f(x;D) (71)
 (cid:20)(cid:16) (cid:17)2 (cid:21)
-=E F(x)+ε−f(x;D) (73)
-=E (cid:20)(cid:16) F(x)−f(x;D) (cid:17)2 (cid:21) +2E (cid:104)(cid:16) F(x)−f(x;D) (cid:17) ε (cid:105) +E(cid:2) ε2(cid:3) (74)
-=E (cid:20)(cid:16) F(x)−E[f(x;D)]+E[f(x;D)]−f(x;D) (cid:17)2 (cid:21) +0+E(cid:2) ε2(cid:3) (75)
+=E F(x)+ε−f(x;D) (72)
+=E (cid:20)(cid:16) F(x)−f(x;D) (cid:17)2 (cid:21) +2E (cid:104)(cid:16) F(x)−f(x;D) (cid:17) ε (cid:105) +E(cid:2) ε2(cid:3) (73)
+=E (cid:20)(cid:16) F(x)−E[f(x;D)]+E[f(x;D)]−f(x;D) (cid:17)2 (cid:21) +0+E(cid:2) ε2(cid:3) (74)
 (cid:20)(cid:16) (cid:17)2 (cid:21) (cid:20)(cid:16) (cid:17)2 (cid:21)
-=E F(x)−E[f(x;D)] +E E[f(x;D)]−f(x;D) (76)
-+2E (cid:104)(cid:16) F(x)−E[f(x;D)] (cid:17)(cid:16) E[f(x;D)]−f(x;D) (cid:17)(cid:105) +E(cid:2) ε2(cid:3) (77)
+=E F(x)−E[f(x;D)] +E E[f(x;D)]−f(x;D) (75)
++2E (cid:104)(cid:16) F(x)−E[f(x;D)] (cid:17)(cid:16) E[f(x;D)]−f(x;D) (cid:17)(cid:105) +E(cid:2) ε2(cid:3) (76)
 Vi tar for oss hvert ledd for seg. Det første leddet er
 (cid:20)(cid:16) (cid:17)2 (cid:21) (cid:104) (cid:105)
-E F(x)−E[f(x;D)] =E F(x)2−2(F(x)E[f(x;D)]+E[f(x;D)]2 (78)
-=F(x)2−2F(x)E[f(x;D)]+E[f(x;D)]2 (79)
+E F(x)−E[f(x;D)] =E F(x)2−2(F(x)E[f(x;D)]+E[f(x;D)]2 (77)
+=F(x)2−2F(x)E[f(x;D)]+E[f(x;D)]2 (78)
 (cid:16) (cid:17)2
-= F(x)−E[f(x;D)] (80)
-=Bias [f(x;D)]2 , (81)
+= F(x)−E[f(x;D)] (79)
+=Bias [f(x;D)]2 , (80)
 D
-og andre ledd kan vi sammenlikne med likning 66 forå identifisere
+og andre ledd kan vi sammenlikne med likning 65 forå identifisere
 (cid:20)(cid:16) (cid:17)2 (cid:21)
-E E[f(x;D)]−f(x;D) =Var[f(x;D)]. (82)
+E E[f(x;D)]−f(x;D) =Var[f(x;D)]. (81)
 Tredje ledd blir
 (cid:104)(cid:16) (cid:17)(cid:16) (cid:17)(cid:105)
-2E F(x)−E[f(x;D)] E[f(x;D)]−f(x;D) (83)
+2E F(x)−E[f(x;D)] E[f(x;D)]−f(x;D) (82)
 (cid:104) (cid:105)
-=2E F(x)E[f(x;D)]−F(x)f(x;D)−E[f(x;D)]2+E[f(x;D)]f(x;D) (84)
+=2E F(x)E[f(x;D)]−F(x)f(x;D)−E[f(x;D)]2+E[f(x;D)]f(x;D) (83)
 (cid:16) (cid:17)
-=2 F(x)E[f(x;D)]−F(x)E[f(x;D)]−E[f(x;D)]2+E[f(x;D)]2 (85)
-=0. (86)
-Til slutt, se på likning 66 og overbevis deg om at
-E[ε2]=Var[ε]=σ2. (87)
+=2 F(x)E[f(x;D)]−F(x)E[f(x;D)]−E[f(x;D)]2+E[f(x;D)]2 (84)
+=0. (85)
+Til slutt, se på likning 65 og overbevis deg om at
+E[ε2]=Var[ε]=σ2. (86)
 Vi samler leddene og ser at vi kan skrive tapet på et datapunkt x som
-MSE(x)=Bias [f(x;D)]2+Var[f(x;D)]+σ2. (88)
+MSE(x)=Bias [f(x;D)]2+Var[f(x;D)]+σ2. (87)
 D
 Denne relasjonen forteller oss at tapet assosiert med en læringsalgoritme består av en komponent som
 skyldesbias,altsåfeilantakelsermodellenegjørgenerelt,ensomskyldesvarians,altsåspesialtilpasning
@@ -1358,7 +1242,7 @@ targets. Høyvariansrepresentereratmodellenharforhøysensitivitettilvariasjoneri
 (inkludert støy), altså har overmodellert sammenhenger i stedet forå generalisere.
 
 ## 1.4.6 Regresjonstrær
-<!-- side 30 -->
+<!-- side 29 -->
 
 Se på dataene i figur 15a. Her har vi én feature x og et target y med en tydelig fordeling, men som
 vi likevel ikke kjenner funksjonsformen til (eller, kanskje du kjenner funksjonsformen, men lat som du
@@ -1379,8 +1263,6 @@ Labels
 (b)
 Figure 15: (a) Stegvise data, se beskrivelse i teksten, og (b) prediksjoner fra et 5. gradspolynom trent
 på disse dataene.
-Oppgave: Prøv gjerneå generere disse dataene selv ved bruk av def f(x): return np.floor(x),
-og se om du klarerå tilpasse et polynom av valgfri grad til dataene.
 Vi innser raskt at y ikke følger et polynom, og at polynomisk regresjon ikke er en god vei til mål. I
 stedet kan vi innse vedå studere dataene at de befinner seg i flere regioner. Vi husker kanskje også at
 beslutningstrærergodtegnettilåsplittedatatilulikeregioner,gjennomulikesplittkriterier. Tidligere
@@ -1426,7 +1308,6 @@ for thr, d in zip(thresholds, t.compute_node_depths()[t.feature >= 0]):
 plt.axvline(thr, color="gray", ls=":", lw=3/d, alpha=0.7)
 plt.legend()
 plt.show()
-I forelesningen ser vi at sklearn gjerne prøverå lage et tre med dybde 12 og dermed 85 noder til
 4 train
 tree
 true
@@ -1441,6 +1322,7 @@ x[0] <= 0.99 x[0] <= 3.071
 (a) (b)
 Figure 16: (a) Et beslutningstre med dybde 2, tilpasset på de stegvise dataene, og (b) datarommet
 der stiplede linjer indikerer regionene dette treet lager.
+I forelesningen ser vi at sklearn gjerne prøverå lage et tre med dybde 12 og dermed 85 noder til
 disse dataene. Vi ser på trær med ulike dybder, og finner ut at den laveste MSEen oppnås for et
 tre med dybde 2. Et eksempel på et slikt tre er vist i Figur 16a, og den tilsvarende inndelingen av
 datarommetervistiFigur16b. Lagetdatasettselvmedenstøyetetrekningfrafloor-dataene, tilpass
@@ -1469,7 +1351,7 @@ forståelige for mennesker, og vi skjønner at features som splittes tidlig er v
 splittes senere. Det samme gjelder ikke for modelltypen vi skal se på i neste omgang.
 
 ## 1.5 Ensemble-modeller
-<!-- side 32 -->
+<!-- side 31 -->
 
 Det kan være vanskelig å velge riktig modell for et gitt datasettet og problem. Generelt har alle
 modellersineantakelserogsvakheter,foreksempelantarlineærregresjonatforholdetmellomfeatures
@@ -1499,7 +1381,7 @@ ensembletsendeligeprediksjon. Viderekanvi,itilleggtilåbrukeulikemodellerogulike
 trene de ulike modellene i ensemblet på ulike deler av treningsdataene.
 
 ## 1.5.1 Bagging
-<!-- side 33 -->
+<!-- side 32 -->
 
 Når vi lager et ensemble bestående av ulike modeller trent på ulike deler av de tilgjengelige trenings-
 dataene og kombinerer prediksjonene fra disse til én prediksjon, må vi ta stilling til to spørsmål:
@@ -1524,6 +1406,27 @@ estimatet vårt. Vi startet altså med ett datasett som vi kunne lage ett estima
 hjelp av bootstrapping skaffet oss en fordeling – uten å ha fått tilgang til flere datapunkter eller
 datasett. Vi har laget mer utenå måtte samle mer data, altså “pulled us up by our own bootstraps”.
 Begrepet bagging er satt sammen av b fra bootstrap, og agging fra aggregering.
+En enkel type ensemblemodell som bruker bagging er random forest (tilfeldig skog). Denne lages ved
+å sette sammen ulike beslutningstrær, eventuelt stumper. For at ensemblemodellen skal bli god, må
+de ulike trærne være diverse og uavhengige. Dette oppnår vi gjennomå trene trærne på ulike deler av
+dataene (bootstrapp-teknikken), og dessuten ulike utvalg av data-features, slik at trærne modellerer
+ulikesammenhenger. Tilsluttaggregesprediksjonenefraalletrærnetilénprediksjon–ogbagging har
+skjedd.
+Generelt har parallelle ensemblemodeller til felles at de består av modeller som trenes uavhengig av
+hverandre. Denendeligeprediksjonenlagesvedatdeindividuelleprediksjoneneaggregeres,gjennomen
+type gjennosnitt eller avstemning. De individuelle modellene kan lages vedå bruke ulike modelltyper,
+ulike hyperparametre, ulike random seeds av samme læringsalgoritme, ulik feature engineering, ulike
+utvalg av treningsdataene, med mer.
+
+## 1.5.2 Boosting
+<!-- side 32 -->
+
+Innen maskinlæring refererer begrepet boosting til algoritmer som iterativt trener svake modeller (for
+eksempel trestumper) på en datafordeling, og kombinerer disse til en sterk modell (ensemblet). Kon-
+septet stammer fra en samling publikasjoner av Kearns og Valiant (1988, 1989), og Schapire (1990),
+som undersøkte muligheten for at flere svake modeller, altså modeller hvis prediksjoner er kun svakt
+korellertmedtargetidataene,kansettessammentilensterkmodell,altsåenmodellhvisprediksjoner
+er vilkårlig sterkt korellert med targets i dataene. Begrepet boosting handler om at feilene begått av
 Trenings data slebaL
 Test data
 lgoritme Modell
@@ -1554,8 +1457,7 @@ M
 , 1, , alse, emale, ,
 n
 ppiget
-M
-M M M
+M M M M
 3M 2M gjennomsnitt 3M
 M M
 M
@@ -1571,7 +1473,7 @@ slebaL
 slebaL
 av data slebaL
 av data slebaL
-lgoritme 1 Modell 1
+1 lgoritme 1 Modell 1
 lgoritme 2 Modell 2 Me a t t a a
 Meta
 eatres ata
@@ -1585,8 +1487,7 @@ Meta 1 ata
 lgoritme 1 Modell 1
 eatres
 lgoritme 2 Modell 2 Me a t t a a
-eatres
-featres lgoritme 3 Modell 3
+eatres featres lgoritme 3 Modell 3
 Trening
 slebaL Metaalgoritme Metamodell
 slebaL
@@ -1618,8 +1519,7 @@ n
 ojskiderP
 n
 ojskiderP
-gniregergg
-nojskiderp
+gniregergg nojskiderp
 etsiS
 Trenings data slebaL
 Test data
@@ -1659,9 +1559,7 @@ n
 ojskiderP
 n
 ojskiderP
-gniregergg
-nojskiderp
-etsiS
+gniregergg nojskiderp etsiS
 Trenings data
 tilpass datavektene
 Trenings data
@@ -1686,9 +1584,9 @@ ttinsmonnejg
 tetkeV 3α ,2α ,1α
 nojskiderp
 etsiS
-Trenings data endre target
 Trenings data
 endre target
+Trenings data endre target
 Trenings data
 slebaL
 slebaL
@@ -1740,55 +1638,17 @@ Prediksjon Prediksjon Prediksjon
 Siste prediksjon
 
 eatres
-Trekkin 3
+Trekkin
 med tilbakelegging
 eatres
 renojsavresb
+Trenings
+data
 Figure 17: Enkel illustrasjon av AdaBoost.
-En enkel type ensemblemodell som bruker bagging er random forest (tilfeldig skog). Denne lages ved
-å sette sammen ulike beslutningstrær, eventuelt stumper. For at ensemblemodellen skal bli god, må de ulike trærne være diverse og uavhengige. Dette oppnår vi gjennomå trene trærne på ulike deler av
-dataene (bootstrapp-teknikken), og dessuten ulike utvalg av data-features, slik at trærne modellerer
-ulikesammenhenger. Tilsluttaggregesprediksjonenefraalletrærnetilénprediksjon–ogbagging har
-skjedd.
-Generelt har parallelle ensemblemodeller til felles at de består av modeller som trenes uavhengig av
-hverandre. Denendeligeprediksjonenlagesvedatdeindividuelleprediksjoneneaggregeres,gjennomen
-type gjennosnitt eller avstemning. De individuelle modellene kan lages vedå bruke ulike modelltyper,
-ulike hyperparametre, ulike random seeds av samme læringsalgoritme, ulik feature engineering, ulike
-utvalg av treningsdataene, med mer.
-
-## 1.5.2 Boosting
-<!-- side 34 -->
-
-Innen maskinlæring refererer begrepet boosting til algoritmer som iterativt trener svake modeller (for
-eksempel trestumper) på en datafordeling, og kombinerer disse til en sterk modell (ensemblet). Kon-
-septet stammer fra en samling publikasjoner av Kearns og Valiant (1988, 1989), og Schapire (1990),
-som undersøkte muligheten for at flere svake modeller, altså modeller hvis prediksjoner er kun svakt
-korellertmedtargetidataene,kansettessammentilensterkmodell,altsåenmodellhvisprediksjoner
-er vilkårlig sterkt korellert med targets i dataene. Begrepet boosting handler om at feilene begått av
-de forrige modellene gjør den påfølgende modellen i iterasjonen bedre (“booster” den)2. I stedet forå
-kombinere flere modeller parallelt, organiseres de altså sekvensielt, og hver modell forholder seg til de
-forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell er for seg selv. Vi skal se på to
-algoritmer som gjør dette.
-AdaBoost-algoritmen bygger et ensemble av modeller som korrigerer hverandres feil, gjennom en
-iterativtreningsprosedyre(seFigur17forenkelillustrasjon). Istartenavprosedyrenharallepunktene
-i treningsdataene samme vekt, og vi trener én modell som predikerer på disse dataene. Basert på
-targetsserviforhvilkedatapunktermodellenharstørsttap,oginesteiterasjonøkesvektenefordisse
-datapunktene. Deretter trenes en ny modell, som igjen predikerer på et datasett, før vektene igjen
-justeres.
-Gradient boostinger,tilforskjellfraAdaBoost,ikkebasertpåvektingavobservasjoner(seFigur18
-for en enkel illustrasjon). I stedet predikerer hver modell forskjellen mellom targets og den forrige
-modellens prediksjon, såkalte pseudo-residuals. Det nye ensemblet lages vedå følge læringsregelen
-new_ensemble = previous_ensemble - learning_rate * new_tree
-Dette uttrykket bør minne deg om gradient descent, som er opphavet til navnet gradient boosting. Vi
-gjør altså ikke gradient descent i rommet over alle mulige parameterverdier, men i rommet over alle
-mulige trær ensemblet vårt kan bestå av. Gradienten i dette tilfellet er altså -(label-prediction).
-2AdaBoosttarhensyntilalletidligeremodeller,mensGradientBoostserpåprediksjonsfeilentildenforrigemodellen.
 eatres
 Trekkin
 med tilbakelegging
 2 alse
-Trenings
-data
 slebaL
 Test data
 lgoritme Modell
@@ -1819,16 +1679,12 @@ M
 , 1, , alse, emale, ,
 n
 ppiget
-M
-M
+M M
 M M
 3M 2M gjennomsnitt 3M
-M M
-M
-3M
+M M M 3M
 2M M
-2M M
-talge n gjennomsnittspris
+2M M talge n gjennomsnittspris
 n
 2M M
 gjennomsnitt 3M M M
@@ -1837,45 +1693,33 @@ n
 slebaL
 slebaL
 a data slebaL
-a
-data
-slebaL
-lgoritme 1 Modell 1
+a data slebaL
+1 lgoritme 1 Modell 1
 Meta- lgoritme 2 Modell 2 ata
 Meta-
 eatres ata
 featres lgoritme 3 Modell 3
+Meta- ata
+Meta- ata
 Meta-
 ata
-Meta-
-ata
-Meta-
-ata
-Meta-
-1 ata
+Meta- 1 ata
 lgoritme 1 Modell 1
 eatres
-Meta-
-lgoritme 2 Modell 2 ata
+Meta- lgoritme 2 Modell 2 ata
 eatres
-featres lgoritme 3 Modell 3
-Trening
+featres lgoritme 3 Modell 3 Trening
 slebaL
 =
 =
 Meta-algoritme Meta-modell
 slebaL
 slebaL
-Trenings
-data
-slebaL
+Trenings data slebaL
 Test data
-Trening lgoritme Modell 1
-sbset 1
-Trening
-lgoritme Modell 2 sbset 2
-Trening
-sbset 3 lgoritme Modell 3
+Trening lgoritme Modell 1 sbset 1
+Trening lgoritme Modell 2 sbset 2
+Trening sbset 3 lgoritme Modell 3
 Trening Inferens
 n
 ojskiderP
@@ -1890,8 +1734,7 @@ Trenings
 data
 slebaL
 Test data
-Trening lgoritme 1 Modell 1
-sbset 1
+Trening lgoritme 1 Modell 1 sbset 1
 Trening
 lgoritme 2 Modell 2 sbset 2
 Trening
@@ -1908,8 +1751,7 @@ nojskiderp
 etsiS
 Trenings data slebaL
 Test data
-Trening lgoritme 1 Modell 1
-sbset 1
+Trening lgoritme 1 Modell 1 sbset 1
 Trening lgoritme 2 Modell 2 sbset 2
 Trening
 sbset 3 lgoritme 3 Modell 3
@@ -1951,8 +1793,7 @@ ojskiderP
 gniregergg
 nojskiderp
 etsiS
-Trenings
-data
+Trenings data
 tilpass dataektene
 Trenings data
 tilpass dataektene
@@ -1986,16 +1827,14 @@ Trenings data
 endre target
 Trenings data
 endre target
-Trenings
-data
+Trenings data
 slebaL
 slebaL
 slebaL
 Test data
 α1 Modell 1
 α2 Modell 2
-α3
-Modell 3
+α3 Modell 3
 Trening
 n
 ojskiderP
@@ -2046,14 +1885,34 @@ med tilbakelegging
 eatres
 renojsaresb
 Figure 18: Enkel illustrasjon av Gradient Boosting.
-Oppgave: Trebaserteensemblemodellerdubørhahørtom,oghelstbruktpåetdatasett,erCatBoost,
-LightGBM, AdaBoost, og XGBoost.
+de forrige modellene gjør den påfølgende modellen i iterasjonen bedre (“booster” den)2. I stedet forå
+kombinere flere modeller parallelt, organiseres de altså sekvensielt, og hver modell forholder seg til de
+forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell er for seg selv. Vi skal se på to
+algoritmer som gjør dette.
+AdaBoost-algoritmen bygger et ensemble av modeller som korrigerer hverandres feil, gjennom en
+iterativtreningsprosedyre(seFigur17forenkelillustrasjon). Istartenavprosedyrenharallepunktene
+i treningsdataene samme vekt, og vi trener én modell som predikerer på disse dataene. Basert på
+targetsserviforhvilkedatapunktermodellenharstørsttap,oginesteiterasjonøkesvektenefordisse
+datapunktene. Deretter trenes en ny modell, som igjen predikerer på et datasett, før vektene igjen
+justeres.
+Gradient boostinger,tilforskjellfraAdaBoost,ikkebasertpåvektingavobservasjoner(seFigur18
+for en enkel illustrasjon). I stedet predikerer hver modell forskjellen mellom targets og den forrige
+modellens prediksjon, såkalte pseudo-residuals. Det nye ensemblet lages vedå følge læringsregelen
+new_ensemble = previous_ensemble - learning_rate * new_tree
+Dette uttrykket bør minne deg om gradient descent, som er opphavet til navnet gradient boosting. Vi
+gjør altså ikke gradient descent i rommet over alle mulige parameterverdier, men i rommet over alle
+mulige trær ensemblet vårt kan bestå av. Gradienten i dette tilfellet er altså -(label-prediction).
 Det er en god regelå alltid bruke en ensemble-modell som referanseverdi for hvor godt en modell kan
 gjøre det, når du jobber med et maskinlæringsproblem med tabulære data (altså den typen data vi
 bruker i dette kurset).
+2AdaBoosttarhensyntilalletidligeremodeller,mensGradientBoostserpåprediksjonsfeilentildenforrigemodellen.
+eatres
+Trekkin
+med tilbakelegging
+2 alse
 
 ## 2 Nevrale nettverk
-<!-- side 35 -->
+<!-- side 34 -->
 
 Nårvigjørmaskinlæringønskerviåtilpasseenfunksjonf somgirossetestimatbasertpåx,iveiledet
 læring et estimat av target y, altså yˆ=f(x). Vi har sett på flere måterå modellere f på:
@@ -2067,7 +1926,7 @@ transformerer dem ikke. Vårt neste steg innebærerå lage ikke-lineære modelle
 dataene.
 
 ## 2.1 Perceptron
-<!-- side 35 -->
+<!-- side 34 -->
 
 Perseptronet er forgjengeren til moderne nevrale nettverk, og ble introdusert av McCulloch og Pitts
 (1943). Den første implementasjonen ble bygget, i hardware, av Rosenblatt (1957). Tanken var at
@@ -2075,7 +1934,7 @@ perseptronet skulle være en maskin; ikke et program (denne setningen er verdt �
 perseptronbeståravénellerflereberegningsenheter, oftekaltnoder, ogidenopprinneligeformulerin-
 gen var nodene threshold logic units (TLU). Disse mapper inputen x til en output f(x) som tar en
 binær verdi,
-f(x)=H(wx+b), (89)
+f(x)=H(wx+b), (88)
 hvorH erHeavisidestegfunksjonen, sefigur20a, ogivårkontekstkallesenaktiveringsfunksjon. Både
 x og w er vektorer i det generelle tilfellet. En TLU, beskrevet av likningen over, er enten aktiv, altså
 har output = 1, eller ikke aktiv, altså har output = 0. Hvilke data x som gir hvilken aktivering av
@@ -2084,28 +1943,22 @@ og for at perseptronet skal ha høy treffsikkerhet i klassifiseringen må vekten
 Dette gjøres gjennom veiledet læring.
 Som før sendes instanser fra treningsdataene enkeltvis gjennom modellen, denne gjør en prediksjon
 yˆ og tapet beregnes basert på target y. Parametrene i modellen oppdateres forå redusere tapet per
-eatres
-Trekkin
-med tilbakelegging
-2 alse
 treningsinstans. Dette gjentas for alle instansene i treningsdataene, hvilket utgjør én epoke (epoch),
 og hele prosessen gjentas flere ganger (epochs). Vi kan implementere et perseptron vedå gjenbruke
-koden fra logistisk regresjon, med likning 89 som modell, altså:
+koden fra logistisk regresjon, med likning 88 som modell, altså:
 activation = sum(weight_i * x_i) + bias
 prediction = 1.0 if activation >= 0.0 else 0.0
 Igjen er treningsprosessen en loop over treningsdataene med egnet tapsfunksjon L, og parametrene
 oppdateres etter regelen i likning 13, gjentatt under:
 ∂
-θt+1 =θt−η L(f(x;θ),y). (90)
+θt+1 =θt−η L(f(x;θ),y). (89)
 ∂θ
-Oppgave: Hva er problemet med denne prosedyren? Ikke les videre før du har prøvdå besvare dette
-spørsmålet. Hint: Hva skjer hvis du prøverå derivere tapsfunksjonen med f(x) fra likning 89?
 Når vi skal derivere tapsfunksjonen, som inneholder prediksjonen, er vi nødt tilå derivere Heaviside-
 funksjonen. Denneer0overalt,og∞iettpunkt,ogdermedikkedefinert. Somderegaranterthusker,
 må tapsfunksjonen være deriverbar forå finne gradienten til parameteroppdateringen. I den opprin-
 nelige formuleringen av perseptronet (Rosenblatt) er leddet med den deriverte utelatt, så følgende
 uttrykk kan brukes
-w ←w +η(y −yˆ) . (91)
+w ←w +η(y −yˆ) . (90)
 i i i i
 I kode er det vanligå utvide x med et første element med verdi 1, og w har et tilsvarende ledd som
 representerer b, slik at vi får den mer kompakte operasjonen under.
@@ -2122,15 +1975,14 @@ og learning rate="constant". Vi finner de tilpassede parameterverdiene tilsvaren
 regresjon:
 ws = perceptron.coef_
 bs = perceptron.intercept_
-Sepådataeneifigur19b. Oppgave: Hvormangefeaturesogklasserhardataene? Hvormangevekter
-trenger et perseptron forå tilpasse dem? Det kan være nyttigå tegne en figur.
+Se på dataene i figur 19b.
 (a) (b)
 Figure 19: Klassifiseringsdatasett med (a) to klasser, generert av sklearn.datasets.make blobs, og
 (b) tre klasser, generert av sklearn.datasets.make classification.
 Forå gjøre denne klassifiseringsoppgaven, kan vi gjenbruke koden fra tidligere, og treningsprosedyren
 forblir den samme. Hvis man har implementert .fit() og .predict() selv, må koden eventuelt
 tilpasses forå håndtere en vektmatrise (i stedet for en -vektor), da parameteroppdateringen nå følger:
-w ←w +η(y −yˆ )x . (92)
+w ←w +η(y −yˆ )x . (91)
 i,j i,j j j i
 Her er
 • w vekten på forbindelsen mellom input i og node j,
@@ -2158,11 +2010,9 @@ x ,kanetperseptrongjøredenlogiskeoperasjonenNOTmed(w1,b)=(−1,0.5). Fortovaria
 1 1 2
 får vi den logiske operasjonen AND med (w ,w ,b)=(1,1,−1.5), og OR med (w ,w ,b)=(1,1,−0.5).
 1 2 1 2
-Oppgave: Kan kan et perseptron gjøre XOR? Hvordan? Hint: Det holder ikke med én TLU; sett
-sammen en kombinasjon av AND, NOT og OR.
 
 ## 2.2 Aktiveringsfunksjoner
-<!-- side 37 -->
+<!-- side 36 -->
 
 En ulempe ved perseptronet er at en liten endring i input kan føre til en stor endring i output. Dette
 skyldes Heaviside-funksjonen, som sender funksjonsverdien til enten 0 eller 1, se figur 20a. Et bedre
@@ -2174,12 +2024,12 @@ aktiveringsfunksjonene brukes til ulike formål: Hvis modellen skal gjøre binæ
 vanlig å ha en sigmoid-aktiveringsfunksjon i noden i nettverkets siste lag, for å sikre at modellens
 prediksjon havner i intervallet [0,1]. Sigmoid-funksjonen er den samme som tidligere, men gjentatt
 her for enklere sammenlikning med de andre aktiveringsfunksjonene:
-σ(x)= . (93)
+σ(x)= . (92)
 1+e−x
 I en modell som gjør ikke-binær klassifisering er det vanligå bruke en softmax-aktiveringsfunksjon i
 output-nodene:
 exi
-softmax(x) = , (94)
+softmax(x) = , (93)
 i (cid:80) exj
 j
 som sikrer at aktiveringene summerer til 1. Da representerer hver av output-nodene datapunktets
@@ -2188,7 +2038,7 @@ Modernenevralenettverkharsomregelflerelag,mellominput-ogoutput-lagene,seavsnitt2
 modeller kalles multi layer perceptrons (MLP), da de har multiple lag. Vi står relativt fritt tilå velge
 aktiveringsfunksjoner til disse lagenes noder, og i dette kurset vil vi holde oss til den såkalte rectified
 linear unit (ReLU) aktiveringsfunksjonen:
-ReLU(x)=max(0,x). (95)
+ReLU(x)=max(0,x). (94)
 MLP-modeller som ikke gjør klassifisering men regresjon, må ha output-noder som kan returnere
 kontinuerlige tallverdier som ikke er begrenset til et intervall (som [0,1] i klassifisering). Som regel
 brukes da en ingen aktiveringsfunksjon (tilsvarende en lineær aktiveringsfunksjon) i output-laget.
@@ -2196,7 +2046,7 @@ brukes da en ingen aktiveringsfunksjon (tilsvarende en lineær aktiveringsfunksj
 Figure 20: De tre aktiveringsfunksjonene (a) Heaviside, (b) sigmoid, og (c) ReLU.
 
 ## 2.3 Arkitektur
-<!-- side 38 -->
+<!-- side 36 -->
 
 Somnevntoverkanvisettesammennoderpåulikemåterforålagenevralenettverk. Hvordannodene
 ersattsammenkallesnettverketsarkitektur. Nevralenettverkbeståravlag,somigjenbeståravnoder
@@ -2224,43 +2074,35 @@ Bruk gjerne skissen i figur 21 til hjelp, eller lag din egen. Generelt har vi f�
 tiveringen a til en gitt node med indeks j i lag l av det nevrale nettverket
 (cid:32) n (cid:33)
 (cid:88)
-al =g wl al−1+bl . (96)
+al =g wl al−1+bl . (95)
 j ij i j
 i=0
 Her er
 • l indeks for lag, hvor indeks 0 angir input-laget
-Figure21: Skisseavetnevraltnettverk,somvistiforelesning. Herrepresentererf aktiveringsfunksjo-
-nen (g i teksten).
 • i indeks for node i forrige lag
 • j indeks for node i det aktuelle laget
 • al−1 aktivering av node i i forrige lag l−1
 i
 • g aktiveringsfunksjonen i det aktuelle laget.
-Forbedreintuisjonkandetværelurtåtaforsegénnodeoggåstegvisgjennomindekseneilikning96.
-Oppgave: Se på første (øverste) node i det første laget etter input-laget og skriv ned aktiveringen til
-denne noden. Du bør komme frem til følgende uttrykk:
-(cid:32) n (cid:33)
-a(1) =g (cid:88) w(1)x +b(1) . (97)
-1 i1 i 1
-i=0
+Forbedreintuisjonkandetværelurtåtaforsegénnodeoggåstegvisgjennomindekseneilikning95.
 Vi tar for oss tilfellet der vi har to input-features, og har bygget et skjult lag bestående av tre noder.
 Nettverkets videre arkitektur er uten betydning for den aktuelle diskusjonen. Vi har altså (i = 1,2),
 og (j =1,2,3). Vi kan skrive aktiveringene i nettverkets første indre lag som
 (cid:16) (cid:17)
-a(1) =g w(1)x +w(1)x +b(1) (98)
+a(1) =g w(1)x +w(1)x +b(1) (96)
 1 11 1 21 2 1
 (cid:16) (cid:17)
-a(1) =g w(1)x +w(1)x +b(1) (99)
+a(1) =g w(1)x +w(1)x +b(1) (97)
 2 12 1 22 2 2
 (cid:16) (cid:17)
-a(1) =g w(1)x +w(1)x +b(1) (100)
+a(1) =g w(1)x +w(1)x +b(1) (98)
 3 13 1 23 2 3
 etterå ha skrevet ut summen over input-laget. De tre likningene over kan skrives på matriseform som
 følger
      
 a(1) w(1) w(1) b(1)
 1 11 21 (cid:20) x (cid:21) 1
-a(1)=gw(1) w(1) 1 +b(1) . (101)
+a(1)=gw(1) w(1) 1 +b(1) . (99)
  2   12 22  x  2 
 a(1) w(1) w(1) 2 b(1)
 3 13 23 3
@@ -2269,6 +2111,8 @@ holdsvis 3×2 og 2×1, hvilket resulterer i en matrise av dimensjon 3×1, som er
 side av likhetstegnet.
 Genereltbestårdetførstelagetinettverketavnnoder,ogdetførsteindrelagetavmnoder. Overgan-
 gen fra input-laget til det første indre laget innebærer altså en transformasjon fra n input features til
+Figure21: Skisseavetnevraltnettverk,somvistiforelesning. Herrepresentererf aktiveringsfunksjo-
+nen (g i teksten).
 mnyeverdier. Dettegjelderforallelageneietnevraltnettverk: Degjørentransformasjonavdataene
 demottar, tiletnyttdataromavsammedimensjonsomantallnoderidetaktuellelaget. Pågrunnav
 ikke-lineariteten til aktiveringsfunksjonen g, er transformasjonen ikke-lineær. Oppsummert gjør hvert
@@ -2276,7 +2120,7 @@ lag i det nevrale nettverket en egen ikke-lineær transformasjon av dataene. Det
 automatisk feature-transformasjon som utvikles i takt med at det nevrale nettverket lærer fra data.
 
 ## 2.4 Backpropagation
-<!-- side 40 -->
+<!-- side 38 -->
 
 Nårnevralenettverkgjørenprediksjon, altsåprodusererenoutput, sierviatdegjørenforward pass:
 de går fra data (input) til prediksjon (output) vedå transformere dataene gjennom de ulike lagene.
@@ -2302,9 +2146,9 @@ ogyˆ harstoreavvikfratarget-verdienesine, mensyˆ haretliteavvikfrasintilsvaren
 Vi bruker indeks l=0 for input-laget, l=1,2 for de to indre lagene, og l=3 for output-laget. Vi ser
 på aktiveringen til det første (øverste) nevronet i output-laget
 (cid:16) (cid:17)
-yˆ =a(3) =g w(3)a(2)+w(3)a(2)+w(3)a(2)+w(3)a(2)+b . (102)
+yˆ =a(3) =g w(3)a(2)+w(3)a(2)+w(3)a(2)+w(3)a(2)+b . (100)
 1 1 11 1 21 2 31 3 41 4
-Her går altså indeks i i likning 96 over i = (1,2,3,4), mens j = 1, siden vi ser på den første noden,
+Her går altså indeks i i likning 95 over i = (1,2,3,4), mens j = 1, siden vi ser på den første noden,
 og l = 3, siden vi ser på det siste laget. I likningen over er det flere ting vi kan endre forå minke
 tapet: vi kan endre på parametrene b og w(3) direkte, og aktiveringene av nodene i det tidligere laget,
 i1
@@ -2331,7 +2175,7 @@ Det er ikke gitt at yˆ ,yˆ og yˆ er enige om hvilke endringer som bør gjøre
 ønskedeendringeneilagl=2ienliste,førviflytterossetstegbakoverinettverket. Listeninneholder
 blant annet ønskede endringer for aktiveringene a(2), på samme måte som vi tidligere visste i hvilken
 retning vi ønsketå endre de ulike verdiene i yˆ, og basert på disse kan vi utføre samme analyse som
-vi gjorde under likning 102. Når vi har gjort dette for alle nodene i lag l = 2, lager vi en liste over
+vi gjorde under likning 100. Når vi har gjort dette for alle nodene i lag l = 2, lager vi en liste over
 ønskede endringer i lag l=1, før vi tar et ytterligere steg tilbake i nettverket.
 På dette tidspunktet har vi kommet til input-laget; det gir ikke meningå lage en liste over ønskede
 endringer i lag l = 0, siden dette er input-laget og aktiveringene svarer til verdiene i datasettet. Vi
@@ -2344,8 +2188,45 @@ segå predikere at y = (1,0,0), men tilpasse prediksjonen til input-dataene. Akk
 regresjon må vi altså sende alle treningsdataene (én epoch) gjennom nettverket, gjerne flere ganger
 (flere epochs).
 
-## 2.5 Bygge, trene og predikere
-<!-- side 41 -->
+## 2.5 Stochastic gradient descent
+<!-- side 39 -->
+
+Man kan tenke seg gradient descent som en strategi for å gå ned fra en fjelltopp, dette tilsvarer
+å minimere tapsfunksjonen. Man planlegger ikke hele reisen, men tar i stedet et skritt om gangen.
+Gradientdescent(GD)sieratdetnesteskrittetviskaltaerretningenderdetermaksimalnedstigning.
+Denneretningeniparameterrommetangisavdennegativegradienten. Gittgradientenkanvitaetlite
+skritt, hvor lengden er gitt av læringsraten, og alle parametrene blir oppdatert. Denne prosessen med
+åberegneengradient, etterfulgtavåbrukedentilparameteroppdatering, kantalangtid. Forågjøre
+treningenkjappereerdetvanligåbrukevariantenStochasticgradientdescent(SGD).Imotsetningtil
+GD så er det et stokastisk (tilfeldig) element her. I stedet forå bruke alle datapunktene tilå beregne
+gradienten, bruker vi bare et tilfeldig utvalg. Ideen er at vi ikke trenger en perfekt gradient: Så lenge
+man tar skritt som er nesten optimale, vil man også komme frem til målet. Forskjellen ligger altså i
+størrelsen på batchen med datapunkter man bruker forå estimere gradienten.
+Gradient descent: Underforståttmenesfull-batch,altsåatgradientenberegnesfradetgjennomsnit-
+tlige tapet over hele treningsdatasettet, så parametrene oppdateres én gang per gjennomgang av hele
+treningsdatasettet. Dette er den klassiske varianten. Full-batch gjør at gradienten blir nøyaktig og vi
+kanforventenoenfærreiterasjonertotalt. Mensidenhveriterasjonkreveråkjørebackpropagationpå
+hele treningsdatasettet, kan det ta lang tid.
+Stochastic gradient descent: Gradienten beregnes på et enkelt, tilfeldig valgt treningsdatapunkt,
+såparametreneoppdateresengangperdatapunkt. Dettetilsvareretstøyetemenunbiasedestimatav
+den fulle gradienten. Denne metoden har opphav i (Robbins and Monro, 1951). Her vil iterasjonene
+gå veldig raskt, men totalt forventer vi mange flere iterasjoner fordi gradienten er støyete.
+Mini-batch SGD:Gradientenberegnesigjennomsnittoverenlitentilfeldigtrekningavdatapunkter
+fra treningsdataene (dette er en ”mini-batch”), så parametrene oppdateres én gang per mini-batch.
+Det er dette dyplæringsfolk mener når de sier “SGD”. Det er mindre støyete enn SGD på ett enkelt
+datapunkt, men beregningsmessig langt billigere enn full GD. Her må man derfor spesifisere en batch
+size (ofte en toerpotens, e.g. 32,64 eller 128), med mål omå balansere gradientpresisjon og backprop-
+agation hastighet. Batch size er dermed en hyperparameter. Det kan også være verdtå gruble på
+hvordan batch size bør påvirke valget av læringsrate. Burde en støyete gradient ha en høy eller lav
+læringsrate?
+Epoke: En epoke (epoch) er alltid en hel runde gjennom alle treningsdatapunktene, som betyr at alle
+datapunktene har bidratt til gradienten én gang. Antall oppdateringer per epoke er derfor avhengig
+av hvilken variant som brukes. Med N treningsdatapunkter: Gradient descent (full-batch) gjør én
+oppdatering per epoke. SGD (ett datapunkt) gjør N oppdateringer per epoke. Mini-batch SGD gjør
+N/B oppdateringer per epoke, der B batch size.
+
+## 2.6 Bygge, trene og predikere
+<!-- side 40 -->
 
 DetfinnesflerePython-bibliotekervikanbrukeforålagenevralenettverk, ogidettekursetanbefales
 keras og tensorflow. De grunnleggende byggesteinene i tensorflow er keras-operasjoner. For
@@ -2393,7 +2274,6 @@ model.weights
 model.summary()
 på en modell vi har bygget, men aldri evaluert, får vi ut en tom liste [] for vektene, og en tabell som
 viser Output shape=? for oppsummering av modellen. Modellparametrene finnes altså ikke.
-Oppgave: Hva er grunnen til dette?
 Legg merke til at vi har kjørt modellen(e) vi laget over, på en tensor av shape (10,3), selv om ingen
 av modellens lag består av 3 noder. Grunnen er at modellens input er et objekt, ikke av typen
 keras.layers, så input vises ikke som et lag. For at modellen skal kjenne input-dimensjonen, og
@@ -2497,7 +2377,7 @@ altså slik at hver sanne klynge har bare én sentroide. Vi husker at antallet m
 elementer er k!, mens antallet måterå trekke k elementer fra en mengde på k elementer er kk. Da går
 sannsynligheten for at hver sentroide tilhører en unik klynge som
 k! 1·2·3...k 1 2 3 k
-= = · · ... . (103)
+= = · · ... . (101)
 kk k·k·k...k k k k k
 Intuitivt: Vi har k valg per tilfeldig plassering, altså kk like sannsynlige sekvenser av sentrioder.
 Sekvensene vi er ute etter er de hvor alle k sentroidene svarer til ulike labels, altså én sentroide per
@@ -2512,7 +2392,7 @@ ligheten er 1/k.
 • Multipliser alle disse sannynlighetene sammen og du får k·(k−1)·(k−2)...1/kk.
 Stirling’s approksimasjon lar oss skrive om fakultetet som
 √
-k!≈ 2πke−kkk. (104)
+k!≈ 2πke−kkk. (102)
 Innsatt i likningen over får vi at sannsynligheten forå initialisere k sentroider i unike klynger går som
 √
 ke−k, altså eksponensielt avtakende med k.
@@ -2520,9 +2400,6 @@ Enmermoderneløsningpåinitialiseringenerderforåplasseredenførstesentroidentil
 neste sentroide på datapunktet som er lengst borte fra den første, gjentatt til alle de k sentroidene
 er plassert. Generelt: sentroide j initialiseres på datapunktet der minste avstand fra den nærmeste
 sentroiden er størst.
-Oppgave: Beggemåteneåplasseresentroiderervisualisertforulikedatafordelingerpåwww.naftaliharris.com/blog/visualizing-
-k-means-clustering/. Det kan være lurtå leke litt med dette visualiseringsverktøyet forå få en følelse
-av hvordan k-means fungerer.
 Tilsluttskalvisepåkmeans++,sombrukerenmeravansertmåteåvelgeplasseringenetilsentroidene.
 Istedetforåvelgesentroidejpådatapunktetlengstbortefradeforrigesentroidene,velgesdatapunktet
 medenvisssannsynlighet,dersannsynlighetenerproporsjonalmedkvadrertavstandfradennærmeste
@@ -2562,8 +2439,7 @@ Som vi ser eksempler på i forelesningene, finnes det tilfeller der k-means ikke
 klynger selv om vi oppgir korrekt verdi av k. Dette skjer typisk når avstanden innad i klyngen er
 større enn mellom naboklynger. Dette er en konsekvens av at k-means bruker avstand som et mål
 på likhet mellom punkter. Dette peker på en viktig detalj, som gjelder i all maskinlæring: Alle
-læringsalgoritmer har implisitte antakelser om problemet de skal løse. Oppgave: Hvilken implisitt
-antakelse ligger i k-means?
+læringsalgoritmer har implisitte antakelser om problemet de skal løse.
 Generelt har k-means følgende ulemper
 • følsom for antall sentroider valgt, automatisk valg fungerer ofte dårlig, og manuelt valg er kun
 så godt som utvalgsmetoden,
@@ -2604,11 +2480,10 @@ klyngetettheten varierer. DBSCAN er også tregere for store datasett (stor n), f
 avstander mellom samtlige punkter forå finne naboer og identifisere klyngepunkter, og er svakere i
 høydimensjonaledata,fordidenbaserersegpåetmålavavstand,somerutfordrendeihøydimensjonale
 rom, på grunn av dimensjonsforbannelsen.
-I forelesningen går vi stegvis igjennom to eksempler der DBSCAN identifiserer klynger. Oppgave:
-Prøv selv med verktøyet https://www.naftaliharris.com/blog/visualizing-dbscan-clustering/.
+I forelesningen går vi stegvis igjennom to eksempler der DBSCAN identifiserer klynger.
 
 ## 3.1.3 Hovedkategorier
-<!-- side 46 -->
+<!-- side 45 -->
 
 Vi kan dele clustering-algoritmer inn i følgende fire hovedkategorier:
 • Sentroidebasert: Startermedsentroider,assosiererdatapunktermeddisseogtilpasserfremtil
@@ -2620,9 +2495,6 @@ fordeling, vanligvis en Gauss. Målet erå finne parametrene til denne fordeling
 • Hierarkibasert. Lager et hierarki av klynger. I starten er alle datapunktene en egen klynge,
 ogpåsluttentilhøreralledatapunktenesammeklynge. Klyngenesomdannesunderveissorteres
 i et hierarki, og man velger ut de genererte klyngene fra et steg i hierarkiet.
-Oppgave: Hvilke av disse kategoriene hører k-means og DBSCAN til? De øvrige to kategoriene er
-ikke en del av pensum, i den forstand at dere bør ha hørt om dem, men ikke trengerå kjenne til eller
-kunne beskrive læringsalgoritmer fra disse to kategoriene.
 
 ## 3.1.4 Dimensjonsforbannelsen igjen
 <!-- side 46 -->
@@ -2639,7 +2511,6 @@ P1 = np.array([np.random.uniform() for _ in dims])
 P2 = np.array([np.random.uniform() for _ in dims])
 dist = np.linalg.norm(P1-P2)
 return dist
-Figure 22: Fordelingen av Euklidske distanser mellom to punkter i en d-dimensjonal enhetskube.
 n_iter = 1000
 grid = [2, 3]
 dims = [2, 3, 10, 100, 1000, 10000]
@@ -2654,18 +2525,726 @@ axs[_x,_y].hist(dists, label=f"d={dim}")
 axs[_x,_y].legend()
 axs[_x,_y].set_xlim(left=0)
 plt.show()
-Oppgave: Hvafortellerfordelingeneifigur22ossomhvordanavstandoppførersegihøydimensjonale
-rom?
-Det finnes flere liknende øvelser vi kan gjøre forå få intuisjon. I slides fra forelesningen vises hvor
-stor andel av en d-dimensjonal enhetskube eller -kule som ligger i et tynt ytre skall av tykkelse ϵ.
-Basert på disse enkle øvelsene forstår vi at avstander skalerer eksponensielt med d. Dette gir opphav
-til det såkalte Concentration of Distances-fenomenet, hvis direkte konsekvens er at relative avstander
-blir mindre i høye dimensjoner. Avstandene i seg selv blir veldig store, mens forskjellene mellom
+Det finnes flere liknende øvelser vi kan gjøre forå få intuisjon. I slides fra forelesningen vises hvor stor
+andel av en d-dimensjonal enhetskube eller -kule som ligger i et tynt ytre skall av tykkelse ϵ. Basert
+på disse enkle øvelsene forstår vi at avstander skalerer eksponensielt med d. Dette gir opphav til
+detsåkalteConcentration of Distances-fenomenet,hvisdirektekonsekvenseratrelative avstanderblir
+mindreihøyedimensjoner. Avstandeneisegselvblirveldigstore,slikatderelativeforskjellene mellom
 avstanderblirmindre. Dettevisestydeligifigur22:fordelingenesmiddelverdierblirstoremedøkende
-d, mens spredningene blir små. Tidligere, i diskusjonen om veiledet læring, forstod vi at dette betyr
-at mesteparten av datarommet er tomt når vi samler inn data med flere features enn O(10). I den
-nåværende diskusjonen forstår vi at konsekvensene også inkluderer at klynger i høydimensjonale rom
-ikkekanværekompakte. Clustering-algoritmereravhengigeavatdatapunkterbefinnerseginærheten
-avhverandrepåenellerannenmåte,hvilketgenereltikkevilværetilfelleihøydimensjonalerom. Forå
-omgådetteproblemetvilviinesteomgangsepåteknikkervikanbrukeforåreduseredimensjonaliteten
-i data.
+d,mensspredningeneblirsmåsammenliknetmedmiddelverdiene. Tidligere,idiskusjonenomveiledet
+læring, forstod vi at dette betyr at mesteparten av datarommet er tomt når vi samler inn data med
+flere features enn ∼O(10). I den nåværende diskusjonen forstår vi at dette har konsekvenser også for
+klyngerihøydimensjonalerom: datapunkterisammeklyngebørværenærmerehverandreennpunkter
+i andre klynger. Siden datapunkter i høydimensjonale rom havner i ∼ samme avstand fra hverandre
+(Concentration of distances), klarer clustering-algoritmer generelt ikkeå tildele datapunkter til riktig
+klynge. Merk at å same flere datapunkter ikke løser dette, siden problemet har opphav i hvordan
+avstander oppfører seg i høydimensjonale rom; ikke størrelse på datasett. Forå hanskes med dette
+Figure 22: Fordelingen av Euklidske distanser mellom to punkter i en d-dimensjonal enhetskube.
+problemet vil vi derfor i neste omgang se på teknikker vi kan bruke forå redusere dimensjonaliteten
+i data, fortrinnsvis gjennom å beholde kun retninger (dimensjoner) som representerer strukturen i
+dataene våre.
+
+## 3.2 Dimensjonsreduksjon
+<!-- side 47 -->
+
+Dimensjonsreduksjon kan være både en preprosesseringsteknikk (for eksempel for clustering), og en
+dataanalysemetode i seg selv. Å redusere dimensjonaliteten i data kan være lurt av flere grunner:
+• Datavisualisering: Vi kan ikke plotte høydimensjonale data, så alt over 2-3 dimensjoner er
+utfordrendeå visualisere. Videre er mønstre som klynger, anomalier etc ofte ikke synlige i høye
+dimensjoner (på grunn av dimensjonsforbannelsen).
+• Støyfjerning: Å hente ut extracted features som representerer variansen eller strukturen i
+dataene best, kan fungere som støyfiltrering. Dette kan gi mer robuste (og tolkbare) modeller.
+• Featurediscovery: Metodersomoppdagerstruktureridatasombevaresnårdimensjonaliteten
+reduseres, kan gi datasett med færre, sammensatte features som representerer den viktigste
+informasjonen fra de opprinnelige dataene. Dette hjelper ikke bare forå forstå dataene bedre,
+men gjør dem billigereå lagre og enklereå analysere.
+Vi kan bruke uveiledet læring tilå redusere dimensjonaliteten i data, altsåå gå fra at dataene har
+et antall features n, til at de har et mindre antall features n′. Formålet erå bevare mest mulig av
+informasjonenfradenhøydimensjonaleidenlaveredimensjonaleversjonenavdataene. Iforelesningene
+servipåtoetablertemetoder: PCAog(t-)SNE.Utoverdetfinnesdet,somellers,mangefleremetoder
+og biblioteker dere kan bruke, så lenge dere forstår hva de gjør.
+
+## 3.2.1 Principal component analysis (PCA)
+<!-- side 47 -->
+
+Metoden principal component analysis (PCA) ble utviklet av Karl Pearson i 1901, altså lenge før
+kunstig intelligens var etablert som fagfelt. Metoden går ut påå identifisere aksene som maksimerer
+variansen i et datasett. Disse aksene er hovedkomponentene, altså the principal components (PC),
+i dataene. De er lineære kombinasjoner av de opprinnelige featurene i dataene, og representerer
+uavhengige (ortogonale) akser.
+Intuitivt kan vi se for oss at vi har et datasett med tre features: høyde, vekt og alder til en gruppe
+mennesker. Disse egenskapene vil ha noen korrelasjoner (som at høye mennesker veier mer, veldig
+unge mennesker veier mindre og er lavere, osv). PCA finner aksene, altså hovedkomponentende,
+tilsvarende de uavhengige retningene der dataene varierer mest. Den første hovedkomponenten, PC1,
+er retningen hvor dataene varierer mest, altså inneholder mesteparten av informasjonen. Den neste
+hovedkomponenten, PC2, inneholdernestmestinformasjon, ogdenerortogonaltilPC1, foråsikreat
+deninneholderny, uavhengiginformasjon. Dennestehovedkomponenten, PC3, vilrepresentereresten
+av dataenes varians, og denne er ortogonal til både PC1 og PC2. At komponenter er ortogonale gir
+en garanti for at de inneholder ulik informasjon. Enkelt fortalt er PCA en metode som finner nye
+akserfordataene,hvorhverakse(PC)fangerulikeaspekteravvariansenidataene,utenågjentaeller
+overlappe med de andre aksene (PC’ene).
+Mer formelt er PC’ene egenvektorene til dataenes kovariansmatrise. Oppgave: Skriv ned denne
+setningen for hånd og prøvå forklare til deg selv hva den betyr.
+Setningen er lettereå forstå om man gjør en beregning for hånd. Kovariansen mellom to variabler er
+N
+1 (cid:88)
+cov(x ,x )= (x −x¯ )(x −x¯ ) , (103)
+i j N −1 i,k i j,k j
+k=1
+og kovariansmatrien består av
+(cid:20) (cid:21)
+cov(x ,x ) cov(x ,x )
+S = 1 1 1 2 . (104)
+cov(x ,x ) cov(x ,x )
+2 1 2 2
+Merk at kovariansen mellom den samme variabelen strengt tatt bare er variabelens varians, så de
+diagonale elementene i denne matrisen er bare varianser og representerer spredningen til hver og en
+variabel. De ikke-diagonale elementene representerer hvor mye to og to variabler samvarierer, altså
+deres kovarians.
+Hvisduharkontrollpåkovariansogdiagonaliseringavmatriserkanduhoppetilavsnittetoverlikning
+113. Hvis ikke kan du følge følgende forenklede eksempel. Anta at vi har
+(cid:2) (cid:3) (cid:2) (cid:3)
+x = 1 2 3 , x = 2 1 0 , (105)
+1 2
+ogstartmedåleggemerketilatbeggevariablenevariererendel,ogatdevariererimotsattretning(når
+det ene øker, minker den andre). Første steg i følge likning 103 erå trekke ifra gjennomsnittsverdien
+for hver av matrisene. Vi finner ut at x¯ =2 og x¯ =1, og får
+1 2
+(cid:2) (cid:3) (cid:2) (cid:3)
+x −x¯ = −1 0 1 , x −x¯ = 1 0 −1 . (106)
+1 1 2 2
+Nå må vi regne ut produktet mellom alle mulige kombinasjoner av disse for hver indeks, og dele på
+N −1. Vi får
+N
+1 (cid:88) 1(cid:2) (cid:3) (cid:2) (cid:3) 1
+cov(x ,x )= (x −x¯ )(x −x¯ )= −1 0 1 · −1 0 1 = (1+0+1)=1
+1 1 N −1 1,k 1 1,k 1 2 2
+k=1
+Oppgave: Finn tilsvarende verdi for cov(x ,x ). Til slutt
+2 2
+N
+1 (cid:88) 1(cid:2) (cid:3) (cid:2) (cid:3) 1
+cov(x ,x )= (x −x¯ )(x −x¯ )= −1 0 1 · 1 0 −1 = (−1+0−1)=−1,
+1 2 N −1 1,k 1 2,k 2 2 2
+k=1
+(cid:20) (cid:21)
+1 −1
+ogvikanfylleinnhelekovariansmatrisen,S = . Hvisduikkeharværtbortidiagonalisering
+−1 1
+av matriser og ikke vet hva egenverdier- og vektorer er, bør du finne frem en bok om lineær algebra
+og gjøre et lite selvstudium. Hvis du bare trenger en oppfriskning, kommer det en her. Vi finner
+egenverdiene til kovariansmatrisen gjennomå løse
+(cid:12) (cid:12)
+(cid:12)1−λ −1 (cid:12)
+det(S−λI)=(cid:12) (cid:12)=0, (107)
+(cid:12) −1 1−λ(cid:12)
+Figure 23: Dataene beskrevet i det enkle eksempelet og de tilsvarende prinsipalkomponentene, altså
+egenverdiene til kovariansmatrisen.
+altså likningen
+(1−λ2)−1=0 (108)
+⇒1+λ2−2λ−1=0 (109)
+⇒λ2−2λ=0. (110)
+Egenverdiene er altså λ =0 og λ =2. Vi finner de tilsvarende egenvektorene gjennom
+1 2
+(cid:20) (cid:21)(cid:20) (cid:21) (cid:20) (cid:21)
+1 −1 v v
+1 =0 1 (111)
+−1 1 v v
+2 2
+som gir oss v
+=v
+, altså egenvektoren e
+= √1 (cid:2) 1 1 (cid:3) for den første egenverdien, og
+(cid:20) (cid:21)(cid:20) (cid:21) (cid:20) (cid:21)
+1 −1 v v
+1 =2 1 (112)
+−1 1 v v
+2 2
+som gir oss v
+=−v
+, altså egenvektoren e
+= √1 (cid:2) 1 −1 (cid:3) for den andre egenverdien. Prefaktorene er
+der fordi egenvektorer er enhetsvektorer, altså har lengdeén. Disse vektorene er våre prinsipalkompo-
+nenter. Det er flere ting vi kan studere ved disse, og jeg anbefaler deg på det varmesteå lage et plott
+du kan leke med, se gjerne figur 23 for inspirasjon. Først, egenverdien på 0 forteller oss at én prinsi-
+palkomponentertilstrekkeligforårepresentereallvariansenidataene. Detgirmening,siden1+2(de
+første to datapunktene), 2+1 (de andre to datapunktene) og 3+0 (de siste to datapunktene) alle er
+3. Det er ingen varians utover denne ene dimensjonen. Vi trenger altså kun egenvektoren tilsvarende
+den eneste egenverdien vår som er ulik null, tilå representere all variansen. De to egenvektorene har
+origo i (2,1), som tilsvarer gjennomsnittsverdiene x¯ og x¯ .
+1 2
+Laossnåsepåtabell9,somvisertofeaturesogN =5datapunkter. Gjennomsnittsverdieneerx¯ =3
+og x¯ =5.82. Vi kan beregne kovariansen mellom de fire parene (x ,x ), (x ,x ), (x ,x ) og (x ,x )
+2 1 1 1 2 2 1 2 2
+Table 9: Enkelt eksempeldatasett brukt i PCA-diskusjonen.
+x x
+1 2
+1 1.6
+2 4.2
+3 5.7
+4 8.4
+5 9.2
+Figure 24: Datasettet fra tabellen (se hovedtekst) representert av originale features x og x , og
+1 2
+hovedkomponentene PC1 og PC2.
+ved bruk av samme formel som før, og får (sjekk dette selv!)
+(cid:20) (cid:21) (cid:20) (cid:21)
+cov(x ,x ) cov(x ,x ) 2.5 4.85
+S = 1 1 1 2 = . (113)
+cov(x ,x ) cov(x ,x ) 4.85 9.63
+2 1 2 2
+Vi finner egenverdiene til denne matrisen ved å løse likningen det(S −λI) = 0, og de tilsvarende
+egenvektorene e vedå løse Se =λe , for i=1,2.
+1,2 i i
+Oppgave: Do it.
+Dataene er plottet til venstre i figur 24, og vi ser enkelt at mesteparten av variansen i dataene kan
+beskrives av en rett linje fra origo, mens det vil være litt varians i dataene rundt denne linjen (dette
+er vist tydeligere i figuren i slides fra forelesning). Vi kan altså lage to nye, ortogonale akser, dvs hov-
+edkomponenter, som bevarer denne variansen, og transformere dataene til det nye koordinatsystemet
+beskrevet av disse, se figur 24. Disse nye aksene er nettopp egenvektorene du akkurat beregnet.
+I stedet forå gjøre PCA-analysen for hånd, kan vi bruke sklearn. Koden under bruker dataene fra
+tabell 9, finner to hovedkomponenter, og plotter de opprinnelige samt transformerte dataene.
+from sklearn.decomposition import PCA
+x1 = np.array([1,2,3,4,5])
+x2 = np.array([1.6,4.2,5.7,8.4,9.2])
+pca = PCA(n_components=2)
+X = np.vstack((x1, x2)).T
+X_pca = pca.fit_transform(X)
+PC1 = X_pca[:,0]
+PC2 = X_pca[:,1]
+plt.scatter(x1, x2, color=’blue’, label=’Original Data’, marker=’*’)
+plt.scatter(PC1, PC2, color=’red’, label=’PCA Transformed Data’)
+plt.legend()
+plt.show()
+PCA er altså en transformasjon av de opprinnelige aksene til hovedkomponenter som beskriver vari-
+ansenidataeneuavhengigavhverandre. EtterdennetransformasjonenkanPC’enesorteresisynkende
+rekkefølge, slik at de første bevarer mest av variansen. Ved dimensjonsreduksjon fra d til d′ dimen-
+sjonerbeholdervikundeførsted′ aksene. Resultateteratdataeneprojiserestiletlaveredimensjonalt
+rom mens mest mulig av variansen til dataene bevares.
+Figure 25: PCA av dataene i tabell 9 til én hovedkomponent.
+IkodenoverharvitransformertdataenetilrommetspentutavaksenePC1ogPC2,altsåikkeredusert
+dimensjonaliteten. Forå gå fra to til én dimensjon, beholder vi kun den første hovedkomponenten,
+PC1. Alternativt kan vi direkte gjøre PCA til én dimensjon, vedå modifisere to linjer i koden over:
+pca = PCA(n_components=1)
+plt.scatter(X_pca, np.zeros_like(X_pca), color=’red’, label=’PCA Transformed Data’)
+Dette gir oss plottet i figur 25. Merk at dette plottet strengt tatt ikke har en y-akse, da dataene er
+éndimensjonale. Vi har altså laget én feature fra to features. I dette eksemplet, som kun er ment
+forå gi en følelse av hva PCA gjør, har vi brukt hele datasettet tilå tilpasse modellen, i X pca =
+pca.fit transform(X). Vi kunne altså ikke brukt dette resultatet tilå evaluere modellen.
+Det er ikke overraskende at PCA fungerer godt tilå transformere dataene i tabell 9 til én dimensjon,
+da de ligger nærmest på en rett linje. La oss se på et nytt eksempel, nemlig de S-formede dataene
+i figur 26a. Ved hjelp av følgende kode genererer vi dataene, og gjør en PCA-transformasjon fra de
+opprinnelige tre til to dimensjoner. Resultatet vises i figur 26b. I koden under holder vi oss til god
+maskinlæringspraksis, og kjører .fit på treningsdataene, mens vi gjør .transform på testdata.
+S_points, S_color = sklearn.datasets.make_s_curve(n_samples=1000)
+x, y, z = S_points.T
+pca = sklearn.decomposition.PCA(n_components=2)
+X_train, X_test, y_train, y_test = train_test_split(S_points, S_color)
+pca.fit(X_train)
+S_pca = pca.transform(X_test)
+plt.scatter(S_pca[:,0], S_pca[:,1], c=y_test)
+plt.show()
+Resultatet viser at PCA kan fungere på ikke-lineære data, så lenge variansen kan representeres langs
+uavhengige akser eller lineærkombinasjoner av disse – altså lineært. Ved å studere de S-formede
+dataene i figur 26a ser vi at dataene i dybderetningen har liten eller ingen varians, og det bør derfor
+ikke overraske oss at de kan representeres godt i to dimensjoner.
+Førvifortsetterskalvianalysereettdatasetttil,nemligMNIST-dataenesomrepresentererhåndskrevne
+tall fra 0 til 9, som vi så på tidligere i konteksten nevrale nettverk, se eksempler på datapunktene fra
+dette datasettet i figur 27a. Vi kan kjøre en PCA-analyse på disse dataene ved bruk av koden under,
+og resultatet vises i figur 27b. Her svarer fargene til labels y test.
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train.reshape(60000, 784).astype("float32") / 255
+x_test = x_test.reshape(10000, 784).astype("float32") / 255
+y_train = y_train.astype("float32")
+y_test = y_test.astype("float32")
+(a) (b)
+Figure 26: (a) S-formede data i tre dimensjoner, og (b) hovedkomponenter PC1 og PC2 beregnet ved
+hjelp av PCA.
+(a) (b)
+Figure 27: (a) Eksempler på datapunkter fra MNIST-datasettet, og (b) PCA-transformasjon av
+MNIST-dataene fra 728 dimensjoner til to hovedkomponenter
+pca = sklearn.decomposition.PCA(n_components=2)
+pca.fit(x_train)
+X_pca = pca.fit_transform(x_test)
+Som vi ser i figur 27b, er PCA-dekomposisjonen av MNIST-dataene fra 728 til to dimensjoner ikke
+egnet tilå representere variansen i dataene særlig godt.
+
+## 3.2.2 Stochastic Neighbor Embedding (SNE)
+<!-- side 52 -->
+
+Den andre dimensjonsreduksjonsalgoritmen vi skal se på gjør stochastic neighbor embedding. Første
+steg i denne algoritmen erå tilpasse en sannsynlighetsfordeling som beskriver hvor like nabopunkter
+er (det er greia med stochastic og neighbor). Likhet betyr i dette tilfellet altså i følge en betinget
+sannsynlighetsfordeling. For to datapunkter x og x kan vi beregne den betingede sannsynligheten
+i j
+p for at x ville valgt x som nabo. For å beregne denne sannsynligheten bruker vi en Gaussisk
+j|i j i
+fordeling P(x), sentrert over datapunkt x , altså med forventningsverdi lik koordinatene til x . Da er
+i i
+detkunénparameterigjenidengaussiskefordelingen,nemligvariansen. DetførsteSNEmågjøreerå
+tilpassesannsynlighetsfordelingene,slikatpunktersomliggernærmehverandreharhøysannsynlighet
+for å være naboer, mens punkter som ligger langt fra hverandre har lav sannsynlighet for å være
+naboer. Dette gjøres i det opprinnelige datarommet, og når det er gjort, kan dimensjonsreduksjonen
+Figure 28: Resultatet av en t-SNE transformasjon av MNIST-datasettet.
+begynne. Det består av følgende to steg:
+1. Alle punktene plasseres tilfeldig i et rom av lavere dimensjon.
+2. Punktene flyttes slik at sannsynligheten Q(x) mellom nabopunkter i den lavere dimensjonen
+matcher best mulig den tilsvarende sannsynligheten P(x) i den høye dimensjonen.
+Del 2 gjøres stegvis ved bruk av gradient descent, med tapsfunksjonen Kullback-Leibler (KL) diver-
+gence,
+(cid:88) P(x)
+D (P||Q)= P(x)log . (114)
+KL Q(x)
+x∈X
+KL-divergensen, også kjent som relativ entropi, måler likheten mellom en referansesannsynlighets-
+fordeling P og en annen sannsynlighetsfordeling Q. Merk at den ikke er symmetrisk i P og Q, og at
+denerstrengtikke-negativ. Legggjernemerketilatdenrepresentererforventningsverdienavdenlog-
+aritmiske forskjellen mellom fordelingene P og Q, hvor selve forventningsverdien (summen) beregnes
+med datapunkter trukket fra P.
+En intuitiv tolkning av KL-divergensen er at den sier hvor overraskende resultater man vil få om man
+bruker sannsynlighetsfordeligen Q i stedet for P, når dataene man jobber med faktisk stammer fra P.
+Fordelingen P måler i hvor stor grad punkter er naboer i det høydimensjonale rommet, mens Q måler
+det samme i det laveredimensjonale rommet. SNE minimerer KL-divergensen mellom fordelingene P
+og Q, altså: Sannsynligheten mellom nabopunkter i den høye dimensjonen, P(x), matcher best mulig
+den tilsvarende sannsynligheten i den nye dimensjonen, Q(x). Denne overføringen fra en høy- til en
+lavdimensjonal plassering av datapunkter kalles en embedding.
+Til sammen beskriver dette prosedyren bak SNE. Denne ble imidlertid forbedret i 2008 av Laurens
+van der Maaten og Geoffrey Hinton, ved hjelp av en liten modifisering: i stedet forå bruke en Gauss i
+både den høye og lave dimensjonen, brukes en Gauss i den høye dimensjonen, og en t-fordeling i den
+lave. t-fordelingen likner på den gaussiske, men den faller litt raskere og har en lengre hale, hvilket
+minker sjansen for at nabopunkter får for like sannsynligheter. SNE som bruker t-fordelingen i den
+lavere dimensjonen, her fordelingen Q, kalles t-SNE. Denne er tilgjengelig i sklearn, og vi kan bruke
+den i stedet for PCA på MNIST-dataene ved bruk av følgende kommandoer.
+tsne = TSNE(n_components=2, learning_rate=’auto’, init=’random’, perplexity=3)
+X_embedded = tsne.fit_transform(X)
+Resultatet vises i figur 28. Her har vi valgt verdien til en parameter perplexity. Denne er viktig for
+tilpasningen av variansen til Gaussen in det høydimensjonale rommet: perpleksiteten angir entropien
+til den betingede gaussiske fordelingen, og algoritmen tilpasser variansen forå matche denne. Denne
+er direkte relatert til antallet nære naboer vi forventer rundt et punkt. Intuitivt kan vi tenkte at
+perplexity angir effektivt antall naboer hvert punkt’s gausskurve bryr seg om.
+I denne kodesnutten både tilpasses og brukes modellen tsne på de samme dataene. Dette er ikke i
+tråd med god maskinlæringspraksis. Likevel har vi ikke noe valg, fordi TSNE er en ikke-parametrisk
+algoritme: den lager ikke en parametrisk modell vi kan ta med oss og bruke på nye data etter at den
+har blitt tilpasset.
+TSNEoptimalisererposisjonentildatapunkteridetlavdimensjonalerommet, basertpåparviseforhold
+i datasettet, altså sannsynligheter for naboskap med de andre punktene. Den lavdimensjonale embed-
+dingen er avhengig av de relative avstandene mellom alle punktene i datasettet. Om vi legger til nye
+punkter, vil de relative avstandene og forholdene mellom punktene i datasettet endre seg. Da måtte
+hele embeddingen blitt beregnet på nytt for datasettet med de nye punktene.
+PCA og t-SNE sammenliknet
+• Mål: PCABevarervariansenidataene;t-SNEminimererdivergensenmellomtosannsynlighets-
+fordelinger av dataene.
+• Gjenbrukbarhet: PCA lager nye basisvektorer, og kan derfor brukes igjen etter .fit; t-SNE
+er ikke-parametrisk, må tilpasses og brukes samtidig, og kan derfor ikke gjenbrukes.
+• Feature-generering: PCAkanbrukestilålagenyefeatures, tilsvarendeellerbasertpåhoved-
+komponentene; t-SNEkanikkebrukestilålagenyefeatures,sidendenikkelagerenmatematisk
+funksjon som kan brukes på nye datapunkter.
+• Linearitet: PCA trenger lineært separerbare data; t-SNE har ingen antakelse om linearitet.
+• Compute: PCA er rask og lite beregningstung, mens t-SNE må tilpasse mange sannsynlighets-
+fordelinger og derfor er treg på store datasett.
+Oppgave: Hvilken av metodene tror du fungerer best på outliers, og hvorfor?
+
+## 3.3 Anomalideteksjon
+<!-- side 54 -->
+
+Når vi gjør anomalideteksjon, kjent som outlier detection eller anomaly detection, finner vi data-
+punktene som ikke likner majoriteten av datapunkter. Dette er relevant i mange sammenhenger, for
+eksempel antihvitvasking, kredittkortmisbuk, serverangrep, generelt tilfeller hvor vi vet hvordan nor-
+male datapunkt ser ut, men ikke nøyaktig hvordan avviket vil se ut. Vi har altså mange eksempler
+på normale datapunkter, men få eller ingen eksempler på anomalier. Dette kan tolkes som et klassi-
+fiseringsproblem uten labels og med ekstrem skjevfordeling mellom klassene. Siden vi oftest ikke vet
+hvordan den underrepresenterte klassen ser ut, er det vanligstå behandle anomalideteksjon som en
+uveiledet maskinlæringsoppgave.
+Iforelesningeneservinærmerepåtremetoder,mensomalltidkanderebrukeandremetoderiøvingene
+så lenge dere skjønner hvordan de fungerer. Av de tre metodene vi vil studere kjenner vi allerede til
+to, nemlig k-means og DBSCAN, mens den siste, isolation forest, er ny.
+
+## 3.3.1 k-means
+<!-- side 54 -->
+
+Vi starter medå tilpasse en kmeans-modell som for clustering, på et treningsdatasett, med passende
+valg av antall sentroider k. Deretter beregner vi avstanden mellom testdatapunktene og nærmeste
+klyngesenter ved hjelp av
+distances = kmeans.transform(X_test).min(axis=1)
+Derettermåvivelgehvilkedatavivilsepåsomanomalier,ogenmuligheteråsammenliknederelative
+avstandenedatapunktenehartilnærmesteklyngesentrumvedhjelpavprosentiler (percentiles). Dette
+erverdienenvissprosentandelavdatapunkterermindreennellerlik;den95.prosentilenrepresenterer
+for eksempel datapunktene som har avstandsverdier større enn 95% av dataene. Om vi velger dette
+som terskel, kan vi filtrere ut datapunktene som har større avstand til nærmeste sentroide enn 95% av
+dataene som følger.
+threshold = np.percentile(distances, 95)
+outliers = distances > threshold
+Denne koden returnerer et array med True eller False per datapunkt, hvor True representerer dat-
+apunktene som har distance-verdi større enn 95% av dataene. Avhengig av dataene kan den 95.
+persentileninneholdeformangeellerforfådatapunkter, sådetergodtmuligatterskelenmåjusteres.
+Det finnes ingen sann verdi for hvilken terskel som fungerer generelt.
+
+## 3.3.2 DBSCAN
+<!-- side 55 -->
+
+Vi starter medå tilpasse en DBSCAN-modell tilsvarende som for clustering. Her kan vi imidlertid ikke
+lage separate trenings- og testdata for .fit og .transform, siden DBSCAN er en ikke-parametrisk
+metode. Vi trenger altså tilgang til alle dataene påén gang. Dessuten må vi velge verdier for parame-
+trene ϵ og min samples, før vi kan hente ut outliers direkte ved hjelp av følgende kommando.
+outliers = dbscan.labels_ == -1
+Vi slipper altsåå lage en regel for hvilke data vi vil regne som outliers, fordi DBSCAN er laget forå
+identifisere outliers, og gir disse label −1.
+
+## 3.3.3 Isolation Forest
+<!-- side 55 -->
+
+En isolation forest er en skog, det vil si en samling besutningstrær, som identifiserer isolerte data-
+punkter, altså datapunkter uten mange naboer. Det sentrale i denne læringsalgoritmen er hvordan
+den trener beslutningstrær utenå ha tilgang til labels.
+Prosedyren består av følgende to steg: Først trenes flere isolasjonstrær – av isolation tree, forkortet
+itree – på et subsett av treningsdataene, trukket tilfeldig og uten tilbakelegging. Et isolasjonstre
+bygges vedå splitte på tilfeldige features og verdier av disse, inntil hvert datapunkt havner i en egen
+løvnode. Vifåraltsåénløvnodeperdatapunkt. Sidenanomaliererfåogulikehavnerdissesomoftest
+i en node nærmere rotnoden, og har dermed kortere avstand fra rotnoden enn normale datapunkter.
+Dette gjentas for for mange isolasjonstrær, som gir en skog. Neste steg erå kombinere avstandene til
+rotnoden for hvert datapunkt. Denne kombinerte avstanden gir en god indikasjon på om et punkt er
+en anomali. Det er i prinsippet muligå bygge kun ett isolasjonstre, men den tilfeldige trekningen av
+data for hvert isolasjonstre i skogen gir den samlede modellen robusthet til tross for tilfeldigheten i
+splittkriteriene.
+Vi kan bygge en isolation forest på treningsdata og bruke den tilå finne outliers i testdata ved bruk
+av følgende kode.
+iso_forest = IsolationForest(n_estimators=100, contamination=0.05)
+iso_forest.fit(X_train)
+outliers = iso_forest.predict(X_test) == -1
+Modellprediksjonene med verdi −1 representerer anomalier, eller outliers. Som for alle metoder må vi
+tilpasse verdiene på hyperparametrene forå gå en god modell, og i koden over har vi valgtå bruke
+n estimators=100isolasjonstrær, oganslåttatdataasettetinneholderenandelcontamination=0.05
+anomale datapunkter.
+Oppsummering anomalideteksjon
+Vi kan oppsummere fremgangsmåten for anomalideteksjon med de tre metodene som følger:
+• k-means: Lager k klynger av dataene, basert på avstand mellom klyngesentrum og datapunk-
+tene. Anomalier er datapunkter som ligger langt unna alle klyngesentrene.
+• DBSCAN: Lager klynger av punkter med høy tetthet, og identifiserer anomalier som isolerte
+punkter, altså outliers. DBSCAN finner outliers som en del av modelleringen.
+• Isolation Forest: Bygger trær der alle punktene havner i en egen løvnode. Anomalier er
+punkter som har kort gjennomsnittlig avstand fra rotnoden, altså er lettereå isolere enn resten
+av datapunktene.
+Figure 29: Reinforcement learning loop.
+
+## 4 Reinforcement learning
+<!-- side 56 -->
+
+Teorien bak reinforcement learning, forkortet RL, er stor og rikholdig, og i dette faget vil vi kun se på
+en del av den. Det finnes mange læringsregimer, og vivil studere ett av dem, nemlig Q-learning. Dere
+får nok informasjon tilå kunne trene en modell i et miljø dere får tilgang til i øving 3, men husk atå
+bli god i RL krever langt mer tid og fordypning enn vi har mulighet tilå investere i dette kurset.
+
+## 4.1 Markov Decision Processes
+<!-- side 56 -->
+
+I følgende avsnitt innføres begrepet “agent” i konteksten reinforcement learning. Merk at dette begrepet
+ble etablert lenge før dagens AI-agenter i forbrukerteknologi (som begynteå fungere rundt 2025) ble
+utbredt, og ikke betyr det samme. AI-agenter som dere finner feks i Copilot er i bunn og grunn en
+språkmodell som kjører i en loop. Det er ikke det vi ser på i dette emnet. I reinforcement learning er
+en agent hva som helst som tar inn en tilstand og returnerer en handling, se forklaring under.
+Reinforcement learning (RL) er en type maskinlæring hvor en agent lærerå ta beslutninger i et miljø,
+omtalt som environment, ved å utføre handlinger, omtalt som actions, for å maksimere forventet
+belønning, omtalt som expected reward. Denne prosessen går i en loop, se figur 29, som viser den
+såkalte RL-loopen. Her ser vi at environment (miljøet) gir agenten en state (tilstand) S ved steg t.
+t
+Basert på state velger agenten en action (handling) A , som fører til en reward (belønning) R fra
+t t+1
+miljøet, og setter miljøet i en ny tilstand, state S . Basert på S velger agenten en ny action, og
+t+1 t+1
+så videre i en loop.
+AgentenvelgeractionbasertkunpåS , ogfårikkeinformasjonomtidligerestates. Dettesvarertilen
+t
+antakelse om at den fremtidige tilstanden til environmentet kun er avhengig av inneværende tilstand
+og valgt action; ikke tidligere states eller actions. En slik prosess har Markov-egenskapen, som betyr
+at den er uavhengighet av historien (hvordan agent og environment havnet i den aktuelle tilstanden).
+Slike prosesser kalles også memoryless. Kort sagt er Markov-prosesser slik at fremtiden er uavhengig
+av fortiden gitt nåtiden.
+En verdenskjent maskinlæringsmodell som er trent på denne måten er AlphaZero, hvor ‘zero’ sikter
+til at modellen har lært kun gjennomå spille mot seg selv, uten tilgang til yttreligere informasjon.
+AlphaZero er et nevralt nettverk som får spillbrettets tilstand som input state, og predikerer actions
+tilsvarende hvilke trekk som bør undersøkes nærmere i spilltreet. Spillets utfall til slutt gir reward på
+enten 1 om agenten vinner, -1 om den taper eller 0 for remis (uavgjort).
+EnbeslutningsprosesssomharMarkov-egenskapen,kallesenMarkov decision process (MDP).Formelt
+er en MDP en 4-tuple (S,A,P ,R ), der
+A A
+• S er set av states (state space),
+• A er set av actions (action space). Alternativt: A er settet av actions tilgjengelige fra state S,
+S
+• P (S ,S )=P(S |S ,A )ersannsynlighetenforatactionA istateS vilføretilstateS ,
+A t t+1 t+1 t t t t t+1
+• R (S ,S )erdenumiddelbarerewardenforåtransisjonerefrastateS tilstateS ,gjennom
+A t t+1 t t+1
+action A .
+t
+Oppsummertharvienagentsomskaltabeslutningerietmiljø. Problemetbeskrivesavstates,actions,
+sannsynlighet for transisjon, og rewards. I dette kurset skal vi ikke se på transisjonssannsynligheter,
+som vil si at vi holder oss til deterministiske miljøer. Basert på en læringsprosess i miljøet som gir
+agenten states og rewards, skal agenten finne måte å velge ut beste action basert på en gitt state.
+Denne måten kalles en policy, og vi bruker notasjonen π(A |S ) forå angi en policy forå velge action
+t t
+basert på state. Målet til en RL-agent er (som regel)å finne en optimal policy, som maksimerer den
+totale rewarden, omtalt som kumulativ reward, fra miljøet.
+Agenten kan være mye forskjellig, og vi skal først se på en tabell og deretter et nevralt nettverk som
+agent. For at denne skal kunne lære en optimal policy, må den trenes påå velge action som gir høy
+reward, og vi må ha en måteå beregne kumulativ reward. Dette gjør vi gjennom en utility eller value
+function, som angir hvor verdifull en tilstand og action er på lang sikt, under en viss policy. Denne
+verdifunksjonen kvantiserer altså forventet verdi av å være i en gitt tilstand, utføre en gitt action,
+følge en gitt policy, og fortsetteå følge denne policyen fremover. Agenten trenger verdifunksjonen for
+å kvantisere de langsiktige konsekvensene av en action og policy, i stedet forå bruke kun umiddelbar
+reward. Oppgave: Les de siste to setningene minimum tre ganger. Ikke les videre før du klarerå
+forklare det du har lest så langt til deg selv. Dette er kompakt og det går helt fint om du trenger
+noen gjennomlesinger for at det skal gi mening. Jeg anbefalerå starte medå tegne opp RL-loopen og
+fylle inn hva som skjer, formulere for deg selv hvilke antakelser som gjelder, beskrive hvordan agenten
+velger hva den skal gjøre, og si eksplisitt hvordan RL-loopen representerer et maskinlæringsregime.
+
+## 4.2 Q-verdier
+<!-- side 57 -->
+
+Det finnes flere ulike verdifunksjoner, og i dette kurset studerer vi Q-funksjonen. Denne, hvor Q
+forkorter quality, angir verdien (kvaliteten) til en state–action kombinasjon, som Q : S×A → R. Vi
+beregner den ved bruk av Bellman-likningen:
+(cid:16) (cid:17)
+Qnew(S ,A )←(1−α)·Q(S ,A )+α· R +γmaxQ(S ,A) . (115)
+t t t t t+1 t+1
+A
+Dette forteller oss at vi må beregne Q-verdien til et state-action-par iterativt, og prosessen føyer seg
+inn i stegene i RL-loopen som følger
+1. Q initialiseres.
+2. For hvert steg t har miljøet en tilstand S , agenten velger en action A , observerer en reward
+t t
+R , og får en ny tilstand S .
+t+1 t+1
+3. Q oppdateres basert på disse verdiene, og punkt 2-3 gjentas inntil RL-loopen terminerer.
+Vi ser på leddene i likningen over hver for seg:
+• Qnew(S ,A ) representerer den oppdaterte verdien avå være i S og gjøre A .
+t t t t
+• Q(S ,A ) er den gamle verdien av å være i S og gjøre A . Hvis man har en tabell for Q-
+t t t t
+verdieneerdennesomoftestinitialiserttil0. Hvismanbrukeretnevraltnettverktilåpredikere
+Q-verdiene har dette tilfeldige vekter i starten.
+• R er reward mottatt forå være i S og gjøre A ,
+t+1 t t
+• max Q(S ,A) er maksimal verdi av state S , for alle tilgjengelige actions.
+A t+1 t+1
+I tillegg har vi to parametre i likningen. Den ene, α, angir læringsraten, altså hvor mye av den gamle
+verdien av Q som beholdes, og hvor mye den nye verdien påvirkes av uttrykket i den siste parentesen.
+Den andre parameteren, γ, kalles discount factor, og gjør at rewards mottatt tidligere vektes ulikt fra
+rewards mottatt senere.
+Forskjellen mellom verdi og reward er subtil, men viktig. Agenten får reward fra environmentet som
+en tilbakemelding på agentens actions i ulike states. Verdifunksjonen, i vårt tilfelle Q-verdiene, angir
+verdien av en state og action: den representerer den forventede verdien avå gjøre A i tilstand S ,
+t t
+inkludert fremtidig verdi, under en gitt policy. Utover at reward og verdi representerer ulike ting, er
+det en springende forskjell at vi får reward fra environmentet, mens Q må læres.
+Før vi ser på læring av Q-verdiene må vi forstå environments, og hvordan disse kodes og brukes.
+
+## 4.3 Environments
+<!-- side 58 -->
+
+Det er fult muligå lage egne miljøer for reinforcement learning; alt de må kunne erå ha en tilstand,
+ta imot en action, transisjonere til en ny tilstand og returnere reward. Likevel er det vanligste, særlig
+når man lærer RL for første gang, å bruke tilgjengelige treningsmiljøer. Blant de mest brukte er
+OpenAI’s Gym, og det er vanligå starte med klassiske kontrollproblemer, som cartpole, mountaincar
+og pendulum. Gym-APIet har også gitt opphav til det nærmeste vi kommer en standardfunksjonalitet
+for environments brukt i RL. Spesifikt er det vanligå ha en funksjon som returnerer environmentet til
+en starttilstand, og som returnerer denne tilstanden samt eventuell ekstra info:
+env.reset() → Tuple[initial_state, info]
+Forå lage RL-loopen trengs i utgangspunktet kun én ytterligere funksjon, nemlig
+env.step(action) → Tuple[state, reward, done, info]
+Funksjonen .step tar altså en action som argument, hvorpå environmentet havner i en ny tilstand,
+somreturneressammenmedeventuellrewardmottattfordenneaction,enbooleandonesomangirom
+environmentet har terminert, og eventuell ekstra info. Basert på de to kommandoene over kan man
+kode en RL-loop. Først settes environment i starttilstanden, og deretter lages enten en for-loop som
+iterererovermaksantallstegogterminerernårmaksantallstegernåddellernårdone==True,elleren
+while-loop som terminerer når done==True. I denne loopen interagerer agenten med environmentet
+gjennomå sende inn actions, motta ny state og reward, og velge nye actions.
+Som intuitivt eksempel kan vi se for oss spillet tre-på-rad. Starttilstanden initial state er et brett
+med ni tomme ruter. Første spiller (menneske eller agent) plasserer en ‘X’ på brettet, altså utfører
+en action. Dette gjør at environmentet inntar en ny state, medén rute okkupert av en ‘X’. Basert på
+denne staten plasserer den andre spilleren (menneske eller agent) en ‘O’ på brettet, og environmentet
+inntar en ny state basert på denne. Slik fortsetter de to spillerne annenhver gang, frem til enten en
+av spillerne har fått tre av sine markører på rad (vertikalt, horisontalt eller diagonalt), eller til brettet
+ikkeharfleretommeruterigjen. Ibeggedissetilfellenesettesdone=True. Spillerensomfårtrepårad
+vinner, og får reward>0. Hvis ingen får tre pårad er spillet uavgjort, og begge spillerne får reward=0.
+Om vi vil skrive koden som lager dette environmentet, trenger vi minimum følgende funksjoner:
+• init : Lager initial state, altså et tomt brett. Det kan for eksempel representeres som
+‘012345678’. Setter winner=None, setter en variabel player turn=‘X’. Kan eventuelt initialis-
+ere variabler som teller hvor ofte de ulike spillerne har vunnet, og andre ting som er nyttigeå ta
+vare på.
+• reset: Setter environmentet tilbake til initial state, winner=None og player turn=‘X’, reini-
+tialiserer eventuelle tellevariabler. Returnerer initial state og eventuelt en info-dictionary.
+• step: Tarenactionsomargumentoglagerennystatefraaction,foreksempelstate=‘0123X5678’
+hvis spiller X setter et kryss i midten. Sjekker om noen har vunnet, bytter på spillers tur (X hvis
+O, og omvendt). Returnerer ny state, reward, done og eventuelt info-dictionary.
+• check winner: Leteretterhorisontale,vertikaleellerdiagonalelinjeravXXXellerOOO.Returnerer
+True hvis det finnes en vinner, ellers False.
+• render: Ikke nødvendig, men veldig nyttig om man vil se på environmentet under trening, eller
+når den ferdig trente agenten spiller. Lager en visuell representasjon av spillets tilstand.
+Med et environment på plass – enten et vi har laget selv, eller et vi har importert fra et bibliotek –
+kan vi lage agenten som skal læreå løse en oppgave i environmentet.
+
+## 4.4 Agenter: exploration, exploitation og læring
+<!-- side 58 -->
+
+Oppgaventilenagenteråobserverestatesogvelgeactionsbasertpådisse. Viholderosstileksempelet
+med tre-på-rad, og ønskerå lage en agent som bruker Q-verdier tilå velge actions basert på states.
+Da gjør vi såkalt Q-learning, og dette kan gjøres på flere måter. Vi vil først lage en enkel agent som
+har en tabell (dictionary) med Q-verdier, før vi ser på et nevralt nettverk som agent senere. Når vi
+initialiserer agenten må denne vite hvilken tag den har i spillet, altså ‘X’ eller ‘O’, og den må ha et
+stedå lagre Q-verdier. Til dette bruker vi typisk en dictionary med state som key.
+Seigjenpålikning115. Foratagentenvårskalkunnelære,altsåoppdatereQ-verdienesine,måvivelge
+verdier for α og γ. Måten agenten vår får tilgang til treningsdata, er gjennomå utføre ulike actions
+i ulike states. Forå sikre at agenten utforsker de tilgjengelige mulighetene i tilstrekkelig grad, brukes
+en hyperparameter vi ikke har vært borti før, og som kun gir mening i konteksten av reinforcement
+learning, nemlig exploration factor, ofte angitt med symbolet epsilon ϵ. Denne styrer hvor mye
+agenten utforsker, på engelsk: explore, miljøet sitt. Den enkleste måtenå få agenten tilå utforske,
+er vedå velge tilfeldige actions med en viss sannsynlighet. Formelt velger vi en exploration factor
+ϵ∈[0,1],somrepresenterersannsynlighetenforatagentengjørentilfeldighandling. Ifunksjonensom
+velger action for agenten, skal denne velge action tilsvarende høyest Q-verdi, med sannsynlighet 1−ϵ,
+og ellers en action tilfeldig samplet fra environmentets action space. Oppgave: Hva representerer
+henholdsvis en høy og en lav verdi av ϵ? Når i løpet av treningen er det lurtå velge tilfeldige actions?
+Bør agenten slutteå gjøre tilfeldige actions på et tidspunkt?
+Hvis agenten utforsker (explore) miljøet, som svarer til en høy verdi av ϵ, finner den kanskje kombi-
+nasjoner av states og actions som fører til store belønninger. På den annen side kan agenten utnytte
+(exploit) det den vet om miljøet, som svarer til en lav verdi av ϵ, og unngå risikoen forå gjøre actions
+somførertilstoretap. UlempeneratdendakanskjegårglippavbelønningerdensaktuelleQ-verdier
+ikke vet om, fordi tilsvarende state-action-kombinasjon ikke har blitt besøkt før. Valget mellom ut-
+forsking og utnytting – som rommer faktumet at den ene går på bekostning av den andre, da de to
+svarer til henholdsvis høye og lave verdi av ϵ – kalles exploration exploitation tradeoff, og det finnes
+ingenuniversellløsningsomgirengodtradeoff: Explorationhandleromåtaactionsmedukjentutfall,
+mensexploitationhandleromåtaactionsmedkjentutfall. Foråvelgedenoptimalebalansenmellom
+deto,måttevikjentutfallettilactionsmedukjentutfall. Dissevilledaperdefinisjonhattkjentutfall,
+som er en selvmotsigelse. En mye brukt og ofte god strategi er epsilon greedy, med avtagende verdier
+av ϵ, såkalt epsilon decay. Da starter man med en høy verdi av ϵ tidlig i treningen, og reduserer denne
+stegvis. Dette fører til at agenten (nesten) slutterå gjøre tilfeldige actions sent i treningen, når den
+har lært seg mange av Q-verdiene. Når dette bør skje er avhengig av størrelsen på state-action-space,
+altså av environment og problemet som skal løses. Agenten slutter bare nestenå ta tilfeldige actions
+fordidetoftefungererbedreåbeholdeϵpåenlitenverdi, istedetforåsettedennetilnøyaktig0, selv
+etterattreningeneravsluttet. Grunnentildetersimpelthenatselvengodttrentagentkankjøreseg
+fast, og trenge et tilfeldig dytt forå komme seg videre.
+Nå som vi har kontroll på de relevante parametrene, kan vi lage en klasse Player, hvor agenten er et
+objekt. Instanser av denne klassen som lærerå spille tre-på-rad må minimum ha følgende egenskaper
+• tag ← ‘X’ eller ‘O’
+• Q-tabell ← en dictionary, inneholder alle Q-verdiene agenten kjenner, og må læres.
+• α,γ,ϵ ← agentens parametre. I tillegg kommer eventuelle læringsspesifikke parametre.
+I forelesningene bruker vi tre-på-rad eksempelet forå lage agenter som lærer segå spille optimalt for
+henholdsvis X og O. Koden samt ferdig trente agenter finnes på gitlab.com/Strumke/ntnu-lectures/-
+/tree/main/Tictactoe%20Q-learning.
+I tillegg må agenten ha metoder for å velge action, lære, og oppdatere ϵ. Vi kan bruke følgende
+kodesnutt forå velge action.
+def choose_action(self, state):
+available_actions = [_i for _i, _s in enumerate(state) if _s.isnumeric()]
+# If only one move available, make that one
+if len(available_actions) == 0:
+return None
+elif len(available_actions) == 1:
+action = available_actions[0]
+return action
+else:
+qvalues = []
+for _action in available_actions:
+potential_state = state[:_action] + self.tag + state[_action+1:]
+qvalues.append(self.model.predict(self.state_to_array(potential_state),
+verbose=0)[0][0])
+max_index = np.argmax(qvalues)
+best_action = available_actions[max_index]
+return best_action
+Denne funksjonen gjør flere ting: 1) Får oversikt over mulige trekk. state er en string bestående av
+indeksene til mulige trekk og eksisterende plasseringer, for eksempel 0123XO678. Mulige trekk er alle
+delene av denne stringen som er numeriske verdier. Hvis det ikke finnes tilgjengelige trekk, returnerer
+funksjonen None, og hvis det kun finnes ett tilgjengelig trekk, returneres dette. 2) Sjekker om state
+finnes i Q-tabellen. Hvis ikke settes staten inn med default Q-verdi 0. 3) Trekker et tilfeldig tall
+mellom 0 og 1. Hvis dette er mindre enn ϵ, returneres en tilfeldig action. 4) Hvis det tilfeldige tallet
+er større enn ϵ, returneres action tilsvarende høyeste Q-verdi for aktuelle state, i følge Q-tabellen.
+
+## 4.5 Q-tabell
+<!-- side 60 -->
+
+Q-læring handler omå oppdatere Q-verdiene etter hvert som agenten får erfaring fra environmentet, i
+vårttilfellevedåfylledeminniQ-tabellengjennomlæring. Istartenavlæringenvetagenteningenting,
+og Q-tabellen er enten tom eller fylt av 0-er for alle states og actions. Som oftest programmeres en
+Q-tabell som en (nøstet) dictionary med states som keys. Dette kan nøstes slik at hver state igjen
+er en dictionary med actions som keys, slik at hver state har én entry per action, som igjen har en
+tilsvarende Q-verdi for det aktuelle state-action-paret. I starten av læringen spiller agenten som en
+komplett idiot, og gjør nærmest kun tilfeldige trekk. I slutten av hvert spill får agenten en reward, og
+denne brukes i læringsprosessen forå fylle inn stadig mer treffsikre verdier i Q-tabellen. Dette gjøres
+ved bruk av likning 115, gjentatt under for tilgjengelighet,
+(cid:16) (cid:17)
+Qnew(S ,A )←(1−α)·Q(S ,A )+α· R +γmaxQ(S ,A) ,
+t t t t t+1 t+1
+A
+for eksempel som i koden under.
+def learn(self, state, action, reward, new_state, done):
+v_s = self.calc_value(state)[0]
+if done:
+v_s_next = 0
+else:
+v_s_next = self.calc_value(new_state)[0]
+td_target = reward + (0 if done else self.gamma*v_s_next)
+td_delta = td_target - v_s
+new_qvalue = v_s + self.alpha*td_delta
+y_train = new_qvalue
+model_input = self.state_to_array(state).reshape(1,-1)
+self.train_model(model_input, y_train, self.train_steps)
+return
+Første linje i denne koden henter ut den gamle Q-verdien fra dictionariet. Deretter hentes den maksi-
+male fremtidige verdien ut, med mindre den ikke eksisterer, i hvilket tilfelle den settes til 0. Deretter
+brukesdissetostørrelsenesamtparametrenemedverdienevisatteistartenavtreningen,tilåberegne
+den nye Q-verdien, som erstatter den gamle i dictionarien. Fuksjonen returnerer ingenting. Merk at
+læringenskjerforhverttrekk,ogatfunksjonentrengeråvitehvilkenstateagenteneri,hvilkenaction
+somblevalgt,hvilkenstateagentenhavneti,oghvormyerewardagentenmottokfortrekket. Itilfellet
+tre-på-rad er reward=0 med mindre spillet er over. Hvis spillet er over er maksimal mulig fremtidig
+verdi som regel 0 (ikke bare for tre-på-rad). Vi skjønner at Q-læring går ut påå oppdatere Q-verdier
+gjennom erfaring.
+Til slutt trenger vi en funksjon som minker verdien av ϵ i løpet av treningen. Dette kan for eksempel
+løses ved hjelp av følgende funksjon.
+def update_exp_factor(self):
+if self.exp_factor > self.exp_min:
+self.exp_factor *= self.epsilon_decay
+Oppgave: Hva skjer her? Lag gjerne et plott av exp factor over flere steg med ulike verdier av
+epsilon decay. Det er en grei regel når man gjør RL at en agent som ikke har rukketå lære seg
+noe i løpet av perioden der exp factor>exp min, sannsynligvis ikke kommer tilå lære noe vettugt
+om den trener videre. Da er det ofte mer hensiktsmessigå endre andre deler av koden, for eksempel
+tapsfunksjonen.
+Koden som brukes i forelesningene – og finnes på github under lenken over – inneholder funksjonalitet
+forå plotte Q-verdiene for ulike states og actions underveis i spillet. En slik visualisering kan være
+nyttig forå forsikre seg om at verdiene gir mening. Det gir oss riktignok den samme informasjonen
+som om vi leser av Q-verdiene for actions gitt en state direkte, men gode visualiseringer kan likevel
+gjøredetenklereåtainformasjoneninnoverseg. SomeksempelkanvilasteinnQ-verdienetilenagent
+som har lært segå spille tre-på-rad optimalt, og lese ut verdiene for tilstanden state=‘012345678’,
+altså det tomme brettet. Den aktuelle agenten (her vil numeriske variasjoner absolutt forekomme, så
+ikke se på de nøyaktige tallverdiene men heller størrelsesforholdene) har følgende Q-verdier.
+In[4]: agent_x.values[‘012345678’]
+Out[4]:
+{0: 1.9331107015552194,
+1: 1.5491666935002169,
+2: 1.5605398816666645,
+3: 2.139988821719487,
+4: 2.4760838915510397,
+5: 0.6561000000000463,
+6: 1.0237994971966147,
+7: 1.394265348233807,
+8: 1.6669174601240253}
+Oppgave: Hva forteller disse Q-verdiene oss om hvor agenten vil plassere den første X-en på det
+tomme brettet?
+I stedet forå lese av Q-verdiene numerisk, kan vi plotte dem på en grid tilsvarende spillbrettet. Merk:
+I det følgende eksempelet kan det være lurt å tegne opp et brett for å enklere kunne følge spillets
+utvikling. Vi starter med et tomt brett, og for det tomme brettet med state=‘012345678’ vises
+agentens Q-verdier i figur 30a. Det er tydelig at agenten foretrekker å sette et kryss i midten av
+brettet, hvilket svarer til optimalt spill. Om vi setter en O slik at vi får neste state=‘0123XO678’,
+kan vi lese ut Q-verdiene vist i figur 30b. Ut ifra disse skjønner vi at agenten vil sette neste kryss
+på ruten nederst i midten. Forå forhindre at agenten deretter får tre kryss på rad i midten, bør vi
+sette en O øverst i midten, slik at spillet ender opp i state=‘0O23XO6X8’. For denne tilstanden er
+agentens Q-verdier som vist i figur 30c. Vi skjønner at agenten vil sette et kryss neders i venstre
+hjørne, som gjør at vi må sette en O øverst i høyre hjørne forå forhindre at agenten får tre kryss på
+diagonalen. Dette setter spillet i state=‘0OO3XOXX8’, som igjen gir agenten Q-verdiene vist i figur
+30d. Viseratagentenharskjøntatdenfårtrekrysspåradvedåsetteetkryssnederstihøyrehjørne,
+og dermed vinner spillet. Gjennom denne analysen av Q-verdier får vi en intuisjon for hva de betyr:
+Agenten får ikke reward før spillet er over, men gjennom Q-verdiene kan vi forstå agentens forventede
+fremtidige reward. Sagt mer presist representerer Q-verdiene forventet kumulativ fremtidig reward av
+å gjøre action A i state S og følge policyen deretter.
+(a) (b)
+(c) (d)
+Figure 30: Q-verdier fra en agent med tag=‘X’ som har lært å spille optimalt, for (a) et tomt
+brett, dvs state=‘012345678’, (b) brettet tilsvarende state=‘0123XO678’, (c) brettet tilsvarende
+state=‘0O23XO6X8’, og (d) brettet tilsvarende state=‘0OO3XOXX8’.

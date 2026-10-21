@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Koding: Q-learning for tre-på-rad — Kap 4</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .fn-table { table-layout: fixed; width: 100%; }
+  .fn-table th:first-child, .fn-table td:first-child { width: 36%; font-family: var(--mono); font-size: 0.8rem; word-break: break-word; }
+  .fn-table th:last-child, .fn-table td:last-child { width: 14%; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faded); }
+  pre.pseudo { border-left: 3px solid var(--warm); }
+  pre.pseudo::before { content: 'PSEUDOKODE · forslag'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--warm); margin-bottom: 0.5rem; }
+  pre.notes { border-left: 3px solid var(--accent); }
+  pre.notes::before { content: 'FRA NOTATENE'; display: block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 4</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Reinforcement learning">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · 4B · Koden i notatene 4.3–4.5 · øvingsstoff · ~25 min</div>
+      <h1>Koding: <em>Q-learning for tre-på-rad</em></h1>
+      <p class="lede">RL-loopen med <code>env.reset</code> og <code>env.step</code>, environmentet som klasse, agenten <code>Player</code> med Q-tabell og ε-greedy <code>choose_action</code>, <code>learn</code> som er Bellman-likningen linje for linje, og <code>update_exp_factor</code>. Både tabellvarianten og nettverksvarianten.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#verktoy"><span>01</span> Verktøykassa</a>
+        <a href="#rl-loop"><span>02</span> RL-loopen</a>
+        <a href="#environment"><span>03</span> Environment</a>
+        <a href="#agent"><span>04</span> Agent</a>
+        <a href="#laering"><span>05</span> Læring</a>
+        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Øvingsstoff, <em>med ett unntak</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · siden dekker koden i notatene 4.3–4.5; utvidelsen for kapittel 4 (21. oktober 2026) er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Øving</span><strong>For øving 3.</strong> Environment, agent og treningsloop er det du skal skrive der.</li>
+          <li><span class="tag regn">Kode</span>Ett eksamensspørsmål er ren kode: <strong>trekke en tilfeldig minibatch fra en replay buffer</strong> lagret som liste, <code>random.sample(buffer, k=32)</code> (Ord. 2025 del 10 spm. 4). Se <a href="#laering">05</a>.</li>
+          <li><span class="tag">Forklar</span>Det som overlapper med 4A: <code>learn</code> (<a href="#laering">05</a>) er Bellman-likningen (115) linje for linje, og <code>choose_action</code> (<a href="#agent">04</a>) er ε-greedy. Kan du koden, kan du forklare begge.</li>
+          <li><span class="tag">Lavere</span><code>render</code>, Gym-miljøene og gitlab-lenken. Resten er oppslag.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 VERKTØY ─────────────────────────── -->
+  <section id="verktoy">
+    <div class="container">
+      <div class="section-badge">01 · Verktøykassa</div>
+      <h2>Funksjonene som <em>går igjen</em></h2>
+      <div class="source-note">Notatene · kodeeksemplene i 4.3–4.5 · rader merket forslag er ikke i notatene</div>
+
+      <div class="table-wrap">
+        <table class="fn-table">
+          <thead><tr><th>Kall</th><th>Hva det gjør</th><th>Brukt i</th></tr></thead>
+          <tbody>
+            <tr><td>env.reset() → (initial_state, info)</td><td>Setter environmentet tilbake til starttilstanden og returnerer den. Første kall i hver episode.</td><td>4.3</td></tr>
+            <tr><td>env.step(action) → (state, reward, done, info)</td><td>Utfører en action: ny state, reward for actionen, om episoden er over, ekstra info.</td><td>4.3</td></tr>
+            <tr><td>[i for i, s in enumerate(state) if s.isnumeric()]</td><td>Ledige ruter = tilgjengelige actions. Sifre i strengen er ledige, <code>X</code>/<code>O</code> er opptatt.</td><td>4.4</td></tr>
+            <tr><td>state[:a] + tag + state[a+1:]</td><td>Ny state etter trekk <code>a</code>. Strenger kan ikke endres, så det lages en ny.</td><td>4.4</td></tr>
+            <tr><td>np.argmax(qvalues)</td><td>Indeksen til høyeste Q-verdi i en liste; brukes til å slå opp beste action.</td><td>4.4</td></tr>
+            <tr><td>self.model.predict(x, verbose=0)[0][0]</td><td>Nettverksvarianten: Q-verdien for en state som tall. <code>verbose=0</code> slår av utskrift.</td><td>4.4</td></tr>
+            <tr><td>np.random.rand() &lt; self.exp_factor</td><td>Tilfeldig tall i [0, 1); er det mindre enn ε, utforsk med en tilfeldig action.</td><td>4.4 (forslag)</td></tr>
+            <tr><td>random.choice(available_actions)</td><td>Én tilfeldig action fra action space.</td><td>4.4 (forslag)</td></tr>
+            <tr><td>d.setdefault(state, {a: 0.0 for a in actions})</td><td>Setter inn en ukjent state i Q-tabellen med Q = 0 for alle actions, og returnerer oppslaget.</td><td>4.4 (forslag)</td></tr>
+            <tr><td>self.exp_factor *= self.epsilon_decay</td><td>Epsilon decay: ε ganges med et tall litt under 1, så lenge ε &gt; exp_min.</td><td>4.5</td></tr>
+            <tr><td>random.sample(buffer, k=32)</td><td>32 tilfeldige elementer fra en liste, uten tilbakelegging: en minibatch fra en replay buffer.</td><td>Ord. 2025 · 10.4 (forslag)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 RL-LOOP ─────────────────────────── -->
+  <section id="rl-loop">
+    <div class="container">
+      <div class="section-badge">02 · RL-loopen</div>
+      <h2>To funksjoner og <em>én løkke</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.3 · s. 58 (signaturene); løkkene er forslag</div>
+
+      <p class="dropcap">Gym-APIet trenger bare to funksjoner for å lage <span class="term" data-term="rl-loop">RL-loopen</span>: én som setter environmentet i starttilstanden, og én som tar en action.</p>
+<pre class="notes"><code>env.reset()        → Tuple[initial_state, info]
+env.step(action)   → Tuple[state, reward, done, info]</code></pre>
+      <p>Først settes environmentet i starttilstanden. Deretter enten en <code>for</code>-loop som itererer over maks antall steg og terminerer når maks er nådd eller <code>done == True</code>, eller en <code>while</code>-loop som terminerer når <code>done == True</code>. I loopen sender agenten inn actions, mottar ny state og reward, og velger nye actions.</p>
+<pre class="pseudo"><code>state, info = env.reset()                                   # episoden starter
+for t in range(max_steps):                                  # for-loop: stopper også ved maks antall steg
+    action = agent.choose_action(state)                     # policy: ε-greedy på Q
+    new_state, reward, done, info = env.step(action)        # miljøet svarer
+    agent.learn(state, action, reward, new_state, done)     # Bellman-oppdatering, hvert trekk
+    state = new_state
+    if done:
+        break</code></pre>
+<pre class="pseudo"><code>state, info = env.reset()
+done = False
+while not done:                                             # while-loop: stopper bare på done
+    action = agent.choose_action(state)
+    new_state, reward, done, info = env.step(action)
+    agent.learn(state, action, reward, new_state, done)
+    state = new_state</code></pre>
+      <p>Tre-på-rad har to spillere, så loopen må velge hvem som trekker. Med to agenter som lærer hver sin <code>tag</code>, og ε som minkes én gang per spill:</p>
+<pre class="pseudo"><code>env = TicTacToe()
+agent_x, agent_o = Player('X'), Player('O')
+
+for game in range(n_games):                                 # én episode = ett parti
+    state, _ = env.reset()
+    done = False
+    while not done:
+        player = agent_x if env.player_turn == 'X' else agent_o
+        action = player.choose_action(state)
+        new_state, reward, done, _ = env.step(action)
+        player.learn(state, action, reward, new_state, done)
+        state = new_state
+    agent_x.update_exp_factor()                             # epsilon decay per spill
+    agent_o.update_exp_factor()</code></pre>
+      <p>Her lærer bare spilleren som trakk. Skal taperen også lære av at motstanderen vant (negativ reward for sitt forrige trekk), må loopen huske forrige state og action for hver spiller og kalle <code>learn</code> for begge når <code>done</code> blir sann; det er en vanlig utvidelse i øvingen.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 ENVIRONMENT ─────────────────────────── -->
+  <section id="environment">
+    <div class="container">
+      <div class="section-badge">03 · Environment</div>
+      <h2>Tre-på-rad <em>som klasse</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.3 · s. 58 (funksjonslista); koden er forslag</div>
+
+      <p class="dropcap">Et <span class="term" data-term="environment">environment</span> må ha en tilstand, ta imot en action, gå over i en ny tilstand og returnere reward. Staten er strengen <code>012345678</code> der sifre er ledige ruter. Fem funksjoner: <code>__init__</code>, <code>reset</code>, <code>step</code>, <code>check_winner</code> og (valgfritt) <code>render</code>.</p>
+<pre class="pseudo"><code>class TicTacToe:
+    def __init__(self):
+        self.initial_state = '012345678'                    # tomt brett
+        self.state = self.initial_state
+        self.winner = None
+        self.player_turn = 'X'                              # X begynner
+        self.wins = {'X': 0, 'O': 0, 'draw': 0}              # tellere, nyttig under trening
+
+    def reset(self):                                        # tilbake til start, returnerer initial state
+        self.state = self.initial_state
+        self.winner = None
+        self.player_turn = 'X'
+        return self.state, {}
+
+    def step(self, action):                                 # action = indeks til en ledig rute
+        self.state = self.state[:action] + self.player_turn + self.state[action + 1:]
+        if self.check_winner():                             # tre på rad → spilleren som trakk vinner
+            self.winner = self.player_turn
+            self.wins[self.winner] += 1
+            return self.state, 1, True, {'winner': self.winner}
+        if not any(s.isnumeric() for s in self.state):      # fullt brett → uavgjort, reward 0
+            self.wins['draw'] += 1
+            return self.state, 0, True, {'winner': None}
+        self.player_turn = 'O' if self.player_turn == 'X' else 'X'   # bytt tur
+        return self.state, 0, False, {}                     # ikke over: reward 0
+
+    def check_winner(self):                                 # XXX eller OOO på en linje?
+        lines = [(0, 1, 2), (3, 4, 5), (6, 7, 8),            # rader
+                 (0, 3, 6), (1, 4, 7), (2, 5, 8),            # kolonner
+                 (0, 4, 8), (2, 4, 6)]                       # diagonaler
+        s = self.state
+        return any(s[a] == s[b] == s[c] and s[a] in 'XO' for a, b, c in lines)
+
+    def render(self):                                       # valgfri: tegn brettet
+        for row in range(3):
+            print(' '.join(self.state[3 * row:3 * row + 3]))
+        print()</code></pre>
+      <p>Legg merke til at <code>reward = 0</code> for alle trekk som ikke avslutter spillet, og at <code>done = True</code> både ved seier og ved fullt brett. Det er grunnen til at Q-verdiene i tabellen bare sprer seg bakover ett trekk per parti; se <a href="rl.html#q-tabell">4A · 06</a>.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 AGENT ─────────────────────────── -->
+  <section id="agent">
+    <div class="container">
+      <div class="section-badge">04 · Agent</div>
+      <h2><code>Player</code>: tag, Q-tabell og <em>ε-greedy</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.4 · s. 59–60 (egenskapene og choose_action); tabellvarianten er forslag</div>
+
+      <p class="dropcap">En <span class="term" data-term="agent">agent</span> som lærer tre-på-rad må minimum ha <code>tag</code> (<code>X</code> eller <code>O</code>), en <span class="term" data-term="q-tabell">Q-tabell</span> (dictionary med state som key) og parametrene \(\alpha\), \(\gamma\) og \(\epsilon\), pluss metoder for å velge action, lære og oppdatere \(\epsilon\).</p>
+<pre class="pseudo"><code>import random
+import numpy as np
+
+class Player:
+    def __init__(self, tag, alpha=0.5, gamma=0.9, exp_factor=1.0, exp_min=0.05, epsilon_decay=0.99):
+        self.tag = tag                      # 'X' eller 'O'
+        self.values = {}                    # Q-tabell: state → {action: Q}, tom i starten
+        self.alpha = alpha                  # læringsrate α i (115)
+        self.gamma = gamma                  # discount factor γ
+        self.exp_factor = exp_factor        # ε, starter høyt
+        self.exp_min = exp_min              # gulvet for ε
+        self.epsilon_decay = epsilon_decay  # faktor per kall på update_exp_factor</code></pre>
+
+      <h3>Velge action</h3>
+      <p>Funksjonen for å velge action, slik den står for agenten som bruker et nevralt nettverk:</p>
+<pre class="notes"><code>def choose_action(self, state):
+    available_actions = [_i for _i, _s in enumerate(state) if _s.isnumeric()]
+    # If only one move available, make that one
+    if len(available_actions) == 0:
+        return None
+    elif len(available_actions) == 1:
+        action = available_actions[0]
+        return action
+    else:
+        qvalues = []
+        for _action in available_actions:
+            potential_state = state[:_action] + self.tag + state[_action+1:]
+            qvalues.append(self.model.predict(self.state_to_array(potential_state),
+                verbose=0)[0][0])
+        max_index = np.argmax(qvalues)
+        best_action = available_actions[max_index]
+        return best_action</code></pre>
+      <p>Den gjør fire ting: 1) får oversikt over mulige trekk, de numeriske tegnene i <code>state</code>; ingen ledige gir <code>None</code>, ett ledig returneres direkte. 2) Sjekker om staten finnes i Q-tabellen, og setter den inn med Q-verdi 0 hvis ikke. 3) Trekker et tilfeldig tall i \([0, 1)\); er det mindre enn \(\epsilon\), returneres en tilfeldig action. 4) Ellers returneres actionen med høyest Q-verdi for aktuell state.</p>
+      <p>Koden over er <strong>nettverksvarianten</strong>: <code>self.model.predict</code> gir verdien av brettet <em>etter</em> trekket (<code>potential_state</code>, konvertert til tall med <code>state_to_array</code>), og Q-verdien for action \(A\) i state \(S\) er altså verdien av staten trekket fører til. Den viser steg 1 og 4; steg 2 og 3 (oppslag i tabellen og \(\epsilon\)) hører til <strong>tabellvarianten</strong>:</p>
+<pre class="pseudo"><code>def choose_action(self, state):
+    available_actions = [_i for _i, _s in enumerate(state) if _s.isnumeric()]   # 1) mulige trekk
+    if len(available_actions) == 0:
+        return None
+    elif len(available_actions) == 1:
+        return available_actions[0]
+    self.values.setdefault(state, {a: 0.0 for a in available_actions})          # 2) ukjent state → Q = 0
+    if np.random.rand() &lt; self.exp_factor:                                       # 3) med sannsynlighet ε:
+        return random.choice(available_actions)                                 #    tilfeldig action (explore)
+    qvalues = self.values[state]                                                 # 4) ellers: høyest Q (exploit)
+    return max(available_actions, key=lambda a: qvalues[a])</code></pre>
+      <p>Det er <span class="term" data-term="epsilon-greedy">epsilon greedy</span> i to linjer: steg 3 er utforskingen, steg 4 utnyttingen. Settes <code>exp_factor = 0</code>, forsvinner steg 3 og agenten spiller det samme partiet hver gang.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 LÆRING ─────────────────────────── -->
+  <section id="laering">
+    <div class="container">
+      <div class="section-badge">05 · Læring</div>
+      <h2><code>learn</code> er Bellman-likningen <em>linje for linje</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.5 · s. 60–61 (learn og update_exp_factor); tabellvarianten og replay-bufferet er forslag</div>
+
+      <p class="dropcap">Q-verdiene oppdateres etter hvert trekk med likning (115), \(Q^{new} \leftarrow (1-\alpha) Q + \alpha (R_{t+1} + \gamma \max_A Q(S_{t+1}, A))\). I nettverksvarianten:</p>
+<pre class="notes"><code>def learn(self, state, action, reward, new_state, done):
+    v_s = self.calc_value(state)[0]
+    if done:
+        v_s_next = 0
+    else:
+        v_s_next = self.calc_value(new_state)[0]
+    td_target = reward + (0 if done else self.gamma*v_s_next)
+    td_delta = td_target - v_s
+    new_qvalue = v_s + self.alpha*td_delta
+    y_train = new_qvalue
+    model_input = self.state_to_array(state).reshape(1,-1)
+    self.train_model(model_input, y_train, self.train_steps)
+    return</code></pre>
+      <p>Første linje henter den gamle Q-verdien. Deretter hentes den maksimale fremtidige verdien, med mindre den ikke finnes (spillet er over), da settes den til 0. Så brukes disse to størrelsene og parametrene satt ved start til å beregne den nye Q-verdien, som erstatter den gamle. Funksjonen returnerer ingenting. Læringen skjer <strong>for hvert trekk</strong>, og funksjonen trenger state, valgt action, ny state og reward for trekket. I tre-på-rad er <code>reward = 0</code> med mindre spillet er over, og da er maksimal fremtidig verdi 0. Q-læring går ut på å oppdatere Q-verdier gjennom erfaring.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Kodelinje</th><th>Ledd i (115)</th></tr></thead>
+          <tbody>
+            <tr><td><code>v_s</code></td><td>\(Q(S_t, A_t)\), gammel verdi</td></tr>
+            <tr><td><code>v_s_next</code></td><td>\(\max_A Q(S_{t+1}, A)\), 0 når <code>done</code></td></tr>
+            <tr><td><code>td_target = reward + gamma * v_s_next</code></td><td>\(R_{t+1} + \gamma \max_A Q(S_{t+1}, A)\), parentesen</td></tr>
+            <tr><td><code>td_delta = td_target - v_s</code></td><td><span class="term" data-term="td-feil">TD-feilen</span>: avstanden fra gammel verdi til målet</td></tr>
+            <tr><td><code>new_qvalue = v_s + alpha * td_delta</code></td><td>\(= (1-\alpha) Q + \alpha \cdot \texttt{td\_target}\), hele (115)</td></tr>
+            <tr><td><code>train_model(model_input, y_train, …)</code></td><td>Nettverket: tren mot <code>new_qvalue</code> som target. Tabellen: skriv verdien inn.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Samme funksjon for tabellagenten, der nøstingen er <code>values[state][action]</code>:</p>
+<pre class="pseudo"><code>def learn(self, state, action, reward, new_state, done):
+    q_old = self.values.setdefault(state, {}).get(action, 0.0)        # Q(S_t, A_t), 0 om ukjent
+    if done or not self.values.get(new_state):                        # spillet over, eller ny state ukjent
+        max_q_next = 0.0
+    else:
+        max_q_next = max(self.values[new_state].values())            # max_A Q(S_{t+1}, A)
+    td_target = reward + self.gamma * max_q_next
+    td_delta = td_target - q_old
+    self.values[state][action] = q_old + self.alpha * td_delta        # (115), skrevet rett inn i tabellen</code></pre>
+
+      <h3>Minke ε</h3>
+<pre class="notes"><code>def update_exp_factor(self):
+    if self.exp_factor &gt; self.exp_min:
+        self.exp_factor *= self.epsilon_decay</code></pre>
+      <p>Kalles typisk én gang per spill. ε avtar geometrisk til <code>exp_min</code> og blir der (<span class="term" data-term="epsilon-decay">epsilon decay</span>). Har agenten ikke lært noe innen ε når gulvet, hjelper det sjelden å trene videre; endre heller andre deler av koden, for eksempel tapsfunksjonen. Plott på <a href="rl.html#agenter">4A · 05</a>.</p>
+
+      <h3>Replay buffer (DQN)</h3>
+      <p>Trenes nettverket på trekkene i den rekkefølgen de skjer, overtilpasser det de nyeste erfaringene. I stedet lagres overgangene i en <span class="term" data-term="replay-buffer">replay buffer</span>, og nettverket trenes på tilfeldige minibatcher fra den (forslag; se <a href="rl.html#dqn">4A · 07</a>):</p>
+<pre class="pseudo"><code>buffer = []                                                     # liste av (state, action, reward, next_state, done)
+buffer.append((state, action, reward, new_state, done))         # etter hvert trekk
+if len(buffer) &gt;= 32:
+    minibatch = random.sample(buffer, k=32)                     # 32 tilfeldige overganger, uten tilbakelegging
+    for s, a, r, s2, d in minibatch:
+        agent.learn(s, a, r, s2, d)</code></pre>
+
+      <div class="oppgave" data-quiz id="oppg-o25-10-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 10 · spm. 4</span><span class="o-ref">4.4 · kode, 2,5 p</span></div>
+        <div class="o-text">
+          <pre><code>buffer = [...]</code></pre>
+          <p>Du har en replay-buffer lagret som en liste med transisjoner, se kode over. Hvilken Python-funksjon brukes for å trekke en tilfeldig minibatch?</p>
+          <ol class="mcq-list" type="A">
+            <li><code>np.take(buffer, 32)</code></li>
+            <li><code>random.sample(buffer, k=32)</code></li>
+            <li><code>np.take(buffer, 32)</code></li>
+            <li><code>buffer.sort()</code></li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (replay buffer er ikke i notatene)</span>
+            <p><strong>B.</strong> <code>random.sample(liste, k)</code> trekker \(k\) ulike elementer tilfeldig, uten tilbakelegging, akkurat det en minibatch skal være. <code>np.take(buffer, 32)</code> (A og C er like) henter elementet på <em>indeks</em> 32, ingenting tilfeldig. <code>buffer.sort()</code> sorterer lista på plass og returnerer <code>None</code>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">06 · Oppsummering</div>
+      <h2>Det du bør <em>kunne skrive</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>RL-loop</strong><code>state, _ = env.reset()</code>; <code>while not done:</code> velg action, <code>env.step</code>, <code>learn</code>, <code>state = new_state</code>.</div>
+        <div class="recap-pill"><strong>Environment</strong>State som streng; <code>step</code> setter brikke, sjekker vinner, bytter tur; reward 0 til spillet er over, da 1 (seier) eller 0 (uavgjort) med done.</div>
+        <div class="recap-pill"><strong>Player</strong>tag, <code>values = {}</code>, alpha, gamma, exp_factor, exp_min, epsilon_decay.</div>
+        <div class="recap-pill"><strong>choose_action</strong>Ledige ruter med <code>isnumeric</code>; <code>setdefault</code> for ny state; <code>rand() &lt; ε</code> → <code>random.choice</code>; ellers høyest Q.</div>
+        <div class="recap-pill"><strong>learn</strong><code>td_target = r + γ·max_q_next</code> (0 når done); <code>td_delta = td_target − q_old</code>; <code>q_new = q_old + α·td_delta</code>.</div>
+        <div class="recap-pill"><strong>ε og buffer</strong><code>exp_factor *= epsilon_decay</code> over exp_min; <code>random.sample(buffer, k=32)</code> for en minibatch.</div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="rl.html" class="prev"><div class="pn-label">← Forrige · 4A</div><div class="pn-title">Reinforcement learning: MDP, Q-verdier og Q-learning</div></a>
+        <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 4: oversikt →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

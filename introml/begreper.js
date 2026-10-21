@@ -21,8 +21,13 @@
   var EN = 'kap1/ensemble.html';
   var NN = 'kap2/perceptron.html';
   var NK = 'kap2/koding.html';
+  var TR = 'kap2/trening.html';
   var CL = 'kap3/clustering.html';
   var CK = 'kap3/koding.html';
+  var DR = 'kap3/dimensjonsreduksjon.html';
+  var AN = 'kap3/anomali.html';
+  var RL = 'kap4/rl.html';
+  var RK = 'kap4/koding.html';
 
   window.GLOSSARY = {
     /* ── 1.1 Data ── */
@@ -583,9 +588,9 @@
     },
     'sgd': {
       term: 'Stochastic gradient descent (SGD)',
-      alias: 'SGDRegressor',
-      def: '<p>Gradient descent der hvert steg bruker ett datapunkt eller en liten gruppe i stedet for hele datasettet. <code>SGDRegressor</code> i sklearn har <code>partial_fit</code>, som lar oss trene én epoke om gangen og måle tap på valideringsdata underveis.</p>',
-      more: RG + '#validering'
+      alias: 'SGDRegressor, mini-batch SGD, full-batch gradient descent',
+      def: '<p>Gradient descent der gradienten estimeres fra et tilfeldig utvalg av datapunktene i stedet for hele settet. Full-batch GD bruker alle N punktene og gir 1 oppdatering per epoke; SGD på ett punkt gir N oppdateringer; mini-batch SGD bruker B punkter og gir N/B oppdateringer per epoke, og er det som vanligvis menes med «SGD». <code>SGDRegressor</code> i sklearn har <code>partial_fit</code> for å trene én epoke om gangen.</p>',
+      more: TR + '#sgd'
     },
     'early-stopping': {
       term: 'Early stopping',
@@ -867,12 +872,12 @@
       term: 'Backpropagation',
       alias: 'Tilbakepropagering',
       def: '<p>Metoden som beregner gradienten til tapsfunksjonen for alle parametrene i et nevralt nettverk: feilen i prediksjonen propageres bakover fra output, gjennom alle lagene, til input, og underveis samles «ønskede endringer» for vektene og aktiveringene i hvert lag (kjerneregelen). Gradient descent bruker resultatet til å justere vektene. Spurt på eksamen både 2024 og 2025.</p>',
-      more: NN + '#backpropagation'
+      more: TR + '#backpropagation'
     },
     'forward-pass': {
       term: 'Forward pass',
       def: '<p>Når nettverket gjør en prediksjon: dataene (input) transformeres gjennom lagene til output. Motsatsen er backpropagation, som går bakover fra output til input med feilen.</p>',
-      more: NN + '#backpropagation'
+      more: TR + '#backpropagation'
     },
     'keras': {
       term: 'Keras / Sequential / Dense',
@@ -946,8 +951,8 @@
     },
     'mini-batch': {
       term: 'Mini batch',
-      def: '<p>En liten tilfeldig trekning fra datasettet som brukes i én iterasjon i stedet for hele datasettet. MiniBatchKMeans gjør dette for k-means; SGD gjør det for gradient descent.</p>',
-      more: CK + '#kmeans'
+      def: '<p>En liten tilfeldig trekning fra datasettet som brukes i én iterasjon i stedet for hele datasettet. Mini-batch SGD beregner gradienten som gjennomsnitt over en mini-batch med B punkter og gjør N/B oppdateringer per epoke; MiniBatchKMeans gjør det samme for k-means.</p>',
+      more: TR + '#sgd'
     },
     'dbscan': {
       term: 'DBSCAN',
@@ -1003,6 +1008,249 @@
       term: 'Concentration of distances',
       def: '<p>I høye dimensjoner blir avstandene mellom punkter store, mens forskjellene mellom avstander blir små (relative avstander krymper). Følge av dimensjonsforbannelsen: klynger kan ikke være kompakte, og avstandsbaserte metoder (k-means, DBSCAN) sliter.</p>',
       more: CL + '#dimensjoner'
-    }
+    },
+
+    /* ── 3.2 Dimensjonsreduksjon: PCA ── */
+    'pca': {
+      term: 'PCA (principal component analysis)',
+      alias: 'hovedkomponentanalyse',
+      def: '<p>Dimensjonsreduksjon som finner aksene dataene varierer mest langs, hovedkomponentene, og projiserer dataene på de første av dem. Hovedkomponentene er egenvektorene til kovariansmatrisen, de er ortogonale (ukorrelerte), og ved å beholde bare de første bevares mest mulig av variansen. Lineær, rask, og kan gjenbrukes på nye data etter <code>.fit</code>.</p>',
+      more: DR + '#pca'
+    },
+    'hovedkomponent': {
+      term: 'Hovedkomponent (PC)',
+      alias: 'principal component, prinsipalkomponent',
+      def: '<p>En ny akse for dataene: en lineær kombinasjon av de opprinnelige featurene. PC1 er retningen med størst varians, PC2 er ortogonal til PC1 og har nest størst varians, og så videre. At de er ortogonale garanterer at hver komponent inneholder ulik informasjon uten overlapp. Formelt: egenvektorene til kovariansmatrisen.</p>',
+      more: DR + '#pca'
+    },
+    'kovarians': {
+      term: 'Kovarians',
+      def: '<p>cov(x<sub>i</sub>, x<sub>j</sub>) = 1/(N − 1) Σ<sub>k</sub> (x<sub>i,k</sub> − x̄<sub>i</sub>)(x<sub>j,k</sub> − x̄<sub>j</sub>): hvor mye to variabler samvarierer. Positiv når de øker sammen, negativ når den ene øker mens den andre minker. Kovariansen mellom en variabel og seg selv er variansen.</p>',
+      more: DR + '#pca'
+    },
+    'kovariansmatrise': {
+      term: 'Kovariansmatrise',
+      def: '<p>Matrisen S med cov(x<sub>i</sub>, x<sub>j</sub>) i rad i, kolonne j. Diagonalen er variansene (spredningen til hver variabel), elementene utenfor diagonalen er kovariansene (hvor mye to og to variabler samvarierer). Symmetrisk. Egenvektorene til S er hovedkomponentene i PCA, egenverdiene er variansen langs hver av dem.</p>',
+      more: DR + '#pca'
+    },
+    'egenverdi': {
+      term: 'Egenverdi',
+      def: '<p>Et tall λ slik at S e = λ e for en vektor e ≠ 0. Finnes ved å løse det(S − λI) = 0. For kovariansmatrisen er egenverdien variansen til dataene langs den tilhørende egenvektoren; egenverdi 0 betyr at dataene ikke varierer i den retningen. Summen av egenverdiene er den totale variansen.</p>',
+      more: DR + '#pca'
+    },
+    'egenvektor': {
+      term: 'Egenvektor',
+      def: '<p>En vektor e som matrisen S bare skalerer: S e = λ e. Finnes ved å sette egenverdien inn i (S − λI) e = 0. Egenvektorene til en symmetrisk matrise er ortogonale, og skrives som enhetsvektorer (lengde 1). For kovariansmatrisen er de hovedkomponentene.</p>',
+      more: DR + '#pca'
+    },
+    'varians-forklart': {
+      term: 'Andel varians forklart',
+      alias: 'explained variance ratio',
+      def: '<p>λ<sub>i</sub> / Σ<sub>j</sub> λ<sub>j</sub>: hvor stor del av den totale variansen hovedkomponent i står for. Hovedkomponentene sorteres synkende etter denne, og ved reduksjon fra d til d′ dimensjoner beholdes de første d′. I sklearn: <code>pca.explained_variance_ratio_</code>.</p>',
+      more: DR + '#pca'
+    },
+
+    /* ── 3.2.2 SNE og t-SNE ── */
+    'sne': {
+      term: 'SNE (stochastic neighbor embedding)',
+      def: '<p>Dimensjonsreduksjon for visualisering. Først tilpasses en betinget sannsynlighet p<sub>j|i</sub> for at x<sub>i</sub> velger x<sub>j</sub> som nabo, med en Gauss sentrert i x<sub>i</sub>, slik at nære punkter får høy nabosannsynlighet. Så plasseres punktene tilfeldig i lav dimensjon og flyttes med gradient descent til fordelingen Q der matcher P i høy dimensjon, målt med KL-divergens.</p>',
+      more: DR + '#tsne'
+    },
+    't-sne': {
+      term: 't-SNE',
+      def: '<p>SNE med en t-fordeling i stedet for en Gauss i den lave dimensjonen (van der Maaten og Hinton, 2008). Den lengre halen minker sjansen for at nabopunkter får for like sannsynligheter. Brukes til å redusere dimensjoner for visualisering. Ikke-parametrisk: optimaliserer posisjonene direkte, lager ingen transformasjon, og kan derfor ikke brukes på nye data.</p>',
+      more: DR + '#tsne'
+    },
+    'kl-divergens': {
+      term: 'KL-divergens',
+      alias: 'Kullback–Leibler-divergens, relativ entropi',
+      def: '<p>D<sub>KL</sub>(P‖Q) = Σ<sub>x</sub> P(x) log(P(x)/Q(x)): forventningen under P av den logaritmiske forskjellen mellom P og Q. Måler hvor overraskende resultatene blir om man bruker Q når dataene egentlig kommer fra P. Alltid ≥ 0, og ikke symmetrisk i P og Q. Tapsfunksjonen i SNE og t-SNE: P er nabosannsynlighetene i høy dimensjon, Q i lav.</p>',
+      more: DR + '#tsne'
+    },
+    'embedding': {
+      term: 'Embedding',
+      def: '<p>Overføringen av datapunkter fra en høydimensjonal til en lavdimensjonal plassering, eller selve den lavdimensjonale plasseringen. t-SNE lager en embedding av treningsdataene; den avhenger av de relative avstandene mellom alle punktene, så nye punkter krever at hele embeddingen beregnes på nytt.</p>',
+      more: DR + '#tsne'
+    },
+    'perplexity': {
+      term: 'Perplexity',
+      def: '<p>Hyperparameter i t-SNE som angir entropien til den betingede gaussiske fordelingen rundt hvert punkt; algoritmen tilpasser variansen for å matche den. Intuitivt: effektivt antall naboer hvert punkts gausskurve bryr seg om.</p>',
+      more: DR + '#tsne'
+    },
+    't-fordeling': {
+      term: 't-fordeling',
+      def: '<p>Sannsynlighetsfordeling som likner på den gaussiske, men faller litt raskere nær midten og har en lengre hale. I t-SNE brukes den i den lave dimensjonen, slik at nabopunkter ikke får for like sannsynligheter.</p>',
+      more: DR + '#tsne'
+    },
+
+    /* ── 3.3 Anomalideteksjon ── */
+    'anomali': {
+      term: 'Anomali',
+      alias: 'avvik',
+      def: '<p>Et datapunkt som ikke likner majoriteten av datapunktene. Vi vet typisk hvordan normale punkter ser ut, men ikke hvordan avviket vil se ut, så anomalideteksjon behandles som uveiledet læring: klassifisering uten labels med ekstrem skjevfordeling mellom klassene.</p>',
+      more: AN + '#intro'
+    },
+    'prosentil': {
+      term: 'Prosentil',
+      alias: 'percentile',
+      def: '<p>Verdien en viss prosentandel av datapunktene er mindre enn eller lik. Den 95. prosentilen av avstandene i k-means-anomalideteksjon er terskelen som 95 % av punktene ligger under; punktene over regnes som anomalier. <code>np.percentile(distances, 95)</code>. Terskelen må ofte justeres, det finnes ingen generelt riktig verdi.</p>',
+      more: AN + '#kmeans'
+    },
+    'isolation-forest': {
+      term: 'Isolation forest',
+      def: '<p>Anomalideteksjon med en skog av isolasjonstrær trent uten labels. Hvert tre splitter på tilfeldige features og verdier til hvert punkt står alene i en løvnode. Anomalier er få og ulike, så de isoleres tidlig og får kort sti fra rotnoden; den gjennomsnittlige stilengden over trærne gir anomali-scoren (kort sti = høy score). <code>IsolationForest(n_estimators, contamination)</code>, <code>predict</code> gir −1 for anomalier.</p>',
+      more: AN + '#isolation-forest'
+    },
+    'isolasjonstre': {
+      term: 'Isolasjonstre (itree)',
+      alias: 'isolation tree',
+      def: '<p>Et beslutningstre bygd uten labels på et tilfeldig subsett av treningsdataene (trukket uten tilbakelegging): splitt på en tilfeldig feature ved en tilfeldig verdi, gjenta til hvert datapunkt har sin egen løvnode. Antall splitt fra rot til løvnode er punktets stilengde.</p>',
+      more: AN + '#isolation-forest'
+    },
+    'contamination': {
+      term: 'contamination',
+      def: '<p>Hyperparameter i <code>IsolationForest</code>: anslått andel anomalier i datasettet, for eksempel 0.05. Bestemmer terskelen på anomali-scoren, altså hvor mange punkter som merkes −1.</p>',
+      more: AN + '#isolation-forest'
+    },
+
+    /* ── 4 Reinforcement learning ── */
+    'reinforcement-learning': {
+      term: 'Reinforcement learning (RL)',
+      alias: 'forsterkende læring, forsterkningslæring',
+      def: '<p>Maskinlæring der en <em>agent</em> lærer å ta beslutninger i et <em>environment</em> ved å utføre <em>actions</em> for å maksimere forventet <em>reward</em>. Ingen fasit per datapunkt; læringssignalet er belønning fra miljøet, ofte først når episoden er over. Kurset ser bare på ett læringsregime: Q-learning.</p>',
+      more: RL + '#intro'
+    },
+    'agent': {
+      term: 'Agent',
+      def: '<p>Hva som helst som tar inn en state og returnerer en action: en Q-tabell, et nevralt nettverk eller et menneske. Ikke det samme som «AI-agenter» i forbrukerteknologi (en språkmodell i en loop). I tre-på-rad er agenten en <code>Player</code> med tag, Q-tabell og parametrene α, γ og ε.</p>',
+      more: RL + '#intro'
+    },
+    'environment': {
+      term: 'Environment (miljø)',
+      def: '<p>Det agenten handler i. Må ha en tilstand, ta imot en action, gå over i en ny tilstand og returnere reward. Standard-API fra Gym: <code>env.reset()</code> gir starttilstanden, <code>env.step(action)</code> gir <code>state, reward, done, info</code>.</p>',
+      more: RL + '#environments'
+    },
+    'state': {
+      term: 'State (tilstand)',
+      def: '<p>Miljøets tilstand <em>S<sub>t</sub></em> ved steg <em>t</em>, det agenten ser og velger action ut fra. I tre-på-rad en streng som <code>0123X5678</code>: sifre er ledige ruter, bokstaver er plasserte brikker. Mengden av alle states er state space.</p>',
+      more: RL + '#mdp'
+    },
+    'action': {
+      term: 'Action (handling)',
+      def: '<p>Det agenten gjør i en state, <em>A<sub>t</sub></em>. Mengden av tilgjengelige actions er action space; i tre-på-rad indeksene til de ledige rutene.</p>',
+      more: RL + '#mdp'
+    },
+    'reward': {
+      term: 'Reward (belønning)',
+      def: '<p>Tallet <em>R<sub>t+1</sub></em> miljøet gir som tilbakemelding på action <em>A<sub>t</sub></em> i state <em>S<sub>t</sub></em>. Kommer fra environmentet og skal ikke læres, i motsetning til Q-verdier. I tre-på-rad 0 for alle trekk fram til spillet er over; vinneren får reward &gt; 0, uavgjort gir 0.</p>',
+      more: RL + '#q-verdier'
+    },
+    'rl-loop': {
+      term: 'RL-loopen',
+      def: '<p>Environment gir state <em>S<sub>t</sub></em> → agenten velger action <em>A<sub>t</sub></em> → environment gir reward <em>R<sub>t+1</sub></em> og ny state <em>S<sub>t+1</sub></em> → agenten velger ny action, og så videre til <code>done</code>. I Q-learning oppdateres Q-verdien etter hvert steg.</p>',
+      more: RL + '#mdp'
+    },
+    'markov-egenskapen': {
+      term: 'Markov-egenskapen',
+      alias: 'memoryless, Markov-prosess',
+      def: '<p>Den neste tilstanden avhenger bare av nåværende state og valgt action, ikke av tidligere states eller actions: fremtiden er uavhengig av fortiden gitt nåtiden. Derfor kan agenten velge action ut fra <em>S<sub>t</sub></em> alene. Spurt på eksamen 2025.</p>',
+      more: RL + '#mdp'
+    },
+    'mdp': {
+      term: 'Markov decision process (MDP)',
+      def: '<p>En beslutningsprosess med Markov-egenskapen. Formelt 4-tuppelen (𝒮, 𝒜, P<sub>A</sub>, R<sub>A</sub>): states, actions, transisjonssannsynligheter og rewards. Kurset holder seg til deterministiske miljøer, så P<sub>A</sub> ignoreres.</p>',
+      more: RL + '#mdp'
+    },
+    'policy': {
+      term: 'Policy',
+      def: '<p>Strategien som bestemmer hvilken action agenten tar i en gitt state, skrevet π(<em>A<sub>t</sub></em> | <em>S<sub>t</sub></em>): en tabell eller funksjon fra state til action. Målet i RL er en optimal policy, den som maksimerer kumulativ reward. Spurt på eksamen både 2024 og 2025.</p>',
+      more: RL + '#mdp'
+    },
+    'verdifunksjon': {
+      term: 'Verdifunksjon',
+      alias: 'value function, utility function',
+      def: '<p>Angir hvor verdifull en state og action er <em>på lang sikt</em> under en gitt policy: forventet verdi av å være i tilstanden, gjøre actionen og følge policyen videre. Trengs for å kvantisere langsiktige konsekvenser i stedet for bare umiddelbar reward. Q-funksjonen er den kurset bruker.</p>',
+      more: RL + '#mdp'
+    },
+    'q-funksjon': {
+      term: 'Q-funksjon / Q-verdi',
+      alias: 'quality',
+      def: '<p>Verdifunksjonen Q : 𝒮 × 𝒜 → ℝ som gir kvaliteten til en state–action-kombinasjon: forventet kumulativ fremtidig reward av å gjøre action <em>A</em> i state <em>S</em> og følge policyen deretter. Beregnes iterativt med Bellman-likningen. Må læres, i motsetning til reward.</p>',
+      more: RL + '#q-verdier'
+    },
+    'bellman-likningen': {
+      term: 'Bellman-likningen',
+      def: '<p>Oppdateringsregelen for Q-verdier (115): Q<sup>new</sup>(S<sub>t</sub>, A<sub>t</sub>) ← (1 − α)·Q(S<sub>t</sub>, A<sub>t</sub>) + α·(R<sub>t+1</sub> + γ·max<sub>A</sub> Q(S<sub>t+1</sub>, A)). α er læringsraten (hvor mye av den gamle verdien som beholdes), γ er discount factor (hvor sterkt estimatet for fremtiden teller). Du skal kunne regne ett steg for hånd.</p>',
+      more: RL + '#q-verdier'
+    },
+    'discount-factor': {
+      term: 'Discount factor (γ)',
+      alias: 'diskonteringsfaktor',
+      def: '<p>Parameteren γ ∈ [0, 1] i Bellman-likningen som bestemmer hvor sterkt framtidige belønninger påvirker den nåværende Q-verdien. Høy γ: læringen domineres av estimatet for fremtidige tilstander. Lav γ: den umiddelbare rewarden dominerer. Spurt på eksamen både 2024 og 2025.</p>',
+      more: RL + '#q-verdier'
+    },
+    'exploration-factor': {
+      term: 'Exploration factor (ε)',
+      alias: 'epsilon, utforskingsfaktor',
+      def: '<p>Hyperparameter ε ∈ [0, 1] som bare gir mening i RL: sannsynligheten for at agenten gjør en tilfeldig action i stedet for den med høyest Q-verdi. Høy ε = utforske (explore), lav ε = utnytte (exploit).</p>',
+      more: RL + '#agenter'
+    },
+    'exploration-exploitation': {
+      term: 'Exploration–exploitation tradeoff',
+      def: '<p>Utforsking (actions med ukjent utfall, kan finne store belønninger) går på bekostning av utnytting (actions med kjent utfall, unngår store tap). Ingen universell løsning: for å velge optimalt måtte vi kjent utfallet til actions med ukjent utfall. Praktisk svar: epsilon greedy med epsilon decay.</p>',
+      more: RL + '#agenter'
+    },
+    'epsilon-greedy': {
+      term: 'Epsilon greedy (ε-greedy)',
+      def: '<p>Valgregel: med sannsynlighet 1 − ε velg actionen med høyest Q-verdi for aktuell state (grådig), ellers en tilfeldig action fra action space. Sørger for at agenten av og til utforsker miljøet. Spurt på eksamen 2025.</p>',
+      more: RL + '#agenter'
+    },
+    'epsilon-decay': {
+      term: 'Epsilon decay',
+      def: '<p>Å starte med høy ε tidlig i treningen og redusere den stegvis, typisk <code>exp_factor *= epsilon_decay</code> så lenge <code>exp_factor &gt; exp_min</code>. Agenten slutter nesten å gjøre tilfeldige trekk sent i treningen, men beholder en liten ε &gt; 0 fordi også en godt trent agent kan kjøre seg fast.</p>',
+      more: RL + '#agenter'
+    },
+    'q-tabell': {
+      term: 'Q-tabell',
+      def: '<p>Agentens lager av Q-verdier: en (nøstet) dictionary med states som keys, og for hver state en dictionary med actions som keys og Q-verdier som verdier. Tom eller fylt med 0 i starten; fylles gjennom erfaring med Bellman-likningen.</p>',
+      more: RL + '#q-tabell'
+    },
+    'q-learning': {
+      term: 'Q-learning',
+      alias: 'Q-læring',
+      def: '<p>Læringsregimet kurset dekker: agenten bruker Q-verdier til å velge actions, og oppdaterer Q-verdiene etter hvert trekk med Bellman-likningen ut fra state, action, reward og ny state. Agenten er en Q-tabell eller et nevralt nettverk (DQN).</p>',
+      more: RL + '#q-tabell'
+    },
+    'episode': {
+      term: 'Episode',
+      def: '<p>Én gjennomkjøring av RL-loopen fra <code>env.reset()</code> til <code>done == True</code>, for eksempel ett parti tre-på-rad. Treningen består av mange episoder; ε reduseres typisk én gang per episode.</p>',
+      more: RL + '#environments'
+    },
+    'td-feil': {
+      term: 'TD-feil (td_delta)',
+      alias: 'temporal difference, td_target',
+      def: '<p>Differansen mellom treningsmålet <code>td_target = reward + γ·max Q(ny state)</code> og den gamle Q-verdien. Bellman-likningen kan skrives Q ← Q + α·td_delta. Det er denne feilen et nevralt nettverk trenes til å minimere; den sier ikke hvor mye reward agenten får.</p>',
+      more: RK + '#laering'
+    },
+    'dqn': {
+      term: 'Deep Q-network (DQN)',
+      def: '<p>Q-learning der Q-tabellen er byttet ut med et nevralt nettverk som predikerer Q-verdier, trent med backpropagation på TD-feilen. Nettverket takler store state-rom, men vektdeling gjør at én oppdatering endrer mange Q-verdier; derfor target network og replay buffer. Forslag / egen tolkning; fire spørsmål på eksamen 2025.</p>',
+      more: RL + '#dqn'
+    },
+    'target-network': {
+      term: 'Target network',
+      def: '<p>En kopi av Q-nettverket som fryses og brukes til å regne ut treningsmålet td_target, og som oppdateres bare av og til. Holder Q-verdiene som brukes som treningsmål stabile under læring, i stedet for at målet flytter seg for hver oppdatering. Forslag / egen tolkning.</p>',
+      more: RL + '#dqn'
+    },
+    'replay-buffer': {
+      term: 'Replay buffer',
+      def: '<p>Et lager (for eksempel en liste) av overganger (state, action, reward, next_state, done). Nettverket trenes på tilfeldige mini-batcher fra bufferet, <code>random.sample(buffer, k=32)</code>, slik at treningseksemplene blir mindre korrelerte og nettverket ikke overtilpasser de nyeste erfaringene. Forslag / egen tolkning.</p>',
+      more: RL + '#dqn'
+    },
+    'reward-hacking': {
+      term: 'Reward hacking',
+      def: '<p>Agenten finner en atferd som gir svært høy reward, men som ikke er det designeren mente, fordi den utnytter utilsiktede svakheter i hvordan belønningen er definert. Agenten optimaliserer rewarden slik den faktisk er, ikke slik den var ment. Forslag / egen tolkning.</p>',
+      more: RL + '#dqn'
+    },
   };
 })();

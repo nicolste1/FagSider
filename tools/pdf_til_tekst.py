@@ -104,29 +104,36 @@ def finn_dato(forside: str) -> tuple[str, str]:
     return f"{mnd} {dag}, {aar}", f"{dag}. {MONTHS[mnd.lower()]} {aar}"
 
 
+def er_toc_side(tekst: str) -> bool:
+    """En side er del av innholdsfortegnelsen om den har minst tre linjer med prikkede ledelinjer."""
+    return sum(1 for linje in tekst.splitlines() if TOC_LINE_RE.match(linje.strip())) >= 3
+
+
 def finn_toc(sider: list[str]) -> list[tuple[str, str]]:
-    """Leser innholdsfortegnelsen (første side) -> [(nummer, tittel), ...]."""
+    """Leser innholdsfortegnelsen (side 1, og evt. påfølgende sider den fortsetter på) -> [(nummer, tittel), ...]."""
     toc: list[tuple[str, str]] = []
-    for linje in sider[0].splitlines():
-        m = TOC_LINE_RE.match(linje.strip())
-        if m:
-            toc.append((m.group(1), m.group(2).strip()))
-    for linje in sider[0].splitlines():
-        m = re.match(r"^(\d+)\s+([A-Za-zÆØÅæøå].+?)\s+\d+$", linje.strip())
-        if m and not any(n == m.group(1) for n, _ in toc):
-            toc.insert(0, (m.group(1), m.group(2).strip()))
+    toc_sider = [sider[0]] + [s for s in sider[1:4] if er_toc_side(s)]
+    for side in toc_sider:
+        for linje in side.splitlines():
+            m = TOC_LINE_RE.match(linje.strip())
+            if m:
+                toc.append((m.group(1), m.group(2).strip()))
+        for linje in side.splitlines():
+            m = re.match(r"^(\d+)\s+([A-Za-zÆØÅæøå].+?)\s+\d+$", linje.strip())
+            if m and not any(n == m.group(1) for n, _ in toc):
+                toc.insert(0, (m.group(1), m.group(2).strip()))
     toc.sort(key=lambda t: [int(x) for x in t[0].split(".")])
     return toc
 
 
 def splitt_seksjoner(sider: list[str], toc: list[tuple[str, str]]) -> list[dict]:
-    """Deler brødteksten (side 2 og utover) i seksjoner basert på TOC-overskriftene."""
+    """Deler brødteksten (etter innholdsfortegnelsen) i seksjoner basert på TOC-overskriftene."""
     kjente = {nummer: tittel for nummer, tittel in toc}
     seksjoner: list[dict] = []
     gjeldende = {"nummer": "0", "tittel": "Forside", "side": 1, "linjer": []}
 
     for sidenr, tekst in enumerate(sider, start=1):
-        if sidenr == 1:
+        if sidenr == 1 or (sidenr <= 4 and er_toc_side(tekst)):
             continue
         for linje in tekst.splitlines():
             s = linje.strip()

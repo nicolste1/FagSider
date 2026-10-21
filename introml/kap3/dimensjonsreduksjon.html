@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Dimensjonsreduksjon: PCA og t-SNE — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .tt { border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  .tt th, .tt td { border: 1px solid var(--line-soft); padding: 4px 10px; text-align: center; }
+  .tt th { background: var(--paper-dark); font-weight: 600; }
+  .tt.left td, .tt.left th { text-align: left; vertical-align: top; }
+  .tt.left td:first-child { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: middle; border-radius: 50%; }
+  .legend-row .l-pc1::before { background: var(--accent); border-radius: 2px; }
+  .legend-row .l-pc2::before { background: var(--warm); border-radius: 2px; }
+  .legend-row .l-pt::before { background: var(--ink-faded); opacity: 0.6; }
+  .legend-row .l-proj::before { background: var(--accent); }
+  .legend-row .l-p::before { background: var(--accent); border-radius: 2px; opacity: 0.8; }
+  .legend-row .l-q::before { background: var(--warm); border-radius: 2px; opacity: 0.8; }
+  /* PCA-widget */
+  .pt { fill: var(--ink-faded); opacity: 0.6; stroke: none; }
+  .pt-proj { fill: var(--accent); stroke: var(--paper); stroke-width: 1; }
+  .proj-line { stroke: var(--ink-ghost); stroke-width: 0.8; }
+  .mean-pt { fill: var(--ink); stroke: var(--paper); stroke-width: 1.5; }
+  .pc1 { stroke: var(--accent); stroke-width: 2.8; fill: none; }
+  .pc2 { stroke: var(--warm); stroke-width: 2.2; fill: none; }
+  .pc1-head { fill: var(--accent); } .pc2-head { fill: var(--warm); }
+  .pc-axis { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 5 4; opacity: 0.6; }
+  /* KL-widget */
+  .bar-p { fill: var(--accent); opacity: 0.8; } .bar-q { fill: var(--warm); opacity: 0.8; }
+  .kl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.4rem 1.6rem; }
+  .kl-grid .w-ctl input[type=range] { width: 110px; }
+  .kl-head { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faded); margin: 0.6rem 0 0.2rem; }
+  .metric .m-val.vec { font-size: 0.95rem; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Uveiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3B · Notater 3.2–3.2.2 · s. 47–54 · ~35 min</div>
+      <h1>Dimensjonsreduksjon: <em>PCA og t-SNE</em></h1>
+      <p class="lede">Fra \(n\) features til \(n'\) uten å miste det viktigste. PCA finner retningene dataene varierer mest langs, egenvektorene til kovariansmatrisen, og projiserer dataene på de første av dem så mest mulig varians beholdes. t-SNE lager et kart for visualisering: punktene flyttes i to dimensjoner til nabolagene matcher de i høy dimensjon, målt med KL-divergens. Og hvorfor det ene kan gjenbrukes på nye data og det andre ikke.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#hvorfor"><span>01</span> Hvorfor</a>
+        <a href="#pca"><span>02</span> PCA</a>
+        <a href="#tsne"><span>03</span> t-SNE</a>
+        <a href="#sammenlikning"><span>04</span> PCA vs t-SNE</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · deltema 3.2 (prio 1) · utvidelsen for 3.2–3.3 fra 21. oktober 2026 er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Hva hovedkomponentene er</strong>: egenvektorene til kovariansmatrisen (Ord. 2024 spm. 25). <strong>Hvorfor de er ortogonale</strong>: hver komponent forklarer en ulik del av variansen uten overlappende informasjon (Ord. 2025 del 7 spm. 1). <strong>Fordelen ved PCA</strong>: komponentene er ukorrelerte, og ved å bruke dem reduserer vi dimensjonene samtidig som mest mulig varians beholdes (Ord. 2024 spm. 24). Se <a href="#pca">02</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Kovariansmatrise og egenverdier for hånd</strong> for to features: trekk fra gjennomsnittet, likning (103)–(104), løs \(\det(S - \lambda I) = 0\) og finn egenvektorene fra \(S e = \lambda e\). Begge eksemplene er regnet helt ut i <a href="#pca">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>t-SNE brukes til å redusere dimensjoner for visualisering</strong> (Ord. 2024 spm. 26). <strong>KL-divergensen</strong> måler forskjellen mellom sannsynlighetsfordelingen \(P\) i det høydimensjonale rommet og \(Q\) i det lavdimensjonale (Ord. 2024 spm. 28), og den minimeres for å bevare nabolagsrelasjoner: like punkter forblir nære (Ord. 2025 del 7 spm. 3). Se <a href="#tsne">03</a>.</li>
+          <li><span class="tag">Forklar</span><strong>t-SNE er ikke-parametrisk</strong>: den optimaliserer posisjonene til punktene direkte i stedet for å lære en transformasjon, og kan derfor ikke brukes på nye data (Ord. 2025 del 7 spm. 2). Kjenn hele sammenlikningen PCA mot t-SNE: mål, gjenbruk, features, linearitet, compute. Se <a href="#sammenlikning">04</a>.</li>
+          <li><span class="tag">Lavere</span>Pearson 1901, koden for S-kurven og MNIST (ligger på <a href="koding.html#pca">3D</a>), detaljene om perplexity. Nevnt kort der de hører hjemme.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 HVORFOR ─────────────────────────── -->
+  <section id="hvorfor">
+    <div class="container">
+      <div class="section-badge">01 · Hvorfor</div>
+      <h2>Tre grunner til <em>færre dimensjoner</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.2 · s. 47</div>
+
+      <p class="dropcap"><span class="term" data-term="dimensjonsreduksjon">Dimensjonsreduksjon</span> kan være både en preprosesseringsteknikk, for eksempel før clustering, som sliter når avstandene konsentreres i høye dimensjoner (<a href="clustering.html#dimensjoner">3A 06</a>), og en dataanalysemetode i seg selv. Å redusere dimensjonaliteten i data kan være lurt av tre grunner:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Datavisualisering</div><div class="fc-val">Vi kan ikke plotte høydimensjonale data; alt over 2–3 dimensjoner er utfordrende å visualisere. Og mønstre som klynger og anomalier er ofte ikke synlige i høye dimensjoner, på grunn av <span class="term" data-term="dimensjonsforbannelsen">dimensjonsforbannelsen</span>.</div></div>
+        <div class="fact-card"><div class="fc-key">Støyfjerning</div><div class="fc-val">Å hente ut features som representerer variansen eller strukturen i dataene best, kan fungere som støyfiltrering. Det kan gi mer robuste og tolkbare modeller.</div></div>
+        <div class="fact-card"><div class="fc-key">Feature discovery</div><div class="fc-val">Metoder som oppdager strukturer som bevares når dimensjonaliteten reduseres, gir datasett med færre, sammensatte features som representerer den viktigste informasjonen. Billigere å lagre, enklere å analysere.</div></div>
+      </div>
+      <p>Vi bruker <span class="term" data-term="uveiledet-laering">uveiledet læring</span> til å gå fra at dataene har \(n\) features til at de har et mindre antall \(n'\), og formålet er å bevare mest mulig av informasjonen fra den høydimensjonale i den lavdimensjonale versjonen. To etablerte metoder: <strong>PCA</strong>, som bevarer varians, og <strong>(t-)SNE</strong>, som bevarer nabolag. Det finnes mange flere metoder og biblioteker, så lenge du forstår hva de gjør.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 PCA ─────────────────────────── -->
+  <section id="pca">
+    <div class="container">
+      <div class="section-badge">02 · PCA</div>
+      <h2>Aksene der dataene <em>varierer mest</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.2.1 · s. 47–52 · likning (103)–(113)</div>
+
+      <p class="dropcap"><span class="term" data-term="pca">Principal component analysis</span> går ut på å identifisere <strong>aksene som maksimerer variansen i et datasett</strong>. Disse aksene er <span class="term" data-term="hovedkomponent">hovedkomponentene</span> (principal components, PC). De er lineære kombinasjoner av de opprinnelige featurene, og representerer uavhengige, altså ortogonale, akser.</p>
+      <p>Tenk deg et datasett med tre features: høyde, vekt og alder til en gruppe mennesker. Disse har noen korrelasjoner: høye mennesker veier mer, veldig unge mennesker veier mindre og er lavere. PCA finner aksene som tilsvarer de uavhengige retningene dataene varierer mest i. <strong>PC1</strong> er retningen der dataene varierer mest, og inneholder dermed mesteparten av informasjonen. <strong>PC2</strong> inneholder nest mest informasjon og er ortogonal til PC1, for å sikre at den inneholder ny, uavhengig informasjon. <strong>PC3</strong> representerer resten av variansen og er ortogonal til begge. At komponentene er ortogonale, gir en garanti for at de inneholder ulik informasjon: hver akse fanger ulike aspekter av variansen uten å gjenta eller overlappe med de andre.</p>
+      <div class="callout">
+        <span class="label">Setningen å kunne</span>
+        <p>Hovedkomponentene er <span class="term" data-term="egenvektor">egenvektorene</span> til dataenes <span class="term" data-term="kovariansmatrise">kovariansmatrise</span>. Resten av denne delen regner ut hva det betyr.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-pca-setning">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.2.1 · s. 48</span></div>
+        <div class="o-text"><p>Skriv ned setningen «hovedkomponentene er egenvektorene til dataenes kovariansmatrise» for hånd, og prøv å forklare til deg selv hva den betyr.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Kovariansmatrisen \(S\) oppsummerer hvordan featurene varierer (diagonalen) og samvarierer (utenfor diagonalen). En egenvektor \(e\) til \(S\) er en retning matrisen ikke vrir på, bare skalerer: \(S e = \lambda e\). Variansen til dataene langs en enhetsretning \(e\) er \(e^{\mathsf T} S e\), og for en egenvektor blir det \(e^{\mathsf T} \lambda e = \lambda\). Egenverdien er altså variansen langs egenvektoren. Egenvektoren med størst egenverdi er dermed retningen med størst varians, som er definisjonen av PC1; den nest største gir PC2, og så videre. Fordi \(S\) er symmetrisk, er egenvektorene ortogonale, så hovedkomponentene overlapper ikke. Summen av egenverdiene er den totale variansen, så \(\lambda_i / \sum_j \lambda_j\) er andelen av variansen PC\(i\) forklarer.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Kovarians og kovariansmatrise</h3>
+      <p>Setningen er lettere å forstå om man gjør en beregning for hånd. <span class="term" data-term="kovarians">Kovariansen</span> mellom to variabler er</p>
+      \[ \operatorname{cov}(x_i, x_j) = \frac{1}{N-1} \sum_{k=1}^{N} (x_{i,k} - \bar{x}_i)(x_{j,k} - \bar{x}_j), \tag{103} \]
+      <p>og kovariansmatrisen består av</p>
+      \[ S = \begin{bmatrix} \operatorname{cov}(x_1, x_1) &amp; \operatorname{cov}(x_1, x_2) \\ \operatorname{cov}(x_2, x_1) &amp; \operatorname{cov}(x_2, x_2) \end{bmatrix}. \tag{104} \]
+      <p>Kovariansen mellom en variabel og seg selv er bare variabelens varians, så de diagonale elementene er varianser og representerer spredningen til hver enkelt variabel. De ikke-diagonale elementene representerer hvor mye to og to variabler samvarierer, altså deres kovarians. Matrisen er symmetrisk, siden \(\operatorname{cov}(x_1, x_2) = \operatorname{cov}(x_2, x_1)\).</p>
+
+      <h3>Et lite eksempel for hånd</h3>
+      <p>Anta at vi har tre datapunkter og to features,</p>
+      \[ x_1 = \begin{bmatrix} 1 &amp; 2 &amp; 3 \end{bmatrix}, \qquad x_2 = \begin{bmatrix} 2 &amp; 1 &amp; 0 \end{bmatrix}. \tag{105} \]
+      <p>Begge variablene varierer en del, og de varierer i motsatt retning: når den ene øker, minker den andre. Første steg i (103) er å trekke fra gjennomsnittet for hver variabel. Med \(\bar{x}_1 = 2\) og \(\bar{x}_2 = 1\) får vi</p>
+      \[ x_1 - \bar{x}_1 = \begin{bmatrix} -1 &amp; 0 &amp; 1 \end{bmatrix}, \qquad x_2 - \bar{x}_2 = \begin{bmatrix} 1 &amp; 0 &amp; -1 \end{bmatrix}. \tag{106} \]
+      <p>Nå regner vi ut produktet mellom alle kombinasjoner av disse for hver indeks, og deler på \(N - 1 = 2\):</p>
+      \[ \operatorname{cov}(x_1, x_1) = \frac{1}{2} \begin{bmatrix} -1 &amp; 0 &amp; 1 \end{bmatrix} \cdot \begin{bmatrix} -1 &amp; 0 &amp; 1 \end{bmatrix} = \frac{1}{2}(1 + 0 + 1) = 1. \]
+
+      <div class="oppgave" data-quiz id="oppg-cov-x2">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.2.1 · s. 48</span></div>
+        <div class="o-text"><p>Finn tilsvarende verdi for \(\operatorname{cov}(x_2, x_2)\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene · utregning skrevet for denne siden</span>
+            <p>Samme oppskrift med den sentrerte \(x_2\) mot seg selv:</p>
+            \[ \operatorname{cov}(x_2, x_2) = \frac{1}{2} \begin{bmatrix} 1 &amp; 0 &amp; -1 \end{bmatrix} \cdot \begin{bmatrix} 1 &amp; 0 &amp; -1 \end{bmatrix} = \frac{1}{2}(1 + 0 + 1) = 1. \]
+            <p>Variansen til \(x_2\) er altså 1, den samme som for \(x_1\): de to variablene sprer seg like mye, bare i motsatt retning.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Til slutt kovariansen mellom de to:</p>
+      \[ \operatorname{cov}(x_1, x_2) = \frac{1}{2} \begin{bmatrix} -1 &amp; 0 &amp; 1 \end{bmatrix} \cdot \begin{bmatrix} 1 &amp; 0 &amp; -1 \end{bmatrix} = \frac{1}{2}(-1 + 0 - 1) = -1, \]
+      <p>negativ fordi de varierer i motsatt retning. Hele kovariansmatrisen blir \(S = \begin{bmatrix} 1 &amp; -1 \\ -1 &amp; 1 \end{bmatrix}\). <span class="term" data-term="egenverdi">Egenverdiene</span> finner vi ved å løse</p>
+      \[ \det(S - \lambda I) = \begin{vmatrix} 1 - \lambda &amp; -1 \\ -1 &amp; 1 - \lambda \end{vmatrix} = 0, \tag{107} \]
+      <p>altså likningen</p>
+      \[ \begin{aligned} (1 - \lambda)^2 - 1 &amp;= 0 \end{aligned} \tag{108} \]
+      \[ \begin{aligned} \Rightarrow\; 1 - 2\lambda + \lambda^2 - 1 &amp;= 0 \end{aligned} \tag{109} \]
+      \[ \begin{aligned} \Rightarrow\; \lambda^2 - 2\lambda = \lambda(\lambda - 2) &amp;= 0. \end{aligned} \tag{110} \]
+      <p>Egenverdiene er altså \(\lambda_1 = 0\) og \(\lambda_2 = 2\). De tilsvarende egenvektorene finner vi ved å sette hver egenverdi inn i \(S v = \lambda v\). For \(\lambda_1 = 0\):</p>
+      \[ \begin{bmatrix} 1 &amp; -1 \\ -1 &amp; 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = 0 \begin{bmatrix} v_1 \\ v_2 \end{bmatrix}, \tag{111} \]
+      <p>som gir \(v_1 - v_2 = 0\), altså \(v_1 = v_2\) og egenvektoren \(e_1 = \frac{1}{\sqrt{2}} \begin{bmatrix} 1 &amp; 1 \end{bmatrix}\). For \(\lambda_2 = 2\):</p>
+      \[ \begin{bmatrix} 1 &amp; -1 \\ -1 &amp; 1 \end{bmatrix} \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} = 2 \begin{bmatrix} v_1 \\ v_2 \end{bmatrix}, \tag{112} \]
+      <p>som gir \(v_1 - v_2 = 2 v_1\), altså \(v_2 = -v_1\) og egenvektoren \(e_2 = \frac{1}{\sqrt{2}} \begin{bmatrix} 1 &amp; -1 \end{bmatrix}\). Prefaktorene er der fordi egenvektorer er enhetsvektorer med lengde én. Disse to vektorene er hovedkomponentene.</p>
+      <p><strong>Hva tallene forteller.</strong> Egenverdien 0 sier at én hovedkomponent er tilstrekkelig for å representere all variansen i dataene. Det gir mening: \(1 + 2\), \(2 + 1\) og \(3 + 0\) er alle 3, så punktene ligger nøyaktig på linjen \(x_1 + x_2 = 3\), og det er ingen varians utover denne ene dimensjonen. Retningen langs linjen er \(e_2 = (1, -1)/\sqrt{2}\) med varians \(\lambda_2 = 2\); det er PC1. Retningen \(e_1 = (1, 1)/\sqrt{2}\) står vinkelrett på linjen og har varians 0. Egenvektorene har origo i \((\bar{x}_1, \bar{x}_2) = (2, 1)\).</p>
+
+      <div class="widget" id="w-pca">
+        <div class="widget-label">Prøv selv · PCA i planet</div>
+        <p class="widget-intro">60 punkter fra en todimensjonal normalfordeling (egen konstruert). Dra i korrelasjonen og se PC1 rotere mot retningen med størst varians; pilene starter i middelpunktet og har lengde 2√λ, to standardavvik langs hver komponent. «Projiser til PC1» er dimensjonsreduksjon fra 2 til 1: hvert punkt flyttes vinkelrett inn på PC1-aksen, og det som kastes er variansen \(\lambda_2\) langs PC2.</p>
+        <svg viewBox="0 0 560 360" data-w="560" data-h="360" aria-label="PCA i planet"></svg>
+        <div class="legend-row"><span class="l-pt">Datapunkt</span><span class="l-pc1">PC1 · 2√λ₁</span><span class="l-pc2">PC2 · 2√λ₂</span><span class="l-proj">Projisert på PC1</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="pca-rho">korrelasjon</label><input type="range" id="pca-rho" min="-0.95" max="0.95" step="0.05" value="0.8"><span class="w-val" id="pca-rho-val">0.80</span></div>
+          <div class="w-ctl"><label for="pca-sd">spredning x₂</label><input type="range" id="pca-sd" min="0.3" max="0.9" step="0.05" value="0.6"><span class="w-val" id="pca-sd-val">0.60</span></div>
+          <button class="w-btn secondary" id="pca-new" type="button">Trekk på nytt</button>
+          <button class="w-btn" id="pca-proj" type="button">Projiser til PC1</button>
+        </div>
+        <div class="metric-grid" id="pca-out"></div>
+        <div class="w-out" id="pca-msg"></div>
+      </div>
+
+      <h3>Fem punkter med litt varians utenom linjen</h3>
+      <p>Et datasett med to features og \(N = 5\) datapunkter, der punktene ligger <em>nesten</em> på en rett linje:</p>
+      <table class="tt">
+        <thead><tr><th>\(x_1\)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+        <tbody>
+          <tr><td>\(x_2\)</td><td>1.6</td><td>4.2</td><td>5.7</td><td>8.4</td><td>9.2</td></tr>
+          <tr><td>\(x_1 - \bar{x}_1\)</td><td>−2</td><td>−1</td><td>0</td><td>1</td><td>2</td></tr>
+          <tr><td>\(x_2 - \bar{x}_2\)</td><td>−4.22</td><td>−1.62</td><td>−0.12</td><td>2.58</td><td>3.38</td></tr>
+        </tbody>
+      </table>
+      <p>Gjennomsnittene er \(\bar{x}_1 = 3\) og \(\bar{x}_2 = 29.1/5 = 5.82\). Kovariansene mellom de fire parene med samme formel som før, delt på \(N - 1 = 4\):</p>
+      \[ \begin{aligned} \operatorname{cov}(x_1, x_1) &amp;= \tfrac{1}{4}(4 + 1 + 0 + 1 + 4) = 2.5, \\ \operatorname{cov}(x_1, x_2) &amp;= \tfrac{1}{4}(8.44 + 1.62 + 0 + 2.58 + 6.76) = \tfrac{19.4}{4} = 4.85, \\ \operatorname{cov}(x_2, x_2) &amp;= \tfrac{1}{4}(17.81 + 2.62 + 0.01 + 6.66 + 11.42) = \tfrac{38.53}{4} = 9.63, \end{aligned} \]
+      <p>som gir</p>
+      \[ S = \begin{bmatrix} \operatorname{cov}(x_1, x_1) &amp; \operatorname{cov}(x_1, x_2) \\ \operatorname{cov}(x_2, x_1) &amp; \operatorname{cov}(x_2, x_2) \end{bmatrix} = \begin{bmatrix} 2.5 &amp; 4.85 \\ 4.85 &amp; 9.63 \end{bmatrix}. \tag{113} \]
+      <p>Egenverdiene finner vi ved å løse \(\det(S - \lambda I) = 0\), og egenvektorene \(e_{1,2}\) ved å løse \(S e_i = \lambda_i e_i\) for \(i = 1, 2\).</p>
+
+      <div class="oppgave" data-quiz id="oppg-pca-egen">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.2.1 · s. 50</span></div>
+        <div class="o-text"><p>Finn egenverdiene og egenvektorene til \(S = \begin{bmatrix} 2.5 &amp; 4.85 \\ 4.85 &amp; 9.63 \end{bmatrix}\).</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Utregnet for denne siden · ikke fasit fra notatene</span>
+            <p><strong>Egenverdier.</strong> Determinanten av \(S - \lambda I\):</p>
+            \[ \begin{aligned} \det(S - \lambda I) &amp;= (2.5 - \lambda)(9.63 - \lambda) - 4.85^2 \\ &amp;= \lambda^2 - 12.13\lambda + (24.075 - 23.5225) \\ &amp;= \lambda^2 - 12.13\lambda + 0.5525 = 0. \end{aligned} \]
+            <p>Andregradsformelen: \(\lambda = \tfrac{1}{2}\big(12.13 \pm \sqrt{12.13^2 - 4 \cdot 0.5525}\big) = \tfrac{1}{2}\big(12.13 \pm \sqrt{147.14 - 2.21}\big) = \tfrac{1}{2}(12.13 \pm 12.04)\), altså</p>
+            \[ \lambda_1 \approx 12.08, \qquad \lambda_2 \approx 0.046. \]
+            <p>Kontroll: \(\lambda_1 + \lambda_2 = 12.13\) er sporet \(2.5 + 9.63\), og \(\lambda_1 \lambda_2 \approx 0.55\) er determinanten. Den totale variansen er 12.13, og PC1 forklarer \(12.08 / 12.13 \approx 99.6\,\%\) av den.</p>
+            <p><strong>Egenvektorer.</strong> Første rad i \((S - \lambda_1 I) v = 0\): \((2.5 - 12.08) v_1 + 4.85 v_2 = 0\), så \(v_2 = \tfrac{9.58}{4.85} v_1 \approx 1.98 v_1\). Retningen \((1, 1.98)\) har lengde \(\sqrt{1 + 3.90} \approx 2.21\), så</p>
+            \[ e_1 \approx \begin{bmatrix} 0.45 \\ 0.89 \end{bmatrix}, \qquad e_2 \approx \begin{bmatrix} 0.89 \\ -0.45 \end{bmatrix}, \]
+            <p>der \(e_2\) er \(e_1\) rotert 90° (sjekk: \((2.5 - 0.046)\cdot 0.89 + 4.85 \cdot (-0.45) \approx 2.18 - 2.18 = 0\)). PC1 peker altså bratt oppover i \((x_1, x_2)\)-planet, langs linjen punktene nesten ligger på, med stigning \(0.89/0.45 \approx 2\), og PC2 står vinkelrett på den med nesten ingen varians. Projiserer vi punktene på PC1 og PC2 med origo i \((3, 5.82)\), sprer PC1-koordinatene seg fra omtrent \(-4.5\) til \(4\), mens PC2-koordinatene holder seg innenfor \(\pm 0.3\).</p>
+          </div>
+        </div>
+      </div>
+
+      <p>PCA er altså en transformasjon av de opprinnelige aksene til hovedkomponenter som beskriver variansen i dataene uavhengig av hverandre. Etter transformasjonen kan hovedkomponentene sorteres i synkende rekkefølge etter <span class="term" data-term="varians-forklart">andel varians forklart</span>, slik at de første bevarer mest. Ved dimensjonsreduksjon fra \(d\) til \(d'\) dimensjoner beholder vi kun de første \(d'\) aksene: dataene projiseres til et lavere-dimensjonalt rom mens <em>mest mulig</em> av variansen bevares. For de fem punktene over betyr én komponent at hvert punkt erstattes av sin PC1-koordinat: én feature laget av to, og 99.6 % av variansen i behold.</p>
+      <p>Hovedkomponentene er nye basisvektorer, så en PCA som er tilpasset på treningsdata (<code>.fit</code>) kan brukes på nye data (<code>.transform</code>). Gjøres <code>fit_transform</code> på hele datasettet, kan ikke resultatet brukes til å evaluere en modell, av samme grunn som ellers. Koden står på <a href="koding.html#pca">3D</a>.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o24-24">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 24</span><span class="o-ref">3.2.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er fordelen ved å bruke PCA?</p>
+          <ol class="mcq-list" type="A">
+            <li>Hovedkomponentene reduserer datasettets varians til et lavere antall dimensjoner for enklere visualisering.</li>
+            <li>Hovedkomponentene bevarer informasjon om alle originale funksjoner i dataene.</li>
+            <li>Hovedkomponentene er ukorrelerte, og ved å bruke dem reduserer vi datasettets dimensjoner samtidig som mest mulig varians beholdes.</li>
+            <li>Hovedkomponentene er alltid korrelerte og fanger opp maksimal informasjon om variasjoner i dataene.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Ortogonale egenvektorer betyr ukorrelerte komponenter, og å beholde de første \(d'\) er nettopp å redusere dimensjoner mens mest mulig varians beholdes. A er snudd på hodet: PCA reduserer ikke variansen, den bevarer den. B: komponentene som kastes tar med seg informasjon (variansen \(\lambda\) langs dem), så alt bevares ikke. D: komponentene er per konstruksjon <em>u</em>korrelerte.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-25">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 25</span><span class="o-ref">3.2.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er prinsipalkomponentene vi finner når vi gjør PCA?</p>
+          <ol class="mcq-list" type="A">
+            <li>De representerer de opprinnelige dataenes sentrale punkt.</li>
+            <li>De er egenvektorene til kovariansmatrisen til dataene.</li>
+            <li>De representerer antall features som beholdes etter dimensjonsreduksjon.</li>
+            <li>De representerer den lineære delen av kovariansen i datasettet.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Setningen fra starten av delen. A er middelpunktet \((\bar{x}_1, \bar{x}_2)\), som bare er der egenvektorene har origo. C er \(d'\), et tall vi velger. D er ikke noe begrep; kovariansen er allerede lineær.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-7-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 7 · spm. 1</span><span class="o-ref">3.2.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>PCA konstruerer nye akser (prinsipalkomponenter) som er lineære kombinasjoner av de opprinnelige feature-ene. Hva er hensikten med å tvinge disse komponentene til å være ortogonale?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å sikre at hver komponent fanger opp samme mengde varians som de andre</li>
+            <li>Å sikre at hver komponent forklarer en ulik del av variansen uten overlappende informasjon</li>
+            <li>Å gjøre komponentene så korrelerte som mulig med hverandre</li>
+            <li>Å tvinge hovedkomponentene til å kode redundant informasjon</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Ortogonalitet er garantien for at komponentene inneholder ulik informasjon. A er feil: egenverdiene er typisk svært ulike (12.08 mot 0.046 over), og det er poenget, PC1 skal ta mest. C og D er det motsatte av hensikten: korrelerte eller redundante komponenter ville gjentatt informasjon.</p>
+          </div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Utdypning · lavere prioritet: S-kurven, MNIST og opphavet</summary>
+        <p>PCA fungerer også på ikke-lineære data, så lenge variansen kan representeres langs uavhengige akser eller lineærkombinasjoner av dem, altså lineært. En S-formet flate i tre dimensjoner har liten eller ingen varians i dybderetningen, så den representeres godt i to dimensjoner: resultatet er en S i planet. <span class="term" data-term="mnist">MNIST</span>, derimot, fra 784 til to hovedkomponenter, gir et plott der sifrene overlapper nesten helt: to lineære akser er ikke egnet til å representere variansen der. Det er dette t-SNE løser i <a href="#tsne">03</a>. Koden for begge står på <a href="koding.html#pca">3D</a>. Metoden ble utviklet av Karl Pearson i 1901, lenge før kunstig intelligens var et fagfelt.</p>
+      </details>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels · flervalg</div>
+        <div class="q-text">Kovariansmatrisen til et datasett med tre features har egenverdiene 5, 3 og 0. Hva forteller egenverdien 0?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">At én av de tre featurene er konstant</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">At dataene ligger i et plan: to hovedkomponenter fanger all variansen</button></li>
+          <li><button class="mcq-opt" type="button">At PCA ikke kan brukes på datasettet</button></li>
+          <li><button class="mcq-opt" type="button">At featurene er ukorrelerte</button></li>
+        </ul>
+        <div class="mcq-feedback">Egenverdien er variansen langs egenvektoren. Null varians langs én retning betyr at punktene ligger i planet vinkelrett på den, som i det lille eksempelet der alle punktene lå på linjen \(x_1 + x_2 = 3\). Retningen trenger ikke være en enkelt feature (A); det kan være en kombinasjon som \(x_1 + x_2\). PC1 og PC2 forklarer \(8/8 = 100\,\%\).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 T-SNE ─────────────────────────── -->
+  <section id="tsne">
+    <div class="container">
+      <div class="section-badge">03 · t-SNE</div>
+      <h2>Nabolag som <em>sannsynligheter</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.2.2 · s. 52–54 · likning (114)</div>
+
+      <p class="dropcap">Den andre metoden gjør <span class="term" data-term="sne">stochastic neighbor embedding</span>. Første steg er å tilpasse en sannsynlighetsfordeling som beskriver hvor like nabopunkter er; det er det <em>stochastic</em> og <em>neighbor</em> står for. Likhet betyr her altså i følge en betinget sannsynlighetsfordeling. For to datapunkter \(x_i\) og \(x_j\) beregner vi den betingede sannsynligheten \(p_{j|i}\) for at \(x_i\) ville valgt \(x_j\) som nabo. Til det brukes en gaussisk fordeling \(P(x)\) sentrert over \(x_i\), altså med forventningsverdi lik koordinatene til \(x_i\). Da er bare én parameter igjen i Gaussen: variansen.</p>
+      <p>Det første SNE gjør, er å tilpasse disse fordelingene slik at punkter som ligger nær hverandre har høy sannsynlighet for å være naboer, mens punkter langt fra hverandre har lav. Dette gjøres i det opprinnelige datarommet. Når det er gjort, kan dimensjonsreduksjonen begynne, i to steg:</p>
+      <ol class="steps">
+        <li>Alle punktene plasseres tilfeldig i et rom av lavere dimensjon.</li>
+        <li>Punktene flyttes slik at sannsynligheten \(Q(x)\) mellom nabopunkter i den lavere dimensjonen matcher best mulig den tilsvarende sannsynligheten \(P(x)\) i den høye dimensjonen.</li>
+      </ol>
+      <p>Steg 2 gjøres stegvis med <span class="term" data-term="gradient-descent">gradient descent</span>, med tapsfunksjonen Kullback–Leibler-divergens:</p>
+      \[ D_{KL}(P \,\|\, Q) = \sum_{x \in \mathcal{X}} P(x) \log \frac{P(x)}{Q(x)}. \tag{114} \]
+
+      <h3>KL-divergensen</h3>
+      <p><span class="term" data-term="kl-divergens">KL-divergensen</span>, også kjent som relativ entropi, måler likheten mellom en referansefordeling \(P\) og en annen sannsynlighetsfordeling \(Q\). Den er <strong>ikke symmetrisk</strong> i \(P\) og \(Q\), og den er <strong>strengt ikke-negativ</strong>. Den er forventningsverdien av den logaritmiske forskjellen mellom fordelingene, der forventningen (summen) beregnes med datapunkter trukket fra \(P\). En intuitiv tolkning: den sier hvor overraskende resultater man vil få om man bruker fordelingen \(Q\) i stedet for \(P\), når dataene man jobber med faktisk stammer fra \(P\). Skrevet ut med <span class="term" data-term="entropi">entropien</span> fra 1A: \(D_{KL}(P \| Q) = H(P, Q) - H(P)\), <span class="term" data-term="kryssentropi">kryssentropien</span> minus entropien til \(P\) (egen tilføyelse); den er null akkurat når \(Q = P\).</p>
+
+      <div class="widget" id="w-kl">
+        <div class="widget-label">Prøv selv · KL-divergens mellom to fordelinger</div>
+        <p class="widget-intro">To diskrete fordelinger over fire utfall (egen konstruert). Gliderne er vekter som normaliseres til sannsynligheter. Se at \(D_{KL}\) er null bare når \(Q = P\), aldri negativ, og at \(D_{KL}(P\|Q) \ne D_{KL}(Q\|P)\). Legg særlig merke til hva som skjer når \(Q\) gir nesten null sannsynlighet til et utfall \(P\) bryr seg om.</p>
+        <svg viewBox="0 0 560 220" data-w="560" data-h="220" aria-label="To fordelinger"></svg>
+        <div class="legend-row"><span class="l-p">P (høy dimensjon)</span><span class="l-q">Q (lav dimensjon)</span></div>
+        <div class="kl-grid">
+          <div>
+            <div class="kl-head">P</div>
+            <div class="w-ctl"><label for="kl-p0">a</label><input type="range" id="kl-p0" min="1" max="20" step="1" value="10"></div>
+            <div class="w-ctl"><label for="kl-p1">b</label><input type="range" id="kl-p1" min="1" max="20" step="1" value="5"></div>
+            <div class="w-ctl"><label for="kl-p2">c</label><input type="range" id="kl-p2" min="1" max="20" step="1" value="3"></div>
+            <div class="w-ctl"><label for="kl-p3">d</label><input type="range" id="kl-p3" min="1" max="20" step="1" value="2"></div>
+          </div>
+          <div>
+            <div class="kl-head">Q</div>
+            <div class="w-ctl"><label for="kl-q0">a</label><input type="range" id="kl-q0" min="1" max="20" step="1" value="5"></div>
+            <div class="w-ctl"><label for="kl-q1">b</label><input type="range" id="kl-q1" min="1" max="20" step="1" value="5"></div>
+            <div class="w-ctl"><label for="kl-q2">c</label><input type="range" id="kl-q2" min="1" max="20" step="1" value="5"></div>
+            <div class="w-ctl"><label for="kl-q3">d</label><input type="range" id="kl-q3" min="1" max="20" step="1" value="5"></div>
+          </div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn secondary" type="button" data-kl="same">Q = P</button>
+          <button class="w-btn secondary" type="button" data-kl="flat">Q jevn</button>
+          <button class="w-btn secondary" type="button" data-kl="flip">Q speilvendt</button>
+          <button class="w-btn secondary" type="button" data-kl="miss">Q nesten null på a</button>
+        </div>
+        <div class="metric-grid" id="kl-out"></div>
+        <div class="w-out" id="kl-msg"></div>
+      </div>
+
+      <p>Fordelingen \(P\) måler i hvor stor grad punkter er naboer i det høydimensjonale rommet, mens \(Q\) måler det samme i det lavdimensjonale. SNE minimerer KL-divergensen mellom \(P\) og \(Q\): nabosannsynlighetene i den høye dimensjonen matches best mulig av de tilsvarende i den nye. Denne overføringen fra en høy- til en lavdimensjonal plassering av datapunktene kalles en <span class="term" data-term="embedding">embedding</span>.</p>
+
+      <h3>Fra SNE til t-SNE</h3>
+      <p>Prosedyren ble forbedret i 2008 av Laurens van der Maaten og Geoffrey Hinton med en liten modifisering: i stedet for en Gauss i både den høye og den lave dimensjonen, brukes en Gauss i den høye og en <span class="term" data-term="t-fordeling">t-fordeling</span> i den lave. t-fordelingen likner på den gaussiske, men faller litt raskere og har en lengre hale, som minker sjansen for at nabopunkter får for like sannsynligheter. SNE med t-fordeling for \(Q\) kalles <span class="term" data-term="t-sne">t-SNE</span>. På MNIST, der PCA til to dimensjoner ga nesten full overlapp, gir t-SNE ti tydelige klumper, én per siffer.</p>
+      <details>
+        <summary>Utdypning · lavere prioritet: perplexity</summary>
+        <p>Hyperparameteren <span class="term" data-term="perplexity">perplexity</span> er viktig for tilpasningen av variansen til Gaussen i det høydimensjonale rommet: den angir entropien til den betingede gaussiske fordelingen, og algoritmen tilpasser variansen for å matche den. Den er direkte relatert til antallet nære naboer vi forventer rundt et punkt. Intuitivt angir perplexity effektivt antall naboer hvert punkts gausskurve bryr seg om. Kallet er <code>TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3)</code>; se <a href="koding.html#tsne">3D</a>.</p>
+      </details>
+
+      <h3>Hvorfor t-SNE ikke kan brukes på nye data</h3>
+      <p>Når t-SNE kjøres, tilpasses og brukes modellen på de samme dataene, med <code>fit_transform</code>. Det er ikke i tråd med god maskinlæringspraksis, men vi har ikke noe valg: t-SNE er en <span class="term" data-term="ikke-parametrisk">ikke-parametrisk</span> algoritme. Den lager ikke en parametrisk modell vi kan ta med oss og bruke på nye data etter at den er tilpasset. Den optimaliserer <em>posisjonene</em> til datapunktene i det lavdimensjonale rommet, basert på parvise forhold i datasettet, altså sannsynligheter for naboskap med de andre punktene. Embeddingen avhenger av de relative avstandene mellom alle punktene. Legger vi til nye punkter, endrer de relative avstandene og forholdene seg, og hele embeddingen må beregnes på nytt for datasettet med de nye punktene.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o24-26">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 26</span><span class="o-ref">3.2.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er vanlig bruk av t-SNE i maskinlæring?</p>
+          <ol class="mcq-list" type="A">
+            <li>t-SNE brukes til å klynge datapunkter, basert på sannsynlighet for naboskap.</li>
+            <li>t-SNE brukes for å finne ut hvilke høydimensjonale datapunkter som følger en t-fordeling i en lavere dimensjon.</li>
+            <li>t-SNE brukes ofte til å redusere dimensjonene i datasett for visualisering.</li>
+            <li>t-SNE brukes hovedsakelig til klassifisering.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> t-SNE er en dimensjonsreduksjonsmetode, og siden den ikke lager features som kan gjenbrukes, er visualisering den vanlige bruken. A blander sammen: klumpene i plottet ser ut som klynger, men algoritmen tildeler ingen klyngetilhørighet; det måtte en clustering-algoritme gjøre etterpå. B misforstår t-fordelingen, som er fordelingen \(Q\) bruker for nabosannsynligheter, ikke noe datapunktene «følger». D: uveiledet, ingen labels.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-28">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 28</span><span class="o-ref">3.2.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hvilken rolle spiller Kullback-Leibler-divergens (KL-divergens) i t-SNE-algoritmen?</p>
+          <ol class="mcq-list" type="A">
+            <li>KL-divergens brukes til å måle forskjellen mellom sannsynlighetsfordelingen i det høydimensjonale rommet og den projiserte sannsynlighetsfordelingen i det lavdimensjonale rommet.</li>
+            <li>KL-divergens brukes til å måle korrelasjonen mellom datapunkter i det høydimensjonale rommet, og representasjonen av dataene i det lavdimensjonale rommet.</li>
+            <li>KL-divergens brukes til å øke ytelsen til t-SNE sammenlignet med PCA.</li>
+            <li>KL-divergensen påvirker hvor mange nabopunkter som tas med i tilpasningen av den gaussiske fordelingen i det høydimensjonale rommet, og t-fordelingen i det lavdimensjonale rommet.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> \(P\) er fordelingen i høy dimensjon, \(Q\) i lav, og \(D_{KL}(P\|Q)\) er tapet gradient descent minimerer i steg 2. B: KL måler forskjell mellom fordelinger, ikke korrelasjon mellom punkter. C er ikke en rolle. D beskriver perplexity, som styrer variansen i Gaussen, ikke KL.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-7-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 7 · spm. 3</span><span class="o-ref">3.2.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I SNE og t-SNE minimeres KL-divergensen mellom den høydimensjonale fordelingen P og den lavdimensjonale fordelingen Q. Hva er hensikten med denne minimeringen?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å tvinge den lavdimensjonale mappingen til å forandre nabolagene mest mulig</li>
+            <li>Å sikre at punkter som er fjernt fra hverandre i høydimensjonalt rom havner tett sammen i lavdimensjonalt rom</li>
+            <li>Å garantere at alle klynger blir strengt lineært separerbare i embedding-en</li>
+            <li>Å bevare nabolagsrelasjoner ved å sørge for at like punkter forblir nære hverandre i lavdimensjonalt rom</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Liten KL betyr at \(Q\) likner \(P\): punkter som har høy nabosannsynlighet i høy dimensjon får det også i lav, altså forblir nære. A og B er det motsatte av å matche \(P\). C: t-SNE gir ingen garanti om separerbarhet; den har ikke engang en antakelse om linearitet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 SAMMENLIKNING ─────────────────────────── -->
+  <section id="sammenlikning">
+    <div class="container">
+      <div class="section-badge">04 · PCA vs t-SNE</div>
+      <h2>To metoder, <em>to formål</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.2.2 · s. 54</div>
+
+      <div class="table-wrap">
+        <table class="tt left">
+          <thead><tr><th></th><th>PCA</th><th>t-SNE</th></tr></thead>
+          <tbody>
+            <tr><td>Mål</td><td>Bevarer variansen i dataene.</td><td>Minimerer divergensen mellom to sannsynlighetsfordelinger av dataene.</td></tr>
+            <tr><td>Gjenbrukbarhet</td><td>Lager nye basisvektorer, og kan derfor brukes igjen etter <code>.fit</code>.</td><td>Ikke-parametrisk: må tilpasses og brukes samtidig, og kan derfor ikke gjenbrukes.</td></tr>
+            <tr><td>Feature-generering</td><td>Kan brukes til å lage nye features, tilsvarende eller basert på hovedkomponentene.</td><td>Kan ikke lage nye features, siden den ikke lager en matematisk funksjon som kan brukes på nye datapunkter.</td></tr>
+            <tr><td>Linearitet</td><td>Trenger lineært separerbare data: variansen må ligge langs lineærkombinasjoner av featurene.</td><td>Ingen antakelse om linearitet.</td></tr>
+            <tr><td>Compute</td><td>Rask og lite beregningstung.</td><td>Må tilpasse mange sannsynlighetsfordelinger, og er derfor treg på store datasett.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-7-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 7 · spm. 2</span><span class="o-ref">3.2.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>t-SNE produserer en lavdimensjonal embedding av treningsdatasettet. Hvorfor kan ikke denne embeddingen brukes direkte på nye, usette data?</p>
+          <ol class="mcq-list" type="A">
+            <li>Fordi t-SNE forsøker å lære en global lineær mapping fra høy til lav dimensjon</li>
+            <li>Fordi t-SNE optimaliserer de lavdimensjonale posisjonene til de opprinnelige datapunktene direkte i stedet for å lære en transformasjon</li>
+            <li>Fordi projeksjonsmatrisen som t-SNE beregner er for stor til å lagres, og derfor ikke kan gjenbrukes</li>
+            <li>Fordi t-SNE krever at alle punkter beholder globale avstander, noe som ikke kan håndheves for nye data</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> Det er definisjonen av ikke-parametrisk her: resultatet er posisjoner, ikke en funksjon. A beskriver PCA, som nettopp <em>kan</em> gjenbrukes. C: det finnes ingen projeksjonsmatrise i t-SNE. D: t-SNE bevarer nabolag (lokale forhold), ikke globale avstander.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-outliers-pca-tsne">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">3.2.2 · s. 54</span></div>
+        <div class="o-text"><p>Hvilken av metodene tror du fungerer best på outliers, og hvorfor?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>Det kommer an på hva «fungerer best» betyr. <strong>PCA er følsom for outliers</strong>: kovariansen i (103) summerer kvadrerte avvik fra gjennomsnittet, så ett punkt langt unna bidrar enormt til \(S\) og kan trekke PC1 mot seg, slik at aksene beskriver outlieren mer enn resten av dataene. Til gjengjeld bevarer PCA avstander langs aksene, så outlieren forblir langt unna i det reduserte rommet og er lett å få øye på. <strong>t-SNE er mer robust i selve embeddingen</strong>: nabosannsynlighetene er lokale, en outlier har lav \(p_{j|i}\) til alle, og den påvirker ikke hvordan resten av punktene plasseres i forhold til hverandre. Men nettopp fordi outlieren er «nabo med ingen», sier KL-tapet lite om hvor den skal stå, så den kan havne et vilkårlig sted i plottet, gjerne klistret inntil en klump. Konklusjon: t-SNE tåler outliers best uten at kartet ødelegges; PCA viser dem tydeligst, men på bekostning av aksene. Skal outliers <em>finnes</em>, er det bedre å bruke metodene på <a href="anomali.html">3C</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Hvorfor</strong>Visualisering, støyfjerning, feature discovery. Fra n til n′ features med mest mulig informasjon i behold.</div>
+        <div class="recap-pill"><strong>PCA</strong>Aksene som maksimerer variansen. Hovedkomponentene = egenvektorene til kovariansmatrisen; ortogonale, så hver forklarer ulik varians uten overlapp.</div>
+        <div class="recap-pill"><strong>Kovarians</strong>cov(x<sub>i</sub>, x<sub>j</sub>) = Σ(x<sub>i,k</sub> − x̄<sub>i</sub>)(x<sub>j,k</sub> − x̄<sub>j</sub>) / (N − 1). Diagonalen i S er varianser, resten kovarianser.</div>
+        <div class="recap-pill"><strong>Egen-regning</strong>det(S − λI) = 0 gir λ; (S − λI)v = 0 gir e, normert til lengde 1. λ = variansen langs e; λ = 0 betyr ingen varians i den retningen. Σλ = total varians.</div>
+        <div class="recap-pill"><strong>Reduksjon</strong>Sorter PC-er etter λ, behold de første d′, projiser. Fem-punkt-eksempelet: λ ≈ 12.08 og 0.046, PC1 tar 99.6 %.</div>
+        <div class="recap-pill"><strong>SNE</strong>p<sub>j|i</sub>: Gauss rundt x<sub>i</sub> gir nabosannsynlighet. Plasser tilfeldig i lav dimensjon, flytt med gradient descent til Q matcher P.</div>
+        <div class="recap-pill"><strong>KL-divergens</strong>D<sub>KL</sub>(P‖Q) = Σ P log(P/Q): forventet log-forskjell under P. ≥ 0, ikke symmetrisk, 0 bare når Q = P. Måler P (høy dim) mot Q (lav dim).</div>
+        <div class="recap-pill"><strong>t-SNE</strong>t-fordeling i lav dimensjon (lengre hale). Brukes til visualisering. Ikke-parametrisk: posisjoner, ikke en transformasjon, så nye data krever ny embedding.</div>
+        <div class="recap-pill"><strong>PCA vs t-SNE</strong>Varians vs divergens · gjenbrukbar vs ikke · lager features vs ikke · lineær vs ingen antakelse · rask vs treg.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett · flervalg</div>
+        <div class="q-text">PCA på et datasett med fem features gir egenverdiene 6.0, 2.5, 1.0, 0.4 og 0.1. Hvor stor andel av variansen beholder du med to hovedkomponenter?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">60 %</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">85 %</button></li>
+          <li><button class="mcq-opt" type="button">95 %</button></li>
+          <li><button class="mcq-opt" type="button">Det kan ikke avgjøres uten egenvektorene</button></li>
+        </ul>
+        <div class="mcq-feedback">Total varians er summen \(6.0 + 2.5 + 1.0 + 0.4 + 0.1 = 10.0\), og de to største gir \(8.5 / 10.0 = 85\,\%\). Egenvektorene sier hvilke <em>retninger</em> det er, ikke hvor mye varians.</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">En kollega har kjørt t-SNE på 10 000 kunder og fått et fint kart med klumper. Nå vil hun plassere 50 nye kunder på det samme kartet uten å kjøre alt på nytt. Hva sier du, og hva kan hun gjøre i stedet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Det går ikke: t-SNE er ikke-parametrisk, den har optimalisert posisjonene til de 10 000 punktene direkte og har ingen funksjon som tar et nytt punkt inn og gir en posisjon ut. Posisjonene avhenger dessuten av de relative avstandene mellom alle punktene, så 50 nye punkter endrer hele embeddingen. Alternativer: kjøre t-SNE på nytt på alle 10 050 (tregt, og kartet blir et annet), eller bruke PCA, som lager basisvektorer og kan tilpasses én gang (<code>fit</code>) og brukes på nye kunder (<code>transform</code>), på bekostning av at PCA bare fanger lineær struktur.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">I det lille eksempelet lå alle punktene på linjen \(x_1 + x_2 = 3\), og én egenverdi var 0. Anta at vi legger litt støy på målingene, så punktene ligger like ved linjen i stedet for på den. Hva skjer med egenverdiene og egenvektorene, og hva gjør PCA til én dimensjon da?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Den lille egenverdien blir litt større enn 0: støyen gir en liten varians vinkelrett på linjen. Den store egenverdien endres lite, og egenvektorene dreier bare marginalt, så PC1 er fortsatt omtrent \((1, -1)/\sqrt{2}\) og PC2 omtrent \((1, 1)/\sqrt{2}\). PCA til én dimensjon projiserer hvert punkt vinkelrett inn på PC1, og det som kastes er nøyaktig avviket fra linjen, altså støyen, med varians \(\lambda_2\). Det er støyfjerning fra <a href="#hvorfor">01</a> i praksis, og fem-punkt-eksempelet med \(\lambda_2 \approx 0.046\) er akkurat dette.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="clustering.html" class="prev"><div class="pn-label">← Forrige · 3A</div><div class="pn-title">Clustering: k-means og DBSCAN</div></a>
+        <a href="anomali.html" class="next"><div class="pn-label">Neste · 3C</div><div class="pn-title">Anomalideteksjon →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+<script>
+(function () {
+  'use strict';
+  function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function gauss(r) { var u = 1 - r(), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  var f2 = function (v) { return (Math.round(v * 100) / 100).toFixed(2); };
+  var f3 = function (v) { return (Math.round(v * 1000) / 1000).toFixed(3); };
+  var svgNS = 'http://www.w3.org/2000/svg';
+
+  /* ─── PCA i planet ─── */
+  (function () {
+    var root = document.getElementById('w-pca'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [-5, 5], y: [-3.12, 3.12], xLabel: 'x₁', yLabel: 'x₂', xTicks: [-4, -2, 0, 2, 4], yTicks: [-3, -2, -1, 0, 1, 2, 3] });
+    var rhoIn = document.getElementById('pca-rho'), sdIn = document.getElementById('pca-sd');
+    var out = document.getElementById('pca-out'), msg = document.getElementById('pca-msg'), btnProj = document.getElementById('pca-proj');
+    var r = rng(11), D = [], proj = false;
+    function gen() {
+      var rho = +rhoIn.value, s2 = +sdIn.value; D = [];
+      for (var i = 0; i < 60; i++) {
+        var a = gauss(r), b = gauss(r);
+        D.push([0.8 + 1.3 * a, 0.4 + s2 * (rho * a + Math.sqrt(1 - rho * rho) * b)]);
+      }
+    }
+    function stats() {
+      var n = D.length, mx = 0, my = 0;
+      D.forEach(function (p) { mx += p[0]; my += p[1]; }); mx /= n; my /= n;
+      var sxx = 0, sxy = 0, syy = 0;
+      D.forEach(function (p) { var dx = p[0] - mx, dy = p[1] - my; sxx += dx * dx; sxy += dx * dy; syy += dy * dy; });
+      sxx /= n - 1; sxy /= n - 1; syy /= n - 1;
+      var tr = sxx + syy, det = sxx * syy - sxy * sxy, disc = Math.sqrt(Math.max(0, tr * tr / 4 - det));
+      var l1 = tr / 2 + disc, l2 = tr / 2 - disc;
+      var v1 = Math.abs(sxy) > 1e-9 ? [l1 - syy, sxy] : (sxx >= syy ? [1, 0] : [0, 1]);
+      var nn = Math.hypot(v1[0], v1[1]); v1 = [v1[0] / nn, v1[1] / nn];
+      if (v1[0] < 0) v1 = [-v1[0], -v1[1]];
+      return { m: [mx, my], sxx: sxx, sxy: sxy, syy: syy, l1: l1, l2: l2, v1: v1, v2: [-v1[1], v1[0]] };
+    }
+    function arrow(from, to, cls) {
+      var x0 = plot.sx(from[0]), y0 = plot.sy(from[1]), x1 = plot.sx(to[0]), y1 = plot.sy(to[1]);
+      var ln = document.createElementNS(svgNS, 'line'); ln.setAttribute('x1', x0); ln.setAttribute('y1', y0); ln.setAttribute('x2', x1); ln.setAttribute('y2', y1); ln.setAttribute('class', cls); plot.layers.overlay.appendChild(ln);
+      var ang = Math.atan2(y1 - y0, x1 - x0), h = 9, w = 4.5;
+      var pts = [[x1, y1], [x1 - h * Math.cos(ang) + w * Math.sin(ang), y1 - h * Math.sin(ang) - w * Math.cos(ang)], [x1 - h * Math.cos(ang) - w * Math.sin(ang), y1 - h * Math.sin(ang) + w * Math.cos(ang)]];
+      var pg = document.createElementNS(svgNS, 'polygon'); pg.setAttribute('points', pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ')); pg.setAttribute('class', cls + '-head'); plot.layers.overlay.appendChild(pg);
+    }
+    function draw() {
+      document.getElementById('pca-rho-val').textContent = (+rhoIn.value).toFixed(2);
+      document.getElementById('pca-sd-val').textContent = (+sdIn.value).toFixed(2);
+      var s = stats();
+      plot.clearData(); plot.clearOverlay();
+      if (proj) {
+        var ax = document.createElementNS(svgNS, 'line');
+        ax.setAttribute('x1', plot.sx(s.m[0] - 6 * s.v1[0])); ax.setAttribute('y1', plot.sy(s.m[1] - 6 * s.v1[1]));
+        ax.setAttribute('x2', plot.sx(s.m[0] + 6 * s.v1[0])); ax.setAttribute('y2', plot.sy(s.m[1] + 6 * s.v1[1]));
+        ax.setAttribute('class', 'pc-axis'); plot.layers.data.appendChild(ax);
+      }
+      D.forEach(function (p) {
+        if (proj) {
+          var t = (p[0] - s.m[0]) * s.v1[0] + (p[1] - s.m[1]) * s.v1[1];
+          var q = [s.m[0] + t * s.v1[0], s.m[1] + t * s.v1[1]];
+          var ln = document.createElementNS(svgNS, 'line'); ln.setAttribute('x1', plot.sx(p[0])); ln.setAttribute('y1', plot.sy(p[1])); ln.setAttribute('x2', plot.sx(q[0])); ln.setAttribute('y2', plot.sy(q[1])); ln.setAttribute('class', 'proj-line'); plot.layers.data.appendChild(ln);
+          plot.point(p[0], p[1], 'pt', 3);
+          plot.point(q[0], q[1], 'pt-proj', 4);
+        } else {
+          plot.point(p[0], p[1], 'pt', 4);
+        }
+      });
+      var L1 = 2 * Math.sqrt(Math.max(0, s.l1)), L2 = 2 * Math.sqrt(Math.max(0, s.l2));
+      arrow(s.m, [s.m[0] + L2 * s.v2[0], s.m[1] + L2 * s.v2[1]], 'pc2');
+      arrow(s.m, [s.m[0] + L1 * s.v1[0], s.m[1] + L1 * s.v1[1]], 'pc1');
+      plot.point(s.m[0], s.m[1], 'mean-pt', 5);
+      plot.label(s.m[0] + L1 * s.v1[0] + 0.15, s.m[1] + L1 * s.v1[1] + 0.1, 'PC1');
+      plot.label(s.m[0] + L2 * s.v2[0] + 0.15, s.m[1] + L2 * s.v2[1] + 0.1, 'PC2');
+      var andel = s.l1 / (s.l1 + s.l2);
+      out.innerHTML =
+        '<div class="metric"><div class="m-name">S</div><div class="m-val vec">[' + f2(s.sxx) + ' ' + f2(s.sxy) + ']<br>[' + f2(s.sxy) + ' ' + f2(s.syy) + ']</div><div class="m-formula">kovariansmatrise (104)</div></div>' +
+        '<div class="metric"><div class="m-name">λ₁ · λ₂</div><div class="m-val">' + f2(s.l1) + ' · ' + f2(s.l2) + '</div><div class="m-formula">det(S − λI) = 0</div></div>' +
+        '<div class="metric"><div class="m-name">PC1 = e₁</div><div class="m-val vec">(' + f2(s.v1[0]) + ', ' + f2(s.v1[1]) + ')</div><div class="m-formula">S e₁ = λ₁ e₁</div></div>' +
+        '<div class="metric"><div class="m-name">andel varians PC1</div><div class="m-val">' + (100 * andel).toFixed(1) + ' %</div><div class="m-formula">λ₁ / (λ₁ + λ₂)</div></div>';
+      msg.innerHTML = proj
+        ? 'Projisert til PC1: hvert punkt er erstattet av koordinaten sin langs PC1 (én feature i stedet for to). Variansen som er kastet er λ₂ = <span class="hl">' + f2(s.l2) + '</span>, altså ' + (100 * (1 - andel)).toFixed(1) + ' % av totalen ' + f2(s.l1 + s.l2) + '.'
+        : 'Middelpunktet (' + f2(s.m[0]) + ', ' + f2(s.m[1]) + ') er origo for hovedkomponentene. Total varians = λ₁ + λ₂ = ' + f2(s.l1 + s.l2) + ' = sporet til S (' + f2(s.sxx) + ' + ' + f2(s.syy) + '). ' + (Math.abs(+rhoIn.value) < 0.1 ? 'Nesten ingen korrelasjon: PC-ene faller omtrent sammen med x₁ og x₂, og PCA gir lite.' : 'Jo sterkere korrelasjon, desto mer av variansen havner i PC1, og desto mindre tapes ved å kaste PC2.');
+    }
+    btnProj.addEventListener('click', function () { proj = !proj; btnProj.textContent = proj ? 'Vis originalen' : 'Projiser til PC1'; draw(); });
+    document.getElementById('pca-new').addEventListener('click', function () { gen(); draw(); });
+    [rhoIn, sdIn].forEach(function (el) { el.addEventListener('input', function () { gen(); draw(); }); });
+    gen(); draw();
+  })();
+
+  /* ─── KL-divergens ─── */
+  (function () {
+    var root = document.getElementById('w-kl'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 4], y: [0, 1], xTicks: [], yTicks: [0, 0.25, 0.5, 0.75, 1] });
+    var names = ['a', 'b', 'c', 'd'];
+    var pIn = names.map(function (_, i) { return document.getElementById('kl-p' + i); });
+    var qIn = names.map(function (_, i) { return document.getElementById('kl-q' + i); });
+    var out = document.getElementById('kl-out'), msg = document.getElementById('kl-msg');
+    function norm(ins) { var w = ins.map(function (el) { return +el.value; }), s = w.reduce(function (a, b) { return a + b; }, 0); return w.map(function (x) { return x / s; }); }
+    function kl(P, Q) { var s = 0; for (var i = 0; i < P.length; i++) s += P[i] * Math.log(P[i] / Q[i]); return s; }
+    function bar(x0, x1, h, cls) { var rc = document.createElementNS(svgNS, 'rect'); rc.setAttribute('x', plot.sx(x0)); rc.setAttribute('y', plot.sy(h)); rc.setAttribute('width', plot.sx(x1) - plot.sx(x0)); rc.setAttribute('height', plot.sy(0) - plot.sy(h)); rc.setAttribute('class', cls); plot.layers.data.appendChild(rc); }
+    function draw() {
+      var P = norm(pIn), Q = norm(qIn);
+      plot.clearData(); plot.clearOverlay();
+      for (var i = 0; i < 4; i++) {
+        bar(i + 0.18, i + 0.48, P[i], 'bar-p'); bar(i + 0.52, i + 0.82, Q[i], 'bar-q');
+        plot.label(i + 0.5, 0.95, 'x = ' + names[i], 'middle');
+        plot.label(i + 0.33, P[i] + 0.04, P[i].toFixed(2), 'middle');
+        plot.label(i + 0.67, Q[i] + 0.04, Q[i].toFixed(2), 'middle');
+      }
+      var dpq = kl(P, Q), dqp = kl(Q, P);
+      var terms = names.map(function (n, i) { var t = P[i] * Math.log(P[i] / Q[i]); return n + ': ' + P[i].toFixed(2) + '·ln(' + P[i].toFixed(2) + '/' + Q[i].toFixed(2) + ') = ' + (t >= 0 ? '+' : '') + f3(t); });
+      out.innerHTML =
+        '<div class="metric"><div class="m-name">D_KL(P‖Q)</div><div class="m-val">' + f3(dpq) + '</div><div class="m-formula">Σ P log(P/Q) · nat</div></div>' +
+        '<div class="metric"><div class="m-name">D_KL(Q‖P)</div><div class="m-val">' + f3(dqp) + '</div><div class="m-formula">Σ Q log(Q/P) · nat</div></div>' +
+        '<div class="metric"><div class="m-name">symmetrisk?</div><div class="m-val">' + (Math.abs(dpq - dqp) < 1e-9 ? 'her: ja' : 'nei') + '</div><div class="m-formula">forskjell ' + f3(Math.abs(dpq - dqp)) + '</div></div>';
+      msg.innerHTML = 'Ledd for ledd i D_KL(P‖Q): ' + terms.join('   ·   ') + '\n' +
+        (dpq < 1e-9 ? '<span class="ok">Q = P, så divergensen er null.</span>' : 'Enkeltledd kan være negative (der Q gir mer enn P), men summen er alltid ≥ 0. ' + (Math.max.apply(null, names.map(function (_, i) { return P[i] / Q[i]; })) > 4 ? '<span class="bad">Q gir nesten ingen sannsynlighet til et utfall P ofte gir: det leddet dominerer.</span> I t-SNE er det dette som straffes hardest: to punkter som er naboer i høy dimensjon (stor P) men plasseres langt fra hverandre i lav (liten Q).' : 'Utfallene P vekter mest, teller mest: forventningen tas under P.'));
+    }
+    pIn.concat(qIn).forEach(function (el) { el.addEventListener('input', draw); });
+    root.querySelectorAll('[data-kl]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var m = btn.dataset.kl;
+        if (m === 'same') qIn.forEach(function (el, i) { el.value = pIn[i].value; });
+        else if (m === 'flat') qIn.forEach(function (el) { el.value = 5; });
+        else if (m === 'flip') qIn.forEach(function (el, i) { el.value = pIn[3 - i].value; });
+        else if (m === 'miss') { pIn[0].value = 12; pIn[1].value = 4; pIn[2].value = 3; pIn[3].value = 1; qIn[0].value = 1; qIn[1].value = 8; qIn[2].value = 6; qIn[3].value = 5; }
+        draw();
+      });
+    });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Backpropagation og SGD — Kap 2</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  .legend-row .l-g::before { background: var(--green); }
+  .tt { border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  .tt th, .tt td { border: 1px solid var(--line-soft); padding: 4px 10px; text-align: center; }
+  .tt th { background: var(--paper-dark); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 2</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 2: Nevrale nettverk">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 2 · 2B · Notater 2.4–2.5 · s. 38–40 · ~30 min</div>
+      <h1>Backpropagation og <em>stochastic gradient descent</em></h1>
+      <p class="lede">Hvordan nettverket trenes. Backpropagation sender feilen i prediksjonen bakover gjennom lagene og gir gradienten for hver parameter; stochastic gradient descent bestemmer hvor mange datapunkter som brukes per steg, og dermed hvor mange parameteroppdateringer én epoke gir.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#backpropagation"><span>01</span> Backpropagation</a>
+        <a href="#sgd"><span>02</span> Stochastic gradient descent</a>
+        <a href="#oppsummering"><span>03</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · deltema 2.4 (prio 2) og 2.5 (prio 1) · utvidelsen for 2.4–2.5 (8. og 21. oktober 2026) er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Backpropagation</strong> (Ord. 2024 spm. 19; Ord. 2025 del 5 spm. 4): beregner hvordan hver vekt påvirker tapet ved å propagere feilen bakover gjennom lagene (kjerneregelen), slik at gradient descent kan justere vektene. Ha intuisjonen: «jo større \(a\), jo større effekt har \(w\)», og omvendt. Se <a href="#backpropagation">01</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Oppdateringer per epoke</strong>: full-batch gradient descent gir 1, SGD på ett punkt gir \(N\), mini-batch SGD gir \(N/B\). «10 000 punkter, batch 500: hvor mange iterasjoner per epoke?» (Ord. 2024 spm. 13–14, står som bokser i 1A). Se <a href="#sgd">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Batch size</strong> er en hyperparameter som balanserer gradientpresisjon (stor batch) mot hastighet (liten batch); en støyete gradient tåler mindre læringsrate. Se <a href="#sgd">02</a>.</li>
+          <li><span class="tag">Lavere</span>Historikken (Robbins og Monro 1951), hva «dyplæringsfolk» mener med SGD, og den fulle utledningen av gradientene i et nettverk (ikke i notatene).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 BACKPROPAGATION ─────────────────────────── -->
+  <section id="backpropagation">
+    <div class="container">
+      <div class="section-badge">01 · Backpropagation</div>
+      <h2>Feilen sendes <em>bakover</em> gjennom lagene</h2>
+      <div class="source-note">Notatene · avsnitt 2.4 · s. 38–39</div>
+
+      <p class="dropcap">Når nettverket gjør en prediksjon, sier vi at det gjør en <span class="term" data-term="forward-pass">forward pass</span>: fra data (input) til prediksjon (output) ved å transformere dataene gjennom lagene. Har vektene riktige verdier, er avviket mellom output og targets lite. Treningen er <span class="term" data-term="gradient-descent">gradient descent</span> som før: vi beveger oss i parameterrommet i den retningen der tapet minker, altså langs gradienten til tapsfunksjonen. Gradienten er en vektor med like mange elementer som nettverket har parametre, og størrelsen på hvert element sier hvor følsom tapsfunksjonen er for den parameteren.</p>
+      <p>Forskjellen fra lineær regresjon er at nettverket har mange noder der vi ikke kjenner «riktig verdi»: nodene i de skjulte lagene er ikke direkte forbundet med verken dataene eller targets. Likevel finnes det en metode for å beregne gradienten som funksjon av parametrene: <span class="term" data-term="backpropagation">backpropagation</span>, eller tilbakepropagering. Kurset forventer en intuisjon for hvordan den virker, ikke en utledning.</p>
+
+      <h3>Ett eksempel, én node om gangen</h3>
+      <p>Ta et nettverk med to input-noder, to indre lag med fire noder hver, og et output-lag med tre noder: \(l = 0\) er input, \(l = 1, 2\) de indre lagene og \(l = 3\) output. Nettverket har gitt prediksjonen \(\hat{\mathbf{y}} = (0.1, 0.1, 0.8)\) på et datapunkt med target \(\mathbf{y} = (1, 0, 0)\). Både \(\hat{y}_1\) og \(\hat{y}_3\) bommer mye, mens \(\hat{y}_2\) bommer lite. Aktiveringen til den øverste output-noden er, etter likning (95) i 2A med \(i = 1, \dots, 4\), \(j = 1\) og \(l = 3\),</p>
+      \[ \hat{y}_1 = a^{(3)}_1 = g\!\left( w^{(3)}_{11} a^{(2)}_1 + w^{(3)}_{21} a^{(2)}_2 + w^{(3)}_{31} a^{(2)}_3 + w^{(3)}_{41} a^{(2)}_4 + b \right). \tag{100} \]
+      <p>Her er det flere ting vi kan endre for å minke tapet: parametrene \(b\) og \(w^{(3)}_{i1}\) direkte, og aktiveringene \(a^{(2)}_i\) i laget før indirekte. Vi ønsker å øke \(a^{(3)}_1\):</p>
+      <ul>
+        <li><strong>Endre vektene.</strong> Endringen i \(w^{(3)}_{i1}\) må være proporsjonal med \(a^{(2)}_i\): vi styrker koblingen til de aktive nevronene i lag 2, de med stor \(a^{(2)}_i\). Enkelt sagt: <em>jo større \(a\)-ene er, jo større effekt har \(w\)-ene.</em></li>
+        <li><strong>Endre aktiveringene.</strong> Om alle \(a^{(2)}_i\) som multipliseres med en positiv \(w^{(3)}_{i1}\) ble sterkere, og alle som multipliseres med en negativ \(w^{(3)}_{i1}\) ble svakere, ville \(a^{(3)}_1\) øke. Enkelt sagt: <em>jo større \(w\)-ene er, jo større effekt har \(a\)-ene.</em> Men aktiveringene i indre lag kan vi ikke endre direkte, bare indirekte gjennom parametrene deres, \(w^{(2)}_{ij}\) for alle nodene i lag 2.</li>
+      </ul>
+      <p>Før vi tar steget bakover: vi har bare sett på \(\hat{y}_1\). Også \(\hat{y}_2\) og \(\hat{y}_3\) har sine egne preferanser for hvordan vektene og aktiveringene i lagene før bør endres, og de tre er ikke nødvendigvis enige. Vi samler uansett alle ønskede endringer for lag \(l = 2\) i en liste, inkludert ønskede endringer i aktiveringene \(\mathbf{a}^{(2)}\). Den lista spiller samme rolle for lag 2 som avviket \(\mathbf{y} - \hat{\mathbf{y}}\) gjorde for output-laget, så vi gjør den samme analysen for alle nodene i lag 2, lager en liste over ønskede endringer i lag 1, og tar enda et steg bakover.</p>
+      <p>Ved input-laget stopper vi: det gir ikke mening med ønskede endringer i \(l = 0\), siden aktiveringene der er verdiene i datasettet. Vi har da <strong>propagert feilen i prediksjonen bakover</strong> fra output, gjennom alle lagene, til input, og underveis funnet hvordan hver parameter bør endre seg: gradienten vi trenger til parameteroppdateringen (13). Det er essensen i backpropagation. Dette gjøres for alle datapunktene i treningssettet (én epoke), gjerne flere ganger; målet er ikke at modellen skal lære seg å svare \(\mathbf{y} = (1, 0, 0)\), men å tilpasse prediksjonen til input-dataene.</p>
+
+      <div class="callout">
+        <span class="label">Nøkkelpoeng</span>
+        <p>Backpropagation er <span class="term" data-term="kjerneregelen">kjerneregelen</span> brukt bakover: effekten en vekt i lag \(l\) har på tapet går via aktiveringene i alle lagene etter, så gradienten for hver vekt settes sammen av «ønsket endring i laget etter» ganger «hvor mye denne vekten påvirker det». Resultatet er gradienten, og gradient descent-steget bruker den til å justere vektene. Begge formuleringene brukes på eksamen: «beregne hvordan hver vekt påvirker tapet med kjerneregelen bakover» (2025) og «justere vektene for å minimere feilen» (2024).</p>
+      </div>
+
+      <div class="widget" id="w-bp">
+        <div class="widget-label">Prøv selv · Hvem får skylda? Følsomheten til én output-node</div>
+        <p class="widget-intro">Likning (100) med sigmoid som \(g\), target \(y_1 = 1\) og faste vekter (oppdiktede tall). Dra i aktiveringene \(a^{(2)}_i\) fra laget før. Lista viser hvor mye \(\hat{y}_1\) endrer seg per enhet endring i hver vekt (\(\partial \hat{y}_1 / \partial w_{i1} = \sigma'(z)\, a_i\)) og i hver aktivering (\(\partial \hat{y}_1 / \partial a_i = \sigma'(z)\, w_{i1}\)). Størst tall = der et steg hjelper mest. Legg merke til at en vekt til en node med \(a_i = 0\) ikke kan hjelpe uansett.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="bp-a1">a₁</label><input type="range" id="bp-a1" min="0" max="1" step="0.05" value="0.9"><span class="w-val" id="bp-a1-val">0.90</span></div>
+          <div class="w-ctl"><label for="bp-a2">a₂</label><input type="range" id="bp-a2" min="0" max="1" step="0.05" value="0.2"><span class="w-val" id="bp-a2-val">0.20</span></div>
+          <div class="w-ctl"><label for="bp-a3">a₃</label><input type="range" id="bp-a3" min="0" max="1" step="0.05" value="0.5"><span class="w-val" id="bp-a3-val">0.50</span></div>
+          <div class="w-ctl"><label for="bp-a4">a₄</label><input type="range" id="bp-a4" min="0" max="1" step="0.05" value="0"><span class="w-val" id="bp-a4-val">0.00</span></div>
+        </div>
+        <div class="w-out" id="bp-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-19">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 19</span><span class="o-ref">2.4 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er hovedformålet med backpropagation i et nevralt nettverk?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å justere vektene i nettverket for å minimere feilen mellom predikert og faktisk verdi.</li>
+            <li>Å finne prediksjonen basert på input data i et nevralt nettverk, også kjent som en forward pass.</li>
+            <li>Å legge til flere lag i nettverket for å forbedre nøyaktigheten.</li>
+            <li>Å initialisere vektene i nettverket tilfeldig.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Backpropagation er bakover-delen av treningen: feilen propageres fra output til input og gir gradienten som trengs for å justere vektene. B er forward pass, altså motsatt retning. C er et arkitekturvalg og D er initialisering, ingen av dem er læring.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-5-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 5 · spm. 4</span><span class="o-ref">2.4 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Under trening av et nevralt nettverk med gradient descent brukes backpropagation for å oppdatere vektene. Hva er hovedformålet med backpropagation-algoritmen?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å beregne hvordan endringer i hver vekt påvirker loss ved å bruke kjerneregelen bakover gjennom nettverket</li>
+            <li>Å søke tilfeldig etter vektverdier til modellen presterer godt</li>
+            <li>Å sikre at alle nevroner aktiveres med samme output-verdi</li>
+            <li>Å fjerne skjulte lag som ikke forbedrer treningsnøyaktigheten</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Det er nettopp lista over ønskede endringer, lag for lag bakover: hvor mye hver vekt påvirker tapet via aktiveringene etter den. B er tilfeldig søk, C og D er ikke noe treningen gjør. Merk at 2024- og 2025-fasitene formulerer det litt ulikt: 2024 sier «justere vektene for å minimere feilen», 2025 sier «beregne hvordan hver vekt påvirker tapet med kjerneregelen». Begge er backpropagation sett fra hver sin side: gradientberegningen og bruken av den i gradient descent-steget. Husk begge formuleringene.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">I eksempelet er \(\hat{y}_2 = 0.1\) med target 0, mens \(\hat{y}_1 = 0.1\) med target 1. Node 1 i lag 2 har stor aktivering og positiv vekt til begge output-nodene. Hva «ønsker» \(\hat{y}_1\) og \(\hat{y}_2\) å gjøre med den aktiveringen, og hvordan løses uenigheten?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">\(\hat{y}_1\) vil ha \(a^{(2)}_1\) større (positiv vekt, må opp), \(\hat{y}_2\) vil ha den litt mindre (positiv vekt, må ned, men avviket er bare 0.1). Ønskene summeres: hver output-node bidrar proporsjonalt med sitt avvik og sin vekt, så \(\hat{y}_1\) sitt store avvik dominerer, og netto ønske er «øk \(a^{(2)}_1\)». Det ønsket sendes så videre bakover til vektene \(w^{(2)}_{i1}\), som er det eneste som faktisk kan endre \(a^{(2)}_1\).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 SGD ─────────────────────────── -->
+  <section id="sgd">
+    <div class="container">
+      <div class="section-badge">02 · Stochastic gradient descent</div>
+      <h2>Hvor mange datapunkter per <em>steg</em></h2>
+      <div class="source-note">Notatene · avsnitt 2.5 · s. 39–40</div>
+
+      <p class="dropcap"><span class="term" data-term="gradient-descent">Gradient descent</span> er en strategi for å gå ned fra en fjelltopp, altså minimere tapsfunksjonen: man planlegger ikke hele reisen, men tar ett skritt om gangen. Neste skritt tas i retningen med maksimal nedstigning, som i parameterrommet angis av den negative gradienten. Gitt gradienten tar vi et lite skritt med lengde gitt av <span class="term" data-term="laeringsrate">læringsraten</span>, og alle parametrene oppdateres. Å beregne en gradient og så bruke den til en parameteroppdatering kan ta lang tid, og for å gjøre treningen kjappere brukes varianten <span class="term" data-term="sgd">stochastic gradient descent</span> (SGD). Det stokastiske er at vi ikke bruker alle datapunktene til å beregne gradienten, bare et tilfeldig utvalg. Idéen er at vi ikke trenger en perfekt gradient: så lenge skrittene er nesten optimale, kommer vi fram til målet. Forskjellen ligger altså i størrelsen på batchen med datapunkter som brukes til å estimere gradienten.</p>
+
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Gradient descent · full-batch</div><div class="fc-val">Gradienten beregnes fra det gjennomsnittlige tapet over <em>hele</em> treningsdatasettet, så parametrene oppdateres én gang per gjennomgang. Den klassiske varianten: nøyaktig gradient og noen færre iterasjoner totalt, men hver iterasjon krever backpropagation på hele datasettet, og kan ta lang tid.</div></div>
+        <div class="fact-card"><div class="fc-key">Stochastic gradient descent · ett punkt</div><div class="fc-val">Gradienten beregnes på ett enkelt, tilfeldig valgt treningspunkt, så parametrene oppdateres én gang per datapunkt. Et støyete, men forventningsrett estimat av den fulle gradienten. Iterasjonene går veldig raskt, men det trengs mange flere av dem fordi gradienten er støyete.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="mini-batch">Mini-batch SGD</span></div><div class="fc-val">Gradienten er gjennomsnittet over en liten tilfeldig trekning av datapunkter (en mini-batch), så parametrene oppdateres én gang per mini-batch. Det er dette som vanligvis menes med «SGD». Mindre støyete enn ett punkt, langt billigere enn full GD. <span class="term" data-term="batch-size">Batch size</span> (ofte en toerpotens: 32, 64, 128) er en hyperparameter som balanserer gradientpresisjon mot hastighet.</div></div>
+      </div>
+
+      <h3>Epoke og antall oppdateringer</h3>
+      <p>En <span class="term" data-term="epoke">epoke</span> er alltid én hel runde gjennom alle treningsdatapunktene, så alle har bidratt til gradienten én gang. Antall parameteroppdateringer per epoke avhenger derfor av varianten. Med \(N\) treningsdatapunkter og batch size \(B\):</p>
+      <table class="tt">
+        <thead><tr><th>Variant</th><th>Punkter per gradient</th><th>Oppdateringer per epoke</th><th>Gradienten er</th></tr></thead>
+        <tbody>
+          <tr><td>Gradient descent (full-batch)</td><td>\(N\)</td><td>\(1\)</td><td>nøyaktig, dyr</td></tr>
+          <tr><td>SGD (ett datapunkt)</td><td>\(1\)</td><td>\(N\)</td><td>støyete, billig</td></tr>
+          <tr><td>Mini-batch SGD</td><td>\(B\)</td><td>\(N / B\)</td><td>imellom</td></tr>
+        </tbody>
+      </table>
+      <p>Det er dette regnestykket Ord. 2024 spm. 14 spør om: 10 000 datapunkter og batch size 500 gir \(10\,000 / 500 = 20\) oppdateringer per epoke. I Keras-kallet <code>model.fit(..., batch_size=64, epochs=10)</code> på 2C er det mini-batch SGD som kjører: hvert steg bruker 64 punkter.</p>
+
+      <div class="widget" id="w-sgd">
+        <div class="widget-label">Prøv selv · Tre veier ned fjellet: GD, SGD og mini-batch</div>
+        <p class="widget-intro">Lineær regresjon \(f(x) = wx + b\) på 64 punkter (egen konstruert, sann sammenheng \(w = 2\), \(b = 1\)). De tre sporene starter i samme punkt og trenes like mange epoker: full-batch GD tar ett nøyaktig steg per epoke, SGD tar 64 støyete steg, mini-batch tar \(64/B\). Prøv høy læringsrate og se at SGD-sporet flakker, og prøv liten batch med lav læringsrate.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="GD, SGD og mini-batch i parameterrommet"></svg>
+        <div class="legend-row"><span class="l-a">Full-batch GD</span><span class="l-w">SGD (B = 1)</span><span class="l-g">Mini-batch</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sgd-eta">η</label><input type="range" id="sgd-eta" min="0.02" max="0.4" step="0.02" value="0.1"><span class="w-val" id="sgd-eta-val">0.10</span></div>
+          <div class="w-ctl"><label for="sgd-b">B</label><select id="sgd-b"><option value="4">4</option><option value="8" selected>8</option><option value="16">16</option><option value="32">32</option></select></div>
+          <div class="w-ctl"><label for="sgd-ep">epoker</label><input type="range" id="sgd-ep" min="1" max="8" step="1" value="3"><span class="w-val" id="sgd-ep-val">3</span></div>
+          <button class="w-btn secondary" id="sgd-new" type="button">Ny tilfeldig rekkefølge</button>
+        </div>
+        <div class="w-out" id="sgd-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-batch-laeringsrate">
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">2.5 · s. 40</span></div>
+        <div class="o-text"><p>Hvordan bør batch size påvirke valget av læringsrate? Burde en støyete gradient ha en høy eller lav læringsrate?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p>En støyete gradient (liten batch) peker bare omtrent riktig vei. Med høy læringsrate blir hvert feilsteg stort, og parametrene hopper rundt minimum i stedet for å gå ned i det; derfor bør en liten batch kombineres med en <strong>lavere</strong> læringsrate, eller en læringsrate som minkes utover i treningen. En stor batch gir en nøyaktig gradient som tåler større steg. Det er samme avveining som i 1A: for høy læringsrate gir et tap som oscillerer. Sjekk i widgeten: sett \(\eta = 0.4\) og se SGD-sporet flakke rundt optimum, mens full-batch går rett ned.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett · flervalg</div>
+        <div class="q-text">Treningssettet har 8 000 datapunkter. Du trener med mini-batch SGD, batch size 32, i 5 epoker. Hvor mange parameteroppdateringer gjøres totalt?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">5</button></li>
+          <li><button class="mcq-opt" type="button">250</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">1 250</button></li>
+          <li><button class="mcq-opt" type="button">40 000</button></li>
+        </ul>
+        <div class="mcq-feedback">\(8000 / 32 = 250\) oppdateringer per epoke, ganger 5 epoker gir 1 250. Full-batch GD ville gitt 5, SGD på ett punkt 40 000.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">03 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Forward og backward</strong>Forward pass: data → prediksjon gjennom lagene. Backpropagation: feilen propageres bakover fra output til input og gir gradienten for hver parameter.</div>
+        <div class="recap-pill"><strong>Backprop-intuisjon</strong>Jo større \(a\), jo større effekt har \(w\); jo større \(w\), jo større effekt har \(a\). Skjulte aktiveringer endres bare via sine egne vekter, derfor går vi lag for lag bakover.</div>
+        <div class="recap-pill"><strong>To formuleringer</strong>«Beregne hvordan hver vekt påvirker tapet med kjerneregelen bakover» (2025) og «justere vektene for å minimere feilen» (2024): gradientberegningen og bruken av den.</div>
+        <div class="recap-pill"><strong>GD vs SGD</strong>Full-batch: hele settet per steg, nøyaktig og dyrt. SGD: ett punkt per steg, støyete og billig. Mini-batch: \(B\) punkter, det vanlige.</div>
+        <div class="recap-pill"><strong>Per epoke</strong>GD 1 oppdatering, SGD \(N\), mini-batch \(N/B\). Batch size er en hyperparameter, ofte 32, 64 eller 128.</div>
+        <div class="recap-pill"><strong>Læringsrate</strong>Støyete gradient (liten batch) → lavere læringsrate; nøyaktig gradient (stor batch) tåler større steg.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Hvorfor må backpropagation kjøres for alle datapunktene i treningssettet, og ikke bare for det ene datapunktet i eksempelet med \(\mathbf{y} = (1, 0, 0)\)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Målet er ikke at modellen lærer seg å svare \((1, 0, 0)\), men å tilpasse prediksjonen til input-dataene generelt. Gradienten fra ett datapunkt sier bare hvordan vektene bør endres for å treffe akkurat det punktet; summert (eller midlet) over mange datapunkter peker den mot vekter som treffer alle. Med mini-batch SGD gjøres dette for \(B\) punkter om gangen, og én epoke betyr at alle punktene har bidratt én gang.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Koden for logistisk regresjon i 1A beregnet gradienten over hele treningssettet i hver epoke. Hvilken av de tre variantene er det, og hva måtte endres for å gjøre den om til mini-batch SGD?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Det er full-batch gradient descent: én oppdatering per epoke, med \(\frac{1}{N}\sum\) over alle punktene. For mini-batch SGD må løkka over epoker få en indre løkke: stokk om datapunktene, del dem i \(N/B\) batcher, og gjør én gradientberegning og én parameteroppdatering per batch. Tapet som logges blir støyete fra batch til batch, så man logger gjerne gjennomsnittet per epoke.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et nettverk har 1 million parametre. Hvorfor er full-batch gradient descent på 1 million treningsbilder upraktisk, selv om gradienten da er «nøyaktig»?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Hvert eneste steg krever forward pass og backpropagation gjennom alle 1 million bildene før én eneste oppdatering av parametrene; etter 100 steg har nettverket sett 100 millioner bilder og tatt bare 100 skritt. Mini-batch SGD med \(B = 64\) tar over 15 000 skritt per epoke på samme regnearbeid, og hvert skritt er nesten like godt, fordi gradienten fra 64 tilfeldige bilder er et forventningsrett estimat av den fulle. Støyen er til og med nyttig: den hjelper mot å sette seg fast i dårlige lokale minima.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="perceptron.html" class="prev"><div class="pn-label">← Forrige · 2A</div><div class="pn-title">Perceptron, aktivering og arkitektur</div></a>
+        <a href="koding.html" class="next"><div class="pn-label">Neste · 2C</div><div class="pn-title">Koding: nevrale nettverk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function sig(z) { return 1 / (1 + Math.exp(-z)); }
+  var f2 = function (v) { return (Math.round(v * 100) / 100).toFixed(2); };
+
+  /* ─── Backpropagation: følsomhet for én output-node (100) ─── */
+  (function () {
+    var root = document.getElementById('w-bp'); if (!root) return;
+    var W = [0.9, -0.6, 0.3, 0.1], b = -0.2, ids = ['bp-a1', 'bp-a2', 'bp-a3', 'bp-a4'];
+    var out = document.getElementById('bp-out');
+    function draw() {
+      var a = ids.map(function (id) { var v = +document.getElementById(id).value; document.getElementById(id + '-val').textContent = v.toFixed(2); return v; });
+      var z = b; for (var i = 0; i < 4; i++) z += W[i] * a[i];
+      var y = sig(z), ds = y * (1 - y);
+      var dw = a.map(function (ai) { return ds * ai; }), da = W.map(function (wi) { return ds * wi; });
+      var bw = 0, ba = 0; for (var k = 1; k < 4; k++) { if (Math.abs(dw[k]) > Math.abs(dw[bw])) bw = k; if (Math.abs(da[k]) > Math.abs(da[ba])) ba = k; }
+      var lines = ['z = ' + W.map(function (w, i) { return f2(w) + '·' + f2(a[i]); }).join(' + ') + ' + (' + f2(b) + ') = ' + f2(z) + '   ·   ŷ₁ = σ(z) = ' + f2(y) + '   ·   avvik y₁ − ŷ₁ = <span class="hl">' + f2(1 - y) + '</span>', 'σ′(z) = ' + f2(ds), ''];
+      for (var j = 0; j < 4; j++) {
+        lines.push('i = ' + (j + 1) + ':  ∂ŷ₁/∂w' + (j + 1) + '₁ = σ′·a' + (j + 1) + ' = ' + (j === bw ? '<span class="hl">' + f2(dw[j]) + '</span>' : f2(dw[j])) + '      ∂ŷ₁/∂a' + (j + 1) + ' = σ′·w' + (j + 1) + '₁ = ' + (j === ba ? '<span class="hl">' + f2(da[j]) + '</span>' : f2(da[j])));
+      }
+      lines.push('');
+      lines.push('Vekten som hjelper mest: w' + (bw + 1) + '₁ (største a). Aktiveringen som hjelper mest: a' + (ba + 1) + ' (største |w|)' + (da[ba] < 0 ? ', men den bør ned, siden vekten er negativ.' : '.'));
+      lines.push('Ønsket endring i a-ene kan ikke gjøres direkte: den sendes bakover som «ønsker» til vektene i lag 2.');
+      out.innerHTML = lines.join('\n');
+    }
+    ids.forEach(function (id) { document.getElementById(id).addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ─── GD vs SGD vs mini-batch i parameterrommet ─── */
+  (function () {
+    var root = document.getElementById('w-sgd'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [-1.5, 3.5], y: [-2.5, 2.5], xLabel: 'w', yLabel: 'b', xTicks: [-1, 0, 1, 2, 3], yTicks: [-2, -1, 0, 1, 2] });
+    var out = document.getElementById('sgd-out'), etaIn = document.getElementById('sgd-eta'), bSel = document.getElementById('sgd-b'), epIn = document.getElementById('sgd-ep');
+    var r0 = rng(5), N = 64, X = [], Y = [];
+    function gauss(r) { var u = 1 - r(), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+    for (var i = 0; i < N; i++) { var x = -2 + 4 * r0(); X.push(x); Y.push(2 * x + 1 + 0.5 * gauss(r0)); }
+    var seed = 1;
+    function loss(w, b) { var s = 0; for (var i = 0; i < N; i++) { var e = w * X[i] + b - Y[i]; s += e * e; } return s / (2 * N); }
+    function run(B, eta, epochs, r) {
+      var w = -1, b = -2, path = [[w, b]], updates = 0;
+      for (var e = 0; e < epochs; e++) {
+        var idx = []; for (var i = 0; i < N; i++) idx.push(i);
+        for (var k = N - 1; k > 0; k--) { var j = Math.floor(r() * (k + 1)); var t = idx[k]; idx[k] = idx[j]; idx[j] = t; }
+        for (var s = 0; s < N; s += B) {
+          var gw = 0, gb = 0, m = Math.min(B, N - s);
+          for (var q = 0; q < m; q++) { var p = idx[s + q], err = w * X[p] + b - Y[p]; gw += err * X[p]; gb += err; }
+          w -= eta * gw / m; b -= eta * gb / m; updates++; path.push([w, b]);
+          if (Math.abs(w) > 50 || Math.abs(b) > 50) return { path: path, updates: updates, w: w, b: b, diverged: true };
+        }
+      }
+      return { path: path, updates: updates, w: w, b: b, diverged: false };
+    }
+    function draw() {
+      var eta = +etaIn.value, B = +bSel.value, ep = +epIn.value;
+      document.getElementById('sgd-eta-val').textContent = eta.toFixed(2); document.getElementById('sgd-ep-val').textContent = ep;
+      plot.clearData(); plot.clearOverlay();
+      var runs = [{ B: N, cls: 'curve', name: 'Full-batch GD' }, { B: 1, cls: 'curve-2', name: 'SGD (B = 1)' }, { B: B, cls: 'curve-3', name: 'Mini-batch (B = ' + B + ')' }];
+      var lines = [];
+      runs.forEach(function (R) {
+        var res = run(R.B, eta, ep, rng(seed));
+        var pts = res.path.map(function (p) { return [Math.max(-1.5, Math.min(3.5, p[0])), Math.max(-2.5, Math.min(2.5, p[1]))]; });
+        plot.polyline(pts, R.cls);
+        plot.point(pts[pts.length - 1][0], pts[pts.length - 1][1], R.cls === 'curve' ? 'marker-accent' : 'marker', 5);
+        lines.push(R.name + ': ' + res.updates + ' oppdateringer på ' + ep + ' epoker (' + (res.updates / ep) + ' per epoke)   ·   endte i w = ' + f2(res.w) + ', b = ' + f2(res.b) + '   ·   tap ' + (res.diverged ? '<span class="hl">divergerte</span>' : f2(loss(res.w, res.b))));
+      });
+      plot.point(-1, -2, 'marker', 4); plot.label(-1, -2.3, 'start', 'middle');
+      plot.point(2, 1, 'marker-accent', 7); plot.label(2.15, 1.15, 'optimum (2, 1)', 'start');
+      out.innerHTML = 'N = 64, η = ' + eta.toFixed(2) + '\n' + lines.join('\n');
+    }
+    ['sgd-eta', 'sgd-b', 'sgd-ep'].forEach(function (id) { var el = document.getElementById(id); el.addEventListener('input', draw); el.addEventListener('change', draw); });
+    document.getElementById('sgd-new').addEventListener('click', function () { seed = (seed * 7 + 3) % 1000 + 1; draw(); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

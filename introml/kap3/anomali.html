@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Anomalideteksjon: k-means, DBSCAN og Isolation Forest — Kap 3</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: middle; border-radius: 50%; }
+  .legend-row .l-norm::before { background: var(--accent); }
+  .legend-row .l-flag::before { background: var(--warm); }
+  .legend-row .l-true::before { background: transparent; border: 2px solid var(--red); }
+  .legend-row .l-cen::before { background: var(--ink); border-radius: 2px; }
+  .legend-row .l-split::before { background: transparent; border-top: 1.5px solid var(--ink-faded); border-radius: 0; height: 0; }
+  /* widgeter */
+  .p-norm { fill: var(--accent); stroke: none; }
+  .p-flag { fill: var(--warm); stroke: none; }
+  .p-true { fill: none; stroke: var(--red); stroke-width: 2; }
+  .cen { stroke: var(--ink); stroke-width: 2.2; fill: var(--paper); }
+  .thr { stroke: var(--warm); stroke-width: 1.2; stroke-dasharray: 5 4; fill: none; }
+  .split { stroke: var(--ink-faded); stroke-width: 1.2; }
+  .box-lbl { font-family: var(--mono); font-size: 10px; fill: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 3</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 3: Uveiledet læring">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 3 · 3C · Notater 3.3–3.3.3 · s. 54–55 · ~20 min</div>
+      <h1>Anomalideteksjon: <em>k-means, DBSCAN og Isolation Forest</em></h1>
+      <p class="lede">Å finne datapunktene som ikke likner resten, uten å ha sett hvordan avvik ser ut. Klassifisering uten labels med ekstrem skjevfordeling, løst som uveiledet læring: k-means med en prosentil-terskel på avstanden til nærmeste sentroide, DBSCAN som leverer outliers rett ut som label −1, og Isolation Forest, som isolerer hvert punkt med tilfeldige splitt og lar den korte veien fra rota avsløre anomaliene.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#intro"><span>01</span> Hva er en anomali</a>
+        <a href="#kmeans"><span>02</span> k-means</a>
+        <a href="#dbscan"><span>03</span> DBSCAN</a>
+        <a href="#isolation-forest"><span>04</span> Isolation Forest</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · deltema 3.3 (prio 1) · utvidelsen for 3.2–3.3 fra 21. oktober 2026 er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Falske positive</strong> i anomalideteksjon: modellen stempler mange normale datapunkter som anomalier (Ord. 2024 spm. 21). Se <a href="#intro">01</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Isolation Forest</strong> isolerer datapunkter ved å dele opp dataene gjennom (tilfeldige) beslutningstrær (Ord. 2024 spm. 23). Anomalier er få og ulike, isoleres tidlig i den rekursive oppdelingen, får kortere sti fra rotnoden og dermed høyere anomali-score (Ord. 2025 del 7 spm. 4). Se <a href="#isolation-forest">04</a>.</li>
+          <li><span class="tag regn">Les av</span><strong>De tre metodenes regel for «anomali»</strong>: k-means: avstand til nærmeste sentroide over en prosentil-terskel. DBSCAN: <code>labels_ == -1</code>. Isolation Forest: kort gjennomsnittlig sti, <code>predict == -1</code>. Se <a href="#kmeans">02</a>–<a href="#isolation-forest">04</a>.</li>
+          <li><span class="tag">Lavere</span>Detaljene om prosentiler og <code>contamination</code>, og koden (ligger på <a href="koding.html#anomali">3D</a>). Ikke spurt i noen av settene.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 INTRO ─────────────────────────── -->
+  <section id="intro">
+    <div class="container">
+      <div class="section-badge">01 · Hva er en anomali</div>
+      <h2>Klassifisering uten labels, <em>med ekstrem skjevfordeling</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.3 · s. 54</div>
+
+      <p class="dropcap">Når vi gjør <span class="term" data-term="anomalideteksjon">anomalideteksjon</span>, kjent som outlier detection eller anomaly detection, finner vi datapunktene som ikke likner majoriteten. Det er relevant i mange sammenhenger: antihvitvasking, kredittkortmisbruk, serverangrep, og generelt tilfeller der vi vet hvordan normale datapunkter ser ut, men ikke nøyaktig hvordan avviket vil se ut. Vi har altså mange eksempler på normale datapunkter, men få eller ingen eksempler på <span class="term" data-term="anomali">anomalier</span>.</p>
+      <p>Det kan tolkes som et klassifiseringsproblem uten labels og med ekstrem skjevfordeling mellom klassene (<span class="term" data-term="ubalanserte-data">ubalanserte data</span> fra 1A, bare uten fasit). Siden vi oftest ikke vet hvordan den underrepresenterte klassen ser ut, er det vanligst å behandle anomalideteksjon som en uveiledet oppgave. Tre metoder: to vi kjenner fra clustering, <strong>k-means</strong> og <strong>DBSCAN</strong>, og én ny, <strong>Isolation Forest</strong>. Felles for alle er at modellen gir hvert punkt en dom, normal eller anomali, og at dommen kan være feil begge veier.</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Falsk positiv</div><div class="fc-val">Et normalt datapunkt som modellen stempler som anomali. Med <span class="term" data-term="confusion-matrix">confusion matrix</span>-språket fra 1A er «positiv» her anomali, så FP er en falsk alarm.</div></div>
+        <div class="fact-card"><div class="fc-key">Falsk negativ</div><div class="fc-val">En anomali modellen lar passere som normal. Det er disse som koster i hvitvasking og kortsvindel, men mange falske positive koster også: hver alarm skal sjekkes av noen.</div></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-21">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 21</span><span class="o-ref">3.3 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva betyr det hvis en modell for anomalideteksjon gir mange falske positive?</p>
+          <ol class="mcq-list" type="A">
+            <li>Modellen identifiserer mange normale datapunkter som anomalier.</li>
+            <li>Modellen har høy accuracy, men lav recall.</li>
+            <li>Modellen er trent på for få anomalier.</li>
+            <li>Modellen klarer ikke å identifisere alle anomaliene.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A.</strong> Positiv = anomali, falsk = feil, så en falsk positiv er et normalt punkt som ble merket som anomali. D beskriver falske <em>negative</em>. B: mange falske positive trekker accuracy ned og sier ingenting om recall (som handler om de anomaliene vi fant av de som finnes). C: metodene trenes uten labels, så «for få anomalier i treningen» er ikke mekanismen; en for lav terskel er.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 K-MEANS ─────────────────────────── -->
+  <section id="kmeans">
+    <div class="container">
+      <div class="section-badge">02 · k-means</div>
+      <h2>Langt fra <em>alle sentroidene</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.3.1 · s. 54–55</div>
+
+      <p class="dropcap">Vi starter med å tilpasse en <span class="term" data-term="k-means">k-means</span>-modell som for clustering, på et treningsdatasett, med passende valg av antall sentroider \(k\). Deretter beregner vi avstanden mellom testdatapunktene og nærmeste klyngesenter: <code>kmeans.transform(X_test)</code> gir avstanden fra hvert punkt til hver <span class="term" data-term="sentroide">sentroide</span>, og <code>.min(axis=1)</code> plukker den minste per punkt.</p>
+      <p>Så må vi velge hvilke punkter vi vil se på som anomalier. En mulighet er å sammenlikne de relative avstandene ved hjelp av <span class="term" data-term="prosentil">prosentiler</span>: verdien en viss prosentandel av datapunktene er mindre enn eller lik. Den 95. prosentilen av avstandene er terskelen 95 % av punktene ligger under. Velger vi den som terskel, filtrerer vi ut punktene som har større avstand til nærmeste sentroide enn 95 % av dataene: <code>threshold = np.percentile(distances, 95)</code> og <code>outliers = distances &gt; threshold</code> gir et array med <code>True</code> for anomaliene. Avhengig av dataene kan den 95. prosentilen inneholde for mange eller for få punkter, så terskelen må gjerne justeres; det finnes ingen sann verdi som fungerer generelt.</p>
+
+      <div class="widget" id="w-kmo">
+        <div class="widget-label">Prøv selv · prosentil-terskel på avstand til nærmeste sentroide</div>
+        <p class="widget-intro">To klumper pluss fire punkter plassert langt unna (egen konstruert; de fire er ringet inn i rødt så du kan se fasiten, som modellen ikke har). k-means med \(k = 2\) er kjørt til konvergens; firkantene er sentroidene, de stiplede sirklene er terskelen. Dra i prosentilen og tell: hvor mange av de flaggede er faktisk de konstruerte outlierne, og hvor mange er normale punkter (falske positive)? Legg merke til at terskelen alltid flagger en fast andel, uansett om det finnes anomalier eller ikke.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="k-means anomali"></svg>
+        <div class="legend-row"><span class="l-norm">Under terskel</span><span class="l-flag">Flagget som anomali</span><span class="l-true">Konstruert outlier</span><span class="l-cen">Sentroide</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="kmo-p">prosentil</label><input type="range" id="kmo-p" min="50" max="99" step="1" value="95"><span class="w-val" id="kmo-p-val">95</span></div>
+          <button class="w-btn secondary" type="button" data-kmo="80">80</button>
+          <button class="w-btn secondary" type="button" data-kmo="90">90</button>
+          <button class="w-btn secondary" type="button" data-kmo="95">95</button>
+          <button class="w-btn secondary" type="button" data-kmo="99">99</button>
+        </div>
+        <div class="metric-grid" id="kmo-out"></div>
+        <div class="w-out" id="kmo-msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 DBSCAN ─────────────────────────── -->
+  <section id="dbscan">
+    <div class="container">
+      <div class="section-badge">03 · DBSCAN</div>
+      <h2>Outliers som <em>biprodukt</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.3.2 · s. 55</div>
+
+      <p class="dropcap">Vi starter med å tilpasse en <span class="term" data-term="dbscan">DBSCAN</span>-modell tilsvarende som for clustering. Her kan vi imidlertid <strong>ikke</strong> lage separate trenings- og testdata for <code>.fit</code> og <code>.transform</code>, siden DBSCAN er en <span class="term" data-term="ikke-parametrisk">ikke-parametrisk</span> metode: klyngene <em>er</em> punktene, det finnes ingen sentroider eller annen modell å bruke på nye punkter. Vi trenger altså tilgang til alle dataene på én gang.</p>
+      <p>Dessuten må vi velge verdier for <span class="term" data-term="epsilon">\(\epsilon\)</span> og <span class="term" data-term="min-samples"><code>min_samples</code></span>. Så kan vi hente ut outliers direkte: <code>outliers = dbscan.labels_ == -1</code>. Vi slipper altså å lage en regel for hvilke data vi vil regne som outliers, fordi DBSCAN er laget for å identifisere <span class="term" data-term="outlier">outliers</span>, og gir disse label \(-1\). Prisen er at antallet outliers styres helt av \(\epsilon\) og <code>min_samples</code>: for lav \(\epsilon\) gjør mange normale punkter til outliers (falske positive), for høy sluker anomaliene inn i klyngene (<a href="clustering.html#dbscan">3A 04</a>).</p>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett · flervalg</div>
+        <div class="q-text">Hvilken av de tre metodene krever ingen egen regel for hva som skal regnes som anomali?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">k-means: punktene lengst fra sentroiden er anomalier</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">DBSCAN: outliers får label −1 som en del av modelleringen</button></li>
+          <li><button class="mcq-opt" type="button">Isolation Forest: trærne har labels innebygd</button></li>
+          <li><button class="mcq-opt" type="button">Ingen av dem, alle trenger en terskel</button></li>
+        </ul>
+        <div class="mcq-feedback">k-means trenger en terskel på avstanden (prosentilen), og Isolation Forest trenger <code>contamination</code> for å sette terskel på scoren. DBSCAN leverer outliers direkte, men valget er bare flyttet til \(\epsilon\) og <code>min_samples</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 ISOLATION FOREST ─────────────────────────── -->
+  <section id="isolation-forest">
+    <div class="container">
+      <div class="section-badge">04 · Isolation Forest</div>
+      <h2>Kort vei fra rota <em>= anomali</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.3.3 · s. 55</div>
+
+      <p class="dropcap">En <span class="term" data-term="isolation-forest">isolation forest</span> er en skog, det vil si en samling <span class="term" data-term="beslutningstre">beslutningstrær</span>, som identifiserer <em>isolerte</em> datapunkter: punkter uten mange naboer. Det sentrale i læringsalgoritmen er hvordan den trener beslutningstrær uten å ha tilgang til labels. Trærne fra 1B valgte splitt som reduserte usikkerheten i targets; her finnes ingen targets, så splittene velges tilfeldig.</p>
+      <ol class="steps">
+        <li><strong>Tren flere isolasjonstrær.</strong> Et <span class="term" data-term="isolasjonstre">isolasjonstre</span> (isolation tree, itree) trenes på et subsett av treningsdataene, trukket tilfeldig og uten tilbakelegging. Treet bygges ved å splitte på tilfeldige features og tilfeldige verdier av dem, inntil hvert datapunkt havner i en egen <span class="term" data-term="lovnode">løvnode</span>. Vi får altså én løvnode per datapunkt. Siden anomalier er få og ulike, havner de som oftest i en node nærmere <span class="term" data-term="rotnode">rotnoden</span>, og har dermed kortere avstand fra rota enn normale datapunkter. Dette gjentas for mange isolasjonstrær, som gir en skog.</li>
+        <li><strong>Kombiner avstandene til rotnoden</strong> for hvert datapunkt over alle trærne. Denne kombinerte avstanden, den gjennomsnittlige stilengden, gir en god indikasjon på om et punkt er en anomali: kort sti betyr lett å isolere, altså høy anomali-score.</li>
+      </ol>
+      <p>Det er i prinsippet mulig å bygge bare ett isolasjonstre, men den tilfeldige trekningen av data for hvert tre i skogen gir den samlede modellen robusthet, til tross for tilfeldigheten i splittkriteriene. Det er samme idé som <span class="term" data-term="bagging">bagging</span> i 1D: mange tilfeldige, svake trær som midles. Hvorfor virker det? Et punkt midt i en klump har naboer på alle kanter, så en tilfeldig splitt skiller det sjelden fra alle de andre; det trengs mange splitt før det står alene. Et punkt langt ute i tomrommet skilles fra hele klumpen av nesten hvilken som helst splitt som faller mellom det og klumpen, og det skjer tidlig.</p>
+
+      <div class="widget" id="w-iso">
+        <div class="widget-label">Prøv selv · isolasjonstre og skog</div>
+        <p class="widget-intro">30 normale punkter i en klump og to outliers (egen konstruert, ringet inn i rødt). «Nytt tilfeldig tre» splitter rekursivt på en tilfeldig feature ved en tilfeldig verdi, innenfor den aktuelle boksen, til hvert punkt er alene; linjene er splittene, blekere jo dypere. Tallet ved de flaggede punktene er stilengden. Ett tre kan bomme, derfor «Bygg skog»: 50 trær på tilfeldige subsett, gjennomsnittlig stilengde per punkt. De to korteste stiene (contamination ≈ 0.06) flagges.</p>
+        <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="Isolation tree"></svg>
+        <div class="legend-row"><span class="l-norm">Normal</span><span class="l-flag">Flagget: kortest sti</span><span class="l-true">Konstruert outlier</span><span class="l-split">Splitt</span></div>
+        <div class="w-row">
+          <button class="w-btn" id="iso-tree" type="button">Nytt tilfeldig tre</button>
+          <button class="w-btn secondary" id="iso-forest" type="button">Bygg skog (50 trær)</button>
+        </div>
+        <div class="metric-grid" id="iso-out"></div>
+        <div class="w-out" id="iso-msg"></div>
+      </div>
+
+      <p>Vi kan bygge en isolation forest på treningsdata og bruke den til å finne outliers i testdata: <code>iso_forest = IsolationForest(n_estimators=100, contamination=0.05)</code>, <code>iso_forest.fit(X_train)</code>, <code>outliers = iso_forest.predict(X_test) == -1</code>. Prediksjonene med verdi \(-1\) er anomaliene. Som for alle metoder må <span class="term" data-term="hyperparameter">hyperparametrene</span> tilpasses for å få en god modell: her 100 isolasjonstrær (<code>n_estimators</code>) og et anslag om at datasettet inneholder en andel <span class="term" data-term="contamination"><code>contamination</code></span> = 0.05 anomale datapunkter, som bestemmer terskelen på scoren. I motsetning til DBSCAN er skogen en modell som kan brukes på nye punkter.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o24-23">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 23</span><span class="o-ref">3.3.3 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva brukes Isolation Forest til i konteksten av anomalideteksjon?</p>
+          <ol class="mcq-list" type="A">
+            <li>Klassifisering av data gjennom flere beslutningstrær.</li>
+            <li>Å bygge lineære modeller for å separere normale data fra anomalier.</li>
+            <li>Dimensjonsreduksjon for identifisering av outliers.</li>
+            <li>Å isolere datapunkter ved å dele opp dataene gjennom beslutningstrær.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Navnet sier det: trærne isolerer punkter ved tilfeldige splitt, og stilengden er signalet. A er random forest fra 1D, som trenger labels. B: splittene er akseparallelle terskler, ingen lineær modell. C: ingen dimensjoner reduseres.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-7-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 7 · spm. 4</span><span class="o-ref">3.3.3 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Isolation Forest tilordner anomali-score basert på antall splitt som trengs for å isolere et punkt i trærne — punkter som isoleres med færre splitt får høyere score. Hvorfor får anomalier typisk høyere anomalipoeng?</p>
+          <ol class="mcq-list" type="A">
+            <li>Fordi anomalier har en tendens til å bli isolert tidligere i den rekursive oppdelingen, noe som gir kortere sti-lengder</li>
+            <li>Fordi anomalier krever dypere trær for å separeres på grunn av avstanden fra klynge-sentrene</li>
+            <li>Fordi anomalier ofte ligger i områder med lav data-tetthet, noe som gjør dem enklere å isolere med få splitt</li>
+            <li>Fordi anomalier generelt har færre naboer, noe som bidrar til kortere isolasjonsstier</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>A</strong> er fasiten, og ved sensur ble <strong>C</strong> også godkjent: lav tetthet rundt punktet er grunnen til at det isoleres tidlig, så de to beskriver samme mekanisme fra hver sin side (og D er en tredje omskriving av det samme, uten at den ble godkjent). B er motsatt av sant: anomalier trenger <em>grunnere</em> trær, ikke dypere. Kjør «Bygg skog» i widgeten og se på tallene.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+      <div class="source-note">Notatene · «Oppsummering anomalideteksjon» · s. 55</div>
+
+      <p>Fremgangsmåten for anomalideteksjon med de tre metodene:</p>
+      <ul>
+        <li><strong>k-means</strong>: Lager \(k\) klynger av dataene, basert på avstand mellom klyngesentrum og datapunktene. Anomalier er datapunkter som ligger langt unna alle klyngesentrene.</li>
+        <li><strong>DBSCAN</strong>: Lager klynger av punkter med høy tetthet, og identifiserer anomalier som isolerte punkter, altså outliers. DBSCAN finner outliers som en del av modelleringen.</li>
+        <li><strong>Isolation Forest</strong>: Bygger trær der alle punktene havner i en egen løvnode. Anomalier er punkter som har kort gjennomsnittlig avstand fra rotnoden, altså er lettere å isolere enn resten av datapunktene.</li>
+      </ul>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Anomalideteksjon</strong>Finn punktene som ikke likner majoriteten. Mange normale eksempler, få/ingen anomalier → klassifisering uten labels, ekstremt skjev → uveiledet.</div>
+        <div class="recap-pill"><strong>Falske positive</strong>Normale punkter stemplet som anomalier. Falske negative: anomalier som slipper gjennom.</div>
+        <div class="recap-pill"><strong>k-means</strong>fit på trening; <code>transform(X_test).min(axis=1)</code> = avstand til nærmeste sentroide; terskel = <code>np.percentile(d, 95)</code>; over terskel = anomali. Terskelen må justeres.</div>
+        <div class="recap-pill"><strong>DBSCAN</strong>Ikke-parametrisk: alle data på én gang, ingen trening/test. Velg ε og min_samples; <code>labels_ == -1</code> er outliers. Ingen egen regel trengs.</div>
+        <div class="recap-pill"><strong>Isolation Forest</strong>Mange itrees på tilfeldige subsett; tilfeldige splitt til hvert punkt er alene. Anomalier isoleres tidlig → kort sti → høy score. <code>n_estimators</code>, <code>contamination</code>; <code>predict == -1</code>.</div>
+        <div class="recap-pill"><strong>Hvorfor kort sti</strong>Få og ulike punkter i lav tetthet skilles fra klumpen av nesten enhver splitt mellom dem; punkter inni klumpen trenger mange splitt.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Hvorfor kan k-means og Isolation Forest tilpasses på treningsdata og brukes på testdata, mens DBSCAN må ha alle dataene på én gang?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">k-means etterlater seg sentroidene, og Isolation Forest etterlater seg trærne: begge er modeller som kan ta et nytt punkt inn og gi noe ut (avstand til nærmeste sentroide, stilengde). DBSCAN er ikke-parametrisk på samme måte som t-SNE på 3B: resultatet er en merking av akkurat de punktene den så, bygd på naboskap mellom dem. Et nytt punkt har ingen plass i den strukturen uten at naboskapene, og dermed klyngene og outlier-listen, regnes ut på nytt.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Du kjører Isolation Forest med <code>contamination=0.05</code> på et datasett som i virkeligheten ikke inneholder en eneste anomali. Hva får du, og hva heter det på 1A-språk?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Omtrent 5 % av punktene merkes \(-1\) likevel: <code>contamination</code> setter terskelen på scoren slik at den andelen havner over, uansett om scorene egentlig skiller seg ut. Alle de flaggede er normale punkter merket som anomalier, altså falske positive (Ord. 2024 spm. 21). Det samme gjelder prosentil-terskelen i k-means: den 95. prosentilen flagger alltid 5 %. Derfor må terskelen justeres mot dataene, og derfor finnes det ingen generelt riktig verdi. (Egen tolkning.)</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et beslutningstre i 1B og et isolasjonstre splitter begge datarommet med akseparallelle terskler. Hva er forskjellen i hvordan splittene velges, når de stopper, og hva som leses ut av treet til slutt?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Valg: 1B-treet velger feature og terskel som gir størst informasjonsgevinst i targets; isolasjonstreet velger begge tilfeldig, for det finnes ingen targets. Stopp: 1B-treet stopper ved maks dybde eller rene løvnoder, gjerne med mange punkter i hver; isolasjonstreet fortsetter til hvert punkt er alene. Utlesing: 1B-treet gir en klasse eller verdi per løvnode (prediksjonen), isolasjonstreet gir en stilengde per punkt, og det er <em>dybden</em>, ikke innholdet i løvnoden, som er signalet. Et punkt som står alene etter to splitt er suspekt; et som trengte tolv er midt i mengden.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="dimensjonsreduksjon.html" class="prev"><div class="pn-label">← Forrige · 3B</div><div class="pn-title">Dimensjonsreduksjon: PCA og t-SNE</div></a>
+        <a href="koding.html" class="next"><div class="pn-label">Neste · 3D</div><div class="pn-title">Koding: uveiledet læring →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+<script>
+(function () {
+  'use strict';
+  function rng(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function gauss(r) { var u = 1 - r(), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  var f2 = function (v) { return (Math.round(v * 100) / 100).toFixed(2); };
+  var svgNS = 'http://www.w3.org/2000/svg';
+  function d2(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - b[i]) * (a[i] - b[i]); return s; }
+  function percentile(arr, p) {
+    var a = arr.slice().sort(function (x, y) { return x - y; }), idx = (p / 100) * (a.length - 1), lo = Math.floor(idx), hi = Math.ceil(idx);
+    return a[lo] + (a[hi] - a[lo]) * (idx - lo);
+  }
+
+  /* ─── k-means med prosentil-terskel ─── */
+  (function () {
+    var root = document.getElementById('w-kmo'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 10], y: [0, 5], xLabel: 'x₁', yLabel: 'x₂', xTicks: [0, 2, 4, 6, 8, 10], yTicks: [0, 1, 2, 3, 4, 5] });
+    var pIn = document.getElementById('kmo-p'), out = document.getElementById('kmo-out'), msg = document.getElementById('kmo-msg');
+    var r = rng(5), D = [], isOut = [];
+    for (var i = 0; i < 26; i++) { D.push([2.6 + gauss(r) * 0.45, 2.1 + gauss(r) * 0.4]); isOut.push(false); }
+    for (var j = 0; j < 26; j++) { D.push([7.2 + gauss(r) * 0.5, 3.1 + gauss(r) * 0.45]); isOut.push(false); }
+    [[5.0, 4.5], [9.4, 0.6], [0.7, 4.3], [4.9, 0.5]].forEach(function (p) { D.push(p); isOut.push(true); });
+    var C = [[2, 2], [7, 3]];
+    for (var it = 0; it < 20; it++) {
+      var sums = [[0, 0, 0], [0, 0, 0]];
+      D.forEach(function (p) { var a = d2(p, C[0]) <= d2(p, C[1]) ? 0 : 1; sums[a][0] += p[0]; sums[a][1] += p[1]; sums[a][2]++; });
+      C = sums.map(function (s, k) { return s[2] ? [s[0] / s[2], s[1] / s[2]] : C[k]; });
+    }
+    var dist = D.map(function (p) { return Math.sqrt(Math.min(d2(p, C[0]), d2(p, C[1]))); });
+    function draw() {
+      var p = +pIn.value; document.getElementById('kmo-p-val').textContent = p;
+      var thr = percentile(dist, p);
+      plot.clearData(); plot.clearOverlay();
+      C.forEach(function (c) {
+        var e = document.createElementNS(svgNS, 'ellipse'); e.setAttribute('cx', plot.sx(c[0])); e.setAttribute('cy', plot.sy(c[1])); e.setAttribute('rx', plot.sx(thr) - plot.sx(0)); e.setAttribute('ry', plot.sy(0) - plot.sy(thr)); e.setAttribute('class', 'thr'); plot.layers.data.appendChild(e);
+      });
+      var nFlag = 0, nTrue = 0, nFP = 0, missed = 0;
+      D.forEach(function (q, i) {
+        var flag = dist[i] > thr;
+        if (flag) { nFlag++; if (isOut[i]) nTrue++; else nFP++; } else if (isOut[i]) missed++;
+        plot.point(q[0], q[1], flag ? 'p-flag' : 'p-norm', 4.5);
+        if (isOut[i]) plot.point(q[0], q[1], 'p-true', 8);
+      });
+      C.forEach(function (c) { var s = document.createElementNS(svgNS, 'rect'); s.setAttribute('x', plot.sx(c[0]) - 6); s.setAttribute('y', plot.sy(c[1]) - 6); s.setAttribute('width', 12); s.setAttribute('height', 12); s.setAttribute('class', 'cen'); plot.layers.overlay.appendChild(s); });
+      out.innerHTML =
+        '<div class="metric"><div class="m-name">terskel</div><div class="m-val">' + f2(thr) + '</div><div class="m-formula">np.percentile(d, ' + p + ')</div></div>' +
+        '<div class="metric"><div class="m-name">flagget</div><div class="m-val">' + nFlag + ' av ' + D.length + '</div><div class="m-formula">d &gt; terskel · ' + (100 * nFlag / D.length).toFixed(0) + ' %</div></div>' +
+        '<div class="metric"><div class="m-name">treff</div><div class="m-val">' + nTrue + ' av 4</div><div class="m-formula">konstruerte outliers funnet</div></div>' +
+        '<div class="metric"><div class="m-name">falske positive</div><div class="m-val">' + nFP + '</div><div class="m-formula">normale flagget</div></div>';
+      msg.innerHTML = (nTrue === 4 && nFP === 0 ? '<span class="ok">Alle fire funnet, ingen falske positive.</span> Det skjer bare fordi prosentilen tilfeldigvis passer antallet outliers; i praksis er det ukjent.' :
+        nFP > 0 && nTrue === 4 ? '<span class="bad">' + nFP + ' normale punkter er stemplet som anomalier</span> (Ord. 2024 spm. 21). Prosentilen flagger alltid ' + (100 - p) + ' % av punktene, og her er det flere enn de fire som faktisk er outliers.' :
+        missed > 0 ? '<span class="bad">' + missed + ' av de konstruerte outlierne slipper gjennom</span> (falske negative): terskelen er så høy at bare de aller fjerneste flagges.' :
+        'Juster prosentilen og se hvordan balansen mellom falske positive og falske negative flytter seg.');
+    }
+    pIn.addEventListener('input', draw);
+    root.querySelectorAll('[data-kmo]').forEach(function (b) { b.addEventListener('click', function () { pIn.value = b.dataset.kmo; draw(); }); });
+    draw();
+  })();
+
+  /* ─── Isolasjonstre og skog ─── */
+  (function () {
+    var root = document.getElementById('w-iso'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 10], y: [0, 5], xLabel: 'x₁', yLabel: 'x₂', xTicks: [0, 2, 4, 6, 8, 10], yTicks: [0, 1, 2, 3, 4, 5] });
+    var out = document.getElementById('iso-out'), msg = document.getElementById('iso-msg');
+    var r = rng(42), D = [], isOut = [];
+    for (var i = 0; i < 30; i++) { D.push([5 + gauss(r) * 0.6, 2.5 + gauss(r) * 0.5]); isOut.push(false); }
+    D.push([9.1, 0.7]); isOut.push(true);
+    D.push([0.9, 4.3]); isOut.push(true);
+    var tr = rng(2024);
+    function build(idx, box, depth, lines, path) {
+      if (idx.length === 0) return;
+      if (idx.length === 1) { path[idx[0]] = depth; return; }
+      if (depth > 40) { idx.forEach(function (i) { path[i] = depth; }); return; }
+      var f = tr() < 0.5 ? 0 : 1, lo = Infinity, hi = -Infinity;
+      idx.forEach(function (i) { lo = Math.min(lo, D[i][f]); hi = Math.max(hi, D[i][f]); });
+      if (hi - lo < 1e-9) { f = 1 - f; lo = Infinity; hi = -Infinity; idx.forEach(function (i) { lo = Math.min(lo, D[i][f]); hi = Math.max(hi, D[i][f]); }); }
+      var v = lo + tr() * (hi - lo);
+      var L = idx.filter(function (i) { return D[i][f] < v; }), R = idx.filter(function (i) { return D[i][f] >= v; });
+      if (!L.length || !R.length) { v = (lo + hi) / 2; L = idx.filter(function (i) { return D[i][f] < v; }); R = idx.filter(function (i) { return D[i][f] >= v; }); }
+      if (lines) lines.push({ f: f, v: v, box: box.slice(), depth: depth });
+      var bL = box.slice(), bR = box.slice();
+      if (f === 0) { bL[1] = v; bR[0] = v; } else { bL[3] = v; bR[2] = v; }
+      build(L, bL, depth + 1, lines, path); build(R, bR, depth + 1, lines, path);
+    }
+    function all() { var a = []; for (var i = 0; i < D.length; i++) a.push(i); return a; }
+    function render(path, lines, title) {
+      plot.clearData(); plot.clearOverlay();
+      if (lines) lines.forEach(function (l) {
+        var ln = document.createElementNS(svgNS, 'line');
+        if (l.f === 0) { ln.setAttribute('x1', plot.sx(l.v)); ln.setAttribute('x2', plot.sx(l.v)); ln.setAttribute('y1', plot.sy(l.box[2])); ln.setAttribute('y2', plot.sy(l.box[3])); }
+        else { ln.setAttribute('x1', plot.sx(l.box[0])); ln.setAttribute('x2', plot.sx(l.box[1])); ln.setAttribute('y1', plot.sy(l.v)); ln.setAttribute('y2', plot.sy(l.v)); }
+        ln.setAttribute('class', 'split'); ln.style.opacity = Math.max(0.12, 1 - l.depth * 0.14); plot.layers.data.appendChild(ln);
+      });
+      var order = all().sort(function (a, b) { return path[a] - path[b]; }), flagged = {}; flagged[order[0]] = true; flagged[order[1]] = true;
+      var normal = [], hit = 0;
+      D.forEach(function (p, i) {
+        plot.point(p[0], p[1], flagged[i] ? 'p-flag' : 'p-norm', 4.5);
+        if (isOut[i]) plot.point(p[0], p[1], 'p-true', 8);
+        if (flagged[i]) { var t = plot.label(p[0] + 0.2, p[1] + 0.25, path[i].toFixed(path[i] % 1 ? 1 : 0), 'start', 'box-lbl'); if (isOut[i]) hit++; }
+        if (!isOut[i]) normal.push(path[i]);
+      });
+      var nMean = normal.reduce(function (a, b) { return a + b; }, 0) / normal.length, nMin = Math.min.apply(null, normal), nMax = Math.max.apply(null, normal);
+      out.innerHTML =
+        '<div class="metric"><div class="m-name">outlier (9.1, 0.7)</div><div class="m-val">' + f2(path[30]) + '</div><div class="m-formula">stilengde</div></div>' +
+        '<div class="metric"><div class="m-name">outlier (0.9, 4.3)</div><div class="m-val">' + f2(path[31]) + '</div><div class="m-formula">stilengde</div></div>' +
+        '<div class="metric"><div class="m-name">normale · snitt</div><div class="m-val">' + f2(nMean) + '</div><div class="m-formula">min ' + f2(nMin) + ' · maks ' + f2(nMax) + '</div></div>' +
+        '<div class="metric"><div class="m-name">de 2 korteste</div><div class="m-val">' + hit + ' av 2</div><div class="m-formula">er konstruerte outliers</div></div>';
+      msg.innerHTML = title + ' ' + (hit === 2 ? '<span class="ok">Begge outlierne har kortest sti.</span>' : '<span class="bad">' + (2 - hit) + ' normalt punkt fikk kortere sti enn en outlier.</span> Ett tre er tilfeldig; bygg skogen og se at gjennomsnittet rydder opp.') +
+        ' Punkter midt i klumpen trenger i snitt ' + f2(nMean) + ' splitt for å stå alene; outlierne skilles fra klumpen av nesten enhver splitt som faller i tomrommet.';
+    }
+    function oneTree() {
+      var lines = [], path = []; build(all(), [0, 10, 0, 5], 0, lines, path);
+      render(path, lines, 'Ett isolasjonstre, ' + lines.length + ' splitt til alle ' + D.length + ' punkter står alene.');
+    }
+    function forest() {
+      var sum = [], cnt = [], lastLines = null;
+      for (var i = 0; i < D.length; i++) { sum.push(0); cnt.push(0); }
+      for (var t = 0; t < 50; t++) {
+        var idx = all().sort(function () { return tr() - 0.5; }).slice(0, 24).sort(function (a, b) { return a - b; });
+        var lines = [], path = []; build(idx, [0, 10, 0, 5], 0, lines, path);
+        idx.forEach(function (i) { sum[i] += path[i]; cnt[i]++; });
+        lastLines = lines;
+      }
+      var avg = sum.map(function (s, i) { return cnt[i] ? s / cnt[i] : 0; });
+      render(avg, lastLines, 'Skog: 50 trær på tilfeldige subsett av 24 punkter (uten tilbakelegging); tallene er gjennomsnittlig stilengde. Linjene viser det siste treet.');
+    }
+    document.getElementById('iso-tree').addEventListener('click', oneTree);
+    document.getElementById('iso-forest').addEventListener('click', forest);
+    oneTree();
+  })();
+})();
+</script>
+</body>
+</html>

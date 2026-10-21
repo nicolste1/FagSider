@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<title>Koding: clustering — Kap 3</title>
+<title>Koding: uveiledet læring — Kap 3</title>
 <link rel="stylesheet" href="../../style.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <style>
@@ -40,9 +40,9 @@
 <main data-chapter="Kapittel 3: Uveiledet læring">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 3 · 3B · Koden i notatene 3.1.1–3.1.4 · øvingsstoff · ~20 min</div>
-      <h1>Koding: <em>clustering</em></h1>
-      <p class="lede">k-means fra bunnen og med scikit-learn, de tre kvalitetsmetrikkene for å velge k, DBSCAN som pseudokode og som kall, og simuleringen av avstander i enhetskuben som viser dimensjonsforbannelsen.</p>
+      <div class="eyebrow">Kapittel 3 · 3D · Koden i notatene 3.1–3.3 · øvingsstoff · ~30 min</div>
+      <h1>Koding: <em>uveiledet læring</em></h1>
+      <p class="lede">k-means fra bunnen og med scikit-learn, de tre kvalitetsmetrikkene for å velge k, DBSCAN som pseudokode og som kall, simuleringen av avstander i enhetskuben, PCA regnet i numpy og kalt i sklearn, t-SNE på én linje, og de tre reglene for «anomali» som kode.</p>
       <nav class="toc">
         <a href="#fokus"><span>00</span> Eksamensfokus</a>
         <a href="#verktoy"><span>01</span> Verktøykassa</a>
@@ -50,7 +50,10 @@
         <a href="#metrikker"><span>03</span> Velge k</a>
         <a href="#dbscan"><span>04</span> DBSCAN</a>
         <a href="#avstand"><span>05</span> Avstander i høye dimensjoner</a>
-        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+        <a href="#pca"><span>06</span> PCA</a>
+        <a href="#tsne"><span>07</span> t-SNE</a>
+        <a href="#anomali"><span>08</span> Anomalideteksjon</a>
+        <a href="#oppsummering"><span>09</span> Oppsummering</a>
       </nav>
     </div>
   </header>
@@ -60,12 +63,12 @@
     <div class="container">
       <div class="section-badge">00 · Eksamensfokus</div>
       <h2>Øvingsstoff, <em>ikke</em> eksamensstoff</h2>
-      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · siden dekker koden i notatene 3.1; utvidelsen for kapittel 3 (8. oktober 2026) er et forslag som venter på godkjenning</div>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · siden dekker koden i notatene 3.1–3.3; utvidelsene for kapittel 3 (8. og 21. oktober 2026) er forslag som venter på godkjenning</div>
       <div class="callout callout-warm">
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
           <li><span class="tag">Øving</span><strong>For øvingen om uveiledet læring.</strong> Ingen kode fra kapittel 3 er spurt på eksamen så langt.</li>
-          <li><span class="tag">Forklar</span>Det som overlapper: <strong>hva algoritmene gjør steg for steg</strong>. Pseudokoden for k-means (<a href="#kmeans">02</a>) og DBSCAN (<a href="#dbscan">04</a>) er den samme stegvise beskrivelsen som eksamensspørsmålene bygger på, og metrikkene i <a href="#metrikker">03</a> er det Ord. 2025 del 6 spm. 1 og 3 handler om.</li>
+          <li><span class="tag">Forklar</span>Det som overlapper: <strong>hva algoritmene gjør steg for steg</strong>. Pseudokoden for k-means (<a href="#kmeans">02</a>) og DBSCAN (<a href="#dbscan">04</a>) er den samme stegvise beskrivelsen som eksamensspørsmålene bygger på, og metrikkene i <a href="#metrikker">03</a> er det Ord. 2025 del 6 spm. 1 og 3 handler om. numpy-utregningen i <a href="#pca">06</a> er regnestykket bak «egenvektorene til kovariansmatrisen» (Ord. 2024 spm. 25), forskjellen <code>fit</code>/<code>transform</code> mot <code>fit_transform</code> i <a href="#tsne">07</a> er Ord. 2025 del 7 spm. 2, og de tre reglene i <a href="#anomali">08</a> er oppsummeringen på 3C.</li>
           <li><span class="tag">Lavere</span>Resten er oppslag.</li>
         </ul>
       </div>
@@ -77,7 +80,7 @@
     <div class="container">
       <div class="section-badge">01 · Verktøykassa</div>
       <h2>Funksjonene som <em>går igjen</em></h2>
-      <div class="source-note">Notatene · kodeeksemplene i 3.1.1–3.1.4</div>
+      <div class="source-note">Notatene · kodeeksemplene i 3.1.1–3.3.3</div>
 
       <div class="table-wrap">
         <table class="fn-table">
@@ -92,6 +95,15 @@
             <tr><td>DBSCAN(eps=0.5, min_samples=5).fit(X)</td><td>Tetthetsbasert clustering; <code>labels_</code> er −1 for outliers, <code>core_sample_indices_</code> er kjernepunktene.</td><td>3.1.2 (forslag)</td></tr>
             <tr><td>np.random.uniform()</td><td>Tilfeldig tall i [0, 1): én koordinat i enhetskuben.</td><td>3.1.4</td></tr>
             <tr><td>plt.subplots(2, 3), axs[i, j].hist(...)</td><td>Rutenett av histogrammer, ett per d.</td><td>3.1.4</td></tr>
+            <tr><td>PCA(n_components=d).fit(X_train); pca.transform(X_test)</td><td>Hovedkomponenter fra kovariansmatrisen til treningsdataene; <code>transform</code> projiserer nye punkter på de første d. <code>fit_transform</code> gjør begge på samme data.</td><td>3.2.1</td></tr>
+            <tr><td>pca.components_, pca.explained_variance_ratio_</td><td>Egenvektorene (radvis) og andel varians per komponent.</td><td>3.2.1 (forslag)</td></tr>
+            <tr><td>np.cov(X, rowvar=False), np.linalg.eigh(S)</td><td>Kovariansmatrisen (likning 103–104) og egenverdier/egenvektorer til en symmetrisk matrise.</td><td>3.2.1 (forslag)</td></tr>
+            <tr><td>sklearn.datasets.make_s_curve(n_samples)</td><td>S-formet testdatasett i tre dimensjoner, med en farge per punkt som sier hvor på S-en det ligger.</td><td>3.2.1</td></tr>
+            <tr><td>TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(X)</td><td>t-SNE-embedding av X. Ingen <code>transform</code> for nye data: ikke-parametrisk.</td><td>3.2.2</td></tr>
+            <tr><td>kmeans.transform(X_test).min(axis=1)</td><td>Avstand fra hvert punkt til nærmeste sentroide.</td><td>3.3.1</td></tr>
+            <tr><td>np.percentile(distances, 95)</td><td>Verdien 95 % av avstandene ligger under; terskel for anomalier.</td><td>3.3.1</td></tr>
+            <tr><td>dbscan.labels_ == -1</td><td>Outliers fra DBSCAN, direkte.</td><td>3.3.2</td></tr>
+            <tr><td>IsolationForest(n_estimators=100, contamination=0.05).fit(X_train).predict(X_test) == -1</td><td>Anomalier (−1) fra en skog av isolasjonstrær; <code>contamination</code> setter terskelen.</td><td>3.3.3</td></tr>
           </tbody>
         </table>
       </div>
@@ -178,7 +190,7 @@ for k in range(2, 11):
     <div class="container">
       <div class="section-badge">04 · DBSCAN</div>
       <h2>Kjernepunkter som <em>sprer</em> klyngen</h2>
-      <div class="source-note">Notatene · avsnitt 3.1.2 · s. 45–46 (prosedyren); koden er forslag</div>
+      <div class="source-note">Notatene · avsnitt 3.1.2 · s. 45 (prosedyren); koden er forslag</div>
 
       <p class="dropcap">De tre stegene fra 3A: finn kjernepunkter (nok naboer innenfor \(\epsilon\)), spre klyngen fra kjernepunkt til kjernepunkt, og la alt som ikke ble nådd være outliers (label \(-1\)).</p>
 <pre class="pseudo"><code>def dbscan(X, eps, min_samples):
@@ -250,10 +262,131 @@ plt.show()</code></pre>
     </div>
   </section>
 
-  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <!-- ─────────────────────────── 06 PCA ─────────────────────────── -->
+  <section id="pca">
+    <div class="container">
+      <div class="section-badge">06 · PCA</div>
+      <h2>Kovarians, egenverdier og <em>PCA i sklearn</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.2.1 · s. 50–52 (sklearn-koden); numpy-delen er forslag</div>
+
+      <p class="dropcap">Regnestykket fra <a href="dimensjonsreduksjon.html#pca">3B</a> i numpy, for å se at <code>PCA</code> ikke gjør noe magisk: sentrer, <span class="term" data-term="kovariansmatrise">kovariansmatrise</span>, <span class="term" data-term="egenverdi">egenverdier</span>, sorter, projiser.</p>
+<pre class="pseudo"><code>x1 = np.array([1, 2, 3, 4, 5])
+x2 = np.array([1.6, 4.2, 5.7, 8.4, 9.2])
+X = np.vstack((x1, x2)).T                  # shape (5, 2): én rad per datapunkt
+Xc = X - X.mean(axis=0)                    # trekk fra gjennomsnittet: x̄1 = 3, x̄2 = 5.82
+S = Xc.T @ Xc / (len(X) - 1)               # likning (103)–(104): [[2.5, 4.85], [4.85, 9.63]]
+assert np.allclose(S, np.cov(X, rowvar=False))
+
+lam, E = np.linalg.eigh(S)                 # egenverdier (stigende) og egenvektorer som kolonner
+order = lam.argsort()[::-1]                # sorter synkende: PC1 først
+lam, E = lam[order], E[:, order]           # lam ≈ [12.08, 0.046], E[:, 0] ≈ [0.45, 0.89]
+andel = lam / lam.sum()                    # [0.996, 0.004]: PC1 forklarer 99.6 %
+X_pc = Xc @ E                              # koordinater i PC-systemet, det pca.transform gjør
+X_1d = X_pc[:, :1]                         # behold bare PC1: fra to features til én</code></pre>
+
+      <h3>Det samme med scikit-learn</h3>
+<pre class="notes"><code>from sklearn.decomposition import PCA
+x1 = np.array([1,2,3,4,5])
+x2 = np.array([1.6,4.2,5.7,8.4,9.2])
+
+pca = PCA(n_components=2)
+X = np.vstack((x1, x2)).T
+X_pca = pca.fit_transform(X)
+PC1 = X_pca[:,0]
+PC2 = X_pca[:,1]
+
+plt.scatter(x1, x2, color='blue', label='Original Data', marker='*')
+plt.scatter(PC1, PC2, color='red', label='PCA Transformed Data')
+plt.legend()
+plt.show()</code></pre>
+      <p>Med <code>n_components=2</code> er dataene bare rotert til PC-systemet, ikke redusert. Til én dimensjon: bytt to linjer, <code>pca = PCA(n_components=1)</code> og <code>plt.scatter(X_pca, np.zeros_like(X_pca), ...)</code>. Her brukes <code>fit_transform</code> på hele datasettet, så resultatet kan ikke brukes til å evaluere en modell. <code>pca.components_</code> er egenvektorene (radvis), <code>pca.explained_variance_</code> egenverdiene og <code>pca.explained_variance_ratio_</code> <span class="term" data-term="varians-forklart">andelen</span> (forslag).</p>
+
+      <h3>S-kurven: fit på trening, transform på test</h3>
+<pre class="notes"><code>S_points, S_color = sklearn.datasets.make_s_curve(n_samples=1000)
+x, y, z = S_points.T
+pca = sklearn.decomposition.PCA(n_components=2)
+X_train, X_test, y_train, y_test = train_test_split(S_points, S_color)
+pca.fit(X_train)
+S_pca = pca.transform(X_test)
+plt.scatter(S_pca[:,0], S_pca[:,1], c=y_test)
+plt.show()</code></pre>
+      <p>God praksis: <code>.fit</code> på treningsdataene, <code>.transform</code> på testdataene. Det går fordi <span class="term" data-term="pca">PCA</span> lager basisvektorer som kan brukes på nye punkter; sammenlikn t-SNE under. Resultatet er en S i planet: dybderetningen hadde nesten ingen varians.</p>
+
+      <h3>MNIST: 784 → 2</h3>
+<pre class="notes"><code>(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train.reshape(60000, 784).astype("float32") / 255
+x_test = x_test.reshape(10000, 784).astype("float32") / 255
+y_train = y_train.astype("float32")
+y_test = y_test.astype("float32")
+
+pca = sklearn.decomposition.PCA(n_components=2)
+pca.fit(x_train)
+X_pca = pca.fit_transform(x_test)</code></pre>
+      <p>To lineære akser er ikke egnet til å representere variansen i MNIST: sifrene overlapper nesten helt i plottet. Merk at siste linje bruker <code>fit_transform</code> på testdataene og dermed tilpasser på nytt; <code>pca.transform(x_test)</code> ville brukt tilpasningen fra treningsdataene (forslag).</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 T-SNE ─────────────────────────── -->
+  <section id="tsne">
+    <div class="container">
+      <div class="section-badge">07 · t-SNE</div>
+      <h2>Én linje, <em>og ingen transform</em></h2>
+      <div class="source-note">Notatene · avsnitt 3.2.2 · s. 53; KL-funksjonen er forslag</div>
+
+      <p class="dropcap">Samme MNIST-data, men med <span class="term" data-term="t-sne">t-SNE</span> i stedet for PCA:</p>
+<pre class="notes"><code>tsne = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3)
+X_embedded = tsne.fit_transform(X)</code></pre>
+      <p>Klassen ligger i <code>sklearn.manifold</code>. <code>perplexity</code> styrer variansen i Gaussen rundt hvert punkt (effektivt antall naboer), <code>init='random'</code> er steg 1 (tilfeldig plassering) og <code>fit_transform</code> er steg 2 (gradient descent på KL-divergensen). Det finnes ingen <code>tsne.transform</code> for nye data: modellen er ikke-parametrisk, resultatet er posisjonene til akkurat disse punktene.</p>
+<pre class="pseudo"><code>def kl_divergence(P, Q):                     # likning (114), for diskrete fordelinger
+    P, Q = np.asarray(P), np.asarray(Q)
+    return np.sum(P * np.log(P / Q))         # forventning under P av log(P/Q); ≥ 0, ikke symmetrisk
+
+kl_divergence([0.5, 0.25, 0.25], [0.5, 0.25, 0.25])   # 0.0
+kl_divergence([0.5, 0.25, 0.25], [0.2, 0.4, 0.4])     # 0.223
+kl_divergence([0.2, 0.4, 0.4], [0.5, 0.25, 0.25])     # 0.193: en annen verdi den andre veien</code></pre>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 ANOMALI ─────────────────────────── -->
+  <section id="anomali">
+    <div class="container">
+      <div class="section-badge">08 · Anomalideteksjon</div>
+      <h2>Tre måter å si <em>«anomali»</em> på</h2>
+      <div class="source-note">Notatene · avsnitt 3.3.1–3.3.3 · s. 54–55; pseudokoden for isolasjonstreet er forslag</div>
+
+      <p class="dropcap">Metodene fra <a href="anomali.html">3C</a> som kode. Det er regelen for «anomali» som skiller dem: en terskel på avstand, en label fra modellen, eller en terskel på stilengde.</p>
+      <h3>k-means: avstand til nærmeste sentroide over en prosentil</h3>
+<pre class="notes"><code>distances = kmeans.transform(X_test).min(axis=1)
+
+threshold = np.percentile(distances, 95)
+outliers = distances &gt; threshold</code></pre>
+      <p><code>kmeans</code> er tilpasset på treningsdata først. <code>transform</code> gir en (n, k)-matrise med avstander til hver sentroide, <code>min(axis=1)</code> den korteste per punkt. <code>outliers</code> er et array med <code>True</code> for punktene med avstand over 95 % av dataene; <span class="term" data-term="prosentil">prosentilen</span> må ofte justeres.</p>
+      <h3>DBSCAN: label −1</h3>
+<pre class="notes"><code>outliers = dbscan.labels_ == -1</code></pre>
+      <p>Ingen trenings/test-splitt: DBSCAN er ikke-parametrisk og må ha alle dataene i <code>fit</code>. Velg <code>eps</code> og <code>min_samples</code> først.</p>
+      <h3>Isolation Forest</h3>
+<pre class="notes"><code>iso_forest = IsolationForest(n_estimators=100, contamination=0.05)
+iso_forest.fit(X_train)
+outliers = iso_forest.predict(X_test) == -1</code></pre>
+      <p>Klassen ligger i <code>sklearn.ensemble</code>. <code>n_estimators</code> er antall isolasjonstrær, <span class="term" data-term="contamination"><code>contamination</code></span> anslått andel anomalier, som setter terskelen på scoren. <code>predict</code> gir −1 for anomalier og 1 for normale; <code>iso_forest.decision_function(X_test)</code> gir selve scoren, lavere er mer anomal (forslag).</p>
+<pre class="pseudo"><code>def path_length(x, X, rng, depth=0, max_depth=50):   # ett isolasjonstre, for å se mekanismen
+    if len(X) &lt;= 1 or depth &gt;= max_depth:
+        return depth                                    # alene i løvnoden: stilengden er dybden
+    f = rng.integers(X.shape[1])                        # tilfeldig feature
+    v = rng.uniform(X[:, f].min(), X[:, f].max())       # tilfeldig splittverdi innenfor noden
+    side = X[:, f] &lt; v if x[f] &lt; v else X[:, f] &gt;= v   # følg x sin side av splitten
+    return path_length(x, X[side], rng, depth + 1, max_depth)
+
+scores = [np.mean([path_length(x, X_train[rng.choice(len(X_train), 256, replace=False)], rng)
+                   for _ in range(100)])                # 100 trær på tilfeldige subsett
+          for x in X_test]                              # kort gjennomsnittlig sti = anomali</code></pre>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 09 OPPSUMMERING ─────────────────────────── -->
   <section id="oppsummering">
     <div class="container">
-      <div class="section-badge">06 · Oppsummering</div>
+      <div class="section-badge">09 · Oppsummering</div>
       <h2>Det du bør <em>kunne skrive</em></h2>
 
       <div class="recap-grid">
@@ -263,10 +396,13 @@ plt.show()</code></pre>
         <div class="recap-pill"><strong>DBSCAN</strong>Naboer innen eps → kjernepunkter → spre med en stack → resten er −1.</div>
         <div class="recap-pill"><strong>sklearn</strong><code>MiniBatchKMeans(n_clusters, init)</code>, <code>DBSCAN(eps, min_samples)</code>, <code>labels_</code>.</div>
         <div class="recap-pill"><strong>Avstand</strong><code>np.linalg.norm(P1 - P2)</code>; i høye d vokser den, spredningen gjør det ikke.</div>
+        <div class="recap-pill"><strong>PCA</strong>Sentrer, <code>S = Xc.T @ Xc / (n − 1)</code>, <code>np.linalg.eigh(S)</code>, sorter synkende, <code>Xc @ E[:, :d]</code>. sklearn: <code>PCA(n_components).fit(X_train).transform(X_test)</code>.</div>
+        <div class="recap-pill"><strong>t-SNE</strong><code>TSNE(n_components=2, perplexity=…).fit_transform(X)</code>. Ingen transform: posisjoner, ikke modell.</div>
+        <div class="recap-pill"><strong>Anomali</strong>k-means: <code>transform(X).min(axis=1) &gt; np.percentile(d, 95)</code>. DBSCAN: <code>labels_ == -1</code>. Isolation Forest: <code>predict(X) == -1</code>.</div>
       </div>
 
       <nav class="page-nav">
-        <a href="clustering.html" class="prev"><div class="pn-label">← Forrige · 3A</div><div class="pn-title">Clustering: k-means og DBSCAN</div></a>
+        <a href="anomali.html" class="prev"><div class="pn-label">← Forrige · 3C</div><div class="pn-title">Anomalideteksjon: k-means, DBSCAN og Isolation Forest</div></a>
         <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 3: oversikt →</div></a>
       </nav>
     </div>

@@ -54,7 +54,7 @@
 <main data-chapter="Kapittel 1: Veiledet læring">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · 1A · Notater 1.1–1.2 · s. 2–17</div>
+      <div class="eyebrow">Kapittel 1 · 1A · Notater 1.1–1.2 · s. 3–18</div>
       <h1>Data og <em>logistisk regresjon</em></h1>
       <p class="lede">Fra rådata til en trent klassifikator: hva features og target er, hvordan sigmoid gjør en lineær modell om til sannsynligheter, hvorfor cross-entropy er tapsfunksjonen, hvordan gradient descent finner parametrene, og hvordan vi evaluerer resultatet ærlig.</p>
       <nav class="toc">
@@ -106,7 +106,7 @@
     <div class="container">
       <div class="section-badge">01 · Data</div>
       <h2>Hva maskinlæring <em>lærer fra</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.1 · s. 2–4</div>
+      <div class="source-note">Notatene · avsnitt 1.1 · s. 3–5</div>
 
       <p class="dropcap"><span class="term" data-term="maskinlaering">Maskinlæring</span> går ut på å programmere datamaskiner slik at de kan lære fra data. To klassiske definisjoner rammer inn hva det betyr:</p>
 
@@ -219,7 +219,7 @@
       <p>Før vi lager en modell bør vi få oversikt over sammenhengene i dataene, og det gjør vi med plott. Men dataene i tabell 3 er ikke klare for det ennå.</p>
 
       <div class="oppgave" data-quiz id="oppg-plott">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.1 · s. 4</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.1 · s. 5</span></div>
         <div class="o-text"><p>Se på tabell 3 igjen. Hva bør vi gjøre <em>før</em> vi plotter disse dataene?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -354,14 +354,14 @@
     <div class="container">
       <div class="section-badge">02 · Modellen</div>
       <h2>Fra lineær regresjon til <em>sannsynlighet</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2 · s. 4–5</div>
+      <div class="source-note">Notatene · avsnitt 1.2 · s. 5–6</div>
 
       <p class="dropcap">Den enkleste modellen vi kan tenke oss er <span class="term" data-term="lineaer-regresjon">lineær regresjon</span>: en vektet sum av features pluss et konstantledd,</p>
       \[ z = \sum_{i=1}^{n} w_i x_i + b = \mathbf{w}\mathbf{x} + b, \tag{2} \]
       <p>hvor <span class="term" data-term="vekt">vektene</span> \(w_i\) forteller hvor viktig hver feature \(x_i\) er for utfallet, og \(b\) er <span class="term" data-term="bias">bias</span>.</p>
 
       <div class="oppgave" data-quiz id="oppg-z-vektor">
-        <div class="o-label"><span>Tankeøvelse fra notatene</span><span class="o-ref">1.2 · s. 4</span></div>
+        <div class="o-label"><span>Tankeøvelse fra notatene</span><span class="o-ref">1.2 · s. 5</span></div>
         <div class="o-text"><p>Er \(z\) et tall eller en vektor? Se på hvordan \(\mathbf{w}\) og \(\mathbf{x}\), som begge er vektorer, kombineres i uttrykket.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -452,7 +452,7 @@
     <div class="container">
       <div class="section-badge">03 · Trening og tapsfunksjon</div>
       <h2>Hvor <em>feil</em> tar modellen?</h2>
-      <div class="source-note">Notatene · avsnitt 1.2.1 · s. 5–6</div>
+      <div class="source-note">Notatene · avsnitt 1.2.1 · s. 6</div>
 
       <p class="dropcap">Før en modell kan gi gode prediksjoner må den tilpasses dataene våre. Prosessen kalles <span class="term" data-term="trening">læring eller trening</span>: modellen justeres slik at måloppnåelsen øker på datasettet vi bruker, <span class="term" data-term="treningsdata">treningsdataene</span>. Funksjonen som beregner måloppnåelse kalles <span class="term" data-term="tapsfunksjon">tapsfunksjon</span> (loss function). Den forteller hvor nærme prediksjonen er target,</p>
       \[ \mathcal{L}(y_{\text{pred}}, y). \tag{5} \]
@@ -461,7 +461,7 @@
       \[ y_{\text{pred}}^{\,y}\,(1 - y_{\text{pred}})^{1-y}. \tag{6} \]
 
       <div class="oppgave" data-quiz id="oppg-likelihood-verdier">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.1 · s. 5</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.1 · s. 6</span></div>
         <div class="o-text"><p>Studer uttrykket i (6). Hva er verdien hvis \(y_{\text{pred}} = 1\) og \(y = 1\)? Hva med de andre kombinasjonene av de mulige verdiene til \(y_{\text{pred}}\) og \(y\)?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -551,7 +551,7 @@
     <div class="container">
       <div class="section-badge">04 · Gradient descent</div>
       <h2>Å finne bunnen <em>med bind for øynene</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.2 · s. 7–8</div>
+      <div class="source-note">Notatene · avsnitt 1.2.2 · s. 7–9</div>
 
       <p class="dropcap"><span class="term" data-term="gradient-descent">Gradient descent</span> er en metode for å finne minimumspunktet til en funksjon vi ikke kjenner formen til. Strategien er å finne ut i hvilken retning i parameterrommet funksjonen minker brattest, og gå dit. Intuitivt: du vandrer rundt på et fjell med bind for øynene og skal finne det laveste punktet. Beste strategi er å føle seg frem til den bratteste nedoverbakken og følge den.</p>
 
@@ -725,7 +725,7 @@
     <div class="container">
       <div class="section-badge">05 · Trening</div>
       <h2>En <em>læringsalgoritme</em> i kode</h2>
-      <div class="source-note">Notatene · avsnitt 1.2.3 · s. 8–9</div>
+      <div class="source-note">Notatene · avsnitt 1.2.3 · s. 9–10</div>
 
       <p class="dropcap">Vi har nå alt vi trenger: en modell, parametrene som definerer den, en tapsfunksjon, og en regel for å oppdatere parametrene slik at tapet minker. Et program som utfører disse stegene er en <span class="term" data-term="laeringsalgoritme">læringsalgoritme</span>. Notatene foreslår denne klassen (du må skrive inn koden for metodene selv):</p>
 
@@ -873,7 +873,7 @@ predictions = log_reg.predict(X_test)</code></pre>
     <div class="container">
       <div class="section-badge">06 · Evaluering</div>
       <h2>Hvor <em>god</em> er modellen, egentlig?</h2>
-      <div class="source-note">Notatene · avsnitt 1.2.4 · s. 9–11</div>
+      <div class="source-note">Notatene · avsnitt 1.2.4 · s. 10–11</div>
 
       <p class="dropcap">Tenk tilbake på Mitchells definisjon: for å vite at programmet faktisk blir bedre gjennom erfaring, trenger vi en måte å måle ytelsen på. Som et minimum bør vi lagre tapet (loss) og treffsikkerheten (<span class="term" data-term="accuracy">accuracy</span>) underveis i treningen, og plotte dem etterpå:</p>
 
@@ -894,7 +894,7 @@ plt.show()</code></pre>
       <p>Men tap og treffsikkerhet forteller mildt sagt bare en liten del av historien. De sier ikke hva modellen er god på eller hvilke datapunkter den typisk bommer på, og tallene gir ikke intuitiv mening for mennesker. Vi bør derfor velge én eller flere <span class="term" data-term="metrikk">metrikker</span> som gir mening for mennesker. I motsetning til tapsfunksjonen trenger ikke metrikkene være deriverbare.</p>
 
       <div class="oppgave" data-quiz id="oppg-tap-vs-metrikk">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.4 · s. 10</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.4 · s. 11</span></div>
         <div class="o-text"><p>Hva er flere grunner til at vi ikke bør velge samme tapsfunksjon og evalueringsmetrikk?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -999,7 +999,7 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">07 · Klassifiseringsterskel</div>
       <h2>Hvor sikker må modellen være før vi <em>sier «ja»</em>?</h2>
-      <div class="source-note">Notatene · avsnitt 1.2.5 · s. 11–12</div>
+      <div class="source-note">Notatene · avsnitt 1.2.5 · s. 11–13</div>
 
       <p class="dropcap">Modellen returnerer et tall i (0, 1). I <code>fit</code> og <code>predict</code> gjorde vi det om til en klasse med linjen</p>
       <pre><code>[1 if _y &gt; 0.5 else 0 for _y in y_pred]</code></pre>
@@ -1124,7 +1124,7 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">08 · Entropi og cross-entropy</div>
       <h2>Hvorfor tapsfunksjonen heter <em>cross-entropy</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.6 · s. 12–13</div>
+      <div class="source-note">Notatene · avsnitt 1.2.6 · s. 13–14</div>
 
       <p class="dropcap">I informasjonsteori er <span class="term" data-term="entropi">entropi</span> (Shannon-entropi) en måte å kvantisere usikkerheten, eller mengden informasjon, forbundet med de mulige tilstandene \(x\) til en tilfeldig variabel \(X\):</p>
       \[ H(X) = \mathbb{E}\!\left[\frac{1}{\log p(X)}\right], \qquad H(X) = -\sum_{x \in X} p(x)\log p(x). \tag{28–29} \]
@@ -1159,7 +1159,7 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">09 · Bayes’ teorem</div>
       <h2>Kunne vi bare <em>regnet ut</em> svaret?</h2>
-      <div class="source-note">Notatene · avsnitt 1.2.7 · s. 13–14</div>
+      <div class="source-note">Notatene · avsnitt 1.2.7 · s. 14</div>
 
       <figure>
         <svg viewBox="0 0 320 170" aria-label="To delvis overlappende mengder A og B">
@@ -1332,12 +1332,12 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">11 · Dimensjonsforbannelsen</div>
       <h2>Hvorfor data blir <em>tynne</em> i høye dimensjoner</h2>
-      <div class="source-note">Notatene · avsnitt 1.2.9 · s. 15–16</div>
+      <div class="source-note">Notatene · avsnitt 1.2.9 · s. 16–17</div>
 
       <p class="dropcap">Vil vi estimere en \(d\)-dimensjonal fordeling, avhenger antallet datapunkter vi må samle inn av \(d\). For å få intuisjon, tenk igjen at vi estimerer fordelingen med et histogram med 10 bins per akse og er fornøyde med 10 datapunkter per bin.</p>
 
       <div class="oppgave" data-quiz id="oppg-skalering">
-        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.2.9 · s. 15</span></div>
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.2.9 · s. 16</span></div>
         <div class="o-text"><p>Hvordan skalerer sammenhengen mellom dimensjoner (i vårt tilfelle antall features) og antall datapunkter vi trenger? Sjekk tabellen under når du tror du har svaret.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -1377,7 +1377,7 @@ plt.show()</code></pre>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-skall">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.9 · s. 16</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.9 · s. 17</span></div>
         <div class="o-text"><p>Finn ut hvor stor andel av en \(d\)-dimensjonal sfære (kule) som ligger i et tynt skall med tykkelse \(\epsilon\). Volumet til en 3-dimensjonal kule er \(\frac{4\pi}{3}r^3\), og den \(D\)-dimensjonale generaliseringen er \(K_D r^D\). Du trenger ikke tenke på prefaktoren, siden du bare er ute etter en <em>andel</em>. Hint: velg en enhetskule (\(r = 1\)) og lag et uttrykk for andel volum. Svaret blir en funksjon av \(\epsilon\).</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -1397,10 +1397,10 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">12 · Trening på ubalanserte data</div>
       <h2>99 % treffsikkerhet, <em>null nytte</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.10 · s. 16–17</div>
+      <div class="source-note">Notatene · avsnitt 1.2.10 · s. 17–18</div>
 
       <div class="oppgave" data-quiz id="oppg-intervju">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.10 · s. 16</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.10 · s. 17</span></div>
         <div class="o-text"><p>En masterstudent blir invitert til jobbintervju som ML-utvikler og får spørsmålet: «Vi har et datasett fra det norske helsevesenet, og skal lage en modell som klassifiserer friske og syke personer. Modellen vår får en treffsikkerhet (accuracy) på 99 %, men den klarer nesten ikke å identifisere syke personer. Hva har skjedd?» Hva vil du svare?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -1430,7 +1430,7 @@ plt.show()</code></pre>
       <p>De to kan kombineres: undersample den overrepresenterte og oversample den underrepresenterte klassen, slik at resultatet er balansert.</p>
 
       <div class="oppgave" data-quiz id="oppg-resampling">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.10 · s. 17</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.2.10 · s. 18</span></div>
         <div class="o-text"><p>Vi har et datasett med 100 datapunkter fra den ene klassen og 1000 fra den andre. Hvor mange datapunkter får vi totalt om vi gjør kun undersampling? Hvor mange får vi totalt om vi gjør kun oversampling, og hvor mange duplikater får vi?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>

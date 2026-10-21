@@ -6,7 +6,14 @@ varianten ligger i `eksamen.json`.
 
 **Utvidet 8. oktober 2026** med deltemaene 2.4 (backpropagation), 2.5 (bygge og trene i Keras) og 3.1 (clustering),
 etter notatene datert 7. oktober 2026 (47 sider, avsnitt 1.1–3.1.4). **Utvidelsen er et forslag og venter på
-godkjenning fra brukeren.** Resten (PCA/t-SNE, anomali, RL, XAI, etikk) står fortsatt som «senere».
+godkjenning fra brukeren.**
+
+**Utvidet 21. oktober 2026** med 2.5 (stochastic gradient descent; Keras-avsnittet heter nå 2.6), 3.2 (PCA og t-SNE),
+3.3 (anomalideteksjon) og kapittel 4 (reinforcement learning), etter notatene datert 19. oktober 2026 (62 sider).
+**Også denne utvidelsen er et forslag som venter på godkjenning.** Gjenstår som «senere»: forklarbarhet (LIME, SHAP)
+og etikk (Ord. 2024 spm. 34–39). Merk: i 19. oktober-versjonen er nesten alle «Oppgave:»-avsnittene i kapittel 1–3.1
+fjernet fra notatene; boksene på sidene er beholdt fordi de er eksamensrelevante, og likningsnumrene er renummerert
+(gammel 51–96 → n−1, 98–104 → n−2).
 
 ## Status
 
@@ -15,6 +22,7 @@ godkjenning fra brukeren.** Resten (PCA/t-SNE, anomali, RL, XAI, etikk) står fo
 - [x] `eksamen.json` fylt ut
 - [x] Godkjent av brukeren: 26. september 2026
 - [ ] Utvidelse 8. oktober 2026 (2.4, 2.5, 3.1): forslag, ikke godkjent
+- [ ] Utvidelse 21. oktober 2026 (2.5 SGD, 2.6, 3.2, 3.3, 4): forslag, ikke godkjent
 - [ ] Konteeksamener og eldre sett: mangler
 
 ## Eksamensform
@@ -34,9 +42,9 @@ iterasjoner per epoke, Shapley-verdier).
 
 ## Hva settene dekker, og hva notatene dekker så langt
 
-Settene dekker hele kurset. Notatene (7. okt.) dekker veiledet læring (kap. 1), nevrale nettverk (kap. 2, nå med
-backpropagation og Keras) og clustering (3.1). Resten av eksamensstoffet kommer i senere versjoner av notatene,
-og analysen må utvides da.
+Settene dekker hele kurset. Notatene (19. okt.) dekker veiledet læring (kap. 1), nevrale nettverk (kap. 2, med
+backpropagation, SGD og Keras), uveiledet læring (kap. 3: clustering, PCA/t-SNE, anomalideteksjon) og reinforcement
+learning (kap. 4, uten DQN). Bare forklarbarhet og etikk gjenstår.
 
 | Tema | Ord. 2024 (spm.) | Ord. 2025 (del.spm.) | I notatene? |
 |---|---|---|---|
@@ -51,13 +59,13 @@ og analysen må utvides da.
 | Ensemble: bagging, random forest, boosting, bootstrap vs CV | 16, 17, 18 | 3.1, 3.2, 3.3, 3.4 | 1.5 (ja, nytt 22. sept.) |
 | Perceptron, Heaviside, XOR, sigmoid, backpropagation | 19 | 5.1, 5.2, 5.3, 5.4 | 2.1–2.4 (ja; backprop nytt 7. okt.) |
 | Klynging: k-means, DBSCAN | 22, 27, 29, 30 | 6.1–6.4 | 3.1 (ja, nytt 7. okt.) |
-| Dimensjonsreduksjon: PCA, t-SNE, KL | 24, 25, 26, 28 | 7.1, 7.2, 7.3 | nei, kommer |
-| Anomalideteksjon, Isolation Forest | 21, 23 | 7.4 | nei, kommer |
-| Reinforcement learning, Q-learning, DQN | 31, 32, 33 | 8.1–8.4, 9.1–9.4, 10.4 | nei, kommer |
+| Dimensjonsreduksjon: PCA, t-SNE, KL | 24, 25, 26, 28 | 7.1, 7.2, 7.3 | 3.2 (ja, nytt 19. okt.) |
+| Anomalideteksjon, Isolation Forest | 21, 23 | 7.4 | 3.3 (ja, nytt 19. okt.) |
+| Reinforcement learning, Q-learning, DQN | 31, 32, 33 | 8.1–8.4, 9.1–9.4, 10.4 | 4 (ja, nytt 19. okt.); DQN (9.1–9.3, 10.4) er ikke i notatene |
 | Forklarbarhet: LIME, SHAP, Shapley-verdier | 34, 35, 36 | – | nei, kommer |
 | Etikk, AI Act | 37, 38, 39 | – | nei, kommer |
 
-Omtrent 60 % av hvert sett ligger i det notatene dekker nå (24 av 39 spørsmål i 2024, 24 av 40 i 2025).
+Hele Ord. 2025 og 33 av 39 spørsmål i Ord. 2024 ligger nå i det notatene dekker (unntaket er LIME/SHAP og etikk).
 
 ## Tilgjengelige eksamenssett
 
@@ -96,11 +104,20 @@ Type: flervalg er formen for alt; «regn» betyr at spørsmålet krever utregnin
 | 2.2 Aktiveringsfunksjoner | 2 | flervalg | O25 · 5.3 | «Konsekvens av sigmoid i stedet for step?» (deriverbar, kan trenes med GD) |
 | 2.3 Arkitektur | 2 | flervalg | (ingen direkte; telle noder/vekter er bakgrunn for 5.x) | Antall noder i input/output-lag, matriseformen (101), hvert lag er en ikke-lineær transformasjon |
 | 2.4 Backpropagation | 2 | flervalg | O24 · 19; O25 · 5.4 | «Hovedformålet med backpropagation?» (beregne hvordan hver vekt påvirker tapet via kjerneregelen bakover; justere vektene). Nytt i notatene 7. okt.: intuisjonen med ønskede endringer lag for lag |
-| 2.5 Bygge, trene og predikere (Keras) | 3 | kode | ingen | Øvingsstoff: `Sequential`, `Dense`, `compile`/`fit`/`predict`/`evaluate`, `batch_size`, `epochs`, early stopping på `val_loss`. Knyttes til 1.2.3 (batch/epoke) og 1.4.3 (early stopping) |
+| 2.5 Stochastic gradient descent | 1 | regn, flervalg | O24 · 13, 14 (står som bokser under 1.2.3) | «Hva angir batch size?», «10 000 punkter, batch 500: iterasjoner per epoke?» (N/B = 20). Full-batch GD 1 oppdatering per epoke, SGD N, mini-batch N/B; batch size er en hyperparameter; støyete gradient → lavere læringsrate |
+| 2.6 Bygge, trene og predikere (Keras) | 3 | kode | ingen | Øvingsstoff: `Sequential`, `Dense`, `compile`/`fit`/`predict`/`evaluate`, `batch_size`, `epochs`, early stopping på `val_loss`. Knyttes til 1.2.3 (batch/epoke) og 1.4.3 (early stopping) |
 | 3.1.1 k-means: algoritmen, initialisering, k-means++, valg av k, metrikker | 1 | flervalg | O24 · 22 (del 1), 29; O25 · 6.1, 6.2, 6.3 | «Hva minimerer k-means?» (sum av kvadrerte avstander punkt–sentroide, inertia); «Hvorfor k-means++ framfor lengst-unna?» (sprer sentroidene med tilfeldighet, havner nær midten av klyngene); «Hvorfor er k vanskelig?» (ulike metrikker foreslår ulike k); «Når bruke k-means?» (avstand innad < avstand mellom klynger); «Hvilken kategori?» (sentroidebasert) |
 | 3.1.2 DBSCAN: kjernepunkt, ε, min_samples, outliers | 1 | flervalg, lese plott | O24 · 22 (del 2), 27, 30; O25 · 6.4 | «Hva gjør DBSCAN robust?» (identifiserer outliers, putter dem ikke i klynger); «Samme klynge når?» (kjede av punkter med steg ≤ ε; identiske vektorer også godkjent); «Smiley splittet i mange små klynger: hvilken parameterfeil?» (for lav ε); «Hvilken kategori?» (tetthetsbasert) |
 | 3.1.3 Hovedkategorier | 2 | flervalg | O24 · 22 | Sentroide-, tetthets-, fordelings- og hierarkibasert; de to siste bare som navn |
 | 3.1.4 Dimensjonsforbannelsen igjen | 3 | – | ingen | Concentration of distances; forklarer hvorfor både k-means og DBSCAN sliter i høye dimensjoner. Én linje under «Lavere» |
+| 3.2.1 PCA | 1 | flervalg, regn | O24 · 24, 25; O25 · 7.1 | «Fordelen ved PCA?» (ukorrelerte komponenter, færre dimensjoner, mest mulig varians bevart); «Hva er prinsipalkomponentene?» (egenvektorene til kovariansmatrisen); «Hvorfor ortogonale?» (hver komponent forklarer ulik del av variansen uten overlapp). Regn: kovariansmatrise og egenverdier for 2×2 |
+| 3.2.2 SNE / t-SNE, KL-divergens | 1 | flervalg | O24 · 26, 28; O25 · 7.2, 7.3 | «Vanlig bruk av t-SNE?» (visualisering); «Rollen til KL i t-SNE?» (måler forskjell mellom P i høy og Q i lav dimensjon); «Hensikten med å minimere KL?» (bevare nabolag); «Hvorfor ikke på nye data?» (optimaliserer posisjonene direkte, ingen transformasjon) |
+| 3.3 Anomalideteksjon: k-means, DBSCAN, Isolation Forest | 1 | flervalg | O24 · 21, 23; O25 · 7.4 | «Mange falske positive?» (normale punkter stemplet som anomalier); «Hva brukes Isolation Forest til?» (isolere punkter ved å dele dataene gjennom beslutningstrær); «Hvorfor høyere score for anomalier?» (isoleres tidlig, kortere sti; lav tetthet også godkjent) |
+| 4.1 MDP, Markov-egenskapen, policy | 1 | flervalg | O24 · 31; O25 · 8.1, 8.2 | «Hva er en policy?» (strategi/tabell/funksjon som gir handling for hver tilstand); «Markov-egenskapen?» (neste tilstand avhenger bare av nåværende tilstand og handling) |
+| 4.2 Q-verdier, Bellman-likningen, α og γ | 1 | flervalg, regn | O24 · 32; O25 · 8.4 | «Høy γ medfører?» (læringen domineres av estimatet av fremtidige tilstander); «Rollen til γ?» (hvor sterkt fremtidige belønninger påvirker Q). Regn ett Bellman-steg for hånd |
+| 4.3 Environments | 3 | – | ingen | reset/step, tre-på-rad-miljøet. Øvingsstoff |
+| 4.4 Agenter: ε-greedy, exploration/exploitation, reward hacking | 1 | flervalg | O25 · 8.3, 9.4 | «Hensikten med ε?» (av og til tilfeldig handling for å utforske); «Agent finner uventet høy belønning?» (utnytter svakheter i belønningsdefinisjonen; ikke i notatene, forslag) |
+| 4.5 Q-tabell, loss vs reward, DQN | 1 | flervalg, kode | O24 · 33; O25 · 9.1, 9.2, 9.3, 10.4 | «Loss og reward?» (ingen nødvendig sammenheng); DQN: target network (stabile treningsmål), replay buffer (mindre korrelerte eksempler), vektdeling (én oppdatering endrer mange Q-verdier), `random.sample(buffer, k=32)`. DQN er ikke i notatene; svarene er merket forslag |
 
 ## Tidligere eksamensoppgaver som skal inn som `.oppgave`-bokser
 
@@ -161,7 +178,29 @@ riktig bokstav merket «Svar fra løsningsforslaget» og en begrunnelse skrevet 
 | O24 · 27 hva gjør DBSCAN robust | 3.1.2 | kap3/clustering.html#dbscan | ferdig |
 | O24 · 30 DBSCAN smiley, for lav ε | 3.1.2 | kap3/clustering.html#dbscan | ferdig |
 | O24 · 22 kategori for k-means og DBSCAN | 3.1.3 | kap3/clustering.html#kategorier | ferdig |
-| O24 · 21, 23–26, 28, 31–39, O25 · 7–9, 10.4 (PCA, t-SNE, anomali, RL, XAI, etikk) | senere kap. | – | venter på notatene |
+| O24 · 24 fordelen ved PCA | 3.2.1 | kap3/dimensjonsreduksjon.html#pca | ferdig |
+| O24 · 25 prinsipalkomponentene | 3.2.1 | kap3/dimensjonsreduksjon.html#pca | ferdig |
+| O25 · 7.1 hvorfor ortogonale | 3.2.1 | kap3/dimensjonsreduksjon.html#pca | ferdig |
+| O24 · 26 bruk av t-SNE | 3.2.2 | kap3/dimensjonsreduksjon.html#tsne | ferdig |
+| O24 · 28 KL-divergens i t-SNE | 3.2.2 | kap3/dimensjonsreduksjon.html#tsne | ferdig |
+| O25 · 7.3 hensikten med KL-minimering | 3.2.2 | kap3/dimensjonsreduksjon.html#tsne | ferdig |
+| O25 · 7.2 t-SNE på nye data | 3.2.2 | kap3/dimensjonsreduksjon.html#sammenlikning | ferdig |
+| O24 · 21 mange falske positive | 3.3 | kap3/anomali.html#intro | ferdig |
+| O24 · 23 Isolation Forest | 3.3.3 | kap3/anomali.html#isolation-forest | ferdig |
+| O25 · 7.4 hvorfor anomalier får høyere score | 3.3.3 | kap3/anomali.html#isolation-forest | ferdig |
+| O24 · 31 policy | 4.1 | kap4/rl.html#mdp | ferdig |
+| O25 · 8.2 policy | 4.1 | kap4/rl.html#mdp | ferdig |
+| O25 · 8.1 Markov-egenskapen | 4.1 | kap4/rl.html#mdp | ferdig |
+| O24 · 32 Bellman, høy γ | 4.2 | kap4/rl.html#q-verdier | ferdig |
+| O25 · 8.4 rollen til γ | 4.2 | kap4/rl.html#q-verdier | ferdig |
+| O25 · 8.3 ε-greedy | 4.4 | kap4/rl.html#agenter | ferdig |
+| O24 · 33 loss og reward | 4.5 | kap4/rl.html#q-tabell | ferdig |
+| O25 · 9.1 target network | DQN | kap4/rl.html#dqn | ferdig (forslag) |
+| O25 · 9.2 replay buffer | DQN | kap4/rl.html#dqn | ferdig (forslag) |
+| O25 · 9.3 nettverk vs tabell | DQN | kap4/rl.html#dqn | ferdig (forslag) |
+| O25 · 9.4 reward hacking | 4.4 | kap4/rl.html#dqn | ferdig (forslag) |
+| O25 · 10.4 random.sample for minibatch | DQN | kap4/koding.html#oppg-o25-10-4 | ferdig |
+| O24 · 34–39 (LIME, SHAP, Shapley, etikk, AI Act) | senere kap. | – | venter på notatene |
 
 ## Hva som bevisst nedprioriteres
 
@@ -179,6 +218,10 @@ Ikke spurt i noen av settene, og lagt under «Lavere» i Eksamensfokus-boksene:
 - 3.1.1: Stirling-utledningen (103)–(104) av sannsynligheten k!/kᵏ for god tilfeldig initialisering; bare konklusjonen (avtar eksponensielt med k, derfor k-means++) trengs. `MiniBatchKMeans`-koden.
 - 3.1.2: historikken (Ester m.fl. 1996).
 - 3.1.4: koden som simulerer avstander i enhetskuben; bare konklusjonen (avstandene vokser, spredningen krymper, klynger kan ikke være kompakte) trengs.
+- 2.5: Robbins og Monro (1951), «dyplæringsfolk».
+- 3.2.1: Pearson 1901, S-kurve- og MNIST-koden (ligger på 3D), perplexity-detaljer.
+- 3.3: percentile-detaljer og contamination-verdien.
+- 4: AlphaZero, Gym-miljøene, render-funksjonen, gitlab-lenken, heatmap-plottene av Q-verdier utover tomt brett.
 
 Eksisterende sider (1A–1C) er skrevet før analysen og inneholder fortsatt alt dette. De er ikke kuttet ned;
 Eksamensfokus-boksen sier hva som kan hoppes over.

@@ -173,7 +173,7 @@ plt.plot(modell.losses); plt.plot(modell.train_accuracies); plt.show()   # 9. pl
     <div class="container">
       <div class="section-badge">03 · Preprosessering</div>
       <h2>Rydde, enkode, <em>skalere</em>, plotte</h2>
-      <div class="source-note">Notatene · avsnitt 1.1 · s. 4</div>
+      <div class="source-note">Notatene · avsnitt 1.1 · s. 5</div>
 
       <p class="dropcap">Titanic-tabellen har tre problemer før den kan plottes: manglende verdi (rad 6), strenger (Sex) og ulik størrelsesorden (Age mot Pclass). <span class="term" data-term="preprosessering">Preprosesseringen</span> løser dem i tur og orden.</p>
 
@@ -213,7 +213,7 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">04 · Logistisk regresjon fra bunnen</div>
       <h2>Klassen du skal <em>fylle ut</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.3 · s. 8–9 (skjelettet og fit/predict); metodekroppene er forslag</div>
+      <div class="source-note">Notatene · avsnitt 1.2.3 · s. 9–10 (skjelettet og fit/predict); metodekroppene er forslag</div>
 
       <p class="dropcap">Notatene gir klassen med tomme metoder og sier at du skriver kroppene selv. Under er skjelettet slik det står, og deretter et forslag til hver metode, direkte fra formlene på 1A: sigmoid (3), cross entropy (11), gradientene (22) og (25), oppdateringen (13). Behold navnene <span class="term" data-term="fit-predict">fit</span> og <code>predict</code>; de er standard i alle biblioteker.</p>
 
@@ -305,7 +305,7 @@ plt.show()</code></pre>
     <div class="container">
       <div class="section-badge">05 · Evaluering</div>
       <h2>Confusion matrix, metrikker og <em>ROC for hånd</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.4–1.2.5 · s. 9–12 (tabell 4, figur 5–7); koden er forslag</div>
+      <div class="source-note">Notatene · avsnitt 1.2.4–1.2.5 · s. 10–13 (tabell 4, figur 5–7); koden er forslag</div>
 
       <p class="dropcap">Notatene definerer <span class="term" data-term="confusion-matrix">confusion matrix</span> og metrikkene i tabell 4, men gir ikke kode. Alt kan regnes med fire tellinger, og ROC-kurven er de samme fire tellingene gjentatt for mange terskler.</p>
 
@@ -351,7 +351,7 @@ def auc(points):                                    # arealet under kurven, trap
     <div class="container">
       <div class="section-badge">06 · Ubalanserte data</div>
       <h2>Terskel, resampling og <em>vektet tap</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.10 · s. 16–17; resampling-koden er forslag</div>
+      <div class="source-note">Notatene · avsnitt 1.2.10 · s. 17–18; resampling-koden er forslag</div>
 
       <p class="dropcap">Tre grep, i økende inngripen: flytt terskelen (endrer ikke modellen), endre dataene (<span class="term" data-term="undersampling">undersampling</span> / <span class="term" data-term="oversampling">oversampling</span>), eller endre tapsfunksjonen (<span class="term" data-term="vektet-tapsfunksjon">vektet cross entropy</span>).</p>
 
@@ -388,7 +388,7 @@ def compute_gradients(self, x, y, y_pred, w0=1.0, w1=1.0):
     <div class="container">
       <div class="section-badge">07 · Naïv Bayes i kode</div>
       <h2>Tellinger blir <em>sannsynligheter</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.2.7–1.2.8 · s. 13–15 (crosstab-koden); klassifikatoren er forslag</div>
+      <div class="source-note">Notatene · avsnitt 1.2.7–1.2.8 · s. 14–16 (crosstab-koden); klassifikatoren er forslag</div>
 
       <p class="dropcap">Med kategoriske features er <span class="term" data-term="naiv-bayes">naïv Bayes</span> bare tellinger: prior \(p(C_k)\) er andelen per klasse, og hver \(p(x_i \mid C_k)\) er en normalisert krysstabell. Kontinuerlige features (Age) deles først i bins med <code>np.histogram</code>.</p>
 
@@ -420,7 +420,7 @@ df["Age_bin"] = np.digitize(df["Age"], np.histogram(df["Age"], bins=10)[1])   # 
     <div class="container">
       <div class="section-badge">08 · Beslutningstrær</div>
       <h2>Gini, entropi og <em>sklearn-treet</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.3.2–1.3.4 · s. 18–20</div>
+      <div class="source-note">Notatene · avsnitt 1.3.2–1.3.4 · s. 19–21</div>
 
       <p class="dropcap">I dette kurset bygger du ikke trær selv, men du bør kunne pseudokoden, og du bruker <code>DecisionTreeClassifier</code> i øvingene. Splitt-kriteriene er to små funksjoner; bruk dem til å sjekke regnestykkene fra 1B.</p>
 
@@ -481,18 +481,18 @@ plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train); plt.show()      # beslutni
     <div class="container">
       <div class="section-badge">09 · Regresjon</div>
       <h2>Gjenbruk, polynomer, <em>validering</em> og k-fold</h2>
-      <div class="source-note">Notatene · avsnitt 1.4.1–1.4.6 · s. 20–32</div>
+      <div class="source-note">Notatene · avsnitt 1.4.1–1.4.6 · s. 21–31</div>
 
-      <p class="dropcap">Lineær regresjon er logistisk regresjon uten sigmoid og med <span class="term" data-term="mse">MSE</span>. Tre metoder endres; resten av klassen fra 04 beholdes. Gradientene er (55) og (56), oppdateringen (57).</p>
+      <p class="dropcap">Lineær regresjon er logistisk regresjon uten sigmoid og med <span class="term" data-term="mse">MSE</span>. Tre metoder endres; resten av klassen fra 04 beholdes. Gradientene er (54) og (55), oppdateringen (56).</p>
 
 <pre class="pseudo"><code>class LinearRegression(LogisticRegression):        # arv alt, bytt tre metoder
     def _linear(self, x):
         return np.matmul(x, self.weights) + self.bias   # ingen sigmoid
 
-    def _compute_loss(self, y, y_pred):            # likning (52)
+    def _compute_loss(self, y, y_pred):            # likning (51)
         return np.mean((y - y_pred) ** 2) / 2
 
-    def compute_gradients(self, x, y, y_pred):     # likning (55), (56): samme form som logistisk!
+    def compute_gradients(self, x, y, y_pred):     # likning (54), (55): samme form som logistisk!
         diff = y_pred - y
         return np.matmul(x.transpose(), diff) / len(y), np.mean(diff)
 
@@ -503,7 +503,7 @@ plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train); plt.show()      # beslutni
 <pre class="pseudo"><code>poly = PolynomialFeatures(degree=2, include_bias=False)   # lager [x, x^2]
 X_train_p = poly.fit_transform(X_train)                    # fit + transform på trening
 X_test_p  = poly.transform(X_test)                         # bare transform på test
-# så vanlig lineær regresjon på X_train_p: y = b0 + b1 x + b2 x^2 (likning 58)</code></pre>
+# så vanlig lineær regresjon på X_train_p: y = b0 + b1 x + b2 x^2 (likning 57)</code></pre>
 
       <h3>Treningsløkke med valideringsdata</h3>
       <p>To splitter gir tre sett. Løkka under regner tap på både trening og validering hver epoke, som i figur 14.</p>
@@ -571,7 +571,7 @@ for thr in thresholds:
     <div class="container">
       <div class="section-badge">10 · Ensembler</div>
       <h2>Bootstrap, bagging og boosting <em>i kode</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.5 · s. 32–34 (læringsregelen for gradient boosting); resten er forslag</div>
+      <div class="source-note">Notatene · avsnitt 1.5 · s. 31–32 (læringsregelen for gradient boosting); resten er forslag</div>
 
       <p class="dropcap">Notatene gir bare læringsregelen for gradient boosting og navnene på bibliotekene. I øvingene bruker du sklearn; pseudokoden under viser hva som skjer inni.</p>
 
@@ -636,7 +636,7 @@ ada = AdaBoostClassifier(n_estimators=50).fit(X_train, y_train)                 
         <div class="q-text">Du skal bruke samme <code>LogisticRegression</code>-klasse til lineær regresjon. List opp nøyaktig hvilke linjer som endres.</div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
-          <div class="answer">Tre steder: (1) sigmoid fjernes fra <code>fit</code> og <code>predict</code>, slik at <code>y_pred = lin_model</code>; (2) <code>_compute_loss</code> bytter cross entropy mot <code>np.mean((y - y_pred)**2) / 2</code>; (3) <code>predict</code> returnerer tallet, ikke <code>[1 if _y &gt; 0.5 ...]</code>. <code>compute_gradients</code> og <code>update_parameters</code> er <em>uendret</em>, siden (55)–(56) har samme form som (22) og (25). Accuracy gir ikke mening for regresjon; bruk MSE som metrikk.</div>
+          <div class="answer">Tre steder: (1) sigmoid fjernes fra <code>fit</code> og <code>predict</code>, slik at <code>y_pred = lin_model</code>; (2) <code>_compute_loss</code> bytter cross entropy mot <code>np.mean((y - y_pred)**2) / 2</code>; (3) <code>predict</code> returnerer tallet, ikke <code>[1 if _y &gt; 0.5 ...]</code>. <code>compute_gradients</code> og <code>update_parameters</code> er <em>uendret</em>, siden (54)–(55) har samme form som (22) og (25). Accuracy gir ikke mening for regresjon; bruk MSE som metrikk.</div>
         </div>
       </div>
 
@@ -660,7 +660,7 @@ ada = AdaBoostClassifier(n_estimators=50).fit(X_train, y_train)                 
 
       <nav class="page-nav">
         <a href="ensemble.html" class="prev"><div class="pn-label">← Forrige · 1D</div><div class="pn-title">Ensemble-modeller</div></a>
-        <a href="../kap2/koding.html" class="next"><div class="pn-label">Neste · 2B</div><div class="pn-title">Koding: nevrale nettverk →</div></a>
+        <a href="../kap2/koding.html" class="next"><div class="pn-label">Neste · 2C</div><div class="pn-title">Koding: nevrale nettverk →</div></a>
       </nav>
     </div>
   </section>

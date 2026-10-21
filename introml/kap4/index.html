@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 4 — Reinforcement learning</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .concept-map .b { fill: #f4f1ea; stroke: #1a1612; stroke-width: 1.1; }
+  .concept-map .bh { fill: rgba(27,94,90,0.14); stroke: #1b5e5a; stroke-width: 1.2; }
+  .concept-map .bw { fill: rgba(160,82,45,0.12); stroke: #a0522d; stroke-width: 1.1; }
+  .concept-map .lbl { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1a1612; }
+  .concept-map .lbl-c { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1b5e5a; font-weight: 600; }
+  .concept-map .cap { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; fill: #6b6257; }
+  .concept-map .e { stroke: #6b6257; stroke-width: 1.1; fill: none; marker-end: url(#ar); }
+  .concept-map .e-faded { stroke: #a39886; stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Reinforcement learning">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · Notater 4–4.5 · s. 56–62 · under arbeid</div>
+      <h1>Reinforcement <em>learning</em></h1>
+      <p class="lede">Maskinlæring uten fasit, bare belønning. En agent velger actions i et environment, får reward og nye states, og skal finne en policy som maksimerer kumulativ reward. Kurset bruker Q-learning: Q-verdier for state–action-par som oppdateres med Bellman-likningen og brukes ε-greedy. Tre-på-rad som eksempel hele veien, og et nevralt nettverk (DQN) som agent til slutt.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringssti">Læringssti</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#begrepskart">Begrepskart</a></li>
+        <li><span class="toc-num">05</span><a href="#oppgaver">Oppgaver</a></li>
+        <li><span class="toc-num">06</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ─────────── Helhetsbilde ─────────── -->
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 1 og 2 hadde en target per datapunkt, kapittel 3 hadde ingenting. <span class="term" data-term="reinforcement-learning">Reinforcement learning</span> har noe midt imellom: en <span class="term" data-term="reward">reward</span> fra miljøet, ofte først når episoden er over, og data som agenten lager selv ved å handle. Alt annet følger av det.</p>
+
+      <ul>
+        <li><strong>RL-loopen</strong>: state inn, action ut, reward og ny state tilbake. Agenten ser bare nåværende state; det er <span class="term" data-term="markov-egenskapen">Markov-egenskapen</span>. Målet er en <span class="term" data-term="policy">policy</span> som maksimerer kumulativ reward, og for å måle «kumulativ» trengs en verdifunksjon.</li>
+        <li><strong>Q-verdier</strong> er verdifunksjonen kurset bruker: forventet fremtidig reward av action \(A\) i state \(S\). De oppdateres med <span class="term" data-term="bellman-likningen">Bellman-likningen</span> (115), der \(\alpha\) sier hvor mye gammel verdi beholdes og \(\gamma\) hvor sterkt estimatet for fremtiden teller. Høy \(\gamma\): fremtiden dominerer.</li>
+        <li><strong>Q-learning</strong> i praksis: en Q-tabell som starter med nuller, en ε-greedy agent som utforsker tidlig og utnytter sent (epsilon decay), og <code>learn</code> etter hvert trekk. Rewarden kommer ved slutten og siver bakover gjennom tabellen, ett trekk per parti.</li>
+        <li><strong>Eksamen</strong> har spurt om policy (to ganger), Markov-egenskapen, høy \(\gamma\) (to ganger), \(\epsilon\), loss vs. reward, og i 2025 fire spørsmål om DQN (target network, replay buffer, vektdeling, reward hacking) pluss <code>random.sample</code> for en minibatch. DQN er dekket som forslag på 4A.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Status</span>
+        <p>Siden bygger på notatene datert 19. oktober 2026, som dekker avsnitt 4–4.5 og nevner et nevralt nettverk som agent bare i forbifarten. Deep Q-learning (target network, replay buffer) er skrevet som forslag ut fra eksamensspørsmålene, og oppdateres når notatene utvides. Eksamensanalysen for kapittel 4 ble skrevet 21. oktober 2026 og er et forslag som venter på godkjenning.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Læringssti ─────────── -->
+  <section id="laeringssti">
+    <div class="container">
+      <div class="section-badge">Læringssti</div>
+      <h2>Anbefalt rekkefølge</h2>
+      <p class="section-intro">Forkunnskaper: læringsrate og tapsfunksjon fra 1A, nevrale nettverk fra 2A (bare for DQN). Les 4A i rekkefølge; 4B er til øving 3.</p>
+
+      <div class="path-grid">
+        <div class="path-step"><div class="num">01</div><div><div class="title"><a href="rl.html#intro">Hva RL er</a></div><div class="desc">Agent, environment, action, reward. Hva som skiller RL fra veiledet og uveiledet læring.</div></div><div class="min">~3 min</div></div>
+        <div class="path-step"><div class="num">02</div><div><div class="title"><a href="rl.html#mdp">MDP og policy</a></div><div class="desc">RL-loopen, Markov-egenskapen, MDP som 4-tuppel, policy π(A | S), verdifunksjon. Tre eksamensoppgaver og «les to setninger tre ganger».</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">03</div><div><div class="title"><a href="rl.html#q-verdier">Q-verdier</a></div><div class="desc">Bellman-likningen (115) ledd for ledd, α og γ, regneeksempel og kalkulator. Verdi er ikke reward.</div></div><div class="min">~9 min</div></div>
+        <div class="path-step"><div class="num">04</div><div><div class="title"><a href="rl.html#environments">Environments</a></div><div class="desc">reset og step, done, tre-på-rad som streng. Kort; koden ligger på 4B.</div></div><div class="min">~4 min</div></div>
+        <div class="path-step"><div class="num">05</div><div><div class="title"><a href="rl.html#agenter">Agenter</a></div><div class="desc">Exploration factor ε, explore vs. exploit, ε-greedy, epsilon decay. Dra i decay-plottet.</div></div><div class="min">~7 min</div></div>
+        <div class="path-step"><div class="num">06</div><div><div class="title"><a href="rl.html#q-tabell">Q-tabell</a></div><div class="desc">Læring gjennom erfaring, loss vs. reward, Q-verdiene for det tomme brettet. Kjør gridworld-agenten én episode om gangen.</div></div><div class="min">~8 min</div></div>
+        <div class="path-step"><div class="num">07</div><div><div class="title"><a href="rl.html#dqn">Deep Q-learning</a></div><div class="desc">Forslag: vektdeling, target network, replay buffer, reward hacking. Fire eksamensoppgaver fra 2025.</div></div><div class="min">~5 min</div></div>
+        <div class="path-step"><div class="num">08</div><div><div class="title"><a href="koding.html#rl-loop">Koding (til øvingen)</a></div><div class="desc">RL-loop, TicTacToe-klassen, Player med choose_action og learn, update_exp_factor, replay buffer.</div></div><div class="min">~25 min</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── Deler ─────────── -->
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="rl.html" class="subpage-card">
+          <span class="sp-icon">4A</span>
+          <div class="sp-info">
+            <div class="sp-title">Reinforcement learning: MDP, Q-verdier og Q-learning</div>
+            <div class="sp-desc">Notater 4–4.5: RL-loopen og Markov-egenskapen, MDP og policy, Bellman-likningen med α og γ, environments, ε-greedy og epsilon decay, Q-tabellen og tre-på-rad, Deep Q-learning som forslag. 11 eksamensoppgaver, 4 oppgaver fra notatene, 3 interaktive widgeter.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="koding.html" class="subpage-card">
+          <span class="sp-icon">4B</span>
+          <div class="sp-info">
+            <div class="sp-title">Koding: Q-learning for tre-på-rad</div>
+            <div class="sp-desc">Øvingsstoff: env.reset/env.step og RL-loopen, TicTacToe som klasse, Player med Q-tabell, choose_action i tabell- og nettverksvariant, learn linje for linje mot (115), update_exp_factor, replay buffer med random.sample. 1 eksamensoppgave.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <!-- ─────────── Begrepskart ─────────── -->
+  <section id="begrepskart">
+    <div class="container">
+      <div class="section-badge">Begrepskart</div>
+      <h2>Hvordan det henger <em>sammen</em></h2>
+      <p class="section-intro">Loopen i midten, det som må læres under den. Til venstre antakelsene og parametrene, til høyre det eksamen spør om.</p>
+
+      <figure class="concept-map">
+        <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" aria-label="Begrepskart for kapittel 4">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
+            </marker>
+          </defs>
+
+          <rect class="bh" x="290" y="18" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="38" text-anchor="middle">RL-loopen</text>
+          <text class="cap" x="380" y="54" text-anchor="middle">state → action → reward, ny state</text>
+
+          <rect class="bh" x="290" y="112" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="132" text-anchor="middle">Q-verdier · Bellman (115)</text>
+          <text class="cap" x="380" y="148" text-anchor="middle">Q ← (1−α)Q + α(R + γ max Q)</text>
+
+          <rect class="bh" x="290" y="206" width="180" height="46" rx="6"/>
+          <text class="lbl-c" x="380" y="226" text-anchor="middle">Q-learning</text>
+          <text class="cap" x="380" y="242" text-anchor="middle">ε-greedy · learn hvert trekk · Q-tabell</text>
+
+          <path class="e" d="M380 64 L380 110"/>
+          <path class="e" d="M380 158 L380 204"/>
+
+          <rect class="b" x="40" y="18" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="38" text-anchor="middle">Markov · MDP · policy</text>
+          <text class="cap" x="135" y="54" text-anchor="middle">bare nåværende state teller · π(A | S)</text>
+          <path class="e-faded" d="M230 41 L290 41"/>
+
+          <rect class="b" x="40" y="112" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="132" text-anchor="middle">Verdi ≠ reward · α, γ</text>
+          <text class="cap" x="135" y="148" text-anchor="middle">reward fås, Q må læres</text>
+          <path class="e-faded" d="M230 135 L290 135"/>
+
+          <rect class="b" x="40" y="206" width="190" height="46" rx="6"/>
+          <text class="lbl" x="135" y="226" text-anchor="middle">Explore vs. exploit</text>
+          <text class="cap" x="135" y="242" text-anchor="middle">ε høy først, decay, liten ε &gt; 0 til slutt</text>
+          <path class="e-faded" d="M230 229 L290 229"/>
+
+          <rect class="bw" x="530" y="18" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="38" text-anchor="middle">Eksamen: policy, Markov</text>
+          <text class="cap" x="625" y="54" text-anchor="middle">O24 31 · O25 8.1, 8.2</text>
+          <path class="e-faded" d="M470 41 L530 41"/>
+
+          <rect class="bw" x="530" y="112" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="132" text-anchor="middle">Høy γ → fremtid dominerer</text>
+          <text class="cap" x="625" y="148" text-anchor="middle">O24 32 · O25 8.4 · regn ett steg</text>
+          <path class="e-faded" d="M470 135 L530 135"/>
+
+          <rect class="bw" x="530" y="206" width="190" height="46" rx="6"/>
+          <text class="lbl" x="625" y="226" text-anchor="middle">ε · loss ≠ reward · DQN</text>
+          <text class="cap" x="625" y="242" text-anchor="middle">O25 8.3 · O24 33 · O25 9.1–9.4, 10.4</text>
+          <path class="e-faded" d="M470 229 L530 229"/>
+
+          <rect class="b" x="290" y="282" width="180" height="40" rx="6" stroke-dasharray="4 3"/>
+          <text class="lbl" x="380" y="300" text-anchor="middle">Tre-på-rad (4B)</text>
+          <text class="cap" x="380" y="314" text-anchor="middle">env.reset/step · Player · learn</text>
+          <path class="e-faded" d="M380 252 L380 280"/>
+        </svg>
+        <figcaption>Heltrukne piler: fra loopen til det som læres. Stiplede: antakelser og parametre til venstre, eksamensspørsmålene til høyre.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────── Oppgaver ─────────── -->
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgaver</div>
+      <h2>Eksamensoppgaver og <em>«Oppgave:»</em>-avsnitt</h2>
+      <p class="section-intro">Alle boksene på 4A og 4B, lenket til stedet de står. Grønn status: svaret er fra notatene eller fra løsningsforslaget til eksamen. Gul: forslag skrevet for denne siden, eller fasit fra løsningsforslaget med begrunnelse som er forslag.</p>
+
+      <ul class="oppgave-index">
+        <li><a href="rl.html#oppg-o25-8-1"><span class="oi-ref">Ord. 2025 · 8.1</span><span>Hvilket utsagn beskriver best Markov-egenskapen?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-rl-loop"><span class="oi-ref">4.1 · s. 57</span><span>Tegn opp RL-loopen, antakelsene, hvordan agenten velger, og hvorfor det er et læringsregime.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="rl.html#oppg-o24-31"><span class="oi-ref">Ord. 2024 · 31</span><span>Hva er en policy i reinforcement learning?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-o25-8-2"><span class="oi-ref">Ord. 2025 · 8.2</span><span>Hvilket av følgende beskriver best hva en policy er?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-o24-32"><span class="oi-ref">Ord. 2024 · 32</span><span>Bellman-likningen: hva medfører en høy verdi av γ?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-o25-8-4"><span class="oi-ref">Ord. 2025 · 8.4</span><span>Hva er rollen til γ i Q-oppdateringen?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-o25-8-3"><span class="oi-ref">Ord. 2025 · 8.3</span><span>Hva er hensikten med utforskingsfaktoren ε i en ε-greedy agent?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-epsilon"><span class="oi-ref">4.4 · s. 59</span><span>Høy og lav ε; når er tilfeldige actions lurt; bør agenten slutte?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="rl.html#oppg-o24-33"><span class="oi-ref">Ord. 2024 · 33</span><span>Forholdet mellom loss under trening og reward fra miljøet?</span><span class="oi-status notes">Eksamen</span></a></li>
+        <li><a href="rl.html#oppg-exp-factor"><span class="oi-ref">4.5 · s. 61</span><span>update_exp_factor: hva skjer her? Plott exp_factor for ulike epsilon_decay.</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="rl.html#oppg-q-tomt-brett"><span class="oi-ref">4.5 · s. 61</span><span>Hva forteller Q-verdiene om hvor agenten setter første X?</span><span class="oi-status notes">Fra notatene</span></a></li>
+        <li><a href="rl.html#oppg-o25-9-1"><span class="oi-ref">Ord. 2025 · 9.1</span><span>Hovedgrunnen til at et target network brukes i DQN?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="rl.html#oppg-o25-9-2"><span class="oi-ref">Ord. 2025 · 9.2</span><span>Hvilket problem adresserer replay buffer primært?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="rl.html#oppg-o25-9-3"><span class="oi-ref">Ord. 2025 · 9.3</span><span>Utfordring med nevralt nettverk i stedet for Q-tabell?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="rl.html#oppg-o25-9-4"><span class="oi-ref">Ord. 2025 · 9.4</span><span>Agenten finner høy belønning som ikke var ment: hvorfor?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+        <li><a href="koding.html#oppg-o25-10-4"><span class="oi-ref">Ord. 2025 · 10.4</span><span>Replay buffer som liste: hvilken funksjon trekker en tilfeldig minibatch?</span><span class="oi-status forslag">Eksamen · forslag</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">Koden fra forelesningene, med ferdig trente agenter for X og O, ligger åpent. Verdt en halvtime før øving 3:</p>
+      <ul class="oppgave-index">
+        <li><a href="https://gitlab.com/Strumke/ntnu-lectures/-/tree/main/Tictactoe%20Q-learning" target="_blank" rel="noopener"><span class="oi-ref">4.4 · s. 59</span><span>Tictactoe Q-learning: kjør agentene, plott Q-verdiene for states underveis i et parti.</span><span class="oi-status forslag">Ekstern</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────── Quiz ─────────── -->
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapitlene</em></h2>
+      <p class="section-intro">Spørsmål som kobler kapittel 4 til kapittel 1 og 2.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">I veiledet læring (1A) er target en fast kolonne i datasettet. Hva spiller rollen som target når et nettverk trenes i Q-learning, og hva er problemet med det?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Targeten er <code>td_target</code> = \(R_{t+1} + \gamma \max_A Q(S_{t+1}, A)\), og den er laget av agentens <em>egne</em> estimater. Den er ikke fast: hver gang vektene oppdateres, endres \(\max_A Q(S_{t+1}, A)\), og dermed targeten. Nettverket jager et mål som flytter seg. Det er grunnen til target network i DQN, og til at tapet ikke sier noe sikkert om rewarden (Ord. 2024 spm. 33): et lavt tap betyr bare at estimatene er konsistente med hverandre.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Bellman-likningen har en læringsrate \(\alpha\), og gradient descent (1A) har en læringsrate \(\eta\). Hva er likt, og hva er den viktigste forskjellen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Likt: begge bestemmer hvor langt én oppdatering flytter parameteren mot noe bedre, og begge kan skrives «gammel verdi pluss steg»: \(Q + \alpha \cdot \texttt{td\_delta}\) og \(w - \eta \cdot \nabla L\). Forskjell: i Bellman er steget en direkte interpolasjon mellom gammel verdi og et mål, \((1-\alpha)Q + \alpha \cdot \texttt{td\_target}\), så \(\alpha = 1\) hopper rett til målet, som er helt greit i et deterministisk miljø. I gradient descent er steget proporsjonalt med gradienten, det finnes ikke noe «mål» å hoppe til, og \(\eta = 1\) kan divergere. Og Bellman oppdaterer én tabellcelle uten å røre de andre; gradient descent på et nettverk endrer alle vektene (vektdeling), som er nettopp utfordringen i DQN.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">I 2A trente vi et nevralt nettverk med mini-batcher fra et stokket datasett, uten target network eller replay buffer. Hvorfor trenger DQN begge deler når det tross alt er samme type nettverk?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">To antakelser fra veiledet læring ryker. (1) I 2A var treningseksemplene uavhengige og i tilfeldig rekkefølge; i RL kommer de som en sekvens fra én episode, sterkt korrelerte og preget av agentens nåværende policy. Trenes nettverket på dem i rekkefølge, overtilpasser det de nyeste erfaringene. Replay buffer med <code>random.sample</code> gjenskaper stokkingen. (2) I 2A var targetene faste tall fra datasettet; i RL er targeten \(R + \gamma \max_A Q(S_{t+1}, A)\), regnet ut av det samme nettverket som trenes, så den endrer seg for hver oppdatering. Target network fryser målet en stund. Begge er forsøk på å få RL-treningen til å likne det veiledede oppsettet nettverket egentlig er laget for. (Forslag / egen tolkning.)</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap3/koding.html" class="prev"><div class="pn-label">← Forrige · 3D</div><div class="pn-title">Koding: clustering, PCA og anomalier</div></a>
+        <a href="rl.html" class="next"><div class="pn-label">Start · 4A</div><div class="pn-title">Reinforcement learning: MDP, Q-verdier og Q-learning →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

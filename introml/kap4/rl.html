@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Reinforcement learning: MDP, Q-verdier og Q-learning — Kap 4</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  /* ─── Sidespesifikt ─── */
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .mcq-list { margin: 0.5rem 0 0; padding-left: 1.6rem; }
+  .mcq-list li { margin-bottom: 0.25rem; }
+  .tt { border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  .tt th, .tt td { border: 1px solid var(--line-soft); padding: 4px 10px; text-align: left; }
+  .tt th { background: var(--paper-dark); font-weight: 600; }
+  .fact-card .fc-key .katex { text-transform: none; letter-spacing: 0; }
+  /* RL-loop-figur */
+  .rl-fig { margin: 1rem 0 1.4rem; }
+  .rl-fig svg { width: 100%; max-width: 560px; display: block; margin: 0 auto; }
+  .rl-fig .bx { fill: var(--paper-dark); stroke: var(--ink); stroke-width: 1.2; }
+  .rl-fig .bxh { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; }
+  .rl-fig .t { font-family: var(--mono); font-size: 13px; fill: var(--ink); }
+  .rl-fig .c { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); }
+  .rl-fig .e { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#rl-ar); }
+  .rl-fig figcaption { font-family: var(--sans); font-size: 0.85rem; color: var(--ink-faded); text-align: center; margin-top: 0.4rem; }
+  /* tre-på-rad-brett */
+  .board { border-collapse: collapse; margin: 0.8rem auto; }
+  .board td { width: 72px; height: 54px; border: 1px solid var(--line); text-align: center; font-family: var(--mono); font-size: 0.95rem; position: relative; color: var(--ink); }
+  .board .bi { position: absolute; top: 3px; left: 5px; font-size: 0.62rem; color: var(--ink-faded); }
+  .board td.best { outline: 2px solid var(--warm); outline-offset: -2px; font-weight: 600; }
+  /* Bellman-stolper */
+  .bar-old { fill: #a39886; } .bar-r { fill: var(--warm); } .bar-f { fill: var(--accent); } .bar-new { fill: var(--green); }
+  /* gridworld */
+  .gw-cell { stroke: var(--line); stroke-width: 1; }
+  .gw-t { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  .gw-s { font-family: var(--mono); font-size: 8px; fill: var(--ink-faded); }
+  .gw-title { font-family: var(--mono); font-size: 10px; fill: var(--ink-faded); letter-spacing: 0.08em; text-transform: uppercase; }
+  .gw-path { fill: none; stroke: var(--warm); stroke-width: 2; stroke-dasharray: 4 3; }
+  .gw-arrow { font-family: var(--sans); font-size: 22px; fill: var(--accent); }
+  .gw-dot { fill: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4172</a>
+    <a href="./" class="nav-back">&larr; Kap 4</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Reinforcement learning">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · 4A · Notater 4–4.5 · s. 56–62 · ~40 min</div>
+      <h1>Reinforcement learning: <em>MDP, Q-verdier og Q-learning</em></h1>
+      <p class="lede">Maskinlæring uten fasit, bare belønning. En agent velger actions i et environment, får reward og nye states, og lærer en policy som maksimerer kumulativ reward. Kurset bruker Q-learning: en tabell (eller et nettverk) med Q-verdier som oppdateres med Bellman-likningen, og ε-greedy for å balansere utforsking og utnytting. Tre-på-rad hele veien som eksempel.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#intro"><span>01</span> Hva RL er</a>
+        <a href="#mdp"><span>02</span> MDP og policy</a>
+        <a href="#q-verdier"><span>03</span> Q-verdier</a>
+        <a href="#environments"><span>04</span> Environments</a>
+        <a href="#agenter"><span>05</span> Agenter</a>
+        <a href="#q-tabell"><span>06</span> Q-tabell</a>
+        <a href="#dqn"><span>07</span> Deep Q-learning</a>
+        <a href="#oppsummering"><span>08</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Bygger på eksamensanalysen (kilder/eksamensanalyse.md) · deltema 4.1–4.5 (prio 1) · utvidelsen for kapittel 4 fra 21. oktober 2026 er et forslag som venter på godkjenning</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>RL-loopen og Markov-egenskapen</strong>: neste tilstand avhenger bare av nåværende state og action, ikke av tidligere states (Ord. 2025 del 8 spm. 1). Se <a href="#mdp">02</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Policy</strong>: en strategi, tabell eller funksjon som bestemmer hvilken action agenten tar i hver state (Ord. 2024 spm. 31, Ord. 2025 del 8 spm. 2). Og <strong>verdi vs. reward</strong>: reward kommer fra miljøet, Q-verdien er forventet fremtidig reward og må læres. Se <a href="#mdp">02</a> og <a href="#q-verdier">03</a>.</li>
+          <li><span class="tag regn">Regn</span><strong>Ett Bellman-steg for hånd</strong> med likning (115): \(Q^{new} = (1-\alpha)Q + \alpha(R + \gamma \max Q_{\text{neste}})\). Kjenn rollen til \(\alpha\) (læringsrate) og \(\gamma\) (discount factor): <strong>høy \(\gamma\) betyr at læringen domineres av estimatet for fremtidige tilstander</strong> (Ord. 2024 spm. 32, Ord. 2025 del 8 spm. 4). Se <a href="#q-verdier">03</a>.</li>
+          <li><span class="tag">Forklar</span><strong>ε-greedy og epsilon decay</strong>: ε er sannsynligheten for en tilfeldig action, så agenten av og til utforsker miljøet (Ord. 2025 del 8 spm. 3); høy ε tidlig, liten ε &gt; 0 til slutt. Se <a href="#agenter">05</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Loss vs. reward</strong>: det er ikke nødvendigvis noen sammenheng mellom tapet i agentens trening og rewarden fra miljøet (Ord. 2024 spm. 33). Og <strong>hva Q-verdiene for det tomme brettet betyr</strong>: høyest verdi i midten, så der settes første X. Se <a href="#q-tabell">06</a>.</li>
+          <li><span class="tag">Forklar</span><strong>Deep Q-learning</strong> (forslag / egen tolkning): target network gir stabile treningsmål, replay buffer gir mindre korrelerte treningseksempler, vektdeling gjør at én oppdatering endrer mange Q-verdier, reward hacking utnytter svakheter i belønningen (Ord. 2025 del 9 spm. 1–4). Kode: <code>random.sample(buffer, k=32)</code> (Ord. 2025 del 10 spm. 4, på <a href="koding.html#laering">4B</a>). Se <a href="#dqn">07</a>.</li>
+          <li><span class="tag">Lavere</span>AlphaZero-avsnittet, Gym-detaljene (cartpole, mountaincar, pendulum), <code>render</code>-funksjonen og gitlab-lenken. Koden for environment og agent ligger på <a href="koding.html">4B</a> som øvingsstoff.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 INTRO ─────────────────────────── -->
+  <section id="intro">
+    <div class="container">
+      <div class="section-badge">01 · Hva RL er</div>
+      <h2>Læring av <em>belønning</em>, ikke fasit</h2>
+      <div class="source-note">Notatene · avsnitt 4 og 4.1 · s. 56</div>
+
+      <p class="dropcap"><span class="term" data-term="reinforcement-learning">Reinforcement learning</span> (RL) er en type maskinlæring hvor en <span class="term" data-term="agent">agent</span> lærer å ta beslutninger i et miljø, omtalt som <span class="term" data-term="environment">environment</span>, ved å utføre handlinger, omtalt som <span class="term" data-term="action">actions</span>, for å maksimere forventet belønning, omtalt som expected <span class="term" data-term="reward">reward</span>. Teorien er stor, og kurset ser bare på ett læringsregime: <strong>Q-learning</strong>. Det holder til å trene en modell i miljøet i øving 3.</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Veiledet (kap. 1–2)</div><div class="fc-val">Hvert datapunkt har en target. Tapet måler avstand til fasit.</div></div>
+        <div class="fact-card"><div class="fc-key">Uveiledet (kap. 3)</div><div class="fc-val">Ingen target. Mønstre i features alene.</div></div>
+        <div class="fact-card"><div class="fc-key">Reinforcement (kap. 4)</div><div class="fc-val">Ingen target, men reward fra miljøet, ofte først når episoden er over. Dataene lages av agenten selv mens den handler.</div></div>
+      </div>
+      <p>Ordet <em>agent</em> betyr her noe helt konkret: hva som helst som tar inn en tilstand og returnerer en handling. Det er ikke det samme som «AI-agentene» i forbrukerteknologi, som er en språkmodell som kjører i en loop.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 MDP ─────────────────────────── -->
+  <section id="mdp">
+    <div class="container">
+      <div class="section-badge">02 · MDP og policy</div>
+      <h2>RL-loopen, Markov-egenskapen <em>og hva agenten skal finne</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.1 · s. 56–57</div>
+
+      <p class="dropcap">Prosessen går i en loop, <span class="term" data-term="rl-loop">RL-loopen</span>: environmentet gir agenten en <span class="term" data-term="state">state</span> (tilstand) \(S_t\) ved steg \(t\). Basert på state velger agenten en action \(A_t\), som fører til en reward \(R_{t+1}\) fra miljøet og setter miljøet i en ny tilstand \(S_{t+1}\). Basert på \(S_{t+1}\) velger agenten en ny action, og så videre.</p>
+
+      <figure class="rl-fig">
+        <svg viewBox="0 0 560 210" xmlns="http://www.w3.org/2000/svg" aria-label="RL-loopen">
+          <defs>
+            <marker id="rl-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6257"/>
+            </marker>
+          </defs>
+          <rect class="bxh" x="200" y="18" width="160" height="48" rx="6"/>
+          <text class="t" x="280" y="38" text-anchor="middle">Agent</text>
+          <text class="c" x="280" y="55" text-anchor="middle">policy π(Aₜ | Sₜ) · Q-verdier</text>
+          <rect class="bx" x="200" y="144" width="160" height="48" rx="6"/>
+          <text class="t" x="280" y="164" text-anchor="middle">Environment</text>
+          <text class="c" x="280" y="181" text-anchor="middle">tilstand · step(action) · reward</text>
+          <path class="e" d="M360 42 L470 42 L470 168 L362 168"/>
+          <text class="c" x="478" y="100" text-anchor="start">action Aₜ</text>
+          <text class="c" x="478" y="116" text-anchor="start">(ett trekk)</text>
+          <path class="e" d="M200 168 L90 168 L90 42 L198 42"/>
+          <text class="c" x="82" y="92" text-anchor="end">state Sₜ₊₁</text>
+          <text class="c" x="82" y="108" text-anchor="end">reward Rₜ₊₁</text>
+          <text class="c" x="82" y="124" text-anchor="end">done</text>
+        </svg>
+        <figcaption>RL-loopen. Agenten ser bare \(S_t\) når den velger \(A_t\); miljøet svarer med \(R_{t+1}\) og \(S_{t+1}\).</figcaption>
+      </figure>
+
+      <h3>Markov-egenskapen</h3>
+      <p>Agenten velger action basert <strong>kun på \(S_t\)</strong>, og får ikke informasjon om tidligere states. Det svarer til en antakelse om at den fremtidige tilstanden til environmentet kun er avhengig av inneværende tilstand og valgt action, ikke tidligere states eller actions. En slik prosess har <span class="term" data-term="markov-egenskapen">Markov-egenskapen</span>: den er uavhengig av historien (hvordan agent og environment havnet i den aktuelle tilstanden), og kalles også <em>memoryless</em>. Kort sagt: <strong>fremtiden er uavhengig av fortiden gitt nåtiden.</strong> I tre-på-rad inneholder brettet alt agenten trenger; rekkefølgen trekkene ble gjort i spiller ingen rolle.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o25-8-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 8 · spm. 1</span><span class="o-ref">4.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Hvilket utsagn beskriver best Markov-egenskapen slik den brukes i reinforcement learning?</p>
+          <ol class="mcq-list" type="A">
+            <li>Den neste tilstanden avhenger av hele sekvensen av tidligere tilstander og handlinger</li>
+            <li>Den neste tilstanden er uforutsigbar uavhengig av agentens handling</li>
+            <li>Den neste tilstanden avhenger kun av den nåværende tilstanden og handlingen, og ikke av tidligere tilstander</li>
+            <li>Den neste tilstanden avhenger kun av belønningen og ikke av handlingen</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> Det er definisjonen: fremtiden avhengig av nåtiden (state og action), uavhengig av fortiden. A er det motsatte (en prosess med hukommelse). B påstår at actions ikke betyr noe, men \(S_{t+1}\) bestemmes nettopp av \(S_t\) og \(A_t\). D snur det på hodet: rewarden er et <em>resultat</em> av overgangen, ikke årsaken til den.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>MDP: det formelle rammeverket</h3>
+      <p>En beslutningsprosess med Markov-egenskapen kalles en <span class="term" data-term="mdp">Markov decision process</span> (MDP). Formelt er en MDP en 4-tuppel \((\mathcal{S}, \mathcal{A}, P_A, R_A)\):</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">\(\mathcal{S}\) · state space</div><div class="fc-val">Settet av states. I tre-på-rad alle brett.</div></div>
+        <div class="fact-card"><div class="fc-key">\(\mathcal{A}\) · action space</div><div class="fc-val">Settet av actions. Alternativt \(\mathcal{A}_S\): actions tilgjengelige fra state \(S\), de ledige rutene.</div></div>
+        <div class="fact-card"><div class="fc-key">\(P_A(S_t, S_{t+1})\)</div><div class="fc-val">\(= P(S_{t+1} \mid S_t, A_t)\), sannsynligheten for at \(A_t\) i \(S_t\) fører til \(S_{t+1}\). <strong>Ikke pensum</strong>: kurset holder seg til deterministiske miljøer.</div></div>
+        <div class="fact-card"><div class="fc-key">\(R_A(S_t, S_{t+1})\)</div><div class="fc-val">Den umiddelbare rewarden for å gå fra \(S_t\) til \(S_{t+1}\) gjennom action \(A_t\).</div></div>
+      </div>
+
+      <h3>Policy og verdifunksjon</h3>
+      <p>Basert på en læringsprosess i miljøet som gir agenten states og rewards, skal agenten finne en måte å velge ut beste action på, basert på en gitt state. Denne måten kalles en <span class="term" data-term="policy">policy</span>, skrevet \(\pi(A_t \mid S_t)\). Målet til en RL-agent er (som regel) å finne en <strong>optimal policy</strong>, som maksimerer den totale rewarden fra miljøet, den <em>kumulative</em> rewarden.</p>
+      <p>Agenten kan være mye forskjellig: først en tabell, senere et nevralt nettverk. For at den skal kunne lære en optimal policy, må den trenes på å velge actions som gir høy reward, og vi må ha en måte å beregne kumulativ reward på. Det gjør vi gjennom en <span class="term" data-term="verdifunksjon">verdifunksjon</span> (utility eller value function), som angir hvor verdifull en tilstand og action er <strong>på lang sikt</strong>, under en viss policy. Verdifunksjonen kvantiserer altså forventet verdi av å være i en gitt tilstand, utføre en gitt action, følge en gitt policy, og fortsette å følge denne policyen fremover. Agenten trenger den for å kvantisere de langsiktige konsekvensene av en action og policy, i stedet for å bruke kun umiddelbar reward.</p>
+
+      <div class="oppgave" data-quiz id="oppg-rl-loop">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">4.1 · s. 57</span></div>
+        <div class="o-text"><p>Les de siste to setningene minimum tre ganger. Ikke les videre før du klarer å forklare det du har lest så langt til deg selv. Start med å tegne opp RL-loopen og fylle inn hva som skjer, formuler hvilke antakelser som gjelder, beskriv hvordan agenten velger hva den skal gjøre, og si eksplisitt hvordan RL-loopen representerer et maskinlæringsregime.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
+            <p><strong>Loopen:</strong> environment gir \(S_t\) → agenten velger \(A_t\) etter policyen \(\pi(A_t \mid S_t)\) → environment returnerer \(R_{t+1}\), \(S_{t+1}\) og <code>done</code> → agenten oppdaterer det den vet → ny action fra \(S_{t+1}\). Episoden slutter når <code>done</code> er sann; så <code>reset</code> og ny episode.</p>
+            <p><strong>Antakelser:</strong> Markov-egenskapen (neste state avhenger bare av \(S_t\) og \(A_t\), så agenten trenger ikke historien); deterministisk miljø (ingen transisjonssannsynligheter); rewarden kommer fra miljøet og er det eneste læringssignalet, i tre-på-rad bare ved slutten av spillet.</p>
+            <p><strong>Hvordan agenten velger:</strong> den har en verdifunksjon, Q-verdier for state–action-par, og velger (med sannsynlighet \(1 - \epsilon\)) actionen med høyest Q-verdi i aktuell state, ellers en tilfeldig action. Policyen er altså «grådig på Q, med litt utforsking».</p>
+            <p><strong>Hvorfor det er et maskinlæringsregime:</strong> parametrene som læres er Q-verdiene (eller vektene i et nettverk); treningsdataene er erfaringene \((S_t, A_t, R_{t+1}, S_{t+1})\) som agenten selv produserer ved å handle; oppdateringsregelen er Bellman-likningen, som flytter Q et stykke (\(\alpha\)) mot et mål bygget av reward og estimert fremtidig verdi. Til forskjell fra veiledet læring finnes det ingen fasit per datapunkt, bare en reward som ofte kommer sent, og dataene endrer seg etter hvert som agenten endrer atferd.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-31">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 31</span><span class="o-ref">4.1 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er en policy i reinforcement learning?</p>
+          <ol class="mcq-list" type="A">
+            <li>En funksjon som gir en verdi for hver tilstand-handling-par.</li>
+            <li>Et mål som agenten prøver å maksimere over tid.</li>
+            <li>Et funksjonsestimat som representerer kvaliteten på en action basert på agentens umiddelbare belønning.</li>
+            <li>En strategi som bestemmer hvilken handling agenten skal ta i en gitt tilstand.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Policyen \(\pi(A_t \mid S_t)\) er måten agenten velger action på. A beskriver Q-funksjonen (verdi per state–action-par), ikke policyen. B er kumulativ reward, målet policyen skal maksimere. C blander Q-verdi med umiddelbar reward; Q-verdien handler nettopp om <em>fremtidig</em> verdi, ikke umiddelbar belønning.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-8-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 8 · spm. 2</span><span class="o-ref">4.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I reinforcement learning velger agenten handlinger i henhold til en policy. Hvilket av følgende beskriver best hva en policy er?</p>
+          <ol class="mcq-list" type="A">
+            <li>En regel som velger en handling kun basert på belønningen mottatt i forrige tidssteg</li>
+            <li>En mekanisme som oppdaterer Q-verdier basert på temporal-difference-feil</li>
+            <li>En tabell eller funksjon som lagrer estimert retur for hver tilstand, uten å ta hensyn til handlinger</li>
+            <li>En tabell eller funksjon som spesifiserer hvilken handling som skal tas i hver tilstand</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Samme svar som i 2024, med andre ord: state inn, action ut. A velger ut fra forrige reward, men policyen velger ut fra <em>state</em>. B er læringsregelen (Bellman-oppdateringen), ikke policyen. C er en verdifunksjon for states uten actions, og en policy må nettopp si noe om actions.</p>
+          </div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Utdypning · lavere prioritet: AlphaZero</summary>
+        <p>AlphaZero er trent på denne måten; «zero» sikter til at modellen har lært kun gjennom å spille mot seg selv. Et nevralt nettverk får spillbrettets tilstand som input state og predikerer hvilke trekk som bør undersøkes nærmere i spilltreet. Spillets utfall gir reward 1 ved seier, \(-1\) ved tap og 0 ved remis.</p>
+      </details>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">To agenter spiller tre-på-rad. Den ene husker alle trekkene i partiet, den andre ser bare brettet slik det er nå. Taper den andre noe? Hva heter antakelsen som sier nei?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nei. Brettet (staten) inneholder alt som påvirker resten av partiet; hvordan brikkene kom dit spiller ingen rolle for hva som er beste trekk nå. Det er Markov-egenskapen: fremtiden er uavhengig av fortiden gitt nåtiden. Derfor kan Q-tabellen bruke staten som key uten noen historikk.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 Q-VERDIER ─────────────────────────── -->
+  <section id="q-verdier">
+    <div class="container">
+      <div class="section-badge">03 · Q-verdier</div>
+      <h2>Bellman-likningen: <em>ett steg om gangen</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.2 · s. 57</div>
+
+      <p class="dropcap">Det finnes flere verdifunksjoner, og kurset studerer <span class="term" data-term="q-funksjon">Q-funksjonen</span>. Q forkorter <em>quality</em> og angir verdien (kvaliteten) til en state–action-kombinasjon, \(Q : \mathcal{S} \times \mathcal{A} \to \mathbb{R}\). Vi beregner den med <span class="term" data-term="bellman-likningen">Bellman-likningen</span>:</p>
+      \[ Q^{new}(S_t, A_t) \leftarrow (1 - \alpha) \cdot Q(S_t, A_t) + \alpha \cdot \Big( R_{t+1} + \gamma \max_{A} Q(S_{t+1}, A) \Big). \tag{115} \]
+      <p>Q-verdien til et state–action-par beregnes <strong>iterativt</strong>, og prosessen føyer seg inn i RL-loopen:</p>
+      <ol class="steps">
+        <li>\(Q\) initialiseres.</li>
+        <li>For hvert steg \(t\) har miljøet en tilstand \(S_t\), agenten velger en action \(A_t\), observerer en reward \(R_{t+1}\) og får en ny tilstand \(S_{t+1}\).</li>
+        <li>\(Q\) oppdateres basert på disse verdiene, og punkt 2–3 gjentas inntil RL-loopen terminerer.</li>
+      </ol>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">\(Q^{new}(S_t, A_t)\)</div><div class="fc-val">Den oppdaterte verdien av å være i \(S_t\) og gjøre \(A_t\).</div></div>
+        <div class="fact-card"><div class="fc-key">\(Q(S_t, A_t)\)</div><div class="fc-val">Den gamle verdien. Med en tabell initialisert til 0; med et nevralt nettverk tilfeldige vekter i starten.</div></div>
+        <div class="fact-card"><div class="fc-key">\(R_{t+1}\)</div><div class="fc-val">Reward mottatt for å være i \(S_t\) og gjøre \(A_t\).</div></div>
+        <div class="fact-card"><div class="fc-key">\(\max_A Q(S_{t+1}, A)\)</div><div class="fc-val">Maksimal verdi av state \(S_{t+1}\), over alle tilgjengelige actions. Agentens eget estimat for fremtiden.</div></div>
+      </div>
+      <p>To parametre: <span class="term" data-term="laeringsrate">\(\alpha\), læringsraten</span>, angir hvor mye av den gamle verdien som beholdes og hvor mye den nye påvirkes av uttrykket i parentesen. <span class="term" data-term="discount-factor">\(\gamma\), discount factor</span>, gjør at rewards mottatt tidligere vektes ulikt fra rewards mottatt senere: <strong>høy \(\gamma\) betyr at læringen domineres av estimatet for fremtidige tilstander</strong>, lav \(\gamma\) at den umiddelbare rewarden dominerer. Samme likning kan skrives som «gammel verdi pluss et steg mot et mål», slik koden gjør det:</p>
+      \[ Q^{new}(S_t, A_t) = Q(S_t, A_t) + \alpha \cdot \Big( \underbrace{R_{t+1} + \gamma \max_{A} Q(S_{t+1}, A)}_{\texttt{td\_target}} - Q(S_t, A_t) \Big). \]
+      <p class="eq-note">Egen omskriving av (115); parentesen er <code>td_delta</code> i <code>learn</code> på 4B.</p>
+
+      <h3>Regneeksempel</h3>
+      <p>La \(\alpha = 0.5\), \(\gamma = 0.9\), \(R_{t+1} = 1\), gammel \(Q(S_t, A_t) = 0.2\) og \(\max_A Q(S_{t+1}, A) = 0.6\). Da er</p>
+      \[ \begin{aligned} (1 - \alpha) \cdot Q(S_t, A_t) &amp;= 0.5 \cdot 0.2 = 0.10, \\ R_{t+1} + \gamma \max_A Q(S_{t+1}, A) &amp;= 1 + 0.9 \cdot 0.6 = 1.54, \\ \alpha \cdot 1.54 &amp;= 0.77, \\ Q^{new}(S_t, A_t) &amp;= 0.10 + 0.77 = 0.87. \end{aligned} \]
+      <p>Samme svar via omskrivingen: \(\texttt{td\_target} = 1.54\), \(\texttt{td\_delta} = 1.54 - 0.2 = 1.34\), \(Q^{new} = 0.2 + 0.5 \cdot 1.34 = 0.87\). Med \(\gamma = 0.1\) i stedet blir parentesen \(1.06\) og \(Q^{new} = 0.63\): fremtidsestimatet \(0.6\) teller nesten ingenting, rewarden alt.</p>
+
+      <div class="widget" id="w-bell">
+        <div class="widget-label">Prøv selv · Ett Bellman-steg</div>
+        <p class="widget-intro">Stolpene viser de tre bidragene til \(Q^{new}\): det som beholdes av gammel verdi, \((1-\alpha)Q\); rewarden, \(\alpha R\); og estimatet for fremtiden, \(\alpha\gamma \max Q\). Dra i \(\gamma\) og se hvilket ledd som dominerer; sett \(\max Q = 0\) for et terminalt steg (spillet er over), eller \(\alpha = 0\) for en agent som aldri lærer.</p>
+        <svg viewBox="0 0 560 170" data-w="560" data-h="170" aria-label="Bidrag til Q-ny"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="bl-a">α</label><input type="range" id="bl-a" min="0" max="1" step="0.05" value="0.5"><span class="w-val" id="bl-a-val">0.50</span></div>
+          <div class="w-ctl"><label for="bl-g">γ</label><input type="range" id="bl-g" min="0" max="1" step="0.05" value="0.9"><span class="w-val" id="bl-g-val">0.90</span></div>
+          <div class="w-ctl"><label for="bl-r">R</label><input type="range" id="bl-r" min="-1" max="1" step="0.1" value="1"><span class="w-val" id="bl-r-val">1.0</span></div>
+          <div class="w-ctl"><label for="bl-q">Q gammel</label><input type="range" id="bl-q" min="-1" max="2" step="0.1" value="0.2"><span class="w-val" id="bl-q-val">0.2</span></div>
+          <div class="w-ctl"><label for="bl-m">max Q neste</label><input type="range" id="bl-m" min="-1" max="2" step="0.1" value="0.6"><span class="w-val" id="bl-m-val">0.6</span></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn secondary" type="button" data-bl="0.5,0.9,1,0.2,0.6">regneeksempelet</button>
+          <button class="w-btn secondary" type="button" data-bl="0.5,1,0,0.2,0.6">høy γ, ingen reward</button>
+          <button class="w-btn secondary" type="button" data-bl="0.5,0.1,1,0.2,0.6">lav γ</button>
+          <button class="w-btn secondary" type="button" data-bl="0.1,0.9,1,0,0">terminal: max Q = 0</button>
+          <button class="w-btn secondary" type="button" data-bl="1,0.9,1,0.2,0.6">α = 1</button>
+          <button class="w-btn secondary" type="button" data-bl="0,0.9,1,0.2,0.6">α = 0</button>
+        </div>
+        <div class="w-out" id="bl-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o24-32">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 32</span><span class="o-ref">4.2 · flervalg</span></div>
+        <div class="o-text">
+          <p>Bellman-likningen er \(Q^{new}(S_t, A_t) \leftarrow (1-\alpha) \cdot Q(S_t, A_t) + \alpha \cdot \big(R_{t+1} + \gamma \max_A Q(S_{t+1}, A)\big)\). Hva medfører en høy verdi av \(\gamma\)?</p>
+          <ol class="mcq-list" type="A">
+            <li>Læringen av Q-verdiene blir svak for såkalt "catastrophic forgetting", hvor agenten glemmer Q-verdier lært tidlig i treningen.</li>
+            <li>Læringen av Q-verdier domineres av estimatet av fremtidige tilstander.</li>
+            <li>Læringen av Q-verdier domineres av den umiddelbare rewarden fra environmentet.</li>
+            <li>Læringen av Q-verdier domineres av de gamle Q-verdiene.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>B.</strong> \(\gamma\) ganger \(\max_A Q(S_{t+1}, A)\), agentens estimat for verdien av neste tilstand. Høy \(\gamma\) (nær 1) gjør det leddet stort i forhold til \(R_{t+1}\). C er lav \(\gamma\) (\(\gamma = 0\) gir \(Q^{new} = (1-\alpha)Q + \alpha R\)). D er lav \(\alpha\), ikke \(\gamma\). A er en distraktor; \(\gamma\) har ingenting med glemsel å gjøre.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-8-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 8 · spm. 4</span><span class="o-ref">4.2 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Under Q-learning oppdaterer agenten estimatet sitt for verdien av å ta en gitt handling i en gitt tilstand. En del av denne oppdateringen bruker en diskonteringsfaktor \(\gamma\). Hva er rollen til \(\gamma\) i oppdateringen?</p>
+          <ol class="mcq-list" type="A">
+            <li>Den styrer hvor ofte agenten velger tilfeldige utforskende handlinger</li>
+            <li>Den bestemmer om policyen er deterministisk eller stokastisk</li>
+            <li>Den bestemmer hvor sterkt framtidige belønninger påvirker den nåværende Q-verdien</li>
+            <li>Den tvinger agenten til å alltid ignorere framtidige konsekvenser fullstendig</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>C.</strong> A er \(\epsilon\), ikke \(\gamma\). B: ingen parameter i (115) gjør policyen stokastisk; det er \(\epsilon\)-greedy som legger inn tilfeldighet. D er bare sant for \(\gamma = 0\), og da er det et valg, ikke en tvang.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Verdi er ikke reward</h3>
+      <p>Forskjellen er subtil, men viktig. Agenten <strong>får</strong> reward fra environmentet som en tilbakemelding på actions i ulike states. Q-verdien angir verdien av en state og action: den forventede verdien av å gjøre \(A_t\) i \(S_t\), <em>inkludert fremtidig verdi</em>, under en gitt policy. Utover at de representerer ulike ting, er den springende forskjellen at <strong>vi får reward fra environmentet, mens \(Q\) må læres</strong>. I tre-på-rad er rewarden 0 for hvert trekk fram til spillet er over, men Q-verdien for et godt åpningstrekk er høy, fordi trekket fører mot seier.</p>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels · regn</div>
+        <div class="q-text">Tre-på-rad: agenten vinner med et trekk fra state \(S\). Rewarden er 1, spillet er over, gammel \(Q(S, A) = 0\), \(\alpha = 0.1\), \(\gamma = 0.9\). Hva blir \(Q^{new}(S, A)\)?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">0.9</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">0.1</button></li>
+          <li><button class="mcq-opt" type="button">0.19</button></li>
+          <li><button class="mcq-opt" type="button">1</button></li>
+        </ul>
+        <div class="mcq-feedback">Spillet er over, så \(\max_A Q(S_{t+1}, A) = 0\): \(Q^{new} = 0.9 \cdot 0 + 0.1 \cdot (1 + 0.9 \cdot 0) = 0.1\). Trekket før dette, med reward 0 og \(\max Q = 0.1\) i neste state, får \(0 + 0.1 \cdot (0 + 0.9 \cdot 0.1) = 0.009\). Slik sprer rewarden seg bakover, ett trekk per spill.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 ENVIRONMENTS ─────────────────────────── -->
+  <section id="environments">
+    <div class="container">
+      <div class="section-badge">04 · Environments</div>
+      <h2>Miljøet: <em>reset, step, done</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.3 · s. 58</div>
+
+      <p class="dropcap">Det er fullt mulig å lage egne miljøer; alt de må kunne er å ha en tilstand, ta imot en action, transisjonere til en ny tilstand og returnere reward. Det vanligste, særlig første gang, er å bruke tilgjengelige treningsmiljøer som OpenAI sitt Gym. Gym-APIet er det nærmeste vi kommer en standard for environments i RL, og trenger bare to funksjoner:</p>
+<pre><code>env.reset()        → Tuple[initial_state, info]
+env.step(action)   → Tuple[state, reward, done, info]</code></pre>
+      <p><code>step</code> tar en action som argument, hvorpå environmentet havner i en ny tilstand, som returneres sammen med eventuell reward for denne actionen, en boolean <code>done</code> som angir om environmentet har terminert, og eventuell ekstra info. RL-loopen: først <code>reset</code>, så en <code>for</code>-loop over maks antall steg som terminerer når maks er nådd eller <code>done == True</code>, eller en <code>while</code>-loop som terminerer når <code>done == True</code>. I loopen sender agenten inn actions, mottar ny state og reward, og velger nye actions. Én slik gjennomkjøring er en <span class="term" data-term="episode">episode</span>.</p>
+
+      <h3>Tre-på-rad som environment</h3>
+      <p>Starttilstanden er et brett med ni tomme ruter, representert som strengen <code>012345678</code>. Første spiller (menneske eller agent) plasserer en <code>X</code>, altså utfører en action, og environmentet inntar en ny state med én rute okkupert, for eksempel <code>0123X5678</code> for et kryss i midten. Basert på denne staten plasserer den andre spilleren en <code>O</code>, og slik fortsetter de annenhver gang, til en av dem har tre på rad (vertikalt, horisontalt eller diagonalt) eller brettet er fullt. I begge tilfeller settes <code>done = True</code>. Vinneren får <code>reward &gt; 0</code>; blir det uavgjort får begge <code>reward = 0</code>.</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">__init__</div><div class="fc-val">Lager initial state (tomt brett), <code>winner = None</code>, <code>player_turn = 'X'</code>, eventuelle tellere.</div></div>
+        <div class="fact-card"><div class="fc-key">reset</div><div class="fc-val">Tilbake til initial state, <code>winner = None</code>, <code>player_turn = 'X'</code>. Returnerer initial state og eventuelt info.</div></div>
+        <div class="fact-card"><div class="fc-key">step</div><div class="fc-val">Tar en action, lager ny state, sjekker vinner, bytter tur. Returnerer ny state, reward, done og eventuelt info.</div></div>
+        <div class="fact-card"><div class="fc-key">check_winner</div><div class="fc-val">Leter etter <code>XXX</code> eller <code>OOO</code> horisontalt, vertikalt eller diagonalt. <code>True</code>/<code>False</code>.</div></div>
+      </div>
+      <p>Koden for klassen står på <a href="koding.html#environment">4B</a>. <code>render</code>, som tegner brettet, er nyttig men ikke nødvendig. Med et environment på plass kan vi lage agenten som skal lære å løse en oppgave i det.</p>
+      <details>
+        <summary>Utdypning · lavere prioritet: Gym</summary>
+        <p>Vanlige startproblemer i Gym er klassiske kontrollproblemer: cartpole, mountaincar og pendulum. Samme API: <code>reset</code> og <code>step</code>.</p>
+      </details>
+
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett · flervalg</div>
+        <div class="q-text">State er <code>0123X5678</code> og O svarer i rute 0. Hva returnerer <code>env.step(0)</code> som state, og hva er reward og done?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button" data-correct="1"><code>O123X5678</code>, reward 0, done False</button></li>
+          <li><button class="mcq-opt" type="button"><code>0123XO678</code>, reward 0, done False</button></li>
+          <li><button class="mcq-opt" type="button"><code>O123X5678</code>, reward 1, done False</button></li>
+          <li><button class="mcq-opt" type="button"><code>O123X5678</code>, reward 0, done True</button></li>
+        </ul>
+        <div class="mcq-feedback">Action er indeksen til ruten, så rute 0 (øverst til venstre) får en O. Ingen har tre på rad og brettet er ikke fullt, så reward er 0 og done er False. Rewarden kommer først når spillet er over.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 AGENTER ─────────────────────────── -->
+  <section id="agenter">
+    <div class="container">
+      <div class="section-badge">05 · Agenter</div>
+      <h2>Exploration, exploitation <em>og ε-greedy</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.4 · s. 58–60</div>
+
+      <p class="dropcap">Oppgaven til en agent er å observere states og velge actions basert på disse. Med tre-på-rad som eksempel lager vi en agent som bruker Q-verdier til å velge actions: det er <span class="term" data-term="q-learning">Q-learning</span>. Først en enkel agent med en tabell (dictionary) med Q-verdier, senere et nevralt nettverk. Når agenten initialiseres må den vite hvilken <code>tag</code> den har, <code>X</code> eller <code>O</code>, og den må ha et sted å lagre Q-verdier, typisk en dictionary med state som key. For å lære må vi velge verdier for \(\alpha\) og \(\gamma\) i (115).</p>
+      <p>Agenten får tilgang til treningsdata ved å utføre ulike actions i ulike states. For å sikre at den utforsker mulighetene i tilstrekkelig grad, brukes en <span class="term" data-term="hyperparameter">hyperparameter</span> som bare gir mening i RL: <span class="term" data-term="exploration-factor">exploration factor</span>, \(\epsilon \in [0, 1]\), sannsynligheten for at agenten gjør en tilfeldig handling. Funksjonen som velger action skal velge actionen med høyest Q-verdi med sannsynlighet \(1 - \epsilon\), og ellers en action tilfeldig samplet fra environmentets action space. Det er <span class="term" data-term="epsilon-greedy">epsilon greedy</span>.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o25-8-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 8 · spm. 3</span><span class="o-ref">4.4 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Hva er hensikten med utforskingsfaktoren (ε) i en ε-greedy agent?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å garantere at agenten lærer den optimale policyen uten noen gang å gjøre feil</li>
+            <li>Å tvinge agenten til alltid å velge handlingen med høyest Q-verdi</li>
+            <li>Å få agenten til å ignorere framtidige belønninger fullstendig</li>
+            <li>Å sørge for at agenten av og til velger en tilfeldig handling for å utforske miljøet</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> B er det motsatte: det er \(1 - \epsilon\) som gir den grådige actionen, \(\epsilon\) gir den tilfeldige. A: utforsking betyr nettopp å gjøre «feil» med vilje for å finne noe bedre. C handler om \(\gamma\), ikke \(\epsilon\).</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Tradeoffen</h3>
+      <div class="compare-grid">
+        <div class="compare-cell accent">
+          <h4>Explore · høy ε</h4>
+          <p>Agenten utforsker miljøet og finner kanskje kombinasjoner av states og actions som fører til store belønninger. Handler om å ta actions med <em>ukjent</em> utfall.</p>
+        </div>
+        <div class="compare-cell warm">
+          <h4>Exploit · lav ε</h4>
+          <p>Agenten utnytter det den vet og unngår risikoen for actions som fører til store tap. Ulempen: den går kanskje glipp av belønninger Q-verdiene ikke vet om, fordi state–action-paret aldri er besøkt. Actions med <em>kjent</em> utfall.</p>
+        </div>
+      </div>
+      <p>Den ene går på bekostning av den andre; det er <span class="term" data-term="exploration-exploitation">exploration–exploitation tradeoff</span>, og det finnes ingen universell løsning: for å velge den optimale balansen måtte vi kjent utfallet til actions med ukjent utfall, som er en selvmotsigelse. En mye brukt og ofte god strategi er epsilon greedy med avtagende \(\epsilon\), <span class="term" data-term="epsilon-decay">epsilon decay</span>: start med høy \(\epsilon\) tidlig i treningen og reduser den stegvis, så agenten (nesten) slutter å gjøre tilfeldige actions sent i treningen, når den har lært mange Q-verdier. Når det bør skje avhenger av størrelsen på state–action-rommet. Bare <em>nesten</em>, fordi det ofte fungerer bedre å beholde \(\epsilon\) på en liten verdi enn å sette den til nøyaktig 0, også etter treningen: selv en godt trent agent kan kjøre seg fast og trenge et tilfeldig dytt.</p>
+
+      <div class="widget" id="w-eps">
+        <div class="widget-label">Prøv selv · Epsilon decay</div>
+        <p class="widget-intro">\(\epsilon\) etter \(n\) kall på <code>update_exp_factor</code>, typisk ett per spill: \(\epsilon_n = \max(\epsilon_{\min},\ \epsilon_0 \cdot \texttt{epsilon\_decay}^{\,n})\). Hovedkurven følger gliderne; de to blekere kurvene er samme \(\epsilon_0\) og \(\epsilon_{\min}\) med decay 0.95 (rust) og 0.999 (grønn), for sammenlikning.</p>
+        <svg viewBox="0 0 560 230" data-w="560" data-h="230" aria-label="Epsilon decay"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ep-e0">start-ε</label><input type="range" id="ep-e0" min="0.1" max="1" step="0.05" value="1"><span class="w-val" id="ep-e0-val">1.00</span></div>
+          <div class="w-ctl"><label for="ep-d">epsilon_decay</label><input type="range" id="ep-d" min="0.9" max="0.999" step="0.001" value="0.99"><span class="w-val" id="ep-d-val">0.990</span></div>
+          <div class="w-ctl"><label for="ep-min">exp_min</label><input type="range" id="ep-min" min="0" max="0.3" step="0.01" value="0.05"><span class="w-val" id="ep-min-val">0.05</span></div>
+        </div>
+        <div class="w-out" id="ep-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-epsilon">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">4.4 · s. 59</span></div>
+        <div class="o-text"><p>Hva representerer henholdsvis en høy og en lav verdi av \(\epsilon\)? Når i løpet av treningen er det lurt å velge tilfeldige actions? Bør agenten slutte å gjøre tilfeldige actions på et tidspunkt?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p><strong>Høy \(\epsilon\)</strong> betyr at agenten utforsker (explore): mange tilfeldige actions, sjanse for å finne state–action-kombinasjoner med stor belønning. <strong>Lav \(\epsilon\)</strong> betyr at den utnytter (exploit) det den vet: velger actionen med høyest Q-verdi, unngår store tap, men kan gå glipp av belønninger den ikke kjenner.</p>
+            <p><strong>Tidlig i treningen</strong> er det lurt med tilfeldige actions: Q-tabellen er tom eller full av nuller, så «høyest Q-verdi» betyr ingenting ennå, og agenten må besøke states for å fylle den. Derfor epsilon decay: høy \(\epsilon\) først, så stegvis lavere.</p>
+            <p><strong>Nesten, men ikke helt.</strong> Sent i treningen, når mange Q-verdier er lært, bør tilfeldige trekk være sjeldne. Men det fungerer ofte bedre å beholde en liten \(\epsilon \gt 0\) enn å sette den til nøyaktig 0, selv etter at treningen er avsluttet, fordi også en godt trent agent kan kjøre seg fast og trenge et tilfeldig dytt for å komme videre.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Agenten som klasse</h3>
+      <p>En klasse <code>Player</code> der agenten er et objekt. Instanser som lærer tre-på-rad må minimum ha <code>tag</code> (<code>X</code> eller <code>O</code>), en <span class="term" data-term="q-tabell">Q-tabell</span> (en dictionary med alle Q-verdiene agenten kjenner, som må læres) og parametrene \(\alpha, \gamma, \epsilon\), pluss eventuelle læringsspesifikke parametre. I tillegg metoder for å velge action, lære og oppdatere \(\epsilon\). Funksjonen som velger action gjør fire ting:</p>
+      <ol class="steps">
+        <li>Får oversikt over mulige trekk. State er en streng med indeksene til ledige ruter og eksisterende brikker, for eksempel <code>0123XO678</code>; mulige trekk er de numeriske tegnene. Ingen ledige: returner <code>None</code>. Bare ett: returner det.</li>
+        <li>Sjekker om staten finnes i Q-tabellen. Hvis ikke settes den inn med default Q-verdi 0.</li>
+        <li>Trekker et tilfeldig tall mellom 0 og 1. Er det mindre enn \(\epsilon\), returneres en tilfeldig action.</li>
+        <li>Ellers returneres actionen med høyest Q-verdi for aktuell state, ifølge Q-tabellen.</li>
+      </ol>
+      <p>Koden står på <a href="koding.html#agent">4B</a>, både som tabell og som nettverk.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Du trener to agenter mot hverandre med \(\epsilon = 0\) fra start. Q-tabellene er fylt med nuller. Hva skjer, og hvorfor?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Med \(\epsilon = 0\) velger agenten alltid actionen med høyest Q-verdi. Alle er 0, så den velger det samme (første eller tilfeldig blant like) hver gang, og de to agentene spiller det samme partiet om og om igjen. Bare state–action-parene i det partiet får oppdaterte verdier; resten av tabellen forblir null og blir aldri besøkt. Agentene lærer nøyaktig ett parti. Det er derfor utforsking må inn, særlig tidlig.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 Q-TABELL ─────────────────────────── -->
+  <section id="q-tabell">
+    <div class="container">
+      <div class="section-badge">06 · Q-tabell</div>
+      <h2>Q-verdier som <em>læres gjennom erfaring</em></h2>
+      <div class="source-note">Notatene · avsnitt 4.5 · s. 60–62</div>
+
+      <p class="dropcap">Q-læring handler om å oppdatere Q-verdiene etter hvert som agenten får erfaring fra environmentet, her ved å fylle dem inn i Q-tabellen. I starten vet agenten ingenting; tabellen er tom eller fylt av nuller. Som oftest er den en (nøstet) dictionary med states som keys, der hver state igjen er en dictionary med actions som keys, én entry per action med tilhørende Q-verdi. I starten spiller agenten som en komplett idiot og gjør nærmest bare tilfeldige trekk. I slutten av hvert spill får den en reward, og den brukes til å fylle inn stadig mer treffsikre verdier med (115). I koden:</p>
+<pre><code>td_target  = reward + (0 if done else gamma * max_Q_next)   # R + γ·max Q(S_{t+1}, A); 0 når spillet er over
+td_delta   = td_target - q_old                               # avstanden fra gammel verdi til målet
+new_qvalue = q_old + alpha * td_delta                        # (1 − α)·q_old + α·td_target</code></pre>
+      <p>Læringen skjer <strong>for hvert trekk</strong>, og funksjonen trenger å vite hvilken state agenten er i, hvilken action som ble valgt, hvilken state agenten havnet i, og hvor mye reward den fikk. I tre-på-rad er <code>reward = 0</code> med mindre spillet er over, og er spillet over, er maksimal fremtidig verdi 0 (ikke bare for tre-på-rad). Hele <code>learn</code> står på <a href="koding.html#laering">4B</a>.</p>
+
+      <h3>Loss er ikke reward</h3>
+      <p>Når agenten er et nevralt nettverk, trenes det til å predikere <code>td_target</code>: tapet er avstanden mellom nettverkets Q-estimat og målet. Det tapet måler hvor <em>konsistente</em> Q-estimatene er med agentens egne mål, ikke hvor godt agenten spiller. Rewarden kommer fra miljøet og måler akkurat det. En agent kan ha lavt tap og konsekvent dårlige Q-verdier, eller stigende tap mens den oppdager nye, bedre states; det er ikke nødvendigvis noen sammenheng (egen tolkning av eksamenssvaret under).</p>
+
+      <div class="oppgave" data-quiz id="oppg-o24-33">
+        <div class="o-label"><span>Eksamen Ord. 2024 · spm. 33</span><span class="o-ref">4.5 · flervalg</span></div>
+        <div class="o-text">
+          <p>Hva er forholdet mellom tapet (loss) under treningen i Q-learning og reward agenten mottar fra miljøet?</p>
+          <ol class="mcq-list" type="A">
+            <li>Loss minker så lenge reward er slik at Q-verdien oppdateres under læring.</li>
+            <li>Reward kan ikke øke uten at loss samtidig minker.</li>
+            <li>Loss er det samme som reward, med negativt fortegn.</li>
+            <li>Det er ikke nødvendigvis en sammenheng mellom loss i agentens trening og reward agenten mottar fra miljøet.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
+            <p><strong>D.</strong> Tapet måler avstanden fra Q-estimatet til <code>td_target</code>, et mål agenten har laget selv; rewarden kommer fra miljøet. C ville gjort reward til noe som læres. A og B påstår en fast kobling som ikke finnes: Q-verdiene kan konvergere (lavt tap) mot verdier som gir en dårlig policy, og rewarden kan øke fordi \(\epsilon\) synker uten at tapet rører seg.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Å minke ε</h3>
+      <p>Til slutt trenger agenten en funksjon som minker \(\epsilon\) i løpet av treningen:</p>
+<pre><code>def update_exp_factor(self):
+    if self.exp_factor &gt; self.exp_min:
+        self.exp_factor *= self.epsilon_decay</code></pre>
+
+      <div class="oppgave" data-quiz id="oppg-exp-factor">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">4.5 · s. 61</span></div>
+        <div class="o-text"><p>Hva skjer her? Lag gjerne et plott av <code>exp_factor</code> over flere steg med ulike verdier av <code>epsilon_decay</code>.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene · plott og formel er forslag</span>
+            <p>Hver gang funksjonen kalles, ganges \(\epsilon\) med <code>epsilon_decay</code> (et tall litt under 1), så lenge \(\epsilon\) er over <code>exp_min</code>. \(\epsilon\) avtar altså geometrisk og stopper på et gulv: epsilon decay med en liten \(\epsilon \gt 0\) til slutt. En grei regel: en agent som ikke har rukket å lære noe i perioden der <code>exp_factor &gt; exp_min</code>, kommer sannsynligvis ikke til å lære noe vettugt om den trener videre. Da er det mer hensiktsmessig å endre andre deler av koden, for eksempel tapsfunksjonen.</p>
+            <p><em>Forslag til plott:</em> widgeten over. Etter \(n\) kall er \(\epsilon_n = \epsilon_0 \cdot \texttt{epsilon\_decay}^{\,n}\) til gulvet nås, det vil si etter \(n^* = \ln(\epsilon_{\min}/\epsilon_0) / \ln(\texttt{epsilon\_decay})\) kall. Med \(\epsilon_0 = 1\), \(\epsilon_{\min} = 0.05\): decay 0.95 gir \(n^* \approx 59\), 0.99 gir \(\approx 299\), 0.999 gir \(\approx 2995\). Decay bestemmer altså hvor mange spill agenten får utforske i.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Hva Q-verdiene betyr: det tomme brettet</h3>
+      <p>En agent med <code>tag = 'X'</code> som har lært å spille optimalt, har disse Q-verdiene for det tomme brettet, <code>state = '012345678'</code> (nøyaktige tall varierer mellom treninger; se på størrelsesforholdene):</p>
+      <table class="board" aria-label="Q-verdier for det tomme brettet">
+        <tbody>
+          <tr><td style="background: rgba(27,94,90,0.43)"><span class="bi">0</span>1.93</td><td style="background: rgba(27,94,90,0.34)"><span class="bi">1</span>1.55</td><td style="background: rgba(27,94,90,0.35)"><span class="bi">2</span>1.56</td></tr>
+          <tr><td style="background: rgba(27,94,90,0.47)"><span class="bi">3</span>2.14</td><td class="best" style="background: rgba(27,94,90,0.55)"><span class="bi">4</span>2.48</td><td style="background: rgba(27,94,90,0.15)"><span class="bi">5</span>0.66</td></tr>
+          <tr><td style="background: rgba(27,94,90,0.23)"><span class="bi">6</span>1.02</td><td style="background: rgba(27,94,90,0.31)"><span class="bi">7</span>1.39</td><td style="background: rgba(27,94,90,0.37)"><span class="bi">8</span>1.67</td></tr>
+        </tbody>
+      </table>
+
+      <div class="oppgave" data-quiz id="oppg-q-tomt-brett">
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">4.5 · s. 61</span></div>
+        <div class="o-text"><p>Hva forteller disse Q-verdiene oss om hvor agenten vil plassere den første X-en på det tomme brettet?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra notatene</span>
+            <p>Agenten velger actionen med høyest Q-verdi (med sannsynlighet \(1 - \epsilon\)). Indeks 4, <strong>midten</strong>, har klart høyest verdi, 2.48, så agenten setter første kryss i midten, som svarer til optimalt spill. Nest best er 3 (2.14) og 0 (1.93); dårligst er 5 (0.66). Merk at rewarden for selve trekket er 0: verdiene uttrykker forventet <em>fremtidig</em> reward av å åpne der og spille videre etter policyen.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Følger vi et parti videre, leser vi agentens plan rett ut av tabellen:</p>
+      <table class="tt">
+        <thead><tr><th>State</th><th>Hva som har skjedd</th><th>Agentens valg (høyest Q)</th></tr></thead>
+        <tbody>
+          <tr><td><code>012345678</code></td><td>Tomt brett.</td><td>Rute 4, midten.</td></tr>
+          <tr><td><code>0123XO678</code></td><td>O svarte i rute 5.</td><td>Rute 7, nederst i midten: truer tre på rad i midtkolonnen.</td></tr>
+          <tr><td><code>0O23XO6X8</code></td><td>O måtte blokkere i rute 1.</td><td>Rute 6, nederst til venstre: truer diagonalen 2–4–6.</td></tr>
+          <tr><td><code>0OO3XOXX8</code></td><td>O måtte blokkere i rute 2.</td><td>Rute 8, nederst til høyre: tre på rad 6–7–8, agenten vinner. Rutene 0 og 3 har negative Q-verdier, for der ville O vunnet med 2–5–8.</td></tr>
+        </tbody>
+      </table>
+      <p>Agenten får ikke reward før spillet er over, men gjennom Q-verdiene ser vi agentens forventede fremtidige reward. Presist: <strong>Q-verdiene representerer forventet kumulativ fremtidig reward av å gjøre action \(A\) i state \(S\) og følge policyen deretter.</strong></p>
+
+      <div class="widget" id="w-gw">
+        <div class="widget-label">Prøv selv · Q-learning i et rutenett</div>
+        <p class="widget-intro">Egen konstruert: en agent starter nederst til venstre (S) og skal til målet øverst til høyre (G, reward +1). Fellen (T) gir \(-1\). Alle andre steg gir 0, som i tre-på-rad før spillet er over. Agenten er \(\epsilon\)-greedy og oppdaterer Q med (115) etter hvert steg. Til venstre: høyeste Q-verdi per rute (små tall: Q for opp/høyre/ned/venstre). Til høyre: den grådige policyen. Stiplet: stien i siste episode. Kjør én episode om gangen først og se hvordan verdien sprer seg bakover fra målet; kjør så 100.</p>
+        <svg viewBox="0 0 560 280" data-w="560" data-h="280" aria-label="Gridworld"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="gw-a">α</label><input type="range" id="gw-a" min="0.05" max="1" step="0.05" value="0.5"><span class="w-val" id="gw-a-val">0.50</span></div>
+          <div class="w-ctl"><label for="gw-g">γ</label><input type="range" id="gw-g" min="0" max="1" step="0.05" value="0.9"><span class="w-val" id="gw-g-val">0.90</span></div>
+          <div class="w-ctl"><label for="gw-e">ε</label><input type="range" id="gw-e" min="0" max="1" step="0.05" value="0.3"><span class="w-val" id="gw-e-val">0.30</span></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn" id="gw-one" type="button">Én episode</button>
+          <button class="w-btn" id="gw-100" type="button">100 episoder</button>
+          <button class="w-btn secondary" id="gw-reset" type="button">Nullstill</button>
+        </div>
+        <div class="w-out" id="gw-out"></div>
+        <div class="metric-grid" id="gw-metrics"></div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Etter det aller første partiet tre-på-rad er bare én Q-verdi i tabellen forskjellig fra null, selv om agenten gjorde fire–fem trekk. Hvilken, og hvorfor bare den?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Verdien for det siste trekket (staten rett før spillet var over, med actionen som avsluttet det). For alle tidligere trekk var rewarden 0 og \(\max_A Q(S_{t+1}, A)\) fortsatt 0, så <code>td_target</code> = 0 og ingenting endret seg. Først i neste parti som når den samme nest siste staten, kan verdien spre seg ett trekk bakover. Det er derfor Q-learning trenger mange episoder, og derfor \(\gamma \lt 1\) gir høyere verdi jo nærmere seieren et trekk er.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 DQN ─────────────────────────── -->
+  <section id="dqn">
+    <div class="container">
+      <div class="section-badge">07 · Deep Q-learning</div>
+      <h2>Deep Q-learning: <em>det eksamen spør om</em></h2>
+      <div class="source-note">Ikke i notatene (de nevner bare at et nevralt nettverk kan være agent) · Ord. 2025 del 9 spm. 1–4 · hele avsnittet er forslag / egen tolkning</div>
+
+      <div class="callout callout-warm">
+        <span class="label">Forslag</span>
+        <p>Eksamen 2025 hadde fire spørsmål om Deep Q-learning. Avsnittet er egen tolkning skrevet ut fra spørsmålene: det minste du trenger for å svare på dem. Begrunnelsene er forslag.</p>
+      </div>
+
+      <p class="dropcap">I et <span class="term" data-term="dqn">Deep Q-network</span> (DQN) erstattes Q-tabellen med et <span class="term" data-term="nevralt-nettverk">nevralt nettverk</span> som predikerer Q-verdier. Det er det <code>self.model.predict</code> i <code>choose_action</code> gjør: nettverket får en state som input og gir Q-verdien ut. Trening er veiledet læring på agentens egne data: input er staten, target er <code>td_target</code>, tapet er for eksempel \((\texttt{td\_target} - Q)^2\), og vektene oppdateres med <span class="term" data-term="backpropagation">backpropagation</span>. Fordelen er at nettverket generaliserer mellom states, så store state-rom blir håndterbare uten én tabellrad per state. Det gir tre problemer som en tabell ikke har:</p>
+      <div class="fact-grid">
+        <div class="fact-card"><div class="fc-key">Vektdeling</div><div class="fc-val">Alle Q-verdier beregnes av de samme vektene. Å oppdatere én Q-verdi endrer derfor også mange andre, inkludert de som var riktige. I en tabell endres bare den ene cellen.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="target-network">Target network</span></div><div class="fc-val">Målet \(R + \gamma \max_A Q(S_{t+1}, A)\) regnes ut med det samme nettverket som trenes, så målet flytter seg for hver oppdatering. Løsning: en frosset kopi av nettverket regner ut målene og oppdateres bare av og til. Holder Q-verdiene som brukes som treningsmål stabile under læring.</div></div>
+        <div class="fact-card"><div class="fc-key"><span class="term" data-term="replay-buffer">Replay buffer</span></div><div class="fc-val">Overgangene fra én episode kommer etter hverandre og likner hverandre. Trener nettverket på dem i rekkefølge, overtilpasser det de nyeste erfaringene. Løsning: lagre overgangene (state, action, reward, next_state, done) i en buffer og tren på tilfeldige <span class="term" data-term="mini-batch">mini-batcher</span> fra den, så treningseksemplene blir mindre korrelerte.</div></div>
+      </div>
+      <p>I kode er bufferet en liste, og en mini-batch trekkes med <code>random.sample(buffer, k=32)</code>; se <a href="koding.html#laering">4B</a>.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o25-9-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 9 · spm. 1</span><span class="o-ref">4.4 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I Deep Q-Networks (DQN) erstatter vi Q-tabellen med et nevralt nettverk som predikerer Q-verdier. Under trening oppdaterer nettverket vektene sine ved hjelp av backpropagation. Hva er hovedgrunnen til at et target network brukes i DQN?</p>
+          <ol class="mcq-list" type="A">
+            <li>Å sørge for at agenten alltid utforsker ved å legge til tilfeldig støy i den valgte handlingen</li>
+            <li>Å holde Q-verdiene som brukes som treningsmål stabile under læring</li>
+            <li>Å garantere at nettverket aldri overtilpasser replay-bufferet</li>
+            <li>Å la agenten beregne neste handling uten å bruke policyen</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (DQN er ikke i notatene)</span>
+            <p><strong>B.</strong> Uten target network jager nettverket et mål det selv flytter for hver oppdatering (\(\max_A Q(S_{t+1}, A)\) endres når vektene endres). En frosset kopi gir et mål som står stille en stund. A er \(\epsilon\)-greedy sin jobb. C: ingenting <em>garanterer</em> mot overtilpasning, og det er replay-bufferet som adresserer korrelerte data. D gir ikke mening: actions velges alltid etter policyen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-9-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 9 · spm. 2</span><span class="o-ref">4.4 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>I DQN lagres overgangene (state, action, reward, next-state, done) i en replay buffer, og mini-batcher samples under treningen. Hvilket problem adresserer replay buffer primært?</p>
+          <ol class="mcq-list" type="A">
+            <li>Den gjør at treningseksemplene blir mindre korrelerte slik at nettverket ikke overtilpasser de nyeste erfaringene</li>
+            <li>Den forhindrer "catastrophic forgetting" ved å sikre at nettverket aldri ser gamle overganger på nytt</li>
+            <li>Den garanterer at hvert state–action-par blir samplet like mange ganger</li>
+            <li>Den gjør utforskning unødvendig, siden tidligere overganger allerede inneholder all nyttig informasjon</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (DQN er ikke i notatene)</span>
+            <p><strong>A.</strong> Påfølgende steg i en episode er sterkt korrelerte; tilfeldig trekning fra bufferet blander gamle og nye erfaringer. B er selvmotsigende: bufferet gjør nettopp at gamle overganger ses <em>på nytt</em>. C: tilfeldig trekning garanterer ingen jevn fordeling. D: bufferet inneholder bare det agenten allerede har utforsket; \(\epsilon\) trengs fortsatt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-o25-9-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 9 · spm. 3</span><span class="o-ref">4.4 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>Tradisjonell Q-learning bruker en tabell med Q-verdier, mens DQN bruker et nevralt nettverk som funksjonsapproksimator. Hvilket av følgende beskriver korrekt en utfordring som oppstår når man bruker et nevralt nettverk i stedet for en tabell?</p>
+          <ol class="mcq-list" type="A">
+            <li>Nettverket fjerner behovet for en diskonteringsfaktor γ</li>
+            <li>Nettverket tvinger policyen til å bli deterministisk</li>
+            <li>Å oppdatere én Q-verdi i nettverket endrer også mange andre Q-verdier på grunn av vektdeling</li>
+            <li>Nettverket kan ikke representere Q-verdier for mer enn én handling om gangen</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (DQN er ikke i notatene)</span>
+            <p><strong>C.</strong> Det er prisen for generalisering: samme vekter brukes for alle states, så en oppdatering for én state «smitter» over på naboene, også når de var riktige. A: \(\gamma\) står i Bellman-likningen uansett hva som beregner Q. B: policyen er \(\epsilon\)-greedy også med nettverk. D: et nettverk kan ha én output per action, eller ta state–action-paret som input.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Reward hacking</h3>
+      <p>Agenten maksimerer rewarden <em>slik den er definert</em>, ikke slik designeren mente den. Finnes det en atferd som gir høy reward uten å løse oppgaven, finner agenten den før eller siden: <span class="term" data-term="reward-hacking">reward hacking</span>. Det er en svakhet i belønningsfunksjonen, ikke i læringsalgoritmen.</p>
+
+      <div class="oppgave" data-quiz id="oppg-o25-9-4">
+        <div class="o-label"><span>Eksamen Ord. 2025 · del 9 · spm. 4</span><span class="o-ref">4.1 · flervalg, 2,5 p</span></div>
+        <div class="o-text">
+          <p>En agent trenes til å maksimere en belønningsfunksjon i et forsterkningslæringsmiljø. Under treningen oppdager agenten en atferd som gir svært høy belønning, men som tydeligvis ikke er den atferden designeren hadde ment. Hvorfor skjer dette?</p>
+          <ol class="mcq-list" type="A">
+            <li>Fordi agenten utnytter utilsiktede svakheter i hvordan belønningen er definert.</li>
+            <li>Fordi agenten bare kan lære av umiddelbare belønninger og ignorerer langsiktige konsekvenser.</li>
+            <li>Fordi agenten ikke kan håndtere situasjoner der mer enn ett mål er til stede.</li>
+            <li>Fordi oppdateringsregelen fjerner innflytelsen fra fremtidige belønninger fullstendig.</li>
+          </ol>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag (ikke i notatene)</span>
+            <p><strong>A.</strong> Agenten gjør akkurat det den er bedt om: maksimere reward. Er rewarden definert slik at en snarvei gir mye, tar den snarveien. B og D er feil fordi \(\gamma \gt 0\) nettopp tar med fremtidige belønninger. C er en påstand om agenter som ikke følger av noe i kapittelet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 08 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">08 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>RL-loopen</strong>State \(S_t\) → action \(A_t\) → reward \(R_{t+1}\) og \(S_{t+1}\) → ny action, til done. Agenten = alt som tar state inn og gir action ut.</div>
+        <div class="recap-pill"><strong>Markov</strong>Neste state avhenger bare av nåværende state og action. Fremtiden uavhengig av fortiden gitt nåtiden. MDP = (S, A, P, R); P ignoreres (deterministisk).</div>
+        <div class="recap-pill"><strong>Policy</strong>π(A | S): strategi, tabell eller funksjon som velger action i hver state. Mål: optimal policy = maks kumulativ reward.</div>
+        <div class="recap-pill"><strong>Verdi vs. reward</strong>Reward kommer fra miljøet. Q(S, A) = forventet kumulativ fremtidig reward, må læres. I tre-på-rad reward 0 til spillet er over.</div>
+        <div class="recap-pill"><strong>Bellman (115)</strong>Q ← (1−α)Q + α(R + γ max Q neste). α = læringsrate (hvor mye gammel verdi beholdes), γ = discount factor. Høy γ: fremtidsestimatet dominerer. Terminal: max Q = 0.</div>
+        <div class="recap-pill"><strong>ε-greedy</strong>Med sannsynlighet 1−ε: høyest Q; ellers tilfeldig action. Explore (høy ε) vs. exploit (lav ε), ingen universell løsning.</div>
+        <div class="recap-pill"><strong>Epsilon decay</strong>Høy ε først, ε *= decay til exp_min; behold liten ε &gt; 0 så agenten ikke kjører seg fast. Har den ikke lært innen exp_min, endre noe annet.</div>
+        <div class="recap-pill"><strong>Q-tabell</strong>Nøstet dictionary state → action → Q, nuller i starten. Lær etter hvert trekk; verdien sprer seg bakover fra rewarden. Tomt brett: midten høyest.</div>
+        <div class="recap-pill"><strong>Loss ≠ reward</strong>Tapet måler avstand til td_target, agentens eget mål. Ingen nødvendig sammenheng med reward fra miljøet.</div>
+        <div class="recap-pill"><strong>DQN (forslag)</strong>Nettverk i stedet for tabell. Vektdeling: én oppdatering endrer mange Q. Target network: stabile treningsmål. Replay buffer: mindre korrelerte eksempler, random.sample(buffer, k=32). Reward hacking: svakhet i belønningen.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+      <div class="quiz mcq" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels · regn</div>
+        <div class="q-text">\(\alpha = 0.2\), \(\gamma = 0.5\), gammel \(Q = 1.0\), reward \(R = 0\), \(\max_A Q(S_{t+1}, A) = 2.0\). Hva er \(Q^{new}\)?</div>
+        <ul class="mcq-options">
+          <li><button class="mcq-opt" type="button">0.2</button></li>
+          <li><button class="mcq-opt" type="button" data-correct="1">1.0</button></li>
+          <li><button class="mcq-opt" type="button">1.2</button></li>
+          <li><button class="mcq-opt" type="button">1.8</button></li>
+        </ul>
+        <div class="mcq-feedback">\(0.8 \cdot 1.0 + 0.2 \cdot (0 + 0.5 \cdot 2.0) = 0.8 + 0.2 = 1.0\). Målet \(\texttt{td\_target} = 1.0\) er lik gammel verdi, så \(\texttt{td\_delta} = 0\) og ingenting endres: Q-verdien er allerede konsistent med neste state.</div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Q-verdien for å åpne i midten er 2.48, men rewarden for det trekket er 0. Forklar hvorfor det ikke er en motsigelse, og hva tallet uttrykker.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Reward er miljøets umiddelbare tilbakemelding på ett trekk, og i tre-på-rad er den 0 for alle trekk før spillet er over. Q-verdien er noe annet: forventet <em>kumulativ fremtidig</em> reward av å gjøre dette trekket og følge policyen videre. 2.48 betyr at partier som åpner i midten, i gjennomsnitt (over motstanderens svar og egne tilfeldige trekk) ender med høy reward. Verdien har sivet bakover fra sluttrewardene gjennom mange Bellman-oppdateringer, diskontert med \(\gamma\) for hvert trekk. Reward får agenten; Q må den lære.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Du bytter Q-tabellen ut med et nevralt nettverk. Nevn tre ting som endrer seg i læringen, og hva som gjøres med hver av dem.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(1) Initialisering: tabellen starter med nuller, nettverket med tilfeldige vekter, så Q-verdiene er støy fra start. (2) Oppdateringen er ikke lenger lokal: vektdeling gjør at én oppdatering endrer mange Q-verdier, og målet \(R + \gamma \max Q\) flytter seg med vektene; derfor et target network som holder treningsmålene stabile. (3) Treningsdataene kommer sekvensielt og korrelert fra episoden; derfor en replay buffer der nettverket trenes på tilfeldige mini-batcher med <code>random.sample</code>. Felles for alt: tapet måler konsistens mot td_target, ikke hvor mye reward agenten får (Ord. 2024 spm. 33). (Forslag / egen tolkning.)</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 4: oversikt</div></a>
+        <a href="koding.html" class="next"><div class="pn-label">Neste · 4B</div><div class="pn-title">Koding: Q-learning for tre-på-rad →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4172 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+<script>
+(function () {
+  'use strict';
+  var f2 = function (v) { return (Math.round(v * 100) / 100).toFixed(2); };
+  var svgNS = 'http://www.w3.org/2000/svg';
+
+  /* ─── Bellman-steg ─── */
+  (function () {
+    var root = document.getElementById('w-bell'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [-1, 3], y: [0.3, 4.7], pad: { l: 180, r: 16, t: 10, b: 30 }, xLabel: 'bidrag til Q ny', xTicks: [-1, 0, 1, 2, 3], yTicks: [] });
+    var ids = ['a', 'g', 'r', 'q', 'm'], inp = {}, val = {};
+    ids.forEach(function (k) { inp[k] = document.getElementById('bl-' + k); val[k] = document.getElementById('bl-' + k + '-val'); });
+    var out = document.getElementById('bl-out');
+    function bar(y, v, cls) {
+      var x0 = plot.sx(Math.min(0, v)), w = Math.abs(plot.sx(v) - plot.sx(0));
+      plot.el('rect', { x: x0, y: plot.sy(y + 0.32), width: Math.max(w, 0.5), height: plot.sy(y - 0.32) - plot.sy(y + 0.32), 'class': cls }, plot.layers.data);
+      plot.label(v + (v >= 0 ? 0.05 : -0.05), y - 0.1, f2(v), v >= 0 ? 'start' : 'end');
+    }
+    function draw() {
+      var a = +inp.a.value, g = +inp.g.value, r = +inp.r.value, q = +inp.q.value, m = +inp.m.value;
+      val.a.textContent = f2(a); val.g.textContent = f2(g); val.r.textContent = r.toFixed(1); val.q.textContent = q.toFixed(1); val.m.textContent = m.toFixed(1);
+      var old = (1 - a) * q, rew = a * r, fut = a * g * m, nw = old + rew + fut;
+      plot.clearData(); plot.clearOverlay();
+      plot.vline(0, 'axis');
+      bar(4, old, 'bar-old'); bar(3, rew, 'bar-r'); bar(2, fut, 'bar-f'); bar(1, nw, 'bar-new');
+      plot.label(-1.05, 3.9, '(1−α)·Q gammel', 'end'); plot.label(-1.05, 2.9, 'α·R', 'end'); plot.label(-1.05, 1.9, 'α·γ·max Q neste', 'end'); plot.label(-1.05, 0.9, 'Q ny (sum)', 'end');
+      var dom, mag = [Math.abs(old), Math.abs(rew), Math.abs(fut)];
+      if (a === 0) dom = 'α = 0: Q endres aldri, agenten lærer ingenting.';
+      else if (mag[2] >= mag[0] && mag[2] >= mag[1] && mag[2] > 0) dom = 'Største bidrag: estimatet for fremtiden, α·γ·max Q. Høy γ gjør at læringen domineres av estimatet for neste tilstand.';
+      else if (mag[1] >= mag[0] && mag[1] > 0) dom = 'Største bidrag: den umiddelbare rewarden, α·R. Lav γ (eller max Q = 0, terminalt steg) gjør at rewarden dominerer.';
+      else if (mag[0] > 0) dom = 'Største bidrag: den gamle Q-verdien. Lav α gjør at læringen domineres av det agenten allerede tror.';
+      else dom = 'Alle bidrag er null.';
+      if (a === 1 && dom.indexOf('α = 0') < 0) dom += ' α = 1: den gamle verdien forkastes helt, Q ny = td_target.';
+      out.innerHTML = '(1 − α)·Q = (1 − ' + f2(a) + ')·' + f2(q) + ' = <span class="hl">' + f2(old) + '</span>\n' +
+        'R + γ·max Q = ' + f2(r) + ' + ' + f2(g) + '·' + f2(m) + ' = ' + f2(r + g * m) + '   (td_target)\n' +
+        'α·(R + γ·max Q) = ' + f2(a) + '·' + f2(r + g * m) + ' = <span class="hl">' + f2(rew + fut) + '</span>\n' +
+        'Q ny = ' + f2(old) + ' + ' + f2(rew + fut) + ' = <span class="hl">' + f2(nw) + '</span>   ·   td_delta = ' + f2(r + g * m - q) + '\n' + dom;
+    }
+    ids.forEach(function (k) { inp[k].addEventListener('input', draw); });
+    root.querySelectorAll('[data-bl]').forEach(function (btn) { btn.addEventListener('click', function () { var v = btn.dataset.bl.split(','); ids.forEach(function (k, i) { inp[k].value = v[i]; }); draw(); }); });
+    draw();
+  })();
+
+  /* ─── Epsilon decay ─── */
+  (function () {
+    var root = document.getElementById('w-eps'); if (!root) return;
+    var plot = MLPlot.make(root.querySelector('svg'), { x: [0, 500], y: [0, 1], xLabel: 'kall på update_exp_factor (spill)', yLabel: 'ε', xTicks: [0, 100, 200, 300, 400, 500], yTicks: [0, 0.25, 0.5, 0.75, 1] });
+    var e0In = document.getElementById('ep-e0'), dIn = document.getElementById('ep-d'), mIn = document.getElementById('ep-min'), out = document.getElementById('ep-out');
+    function eps(e0, d, mn, n) { return Math.max(mn, e0 * Math.pow(d, n)); }
+    function draw() {
+      var e0 = +e0In.value, d = +dIn.value, mn = +mIn.value;
+      document.getElementById('ep-e0-val').textContent = f2(e0); document.getElementById('ep-d-val').textContent = d.toFixed(3); document.getElementById('ep-min-val').textContent = f2(mn);
+      plot.clearData(); plot.clearOverlay();
+      var c2 = plot.curve(function (n) { return eps(e0, 0.95, mn, n); }, 'curve-2', 250); c2.style.opacity = 0.35;
+      var c3 = plot.curve(function (n) { return eps(e0, 0.999, mn, n); }, 'curve-3', 250); c3.style.opacity = 0.35;
+      plot.curve(function (n) { return eps(e0, d, mn, n); }, 'curve', 250);
+      var nStar = mn > 0 && mn < e0 ? Math.ceil(Math.log(mn / e0) / Math.log(d)) : null;
+      if (mn > 0) { plot.hline(mn, 'guide'); plot.label(495, Math.min(0.97, mn + 0.04), 'exp_min', 'end'); }
+      if (nStar !== null && nStar <= 500) { plot.vline(nStar, 'guide'); plot.point(nStar, mn, 'marker', 4); plot.label(Math.min(nStar + 6, 440), Math.min(0.9, mn + 0.16), 'n* = ' + nStar, 'start'); }
+      var txt = 'ε₀ = ' + f2(e0) + ', epsilon_decay = ' + d.toFixed(3) + ', exp_min = ' + f2(mn) + '\n';
+      txt += 'etter 50 kall: ε = ' + f2(eps(e0, d, mn, 50)) + '   ·   etter 100: ' + f2(eps(e0, d, mn, 100)) + '   ·   etter 300: ' + f2(eps(e0, d, mn, 300)) + '   ·   etter 500: ' + f2(eps(e0, d, mn, 500)) + '\n';
+      if (nStar === null) txt += mn === 0 ? 'exp_min = 0: ε går mot 0 og agenten slutter helt å utforske til slutt; da kan den kjøre seg fast.' : 'exp_min ≥ start-ε: ε endres aldri.';
+      else txt += 'ε når exp_min etter <span class="hl">n* = ' + nStar + '</span> kall (ln(' + f2(mn) + '/' + f2(e0) + ') / ln(' + d.toFixed(3) + ')). Det er utforskingsperioden; har agenten ikke lært noe innen da, hjelper det sjelden å trene videre.';
+      out.innerHTML = txt;
+    }
+    [e0In, dIn, mIn].forEach(function (el) { el.addEventListener('input', draw); });
+    draw();
+  })();
+
+  /* ─── Gridworld Q-learning ─── */
+  (function () {
+    var root = document.getElementById('w-gw'); if (!root) return;
+    var svg = root.querySelector('svg');
+    var N = 4, CS = 62, OY = 22, OX1 = 14, OX2 = 296;
+    var START = 12, GOAL = 3, TRAP = 6;
+    var DR = [-1, 0, 1, 0], DC = [0, 1, 0, -1], ARR = ['↑', '→', '↓', '←'];
+    var aIn = document.getElementById('gw-a'), gIn = document.getElementById('gw-g'), eIn = document.getElementById('gw-e');
+    var out = document.getElementById('gw-out'), met = document.getElementById('gw-metrics');
+    var Q, episodes, lastPath, lastR, lastSteps, hist;
+    function el(tag, attrs, parent) { var e = document.createElementNS(svgNS, tag); for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); (parent || svg).appendChild(e); return e; }
+    function txt(x, y, s, cls, anchor) { var t = el('text', { x: x, y: y, 'class': cls, 'text-anchor': anchor || 'middle' }); t.textContent = s; return t; }
+    function maxQ(q) { return Math.max(q[0], q[1], q[2], q[3]); }
+    function argmaxRand(q) { var m = maxQ(q), idx = []; for (var i = 0; i < 4; i++) if (q[i] === m) idx.push(i); return idx[Math.floor(Math.random() * idx.length)]; }
+    function stepEnv(s, a) {
+      var r = Math.floor(s / N), c = s % N, nr = r + DR[a], nc = c + DC[a];
+      if (nr < 0 || nr >= N || nc < 0 || nc >= N) { nr = r; nc = c; }
+      var ns = nr * N + nc, rew = ns === GOAL ? 1 : ns === TRAP ? -1 : 0;
+      return { s: ns, r: rew, done: ns === GOAL || ns === TRAP };
+    }
+    function reset() { Q = []; for (var i = 0; i < 16; i++) Q.push([0, 0, 0, 0]); episodes = 0; lastPath = []; lastR = null; lastSteps = 0; hist = []; draw('Nullstilt: alle Q-verdier er 0, så agenten vet ingenting og velger tilfeldig blant like verdier.'); }
+    function episode() {
+      var al = +aIn.value, ga = +gIn.value, ep = +eIn.value, s = START, path = [s], total = 0, n = 0, changed = 0;
+      while (n < 60) {
+        var a = Math.random() < ep ? Math.floor(Math.random() * 4) : argmaxRand(Q[s]);
+        var res = stepEnv(s, a);
+        var target = res.r + (res.done ? 0 : ga * maxQ(Q[res.s]));
+        var nq = (1 - al) * Q[s][a] + al * target;
+        if (Math.abs(nq - Q[s][a]) > 1e-9) changed++;
+        Q[s][a] = nq;
+        s = res.s; path.push(s); total += res.r; n++;
+        if (res.done) break;
+      }
+      episodes++; lastPath = path; lastR = total; lastSteps = n; hist.push(total); if (hist.length > 100) hist.shift();
+      return changed;
+    }
+    function cellXY(ox, i) { return { x: ox + (i % N) * CS, y: OY + Math.floor(i / N) * CS }; }
+    function draw(msg) {
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      txt(OX1 + 2 * CS, 13, 'Q-verdier (maks per rute)', 'gw-title'); txt(OX2 + 2 * CS, 13, 'Grådig policy', 'gw-title');
+      var nonzero = 0;
+      for (var i = 0; i < 16; i++) {
+        var p = cellXY(OX1, i), q = Q[i], mq = maxQ(q), fill;
+        if (i === GOAL) fill = 'rgba(61,107,58,0.28)'; else if (i === TRAP) fill = 'rgba(160,60,40,0.28)';
+        else if (mq > 0) fill = 'rgba(27,94,90,' + (0.08 + Math.min(0.8, mq) * 0.6).toFixed(2) + ')';
+        else if (mq < 0) fill = 'rgba(160,60,40,' + (0.08 + Math.min(1, -mq) * 0.4).toFixed(2) + ')';
+        else fill = 'var(--paper)';
+        el('rect', { x: p.x, y: p.y, width: CS, height: CS, 'class': 'gw-cell', fill: fill });
+        if (i === GOAL) txt(p.x + CS / 2, p.y + CS / 2 + 4, 'G  +1', 'gw-t');
+        else if (i === TRAP) txt(p.x + CS / 2, p.y + CS / 2 + 4, 'T  −1', 'gw-t');
+        else {
+          txt(p.x + CS / 2, p.y + CS / 2 + 4, mq === 0 && q[0] === 0 && q[1] === 0 && q[2] === 0 && q[3] === 0 ? '0' : f2(mq), 'gw-t');
+          if (Math.abs(q[0]) > 0.005) txt(p.x + CS / 2, p.y + 9, f2(q[0]), 'gw-s');
+          if (Math.abs(q[1]) > 0.005) txt(p.x + CS - 3, p.y + CS / 2 + 14, f2(q[1]), 'gw-s', 'end');
+          if (Math.abs(q[2]) > 0.005) txt(p.x + CS / 2, p.y + CS - 3, f2(q[2]), 'gw-s');
+          if (Math.abs(q[3]) > 0.005) txt(p.x + 3, p.y + CS / 2 - 9, f2(q[3]), 'gw-s', 'start');
+        }
+        if (i === START) txt(p.x + 4, p.y + 10, 'S', 'gw-s', 'start');
+        var p2 = cellXY(OX2, i);
+        el('rect', { x: p2.x, y: p2.y, width: CS, height: CS, 'class': 'gw-cell', fill: i === GOAL ? 'rgba(61,107,58,0.28)' : i === TRAP ? 'rgba(160,60,40,0.28)' : 'var(--paper)' });
+        if (i === GOAL) txt(p2.x + CS / 2, p2.y + CS / 2 + 4, 'G', 'gw-t');
+        else if (i === TRAP) txt(p2.x + CS / 2, p2.y + CS / 2 + 4, 'T', 'gw-t');
+        else if (q[0] === 0 && q[1] === 0 && q[2] === 0 && q[3] === 0) txt(p2.x + CS / 2, p2.y + CS / 2 + 4, '·', 'gw-t');
+        else { nonzero++; txt(p2.x + CS / 2, p2.y + CS / 2 + 8, ARR[argmaxRand(q)], 'gw-arrow'); }
+      }
+      if (lastPath.length > 1) {
+        var d = '';
+        lastPath.forEach(function (s, k) { var c = cellXY(OX1, s); d += (k ? 'L' : 'M') + (c.x + CS / 2) + ' ' + (c.y + CS / 2) + ' '; });
+        el('path', { d: d, 'class': 'gw-path' });
+        var last = cellXY(OX1, lastPath[lastPath.length - 1]); el('circle', { cx: last.x + CS / 2, cy: last.y + CS / 2, r: 4, 'class': 'gw-dot' });
+      }
+      var avg = hist.length ? hist.reduce(function (a, b) { return a + b; }, 0) / hist.length : 0;
+      out.innerHTML = msg;
+      met.innerHTML = '<div class="metric"><div class="m-name">episoder</div><div class="m-val">' + episodes + '</div></div>' +
+        '<div class="metric"><div class="m-name">siste episode</div><div class="m-val">' + (lastR === null ? '–' : (lastR > 0 ? '+1' : lastR < 0 ? '−1' : '0')) + '</div><div class="m-formula">' + (lastR === null ? '' : lastSteps + ' steg') + '</div></div>' +
+        '<div class="metric"><div class="m-name">snitt reward, siste ' + (hist.length || 0) + '</div><div class="m-val">' + f2(avg) + '</div><div class="m-formula">ε = ' + f2(+eIn.value) + ' gir fortsatt tilfeldige steg</div></div>' +
+        '<div class="metric"><div class="m-name">ruter med policy</div><div class="m-val">' + nonzero + ' / 14</div><div class="m-formula">Q ≠ 0 i ruten</div></div>';
+    }
+    function fmtEp(changed) {
+      var r = lastR > 0 ? 'nådde målet (+1)' : lastR < 0 ? 'gikk i fellen (−1)' : 'ga opp etter 60 steg (0)';
+      var m = 'Episode ' + episodes + ': ' + lastSteps + ' steg, ' + r + '. ' + (changed === 0 && episodes > 1 ? 'Ingen Q-verdier endret seg: verdiene langs stien er allerede konsistente med (115), td_delta = 0.' : changed + ' Q-verdier endret seg.');
+      if (episodes === 1) m += ' Bare det siste steget kunne få en verdi ≠ 0: alle andre steg hadde reward 0 og max Q neste = 0, så td_target var 0.';
+      else if (episodes < 20) m += ' Verdien sprer seg ett steg bakover fra målet for hver episode som når det.';
+      else m += ' Følg pilene til høyre: den grådige policyen går rundt fellen når Q-verdiene der er negative.';
+      return m;
+    }
+    document.getElementById('gw-one').addEventListener('click', function () { var c = episode(); draw(fmtEp(c)); });
+    document.getElementById('gw-100').addEventListener('click', function () { var c = 0; for (var i = 0; i < 100; i++) c = episode(); draw(fmtEp(c)); });
+    document.getElementById('gw-reset').addEventListener('click', reset);
+    [aIn, gIn, eIn].forEach(function (inp, k) { inp.addEventListener('input', function () { document.getElementById(['gw-a-val', 'gw-g-val', 'gw-e-val'][k]).textContent = f2(+inp.value); if (met.innerHTML) draw(out.innerHTML); }); });
+    reset();
+  })();
+})();
+</script>
+</body>
+</html>

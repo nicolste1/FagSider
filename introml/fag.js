@@ -14,9 +14,15 @@ window.FAG = {
     'kap1/koding.html',
     'kap2/index.html',
     'kap2/perceptron.html',
+    'kap2/trening.html',
     'kap2/koding.html',
     'kap3/index.html',
     'kap3/clustering.html',
-    'kap3/koding.html'
+    'kap3/dimensjonsreduksjon.html',
+    'kap3/anomali.html',
+    'kap3/koding.html',
+    'kap4/index.html',
+    'kap4/rl.html',
+    'kap4/koding.html'
   ]
 };

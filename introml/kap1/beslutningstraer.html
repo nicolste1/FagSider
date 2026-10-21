@@ -59,7 +59,7 @@
 <main data-chapter="Kapittel 1: Veiledet læring">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · 1B · Notater 1.3 · s. 17–20</div>
+      <div class="eyebrow">Kapittel 1 · 1B · Notater 1.3 · s. 18–21</div>
       <h1>Beslutnings<em>trær</em></h1>
       <p class="lede">En modell som stiller ett enkelt spørsmål om gangen. Hvordan et tre er bygget opp av noder og stumper, hvordan Gini-urenhet og entropi måler «uorden», hvordan vi velger den splitten som rydder mest, og når vi skal slutte å splitte.</p>
       <nav class="toc">
@@ -98,7 +98,7 @@
     <div class="container">
       <div class="section-badge">01 · Noder</div>
       <h2>Et tre av <em>enkle spørsmål</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.3.1 · s. 17</div>
+      <div class="source-note">Notatene · avsnitt 1.3.1 · s. 18</div>
 
       <p class="dropcap"><span class="term" data-term="beslutningstre">Beslutningstrær</span> hjelper oss å ta beslutninger for datasett ved å splitte dataene i noder som til sammen utgjør en trestruktur. <span class="term" data-term="rotnode">Rotnoden</span> er starten på treet, der data med alle features kommer inn. Under den finner vi <span class="term" data-term="beslutningsnode">beslutningsnoder</span>: alle noder under rotnoden som har ett eller flere splitt-kriterier. Nederst finner vi <span class="term" data-term="lovnode">løvnoder</span>, som ikke splitter dataene, men inneholder predikert verdi for datainstansen som ble sendt gjennom treet.</p>
 
@@ -215,7 +215,7 @@
     <div class="container">
       <div class="section-badge">02 · Gini impurity</div>
       <h2>Hvor sannsynlig er det å <em>gjette feil</em>?</h2>
-      <div class="source-note">Notatene · avsnitt 1.3.2 · s. 18</div>
+      <div class="source-note">Notatene · avsnitt 1.3.2 · s. 19</div>
 
       <p class="dropcap"><span class="term" data-term="gini">Gini-urenheten</span> er et tall i [0, 0.5] som angir sannsynligheten for at et nytt, tilfeldig datapunkt feilklassifiseres hvis det gis et tilfeldig label i henhold til klassefordelingen i datasettet. Gitt et datasett \(D\) med datapunkter fra \(k\) klasser, med sannsynlighet \(p_i\) for at en instans tilhører klasse \(i\) ved en gitt node, er datasettets Gini-urenhet</p>
       \[ \text{Gini}(D) = 1 - \sum_{i=1}^{k} p_i^2. \tag{44} \]
@@ -254,7 +254,7 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-gini-splitt">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.2 · s. 18</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.2 · s. 19</span></div>
         <div class="o-text"><p>Se på tabell 6. Hvilken splitt bør vi velge, og hvorfor?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -293,13 +293,13 @@
     <div class="container">
       <div class="section-badge">03 · Entropi</div>
       <h2>Informasjonsgevinst: <em>før minus etter</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.3.3 · s. 18–19</div>
+      <div class="source-note">Notatene · avsnitt 1.3.3 · s. 19–20</div>
 
       <p class="dropcap">Gitt en sannsynlighetsfordeling over \(k\) klasser med sannsynlighet \(p_i\) for hver klasse, er <span class="term" data-term="entropi">entropien</span> til fordelingen</p>
       \[ \mathrm{I}(p_1, \dots, p_k) = -\sum_{i=1}^{k} p_i \log_2(p_i). \tag{46} \]
 
       <div class="oppgave" data-quiz id="oppg-entropi-verdier">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.3 · s. 18</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.3 · s. 19</span></div>
         <div class="o-text"><p>Hva er entropien til fordelingen (0.5, 0.5), og til fordelingen (0.01, 0.99)?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -322,12 +322,12 @@
       <p>og vi bør velge den splitten som gir <strong>størst</strong> endring i entropi.</p>
 
       <div class="oppgave" data-quiz id="oppg-9-5">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.3 · s. 19</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.3 · s. 20</span></div>
         <div class="o-text"><p>Vi har en beslutningsnode bestående av \(p = 9\) positive og \(n = 5\) negative datapunkter. Vis at \(\mathrm{I}_{\text{før}} = 0.94\). Anta deretter at vi splitter datasettet slik at vi får to nye datasett med henholdsvis \((p_1 = 4, n_1 = 5)\) og \((p_2 = 5, n_2 = 0)\). Regn ut endringen i entropi (svaret står i notatene, men prøv selv).</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
-            <span class="answer-src">Svar fra notatene (likning 50) med mellomregning</span>
+            <span class="answer-src">Svar fra notatene (regneeksempelet i en tidligere versjon) med mellomregning</span>
             <p><strong>Før:</strong> \(\mathrm{I}\!\left(\frac{9}{14}, \frac{5}{14}\right) = -\frac{9}{14}\log_2\frac{9}{14} - \frac{5}{14}\log_2\frac{5}{14} \approx 0.410 + 0.531 = 0.94\).</p>
             <p><strong>Etter:</strong></p>
             \[ \mathbb{E}[\mathrm{I}_{\text{etter}}] = \frac{4+5}{9+5}\,\mathrm{I}\!\left(\frac{4}{9}, \frac{5}{9}\right) + \frac{5}{9+5}\,\mathrm{I}\!\left(\frac{5}{5}, \frac{0}{5}\right) = -\frac{9}{14}\left(\frac{4}{9}\log_2\frac{4}{9} + \frac{5}{9}\log_2\frac{5}{9}\right) + 0 \approx 0.64. \]
@@ -356,12 +356,12 @@
     <div class="container">
       <div class="section-badge">04 · Bygge beslutningstrær</div>
       <h2>Når skal vi <em>slutte å splitte</em>?</h2>
-      <div class="source-note">Notatene · avsnitt 1.3.4 · s. 19–20</div>
+      <div class="source-note">Notatene · avsnitt 1.3.4 · s. 20–21</div>
 
       <p class="dropcap">I dette kurset trenger dere ikke bygge beslutningstrær selv, men dere bør kunne angi <strong>pseudokode</strong> for å bygge ett. I praksis bruker vi <span class="term" data-term="sklearn">scikit-learn</span> med den innebygde <code>DecisionTreeClassifier</code>, som lar oss velge mellom splitt-kriteriene Gini impurity, entropy og log loss.</p>
 
       <div class="oppgave" data-quiz id="oppg-plott-gini">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.4 · s. 19</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.4 · s. 20</span></div>
         <div class="o-text"><p>Plott Gini impurity og entropi i intervallet [0, 1]. Er kurvene like?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -385,7 +385,7 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-sammenlikn">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.4 · s. 19</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.3.4 · s. 20</span></div>
         <div class="o-text"><p>Sammenlikn uttrykkene for log loss, entropi og Gini-urenhet. Likner noen av disse? Hvilken går raskest å evaluere?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>

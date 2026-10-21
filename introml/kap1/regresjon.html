@@ -76,7 +76,7 @@
 <main data-chapter="Kapittel 1: Veiledet læring">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · 1C · Notater 1.4 · s. 20–32</div>
+      <div class="eyebrow">Kapittel 1 · 1C · Notater 1.4 · s. 21–31</div>
       <h1>Regre<em>sjon</em></h1>
       <p class="lede">Når target er et tall og ikke en klasse. Lineær regresjon med MSE og gradient descent, feature engineering med polynomer, hvorfor vi trenger valideringsdata og kryssvalidering, hva bias og varians egentlig er, og hvordan et beslutningstre kan gjøre regresjon.</p>
       <nav class="toc">
@@ -106,7 +106,7 @@
           <li><span class="tag">Forklar</span><strong>Bias og varians som diagnose:</strong> liten treningsfeil, valideringsfeil som øker, prediksjoner som endrer seg med datasplitten = høy varians (Ord. 2025 del 4 spm. 2). Induktivt bias = antakelsene modellen gjør for å generalisere (Ord. 2024 spm. 3). Se <a href="#bias-varians">05</a>.</li>
           <li><span class="tag">Forklar</span><strong>Regresjonstre velger splitten med lavest varians</strong> i target etter splitt (Ord. 2025 del 4 spm. 4). Se <a href="#regresjonstraer">06</a>.</li>
           <li><span class="tag">Forklar</span>Kryssvalidering vs bootstrap er spurt (Ord. 2024 spm. 18); boksen står i 1D der bootstrap defineres. k-fold vs LOOCV: kjenn forskjellen. Se <a href="#kryssvalidering">04</a>.</li>
-          <li><span class="tag">Lavere</span>Utledningen (72)–(88) av bias–varians-dekomposisjonen: bare resultatet \(\text{MSE} = \text{Bias}^2 + \text{Var} + \sigma^2\) og tolkningen er spurt. sklearn-koden i 06. Tabell 7-dataene.</li>
+          <li><span class="tag">Lavere</span>Utledningen (71)–(87) av bias–varians-dekomposisjonen: bare resultatet \(\text{MSE} = \text{Bias}^2 + \text{Var} + \sigma^2\) og tolkningen er spurt. sklearn-koden i 06. Tabell 7-dataene.</li>
         </ul>
       </div>
     </div>
@@ -118,23 +118,23 @@
     <div class="container">
       <div class="section-badge">01 · Data og tapsfunksjon</div>
       <h2>Fra klasser til <em>kontinuerlige verdier</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.4.1 · s. 20–23</div>
+      <div class="source-note">Notatene · avsnitt 1.4.1 · s. 21–23</div>
 
       <p class="dropcap">Se på datasettet i tabell 7 (nederst i avsnittet) og plottet i widgeten under. Igjen representerer \(y\) targets, «riktig svar», så vi holder oss i regimet til veiledet læring. Men da vi gjorde klassifisering fordelte targets seg i predefinerte kategorier. Disse dataene tilhører ikke kategorier, de har kontinuerlige verdier. Prediksjon til kontinuerlige verdier kalles <span class="term" data-term="regresjon">regresjon</span>: å predikere skåren til en film, estimere verdien til en bolig, forutse sykefraværet til en ansatt. Generelt: estimering av én eller flere kontinuerlige verdier.</p>
 
       <p>Vi starter igjen med det enkleste tilfellet, en lineær modell. Likningen for en <span class="term" data-term="lineaer-regresjonsmodell">lineær regresjonsmodell</span> er</p>
-      \[ f(x) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n. \tag{51} \]
+      \[ f(x) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n. \tag{50} \]
       <p>Modellen har én parameter \(\beta_i\) per feature \(x_i\) (kolonne i datasettet), og en parameter \(\beta_0\) kalt <span class="term" data-term="beta0">bias</span>. Til sammen \((n + 1)\) parametre for \(n\) features. Vi kan gjenbruke mesteparten av koden fra klassifiseringen for å trene modellen, og vi må igjen bruke gradient descent.</p>
 
       <div class="oppgave" data-quiz id="oppg-gjenbruk">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 21</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 22</span></div>
         <div class="o-text"><p>Hva kan vi <em>ikke</em> gjenbruke fra klassifiseringstilfellet?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra notatene</span>
             <p><strong>Tapsfunksjonen.</strong> Vi trenger et kvantitativt mål på hvor godt prediksjonen passer med target per datainstans, men regresjonsmodellen gjør ikke klassifisering, så cross-entropy kan ikke brukes. Den vanligste tapsfunksjonen for regresjon er <span class="term" data-term="mse">mean squared error</span>:</p>
-            \[ \text{MSE}(x) = \frac{1}{2N}\sum_{i=1}^{N}\bigl(y^{(i)} - f(x^{(i)})\bigr)^2. \tag{52} \]
+            \[ \text{MSE}(x) = \frac{1}{2N}\sum_{i=1}^{N}\bigl(y^{(i)} - f(x^{(i)})\bigr)^2. \tag{51} \]
             <p>Her er \(y^{(i)}\) target for datapunkt \(x^{(i)}\), \(f\) er modellen, og gjennomsnittet går over alle \(N\) instansene. Faktoren \(\tfrac{1}{2}\) er kun for convenience, og det finnes definisjoner av MSE uten den. MSE er liten hvis prediksjonen \(f(x)\) er nær den sanne verdien \(y\), og stor hvis de er ulike. (Sigmoid-funksjonen trenger vi heller ikke: utdata skal være et vilkårlig tall, ikke en sannsynlighet.)</p>
           </div>
         </div>
@@ -142,18 +142,18 @@
 
       <h3>Én feature: linje med to parametre</h3>
       <p>Med én feature \(x_1\) har modellen to parametre,</p>
-      \[ f(x) = \beta_0 + \beta_1 x_1. \tag{53} \]
+      \[ f(x) = \beta_0 + \beta_1 x_1. \tag{52} \]
       <p>Dette er på samme form som likning (2), bare med andre parameternavn, valgt for å skille tilfellet tydelig fra logistisk regresjon. <span class="term" data-term="beta0">Bias-parameteren</span> \(\beta_0\) angir hvor regresjonslinjen krysser \(y\)-aksen, funksjonsverdien i \(x_1 = 0\). Den forflytter alle prediksjoner med en konstant: tenk på den som en «baseline» uten kjennskap til noen feature-verdier. Så kommer \(\beta_1\), <span class="term" data-term="stigningstall">stigningstallet</span> til linja, i spill.</p>
 
       <p>Den deriverte av tapsfunksjonen med hensyn på de to parametrene er</p>
       \[ \begin{aligned}
         \frac{\partial \mathcal{L}}{\partial \beta_0} &amp;= \frac{1}{2N}\sum_{i=1}^{N}\frac{\partial}{\partial \beta_0}\bigl(y^{(i)} - \beta_1 x^{(i)} - \beta_0\bigr)^2 = \frac{1}{N}\sum_{i=1}^{N}\bigl(\beta_1 x^{(i)} + \beta_0 - y^{(i)}\bigr), \\
         \frac{\partial \mathcal{L}}{\partial \beta_1} &amp;= \frac{1}{N}\sum_{i=1}^{N} x^{(i)}\bigl(\beta_1 x^{(i)} + \beta_0 - y^{(i)}\bigr).
-      \end{aligned} \tag{54–56} \]
+      \end{aligned} \tag{53–55} \]
       <p>Her ser vi nytten av faktoren \(\tfrac{1}{2}\): den oppheves av potensen under derivasjonen. Vi kan kontrollere at de deriverte gir mening gjennom kontrollspørsmål.</p>
 
       <div class="oppgave" data-quiz id="oppg-beta0">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 22</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 23</span></div>
         <div class="o-text"><p>Modellen oppfører seg som i figur 10b i notatene: den overestimerer konsekvent for alle verdier av \(x_1\) (prøv \(\beta_0 = 5\) i widgeten under). Har modellen for lav eller for høy verdi av \(\beta_0\)? Er verdien til \(\partial\mathcal{L}/\partial\beta_0\) større eller mindre enn 0?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -165,7 +165,7 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-beta1">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 22</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.1 · s. 23</span></div>
         <div class="o-text"><p>Hvilken tilsvarende sjekk kan vi gjøre for \(\beta_1\)?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -177,12 +177,12 @@
       </div>
 
       <p>Fra gradienten får vi oppdateringsregelen for parametrene i regresjonsmodellen:</p>
-      \[ \begin{aligned} \beta_0 &amp;\leftarrow \beta_0 - \eta\,\frac{1}{N}\sum_{i=1}^{N}\bigl(f(x^{(i)}) - y^{(i)}\bigr), \ \beta_1 &amp;\leftarrow \beta_1 - \eta\,\frac{1}{N}\sum_{i=1}^{N} x^{(i)}\bigl(f(x^{(i)}) - y^{(i)}\bigr). \end{aligned} \tag{57} \]
-      <p>Mye av koden fra klassifiseringsoppgaven kan gjenbrukes for å tilpasse modellen i (53) til et datasett.</p>
+      \[ \begin{aligned} \beta_0 &amp;\leftarrow \beta_0 - \eta\,\frac{1}{N}\sum_{i=1}^{N}\bigl(f(x^{(i)}) - y^{(i)}\bigr), \ \beta_1 &amp;\leftarrow \beta_1 - \eta\,\frac{1}{N}\sum_{i=1}^{N} x^{(i)}\bigl(f(x^{(i)}) - y^{(i)}\bigr). \end{aligned} \tag{56} \]
+      <p>Mye av koden fra klassifiseringsoppgaven kan gjenbrukes for å tilpasse modellen i (52) til et datasett.</p>
 
       <div class="widget" id="w-linreg">
         <div class="widget-label">Prøv selv · Lineær regresjon på tabell 7</div>
-        <p class="widget-intro">De 40 datapunktene fra notatene. Still inn \(\beta_0\) og \(\beta_1\) for hånd og les av tapet og fortegnet på de deriverte, eller la gradient descent (57) gjøre jobben.</p>
+        <p class="widget-intro">De 40 datapunktene fra notatene. Still inn \(\beta_0\) og \(\beta_1\) for hånd og les av tapet og fortegnet på de deriverte, eller la gradient descent (56) gjøre jobben.</p>
         <svg viewBox="0 0 560 300" data-w="560" data-h="300" aria-label="Lineær regresjon på tabell 7"></svg>
         <div class="w-row">
           <div class="w-ctl"><label for="lr-b0">β₀</label><input type="range" id="lr-b0" min="-10" max="10" step="0.1" value="5"><span class="w-val" id="lr-b0-val">5.0</span></div>
@@ -237,7 +237,7 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
-            <p><strong>A.</strong> <strong>Prediksjon:</strong> \(f(2) = 1 \cdot 2 + 0 = 2\), avvik \(y - f = 4 - 2 = 2\). <strong>Gradienter</strong> (kjerneregelen på \(\tfrac12(y - f)^2\), faktoren ½ oppheves): \(\partial\mathcal{L}/\partial w = -(y - f)\,x = -2 \cdot 2 = -4\) og \(\partial\mathcal{L}/\partial b = -(y - f) = -2\). Negative gradienter: tapet minker når \(w\) og \(b\) øker, som gir mening siden modellen underestimerer. <strong>Oppdatering:</strong> \(w \leftarrow 1 - 0.1 \cdot (-4) = 1.4\), \(b \leftarrow 0 - 0.1 \cdot (-2) = 0.2\). Ny prediksjon \(1.4 \cdot 2 + 0.2 = 3.0\), nærmere 4. Dette er likning (55)–(57) med \(N = 1\); merk fortegnskonvensjonen \((f - y)\) der mot \(-(y - f)\) her, samme tall.</p>
+            <p><strong>A.</strong> <strong>Prediksjon:</strong> \(f(2) = 1 \cdot 2 + 0 = 2\), avvik \(y - f = 4 - 2 = 2\). <strong>Gradienter</strong> (kjerneregelen på \(\tfrac12(y - f)^2\), faktoren ½ oppheves): \(\partial\mathcal{L}/\partial w = -(y - f)\,x = -2 \cdot 2 = -4\) og \(\partial\mathcal{L}/\partial b = -(y - f) = -2\). Negative gradienter: tapet minker når \(w\) og \(b\) øker, som gir mening siden modellen underestimerer. <strong>Oppdatering:</strong> \(w \leftarrow 1 - 0.1 \cdot (-4) = 1.4\), \(b \leftarrow 0 - 0.1 \cdot (-2) = 0.2\). Ny prediksjon \(1.4 \cdot 2 + 0.2 = 3.0\), nærmere 4. Dette er likning (54)–(56) med \(N = 1\); merk fortegnskonvensjonen \((f - y)\) der mot \(-(y - f)\) her, samme tall.</p>
           </div>
         </div>
       </div>
@@ -257,7 +257,7 @@
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag</span>
-            <p><strong>A.</strong> Samme resonnement som ga cross-entropy i 1A, men med \(y = F(x) + \varepsilon\) og normalfordelt støy (likning 60 i 05): likelihooden til ett datapunkt er \(\propto \exp\!\big(-(y - f(x))^2 / 2\sigma^2\big)\), log-likelihooden er \(-\sum (y - f)^2 / 2\sigma^2\) pluss konstant, og å maksimere den er å minimere summen av kvadrerte avvik. B er feil (vi deriverer MSE hele tiden), C beskriver L1-regularisering, og D er baklengs: kvadratet gjør outliers <em>mer</em> innflytelsesrike.</p>
+            <p><strong>A.</strong> Samme resonnement som ga cross-entropy i 1A, men med \(y = F(x) + \varepsilon\) og normalfordelt støy (likning 59 i 05): likelihooden til ett datapunkt er \(\propto \exp\!\big(-(y - f(x))^2 / 2\sigma^2\big)\), log-likelihooden er \(-\sum (y - f)^2 / 2\sigma^2\) pluss konstant, og å maksimere den er å minimere summen av kvadrerte avvik. B er feil (vi deriverer MSE hele tiden), C beskriver L1-regularisering, og D er baklengs: kvadratet gjør outliers <em>mer</em> innflytelsesrike.</p>
           </div>
         </div>
       </div>
@@ -270,12 +270,12 @@
     <div class="container">
       <div class="section-badge">02 · Polynomisk regresjon og feature engineering</div>
       <h2>Når linja <em>ikke strekker til</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.4.2 · s. 24–25</div>
+      <div class="source-note">Notatene · avsnitt 1.4.2 · s. 23–24</div>
 
       <p class="dropcap">Figur 11a i notatene viser et datasett der den underliggende fordelingen er parabelen \(1.0x^2 + 2.0x + 0\), og datapunktene er generert fra den med tilfeldig <span class="term" data-term="gaussisk-stoy">gaussisk støy</span> (forventningsverdi \(\mu = 0\), standardavvik \(\sigma = 0.5\)) lagt til.</p>
 
       <div class="oppgave" data-quiz id="oppg-linreg-parabel">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 24</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 23</span></div>
         <div class="o-text"><p>Hvor godt vil lineær regresjon fungere for å lage en modell som predikerer \(y\) for nye datapunkter \(x\)? Hvorfor? Prøv å formulere svaret ved hjelp av <em>antakelsen</em> som ligger i lineær regresjon.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -287,7 +287,7 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-mse-960">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 24</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 23</span></div>
         <div class="o-text"><p>For akkurat min implementasjon fant jeg at modellens MSE ligger rundt 960. Er dette et høyt eller lavt tall? Kan vi si generelt hva som er en høy verdi for MSE?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -308,7 +308,7 @@
       </div>
 
       <p>Etter transformasjonen har vi to features, \(\{x_1, x_2\} = \{x, x^2\}\), og har økt dimensjonaliteten fra én til to. Vi gjør en ny lineær regresjon, nå med to features:</p>
-      \[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2. \tag{58} \]
+      \[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2. \tag{57} \]
       <p>Merk at vi fremdeles gjør <span class="term" data-term="polynomisk-regresjon">lineær regresjon</span>, men med en generert feature. Og merk at feature engineering kan gjøres i alle tilfeller, ikke bare for veiledet læring og ikke bare for regresjon. Generelt er feature engineering alle operasjoner vi utfører på datasettet:</p>
 
       <div class="fact-grid">
@@ -320,11 +320,11 @@
 
       <h3>Polynom av grad M</h3>
       <p>For én variabel \(x\) kan vi skrive et polynom av grad \(M\) som</p>
-      \[ f(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \dots + \beta_M x^M. \tag{59} \]
+      \[ f(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \dots + \beta_M x^M. \tag{58} \]
       <p>Figur 12 i notatene viser data generert fra et polynom av <em>ukjent</em> grad, og figur 13 viser lineær regresjon (a) og regresjon med genererte features til grad 3 (b) og 15 (c). En mer kompleks modell (høyere grad) gir ikke nødvendigvis lavere tap: både for lav og for høy <span class="term" data-term="modellkompleksitet">kompleksitet</span> er problematisk.</p>
 
       <div class="oppgave" data-quiz id="oppg-se-grad">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 25</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 24</span></div>
         <div class="o-text"><p>Er det mulig å se fra dataene i figur 12 hvilken grad vi bør generere features til?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -336,7 +336,7 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-grad-hyper">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 25</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.2 · s. 24</span></div>
         <div class="o-text"><p>Er graden på polynomet vi transformerer features til en modellparameter, en hyperparameter eller en feature?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -367,7 +367,7 @@
     <div class="container">
       <div class="section-badge">03 · Trening, testing og validering</div>
       <h2>Tre datasett, <em>tre roller</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.4.3 · s. 25–27</div>
+      <div class="source-note">Notatene · avsnitt 1.4.3 · s. 24–26</div>
 
       <p class="dropcap"><span class="term" data-term="overfit">Overtilpasning</span> skjer når modellen har kapasitet til å tilpasse seg så godt til treningsdataene at det går utover generaliseringsevnen på testdataene. Vi må kunne <em>detektere</em> overtilpasning, slik at vi kan justere hyperparametrene underveis. Men husk: testdataene skal ikke brukes til noen som helst justering. Brukte vi dem til å tilpasse hyperparametre, hadde vi ikke usette data igjen å teste den endelige modellen på.</p>
       <p>Vi kan heller ikke bruke treningsdataene til å detektere overtilpasning, siden treningen har som mål å tilpasse modellen best mulig til nettopp dem. Derfor deler vi datasettet i <strong>tre</strong> deler, i stedet for to:</p>
@@ -453,10 +453,10 @@ for epoch in range(n_epochs):
     <div class="container">
       <div class="section-badge">04 · Kryssvalidering</div>
       <h2>Når splitten selv er <em>tilfeldig</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.4.4 · s. 27</div>
+      <div class="source-note">Notatene · avsnitt 1.4.4 · s. 26</div>
 
       <div class="oppgave" data-quiz id="oppg-split">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.4 · s. 27</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.4 · s. 26</span></div>
         <div class="o-text"><p>Hvordan velger vi hvilke datapunkter som havner i henholdsvis trenings-, test- og valideringsdatasettet, og påvirker dette testresultatet?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -491,7 +491,7 @@ for epoch in range(n_epochs):
       </div>
 
       <div class="oppgave" data-quiz id="oppg-kfold-loocv">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.4 · s. 27</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.4 · s. 26</span></div>
         <div class="o-text"><p>Hva er fordeler og ulemper ved k-fold cross validation sammenliknet med LOOCV?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -514,18 +514,18 @@ for epoch in range(n_epochs):
     <div class="container">
       <div class="section-badge">05 · Bias–variance tradeoff</div>
       <h2>Hvor kommer feilen <em>fra</em>?</h2>
-      <div class="source-note">Notatene · avsnitt 1.4.5 · s. 27–30</div>
+      <div class="source-note">Notatene · avsnitt 1.4.5 · s. 26–29</div>
 
       <p class="dropcap">Når vi velger en læringsalgoritme, velger vi en <span class="term" data-term="estimator">estimator</span> for prediksjonsproblemet vårt. For både logistisk og lineær regresjon (og senere nevrale nettverk) er gradient descent algoritmen som optimaliserer parametre basert på data, så det er estimatoren vår. Vi må forholde oss til at den har både bias og varians.</p>
 
       <p>Anta at target-verdiene vi observerer følger en funksjon som ingen unntatt universet kjenner, kall den \(F\). Gitt \(x\) gir den den sanne verdien av \(y\), utover støy utenfor vår kontroll (måleapparat, eksterne faktorer):</p>
-      \[ y = F(x) + \varepsilon. \tag{60} \]
+      \[ y = F(x) + \varepsilon. \tag{59} \]
       <p>Dette <span class="term" data-term="irredusibel-stoy">irredusible</span> støyet blir vi ikke kvitt, men vi antar at det er normalfordelt med \(\mu = 0\) og standardavvik \(\sigma\). Et treningsdatasett er \(n\) tilfeldige observasjoner fra virkeligheten, \(\mathcal{D} = \{(x_1, y_1), \dots, (x_n, y_n)\}\), og på dette trener vi en modell \(f(x; \mathcal{D})\). Det er akkurat modellene vi har holdt på med til nå, vi har bare ikke skrevet \(\mathcal{D}\) eksplisitt. Nå skal vi se hvordan estimatoren oppfører seg under <em>ulike trekninger</em> av data, og da er det nyttig å ha \(\mathcal{D}\) med.</p>
 
       <p>Når vi minimerer avviket \((y - f(x; \mathcal{D}))^2\), ønsker vi en modell som også har lavt tap på nye datapunkter. Det betyr at vi bryr oss om <span class="term" data-term="forventningsverdi">forventningsverdien</span> over mange ulike trekninger av treningsdatasettet,</p>
-      \[ \mathbb{E}_{\mathcal{D}}\bigl[(y - f(x; \mathcal{D}))^2\bigr]. \tag{62} \]
+      \[ \mathbb{E}_{\mathcal{D}}\bigl[(y - f(x; \mathcal{D}))^2\bigr]. \tag{61} \]
       <p>Uansett hvilken funksjon \(f\) vi velger, kan feilen vi forventer på et nytt datapunkt \(x\) dekomponeres som</p>
-      \[ \mathbb{E}_{\mathcal{D}}\bigl[(y - f(x; \mathcal{D}))^2\bigr] = \bigl(\text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]\bigr)^2 + \text{Var}_{\mathcal{D}}[f(x; \mathcal{D})] + \sigma^2. \tag{63} \]
+      \[ \mathbb{E}_{\mathcal{D}}\bigl[(y - f(x; \mathcal{D}))^2\bigr] = \bigl(\text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]\bigr)^2 + \text{Var}_{\mathcal{D}}[f(x; \mathcal{D})] + \sigma^2. \tag{62} \]
       <p>Dette er opphavet til <span class="term" data-term="bias-variance-tradeoff">bias-variance tradeoff</span>: tapet en læringsalgoritme ikke klarer å minimere vekk, stammer fra tre typer feil: bias, varians og irredusibelt støy.</p>
 
       <h3>Bias</h3>
@@ -534,23 +534,23 @@ for epoch in range(n_epochs):
         <p><span class="term" data-term="bias-estimator">Bias til en læringsalgoritme</span> har ingenting med det konstante leddet \(\beta_0\) i lineære modeller å gjøre, og heter det samme kun for å forvirre studenter.</p>
       </div>
       <p>Biasen representerer det systematiske avviket til estimatoren, beregnet over ulike trekninger av treningsdata:</p>
-      \[ \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})] = \mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D}) - F(x)] = \mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - F(x). \tag{64–65} \]
+      \[ \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})] = \mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D}) - F(x)] = \mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - F(x). \tag{63–64} \]
       <p>Altså det forventede avviket mellom modellen tilpasset på et gitt datasett og den faktiske target-verdien, begge evaluert i \(x\). Enkelt sagt: hvor mye vi må forvente at modellen bommer på nye data, feilen som følger av de innebygde forenklingene i modellen.</p>
 
       <div class="oppgave" data-quiz id="oppg-flytte-F">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.5 · s. 28</span></div>
-        <div class="o-text"><p>Hva kommer den andre likheten i (64–65) av, altså hvorfor kan vi flytte \(F(x)\) utenfor forventningsverdien? Tenk over dette før du leser videre.</p></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.5 · s. 27</span></div>
+        <div class="o-text"><p>Hva kommer den andre likheten i (63–64) av, altså hvorfor kan vi flytte \(F(x)\) utenfor forventningsverdien? Tenk over dette før du leser videre.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra notatene</span>
-            <p>Fordi den sanne sammenhengen, likning (60), ikke er avhengig av datasettet \(\mathcal{D}\), som vi tar forventningsverdien over. \(F(x)\) er en konstant når \(x\) er gitt, og \(\mathbb{E}[c] = c\).</p>
+            <p>Fordi den sanne sammenhengen, likning (59), ikke er avhengig av datasettet \(\mathcal{D}\), som vi tar forventningsverdien over. \(F(x)\) er en konstant når \(x\) er gitt, og \(\mathbb{E}[c] = c\).</p>
           </div>
         </div>
       </div>
 
       <div class="oppgave" data-quiz id="oppg-hoyde">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.5 · s. 28</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.5 · s. 27</span></div>
         <div class="o-text"><p>For intuisjon, en litt rar situasjon: den faktiske gjennomsnittshøyden til norske kvinner er 167 cm. Vi måler egenskapene og høyden til mange ulike tilfeldige utvalg av norske kvinner, som gir oss flere treningsdatasett. For hvert datasett trener vi en regresjonsmodell (med gradient descent) som estimerer kvinnehøyde fra de andre egenskapene. Modellene predikerer i gjennomsnitt at kvinner er 165 cm høye. Hvor stor bias har læringsalgoritmen?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -565,7 +565,7 @@ for epoch in range(n_epochs):
 
       <h3>Varians</h3>
       <p><span class="term" data-term="varians-estimator">Variansen</span> til en læringsalgoritme over ulike trekninger av data er</p>
-      \[ \text{Var}_{\mathcal{D}}[f(x; \mathcal{D})] = \mathbb{E}_{\mathcal{D}}\Bigl[\bigl(\mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - f(x; \mathcal{D})\bigr)^2\Bigr], \tag{66} \]
+      \[ \text{Var}_{\mathcal{D}}[f(x; \mathcal{D})] = \mathbb{E}_{\mathcal{D}}\Bigl[\bigl(\mathbb{E}_{\mathcal{D}}[f(x; \mathcal{D})] - f(x; \mathcal{D})\bigr)^2\Bigr], \tag{65} \]
       <p>altså hvor mye vi kan forvente at modellen varierer rundt sitt eget gjennomsnitt. Høy varians betyr typisk at algoritmen er for sensitiv til små fluktuasjoner i treningsdataene, og kanskje har modellert tilfeldig støy vel så mye som faktiske sammenhenger. Komplekse modeller med mange parametre ender gjerne opp med ulike parameterverdier for hvert treningsdatasett: stor varians i de estimerte parametrene.</p>
 
       <div class="widget" id="w-bv">
@@ -582,11 +582,11 @@ for epoch in range(n_epochs):
       </div>
 
       <h3>Utledningen av dekomposisjonen</h3>
-      <p>Med uttrykkene for bias og varians kan vi utlede (63) ved hjelp av noen nyttige relasjoner for forventningsverdier, der \(X\) og \(Y\) er tilfeldige variabler og \(c\) en konstant:</p>
-      \[ \mathbb{E}[\varepsilon] = 0, \quad \mathbb{E}[c] = c, \quad \mathbb{E}[cX] = c\,\mathbb{E}[X], \quad \mathbb{E}[X + Y] = \mathbb{E}[X] + \mathbb{E}[Y], \quad \mathbb{E}[XY] \overset{!}{=} \mathbb{E}[X]\,\mathbb{E}[Y] \text{ for uavhengige } X, Y. \tag{67–71} \]
+      <p>Med uttrykkene for bias og varians kan vi utlede (62) ved hjelp av noen nyttige relasjoner for forventningsverdier, der \(X\) og \(Y\) er tilfeldige variabler og \(c\) en konstant:</p>
+      \[ \mathbb{E}[\varepsilon] = 0, \quad \mathbb{E}[c] = c, \quad \mathbb{E}[cX] = c\,\mathbb{E}[X], \quad \mathbb{E}[X + Y] = \mathbb{E}[X] + \mathbb{E}[Y], \quad \mathbb{E}[XY] \overset{!}{=} \mathbb{E}[X]\,\mathbb{E}[Y] \text{ for uavhengige } X, Y. \tag{66–70} \]
 
       <details class="deriv-box">
-        <summary>Vis hele utledningen (likning 72–88 i notatene)</summary>
+        <summary>Vis hele utledningen (likning 71–87 i notatene)</summary>
         <p>Vi dropper konstanten \(\tfrac{1}{2}\) og indeksen \(\mathcal{D}\) for enklere notasjon:</p>
         \[ \begin{aligned}
           \text{MSE} &amp;= \mathbb{E}\bigl[(y - f(x; \mathcal{D}))^2\bigr] = \mathbb{E}\bigl[(F(x) + \varepsilon - f(x; \mathcal{D}))^2\bigr] \\
@@ -594,35 +594,35 @@ for epoch in range(n_epochs):
           &amp;= \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})] + \mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] + \mathbb{E}[\varepsilon^2] \\
           &amp;= \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])^2\bigr] + \mathbb{E}\bigl[(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] \\
           &amp;\quad + 2\,\mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))\bigr] + \mathbb{E}[\varepsilon^2].
-        \end{aligned} \tag{72–77} \]
+        \end{aligned} \tag{71–76} \]
         <p>Vi tar hvert ledd for seg. Det første leddet inneholder bare konstanter (gitt \(x\)):</p>
-        \[ \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])^2\bigr] = F(x)^2 - 2F(x)\,\mathbb{E}[f(x; \mathcal{D})] + \mathbb{E}[f(x; \mathcal{D})]^2 = \bigl(F(x) - \mathbb{E}[f(x; \mathcal{D})]\bigr)^2 = \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]^2. \tag{78–81} \]
-        <p>Det andre leddet er per definisjon (66) variansen:</p>
-        \[ \mathbb{E}\bigl[(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] = \text{Var}[f(x; \mathcal{D})]. \tag{82} \]
+        \[ \mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])^2\bigr] = F(x)^2 - 2F(x)\,\mathbb{E}[f(x; \mathcal{D})] + \mathbb{E}[f(x; \mathcal{D})]^2 = \bigl(F(x) - \mathbb{E}[f(x; \mathcal{D})]\bigr)^2 = \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]^2. \tag{77–80} \]
+        <p>Det andre leddet er per definisjon (65) variansen:</p>
+        \[ \mathbb{E}\bigl[(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))^2\bigr] = \text{Var}[f(x; \mathcal{D})]. \tag{81} \]
         <p>Det tredje leddet blir null:</p>
         \[ \begin{aligned}
           &amp;2\,\mathbb{E}\bigl[(F(x) - \mathbb{E}[f(x; \mathcal{D})])(\mathbb{E}[f(x; \mathcal{D})] - f(x; \mathcal{D}))\bigr] \\
           &amp;= 2\,\mathbb{E}\bigl[F(x)\mathbb{E}[f(x; \mathcal{D})] - F(x)f(x; \mathcal{D}) - \mathbb{E}[f(x; \mathcal{D})]^2 + \mathbb{E}[f(x; \mathcal{D})]f(x; \mathcal{D})\bigr] \\
           &amp;= 2\bigl(F(x)\mathbb{E}[f(x; \mathcal{D})] - F(x)\mathbb{E}[f(x; \mathcal{D})] - \mathbb{E}[f(x; \mathcal{D})]^2 + \mathbb{E}[f(x; \mathcal{D})]^2\bigr) = 0.
-        \end{aligned} \tag{83–86} \]
-        <p>Til slutt, \(\mathbb{E}[\varepsilon^2] = \text{Var}[\varepsilon] = \sigma^2\) (87). Samler vi leddene:</p>
-        \[ \text{MSE}(x) = \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]^2 + \text{Var}[f(x; \mathcal{D})] + \sigma^2. \tag{88} \]
+        \end{aligned} \tag{82–85} \]
+        <p>Til slutt, \(\mathbb{E}[\varepsilon^2] = \text{Var}[\varepsilon] = \sigma^2\) (86). Samler vi leddene:</p>
+        \[ \text{MSE}(x) = \text{Bias}_{\mathcal{D}}[f(x; \mathcal{D})]^2 + \text{Var}[f(x; \mathcal{D})] + \sigma^2. \tag{87} \]
       </details>
 
       <div class="oppgave" data-quiz id="oppg-eps2">
-        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.4.5 · s. 30</span></div>
-        <div class="o-text"><p>Se på likning (66) og overbevis deg om at \(\mathbb{E}[\varepsilon^2] = \text{Var}[\varepsilon] = \sigma^2\).</p></div>
+        <div class="o-label"><span>Tenk over · fra notatene</span><span class="o-ref">1.4.5 · s. 29</span></div>
+        <div class="o-text"><p>Se på likning (65) og overbevis deg om at \(\mathbb{E}[\varepsilon^2] = \text{Var}[\varepsilon] = \sigma^2\).</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Forslag til svar · ikke fasit fra notatene</span>
-            <p>Varians er forventet kvadratavvik fra gjennomsnittet: \(\text{Var}[\varepsilon] = \mathbb{E}[(\varepsilon - \mathbb{E}[\varepsilon])^2]\). Siden \(\mathbb{E}[\varepsilon] = 0\) (67), blir det \(\mathbb{E}[\varepsilon^2]\). Og støyet er normalfordelt med standardavvik \(\sigma\), så variansen er \(\sigma^2\) per definisjon.</p>
+            <p>Varians er forventet kvadratavvik fra gjennomsnittet: \(\text{Var}[\varepsilon] = \mathbb{E}[(\varepsilon - \mathbb{E}[\varepsilon])^2]\). Siden \(\mathbb{E}[\varepsilon] = 0\) (66), blir det \(\mathbb{E}[\varepsilon^2]\). Og støyet er normalfordelt med standardavvik \(\sigma\), så variansen er \(\sigma^2\) per definisjon.</p>
           </div>
         </div>
       </div>
 
       <h3>Tradeoff, eller dilemma</h3>
-      <p>Relasjonen (88) forteller at tapet består av en komponent som skyldes bias (feilantakelser modellene gjør generelt), en som skyldes varians (spesialtilpasning til fluktuasjoner i datasettet), og en irredusibel feil grunnet støy, utenfor vår kontroll. Å minimere det forventede tapet er en konflikt mellom to motsatte typer feil, derav <em>tradeoff</em>: når den ene minker, øker den andre.</p>
+      <p>Relasjonen (87) forteller at tapet består av en komponent som skyldes bias (feilantakelser modellene gjør generelt), en som skyldes varians (spesialtilpasning til fluktuasjoner i datasettet), og en irredusibel feil grunnet støy, utenfor vår kontroll. Å minimere det forventede tapet er en konflikt mellom to motsatte typer feil, derav <em>tradeoff</em>: når den ene minker, øker den andre.</p>
       <div class="compare-grid">
         <div class="compare-cell warm">
           <h4>Høy varians → overfit</h4>
@@ -650,7 +650,7 @@ for epoch in range(n_epochs):
           <button class="reveal-btn">Se svar</button>
           <div class="answer">
             <span class="answer-src">Svar fra løsningsforslaget · begrunnelse skrevet for denne siden</span>
-            <p><strong>C.</strong> Tredje setning er definisjonen av varians (66): modellen varierer mye fra datasett til datasett. De to første er overfit-mønsteret fra figur 14a. Høy bias (B) ville gitt høy <em>treningsfeil</em>; her er den svært liten. A er motsatt av det som observeres, D krever høy feil på begge.</p>
+            <p><strong>C.</strong> Tredje setning er definisjonen av varians (65): modellen varierer mye fra datasett til datasett. De to første er overfit-mønsteret fra figur 14a. Høy bias (B) ville gitt høy <em>treningsfeil</em>; her er den svært liten. A er motsatt av det som observeres, D krever høy feil på begge.</p>
           </div>
         </div>
       </div>
@@ -670,7 +670,7 @@ for epoch in range(n_epochs):
           <button class="reveal-btn">Se svar</button>
           <div class="answer forslag">
             <span class="answer-src">Svar fra løsningsforslaget · begrunnelse er forslag</span>
-            <p><strong>C.</strong> <span class="term" data-term="induktivt-bias">Induktivt bias</span> er det som gjør generalisering mulig i det hele tatt: uten antakelser om hvordan \(F\) ser ut mellom datapunktene kan ingen modell si noe om nye \(x\). Lineær regresjon antar en rett linje (ingen vekselvirkninger), trær antar akseparallelle regioner, naïv Bayes antar uavhengige features. Høy bias i (65) er prisen når antakelsen er for enkel. A, B og D beskriver ikke antakelser.</p>
+            <p><strong>C.</strong> <span class="term" data-term="induktivt-bias">Induktivt bias</span> er det som gjør generalisering mulig i det hele tatt: uten antakelser om hvordan \(F\) ser ut mellom datapunktene kan ingen modell si noe om nye \(x\). Lineær regresjon antar en rett linje (ingen vekselvirkninger), trær antar akseparallelle regioner, naïv Bayes antar uavhengige features. Høy bias i (64) er prisen når antakelsen er for enkel. A, B og D beskriver ikke antakelser.</p>
           </div>
         </div>
       </div>
@@ -683,12 +683,12 @@ for epoch in range(n_epochs):
     <div class="container">
       <div class="section-badge">06 · Regresjonstrær</div>
       <h2>Én verdi per <em>region</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.4.6 · s. 30–32</div>
+      <div class="source-note">Notatene · avsnitt 1.4.6 · s. 29–31</div>
 
       <p class="dropcap">Figur 15a i notatene viser data med én feature \(x_1\) og et target \(y\) med en tydelig fordeling, men som vi likevel ikke kjenner funksjonsformen til (eller, kanskje du kjenner den, men lat som du ikke gjør det). Dataene er trappeformet: \(y\) er omtrent 0 for \(x_1 \lt 1\), 1 for \(x_1\) mellom 1 og 2, og så videre.</p>
 
       <div class="oppgave" data-quiz id="oppg-floor-polynom">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 30</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 29</span></div>
         <div class="o-text"><p>Prøv gjerne å generere disse dataene selv med <code>def f(x): return np.floor(x)</code>, og se om du klarer å tilpasse et polynom av valgfri grad til dataene.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -702,7 +702,7 @@ for epoch in range(n_epochs):
       <p>I stedet kan vi innse at dataene befinner seg i flere <em>regioner</em>. Beslutningstrær er godt egnet til å splitte data i regioner gjennom splittkriterier. Til nå har vi brukt dem til klassifisering, der løvnodene predikerer klasse. Samme modellstruktur kan brukes i regresjon, siden <strong>hver splitt i treet deler opp datarommet</strong>: et <span class="term" data-term="regresjonstre">regresjonstre</span> splitter datarommet i flere områder og predikerer én verdi per område.</p>
 
       <div class="oppgave" data-quiz id="oppg-tre-dybde">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 31</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 30</span></div>
         <div class="o-text"><p>Om du skulle tilpasse et beslutningstre til disse dataene, hvor dypt tror du at det <em>minimum</em> bør være? Hvor dypt tror du at det <em>optimale</em> treet vil være (optimalt = lavest MSE)?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -793,7 +793,7 @@ plt.show()</code></pre>
       </details>
 
       <div class="oppgave" data-quiz id="oppg-traer-vs-regresjon">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 32</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.4.6 · s. 31</span></div>
         <div class="o-text"><p>Til slutt, lag en liste over ulikheter mellom beslutningstrær (både for klassifisering og regresjon) og lineær/logistisk regresjon (med polynomisk feature extraction). Se tabell 8 når du gir opp.</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -997,7 +997,7 @@ plt.show()</code></pre>
       var over = g[0] > 0.05 ? 'overestimerer i snitt → β₀ skal ned' : g[0] < -0.05 ? 'underestimerer i snitt → β₀ skal opp' : 'treffer riktig i snitt';
       var slope = g[1] > 0.5 ? 'for bratt → β₁ skal ned' : g[1] < -0.5 ? 'for slak → β₁ skal opp' : 'omtrent riktig stigning';
       out.innerHTML = 'f(x) = ' + b0.toFixed(2) + ' + ' + b1.toFixed(2) + '·x        (steg t = ' + t + ')\n' +
-        'MSE (52) = <span class="hl">' + f3(L) + '</span>\n' +
+        'MSE (51) = <span class="hl">' + f3(L) + '</span>\n' +
         '∂ℒ/∂β₀ = ' + f3(g[0]) + '  → ' + over + '\n' +
         '∂ℒ/∂β₁ = ' + f3(g[1]) + '  → ' + slope + '\n' +
         'Minste kvadraters løsning: β₀* = ' + f3(b0opt) + ', β₁* = ' + f3(b1opt) + ', MSE* = ' + f3(mse(T7X, T7Y, function (x) { return b0opt + b1opt * x; }, true));
@@ -1128,7 +1128,7 @@ plt.show()</code></pre>
       bias2 /= GRID.length; vari /= GRID.length;
       plot.polyline(meanPts, 'curve');
       out.innerHTML = metric('Bias²', bias2, 'gj.snitt over x av (E[f] − F)²') + metric('Varians', vari, 'gj.snitt over x av Var[f]') +
-        metric('σ²', sigma * sigma, 'irredusibelt støy') + metric('Sum (88)', bias2 + vari + sigma * sigma, 'Bias² + Var + σ²') +
+        metric('σ²', sigma * sigma, 'irredusibelt støy') + metric('Sum (87)', bias2 + vari + sigma * sigma, 'Bias² + Var + σ²') +
         metric('Målt MSE', testErr / testN, 'på nye datapunkter', Math.abs(testErr / testN - (bias2 + vari + sigma * sigma)) < 0.35 * (bias2 + vari + sigma * sigma) ? 'ok' : '');
     }
     mIn.addEventListener('input', draw); sIn.addEventListener('input', draw);

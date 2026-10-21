@@ -1,79 +1,79 @@
 {
-  "pdf": "2026___TDT4172_Lecture_notes_and_equations-6.pdf",
-  "dato_i_pdf": "October 7, 2026",
-  "dato_norsk": "7. oktober 2026",
-  "sider": 47,
-  "sha256": "192b616b67e664f319a6bfdbd0f9c4e3845cc0398faf7d634b269a3a959b2761",
-  "ekstrahert": "2026-10-08",
-  "antall_oppgaver": 43,
+  "pdf": "2026___TDT4172_Lecture_notes_and_equations 19.10.pdf",
+  "dato_i_pdf": "October 19, 2026",
+  "dato_norsk": "19. oktober 2026",
+  "sider": 62,
+  "sha256": "26e628aa433ad3e5269daa49279668d8b16eb87b866bc762026f87f6eef1faf6",
+  "ekstrahert": "2026-10-21",
+  "antall_oppgaver": 10,
   "seksjoner": [
     {
       "nummer": "1",
       "tittel": "Veiledet læring",
-      "side": 2,
+      "side": 3,
       "tegn": 0,
       "oppgaver": 0
     },
     {
       "nummer": "1.1",
       "tittel": "Data",
-      "side": 2,
-      "tegn": 8206,
-      "oppgaver": 2
+      "side": 3,
+      "tegn": 7547,
+      "oppgaver": 0
     },
     {
       "nummer": "1.2",
       "tittel": "Logistisk regresjon",
-      "side": 4,
-      "tegn": 1116,
+      "side": 5,
+      "tegn": 1034,
       "oppgaver": 0
     },
     {
       "nummer": "1.2.1",
       "tittel": "Trening og tapsfunksjon",
-      "side": 5,
-      "tegn": 3704,
-      "oppgaver": 1
+      "side": 6,
+      "tegn": 3449,
+      "oppgaver": 0
     },
     {
       "nummer": "1.2.2",
       "tittel": "Gradient descent",
       "side": 7,
-      "tegn": 3546,
+      "tegn": 3626,
       "oppgaver": 0
     },
     {
       "nummer": "1.2.3",
       "tittel": "Trening",
-      "side": 8,
+      "side": 9,
       "tegn": 3182,
       "oppgaver": 0
     },
     {
       "nummer": "1.2.4",
       "tittel": "Evaluering",
-      "side": 9,
-      "tegn": 3682,
-      "oppgaver": 2
+      "side": 10,
+      "tegn": 2976,
+      "oppgaver": 0
     },
     {
       "nummer": "1.2.5",
       "tittel": "Klassifiseringsterskel",
       "side": 11,
-      "tegn": 3620,
-      "oppgaver": 3
+      "tegn": 3404,
+      "oppgaver": 0
     },
     {
       "nummer": "1.2.6",
       "tittel": "Kort om entropi og cross entropy loss",
-      "side": 12,
+      "side": 13,
       "tegn": 1774,
       "oppgaver": 0
     },
     {
       "nummer": "1.2.7",
       "tittel": "Bayes’ teorem",
-      "side": 13,
+      "side": 14,
       "tegn": 4654,
       "oppgaver": 0
     },
@@ -81,169 +81,176 @@
       "nummer": "1.2.8",
       "tittel": "Ikke-uavhengige features",
       "side": 15,
-      "tegn": 2794,
-      "oppgaver": 2
+      "tegn": 1754,
+      "oppgaver": 0
     },
     {
       "nummer": "1.2.9",
       "tittel": "Dimensjonsforbannelsen",
-      "side": 15,
-      "tegn": 1211,
-      "oppgaver": 1
+      "side": 16,
+      "tegn": 797,
+      "oppgaver": 0
     },
     {
       "nummer": "1.2.10",
       "tittel": "Trening på ubalanserte data",
-      "side": 16,
-      "tegn": 4568,
-      "oppgaver": 2
+      "side": 17,
+      "tegn": 4286,
+      "oppgaver": 0
     },
     {
       "nummer": "1.3",
       "tittel": "Beslutningstrær",
-      "side": 17,
+      "side": 18,
       "tegn": 0,
       "oppgaver": 0
     },
     {
       "nummer": "1.3.1",
       "tittel": "Noder",
-      "side": 17,
+      "side": 18,
       "tegn": 1795,
       "oppgaver": 0
     },
     {
       "nummer": "1.3.2",
       "tittel": "Gini Impurity",
-      "side": 18,
-      "tegn": 1558,
-      "oppgaver": 1
+      "side": 19,
+      "tegn": 1419,
+      "oppgaver": 0
     },
     {
       "nummer": "1.3.3",
       "tittel": "Entropi",
-      "side": 18,
-      "tegn": 1819,
-      "oppgaver": 2
+      "side": 19,
+      "tegn": 1285,
+      "oppgaver": 0
     },
     {
       "nummer": "1.3.4",
       "tittel": "Bygge beslutningstrær",
-      "side": 19,
-      "tegn": 3745,
-      "oppgaver": 2
+      "side": 20,
+      "tegn": 2605,
+      "oppgaver": 0
     },
     {
       "nummer": "1.4",
       "tittel": "Regresjon",
-      "side": 20,
+      "side": 21,
       "tegn": 0,
       "oppgaver": 0
     },
     {
       "nummer": "1.4.1",
       "tittel": "Data og tapsfunksjon",
-      "side": 20,
-      "tegn": 5073,
-      "oppgaver": 3
+      "side": 21,
+      "tegn": 4521,
+      "oppgaver": 0
     },
     {
       "nummer": "1.4.2",
       "tittel": "Polynomisk regresjon og feature engineering",
-      "side": 24,
-      "tegn": 4416,
-      "oppgaver": 4
+      "side": 23,
+      "tegn": 3561,
+      "oppgaver": 0
     },
     {
       "nummer": "1.4.3",
       "tittel": "Trening, testing og validering",
-      "side": 25,
+      "side": 24,
       "tegn": 4939,
       "oppgaver": 0
     },
     {
       "nummer": "1.4.4",
       "tittel": "Kryssvalidering",
-      "side": 27,
-      "tegn": 1892,
-      "oppgaver": 2
+      "side": 26,
+      "tegn": 1655,
+      "oppgaver": 0
     },
     {
       "nummer": "1.4.5",
       "tittel": "Bias variance tradeoff",
-      "side": 27,
-      "tegn": 8176,
-      "oppgaver": 2
+      "side": 26,
+      "tegn": 7344,
+      "oppgaver": 0
     },
     {
       "nummer": "1.4.6",
       "tittel": "Regresjonstrær",
-      "side": 30,
-      "tegn": 5198,
-      "oppgaver": 3
+      "side": 29,
+      "tegn": 5037,
+      "oppgaver": 2
     },
     {
       "nummer": "1.5",
       "tittel": "Ensemble-modeller",
-      "side": 32,
+      "side": 31,
       "tegn": 2142,
       "oppgaver": 0
     },
     {
       "nummer": "1.5.1",
       "tittel": "Bagging",
-      "side": 33,
-      "tegn": 5685,
+      "side": 32,
+      "tegn": 3055,
       "oppgaver": 0
     },
     {
       "nummer": "1.5.2",
       "tittel": "Boosting",
-      "side": 34,
-      "tegn": 5110,
-      "oppgaver": 1
+      "side": 32,
+      "tegn": 7665,
+      "oppgaver": 0
     },
     {
       "nummer": "2",
       "tittel": "Nevrale nettverk",
-      "side": 35,
+      "side": 34,
       "tegn": 833,
       "oppgaver": 0
     },
     {
       "nummer": "2.1",
       "tittel": "Perceptron",
-      "side": 35,
-      "tegn": 5151,
-      "oppgaver": 3
+      "side": 34,
+      "tegn": 4654,
+      "oppgaver": 0
     },
     {
       "nummer": "2.2",
       "tittel": "Aktiveringsfunksjoner",
-      "side": 37,
+      "side": 36,
       "tegn": 2076,
       "oppgaver": 0
     },
     {
       "nummer": "2.3",
       "tittel": "Arkitektur",
-      "side": 38,
-      "tegn": 4397,
-      "oppgaver": 1
+      "side": 36,
+      "tegn": 4169,
+      "oppgaver": 0
     },
     {
       "nummer": "2.4",
       "tittel": "Backpropagation",
-      "side": 40,
+      "side": 38,
       "tegn": 5048,
       "oppgaver": 0
     },
     {
       "nummer": "2.5",
+      "tittel": "Stochastic gradient descent",
+      "side": 39,
+      "tegn": 2974,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "2.6",
       "tittel": "Bygge, trene og predikere",
-      "side": 41,
-      "tegn": 6435,
-      "oppgaver": 1
+      "side": 40,
+      "tegn": 6400,
+      "oppgaver": 0
     },
     {
       "nummer": "3",
@@ -263,29 +270,120 @@
       "nummer": "3.1.1",
       "tittel": "k-means",
       "side": 43,
-      "tegn": 7192,
-      "oppgaver": 2
+      "tegn": 6888,
+      "oppgaver": 0
     },
     {
       "nummer": "3.1.2",
       "tittel": "DBSCAN",
       "side": 45,
-      "tegn": 2517,
-      "oppgaver": 1
+      "tegn": 2417,
+      "oppgaver": 0
     },
     {
       "nummer": "3.1.3",
       "tittel": "Hovedkategorier",
-      "side": 46,
-      "tegn": 1033,
-      "oppgaver": 1
+      "side": 45,
+      "tegn": 779,
+      "oppgaver": 0
     },
     {
       "nummer": "3.1.4",
       "tittel": "Dimensjonsforbannelsen igjen",
       "side": 46,
-      "tegn": 2490,
+      "tegn": 2796,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.2",
+      "tittel": "Dimensjonsreduksjon",
+      "side": 47,
+      "tegn": 1388,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.2.1",
+      "tittel": "Principal component analysis (PCA)",
+      "side": 47,
+      "tegn": 10536,
+      "oppgaver": 3
+    },
+    {
+      "nummer": "3.2.2",
+      "tittel": "Stochastic Neighbor Embedding (SNE)",
+      "side": 52,
+      "tegn": 5443,
       "oppgaver": 1
+    },
+    {
+      "nummer": "3.3",
+      "tittel": "Anomalideteksjon",
+      "side": 54,
+      "tegn": 983,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.3.1",
+      "tittel": "k-means",
+      "side": 54,
+      "tegn": 1180,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.3.2",
+      "tittel": "DBSCAN",
+      "side": 55,
+      "tegn": 571,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "3.3.3",
+      "tittel": "Isolation Forest",
+      "side": 55,
+      "tegn": 2424,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "4",
+      "tittel": "Reinforcement learning",
+      "side": 56,
+      "tegn": 408,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "4.1",
+      "tittel": "Markov Decision Processes",
+      "side": 56,
+      "tegn": 4480,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "4.2",
+      "tittel": "Q-verdier",
+      "side": 57,
+      "tegn": 2154,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "4.3",
+      "tittel": "Environments",
+      "side": 58,
+      "tegn": 3644,
+      "oppgaver": 0
+    },
+    {
+      "nummer": "4.4",
+      "tittel": "Agenter: exploration, exploitation og læring",
+      "side": 58,
+      "tegn": 5485,
+      "oppgaver": 1
+    },
+    {
+      "nummer": "4.5",
+      "tittel": "Q-tabell",
+      "side": 60,
+      "tegn": 5802,
+      "oppgaver": 2
     }
   ]
 }

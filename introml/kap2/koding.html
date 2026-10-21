@@ -40,7 +40,7 @@
 <main data-chapter="Kapittel 2: Nevrale nettverk">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 2 · 2B · Koden i notatene 2.1–2.5 · øvingsstoff · ~35 min</div>
+      <div class="eyebrow">Kapittel 2 · 2C · Koden i notatene 2.1–2.6 · øvingsstoff · ~35 min</div>
       <h1>Koding: <em>nevrale nettverk</em></h1>
       <p class="lede">Perceptronet fra bunnen og med scikit-learn, vektmatrisen for flere klasser, logiske porter som kode, aktiveringsfunksjonene i NumPy, en forward pass gjennom vilkårlig mange lag, og til slutt Keras: bygge, kompilere, trene, evaluere og lagre et nettverk.</p>
       <nav class="toc">
@@ -62,7 +62,7 @@
     <div class="container">
       <div class="section-badge">00 · Eksamensfokus</div>
       <h2>Øvingsstoff, <em>ikke</em> eksamensstoff</h2>
-      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · siden dekker koden i notatene (2.1–2.5); deltema 2.5 (prio 3) er fra utvidelsen 8. oktober 2026, et forslag som venter på godkjenning</div>
+      <div class="source-note">Bygger på eksamensanalysen godkjent 26. september 2026 (kilder/eksamensanalyse.md) · siden dekker koden i notatene (2.1–2.6); deltema 2.6 (prio 3) er fra utvidelsen 8. oktober 2026, et forslag som venter på godkjenning</div>
       <div class="callout callout-warm">
         <span class="label">Prioritering</span>
         <ul class="fokus-list">
@@ -80,7 +80,7 @@
     <div class="container">
       <div class="section-badge">01 · Verktøykassa</div>
       <h2>Funksjonene som <em>går igjen</em></h2>
-      <div class="source-note">Notatene · kodeeksemplene i 2.1–2.5</div>
+      <div class="source-note">Notatene · kodeeksemplene i 2.1–2.6</div>
 
       <div class="table-wrap">
         <table class="fn-table">
@@ -96,14 +96,14 @@
             <tr><td>W @ a, np.dot, np.hstack</td><td>Matriseprodukt i forward pass; utvide x med 1 for bias-trikset.</td><td>2.1, 2.3</td></tr>
             <tr><td>np.eye(n_classes)[y]</td><td>One-hot-koding av targets: én kolonne per klasse.</td><td>2.1 (forslag)</td></tr>
             <tr><td>np.argmax(a, axis=1)</td><td>Fra output-vektor til klasse: noden med størst aktivering.</td><td>2.2 (forslag)</td></tr>
-            <tr><td>keras.ops.ones((10, 3))</td><td>Tensor med ettall til å eksperimentere med; shape (instanser, features).</td><td>2.5</td></tr>
-            <tr><td>Sequential(), model.add(Dense(n, activation=...))</td><td>Modell der lagene kommer i sekvens; <code>Dense</code> = fully connected lag med n noder.</td><td>2.5</td></tr>
-            <tr><td>keras.Input(shape=(n,))</td><td>Forteller modellen input-dimensjonen, så vektene kan opprettes før første evaluering.</td><td>2.5</td></tr>
-            <tr><td>model.summary(), model.weights, model.layers</td><td>Oppsummering med output shape og antall parametre; vektene; lista av lag.</td><td>2.5</td></tr>
-            <tr><td>model.compile(optimizer, loss, metrics)</td><td>Velg optimizer (kurset: <code>keras.optimizers.SGD()</code>), tapsfunksjon og metrikker.</td><td>2.5</td></tr>
-            <tr><td>model.fit(x, y, batch_size, epochs, validation_data)</td><td>Trener; returnerer <code>history</code> med <code>loss</code> og <code>val_loss</code> per epoke.</td><td>2.5</td></tr>
-            <tr><td>model.predict(x), model.evaluate(x, y)</td><td>Inferens; evaluering på valgt metrikk.</td><td>2.5</td></tr>
-            <tr><td>model.save("navn.keras"), keras.models.load_model(...)</td><td>Lagre modellen når du går hjem, laste den igjen neste morgen.</td><td>2.5</td></tr>
+            <tr><td>keras.ops.ones((10, 3))</td><td>Tensor med ettall til å eksperimentere med; shape (instanser, features).</td><td>2.6</td></tr>
+            <tr><td>Sequential(), model.add(Dense(n, activation=...))</td><td>Modell der lagene kommer i sekvens; <code>Dense</code> = fully connected lag med n noder.</td><td>2.6</td></tr>
+            <tr><td>keras.Input(shape=(n,))</td><td>Forteller modellen input-dimensjonen, så vektene kan opprettes før første evaluering.</td><td>2.6</td></tr>
+            <tr><td>model.summary(), model.weights, model.layers</td><td>Oppsummering med output shape og antall parametre; vektene; lista av lag.</td><td>2.6</td></tr>
+            <tr><td>model.compile(optimizer, loss, metrics)</td><td>Velg optimizer (kurset: <code>keras.optimizers.SGD()</code>), tapsfunksjon og metrikker.</td><td>2.6</td></tr>
+            <tr><td>model.fit(x, y, batch_size, epochs, validation_data)</td><td>Trener; returnerer <code>history</code> med <code>loss</code> og <code>val_loss</code> per epoke.</td><td>2.6</td></tr>
+            <tr><td>model.predict(x), model.evaluate(x, y)</td><td>Inferens; evaluering på valgt metrikk.</td><td>2.6</td></tr>
+            <tr><td>model.save("navn.keras"), keras.models.load_model(...)</td><td>Lagre modellen når du går hjem, laste den igjen neste morgen.</td><td>2.6</td></tr>
           </tbody>
         </table>
       </div>
@@ -115,9 +115,9 @@
     <div class="container">
       <div class="section-badge">02 · Perceptron</div>
       <h2>Fra bunnen og <em>med sklearn</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.1 · s. 35–36</div>
+      <div class="source-note">Notatene · avsnitt 2.1 · s. 34–36</div>
 
-      <p class="dropcap">Koden fra logistisk regresjon (1E) gjenbrukes med likning (89) som modell og Rosenblatts regel (91) i stedet for gradienten. To linjer er hele modellen:</p>
+      <p class="dropcap">Koden fra logistisk regresjon (1E) gjenbrukes med likning (88) som modell og Rosenblatts regel (90) i stedet for gradienten. To linjer er hele modellen:</p>
 <pre class="notes"><code>activation = sum(weight_i * x_i) + bias
 prediction = 1.0 if activation &gt;= 0.0 else 0.0</code></pre>
 <pre class="notes"><code>w = w + learning_rate * (expected - predicted) * x   # x utvidet med et første element 1, w[0] er bias</code></pre>
@@ -139,7 +139,7 @@ prediction = 1.0 if activation &gt;= 0.0 else 0.0</code></pre>
         for _ in range(self.epochs):                       # én epoke = alle datapunkter én gang
             for xi, yi in zip(xb, y):                      # ett punkt om gangen, ikke hele batchen
                 y_hat = 1 if xi @ self.w &gt;= 0 else 0
-                self.w = self.w + self.learning_rate * (yi - y_hat) * xi   # likning (91); 0 om riktig
+                self.w = self.w + self.learning_rate * (yi - y_hat) * xi   # likning (90); 0 om riktig
         return self</code></pre>
 
       <div class="callout">
@@ -164,9 +164,9 @@ bs = perceptron.intercept_     # bias</code></pre>
     <div class="container">
       <div class="section-badge">03 · Flere klasser</div>
       <h2>Vektvektor blir <em>vektmatrise</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.1 · s. 36 (likning 92 og shape-koden)</div>
+      <div class="source-note">Notatene · avsnitt 2.1 · s. 35 (likning 91 og shape-koden)</div>
 
-      <p class="dropcap">Med \(k\) klasser får modellen én output-node per klasse, og vektene blir en <span class="term" data-term="vektmatrise">matrise</span>. Oppdateringen (92) er den samme regelen anvendt på hver output-node \(j\) for seg. Targets må da være one-hot: \(y_j = 1\) for riktig klasse, 0 ellers.</p>
+      <p class="dropcap">Med \(k\) klasser får modellen én output-node per klasse, og vektene blir en <span class="term" data-term="vektmatrise">matrise</span>. Oppdateringen (91) er den samme regelen anvendt på hver output-node \(j\) for seg. Targets må da være one-hot: \(y_j = 1\) for riktig klasse, 0 ellers.</p>
 
 <pre class="notes"><code>perceptron = Perceptron().fit(X_train, y_train)
 ws = perceptron.coef_
@@ -183,13 +183,13 @@ print("Biases:", bs.shape)              # (3,)</code></pre>
     for _ in range(epochs):
         for xi, yi in zip(xb, Y):
             y_hat = np.where(xi @ W &gt;= 0, 1, 0)         # (k,): én TLU per klasse
-            W += learning_rate * np.outer(xi, yi - y_hat)   # likning (92) for alle i, j samtidig
+            W += learning_rate * np.outer(xi, yi - y_hat)   # likning (91) for alle i, j samtidig
     return W
 
 def predict_multiclass(W, x):
     xb = np.hstack([np.ones((x.shape[0], 1)), x])
     return np.argmax(xb @ W, axis=1)                    # klassen med størst aktivering</code></pre>
-      <p><code>np.outer(xi, yi - y_hat)</code> er en \((d+1) \times k\)-matrise med \((y_j - \hat{y}_j)\,x_i\) i posisjon \((i, j)\): nøyaktig (92). Merk at sklearn lagrer \(W\) transponert, som (klasser, features).</p>
+      <p><code>np.outer(xi, yi - y_hat)</code> er en \((d+1) \times k\)-matrise med \((y_j - \hat{y}_j)\,x_i\) i posisjon \((i, j)\): nøyaktig (91). Merk at sklearn lagrer \(W\) transponert, som (klasser, features).</p>
     </div>
   </section>
 
@@ -198,7 +198,7 @@ def predict_multiclass(W, x):
     <div class="container">
       <div class="section-badge">04 · Logiske porter</div>
       <h2>Tre tall per <em>port</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.1 · s. 36 (vektene); koden er forslag</div>
+      <div class="source-note">Notatene · avsnitt 2.1 · s. 35 (vektene); koden er forslag</div>
 
 <pre class="pseudo"><code>def tlu(w, b):
     return lambda x: 1 if np.dot(w, x) + b &gt;= 0 else 0
@@ -222,13 +222,13 @@ for x in [(0, 0), (0, 1), (1, 0), (1, 1)]:
     <div class="container">
       <div class="section-badge">05 · Aktiveringsfunksjoner</div>
       <h2>Fire funksjoner i <em>NumPy</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.2 · s. 37 (likning 93–95); koden er forslag</div>
+      <div class="source-note">Notatene · avsnitt 2.2 · s. 36 (likning 92–94); koden er forslag</div>
 
 <pre class="pseudo"><code>def heaviside(z):  return np.where(z &gt;= 0, 1.0, 0.0)          # perceptron; ikke deriverbar
-def sigmoid(z):    return 1 / (1 + np.exp(-z))                  # (93), binær klassifisering i siste lag
-def relu(z):       return np.maximum(0, z)                      # (95), skjulte lag
+def sigmoid(z):    return 1 / (1 + np.exp(-z))                  # (92), binær klassifisering i siste lag
+def relu(z):       return np.maximum(0, z)                      # (94), skjulte lag
 def linear(z):     return z                                     # regresjon i siste lag
-def softmax(z):                                                 # (94), flerklasse i siste lag
+def softmax(z):                                                 # (93), flerklasse i siste lag
     e = np.exp(z - np.max(z, axis=-1, keepdims=True))           # trekk fra maks: samme svar, ingen overflow
     return e / np.sum(e, axis=-1, keepdims=True)                # summerer til 1 per datapunkt
 
@@ -244,9 +244,9 @@ def d_relu(z):    return np.where(z &gt; 0, 1.0, 0.0)</code></pre>
     <div class="container">
       <div class="section-badge">06 · Forward pass</div>
       <h2>Lag for lag med <em>matriseprodukt</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.3 · s. 38–39 (likning 96 og 101); koden er forslag</div>
+      <div class="source-note">Notatene · avsnitt 2.3 · s. 36–38 (likning 95 og 99); koden er forslag</div>
 
-      <p class="dropcap">Likning (101) er ett lag: \(\mathbf{a}^{(1)} = g(W^{(1)} \mathbf{x})\), med \(W\) som \(m \times n\) for \(n\) inn og \(m\) ut. Et nettverk er en liste av slike lag, og en forward pass er en løkke som sender aktiveringen fra ett lag inn i det neste. Bias tas med som en egen vektor \(\mathbf{b}\) per lag (notatene baker den inn som \(a_0 = 1\); resultatet er det samme).</p>
+      <p class="dropcap">Likning (99) er ett lag: \(\mathbf{a}^{(1)} = g(W^{(1)} \mathbf{x})\), med \(W\) som \(m \times n\) for \(n\) inn og \(m\) ut. Et nettverk er en liste av slike lag, og en forward pass er en løkke som sender aktiveringen fra ett lag inn i det neste. Bias tas med som en egen vektor \(\mathbf{b}\) per lag (notatene baker den inn som \(a_0 = 1\); resultatet er det samme).</p>
 
 <pre class="pseudo"><code>def init_layer(n_in, n_out, g):
     return {"W": np.random.randn(n_out, n_in) * 0.1,   # (m, n): små tilfeldige vekter
@@ -256,7 +256,7 @@ def d_relu(z):    return np.where(z &gt; 0, 1.0, 0.0)</code></pre>
 def forward(layers, x):                                # x: (n_features,) for ett datapunkt
     a = x                                              # a^(0) = x
     for layer in layers:
-        z = layer["W"] @ a + layer["b"]                # (m,) = (m, n) @ (n,) + (m,)   likning (96)
+        z = layer["W"] @ a + layer["b"]                # (m,) = (m, n) @ (n,) + (m,)   likning (95)
         a = layer["g"](z)                              # ikke-lineær transformasjon
     return a                                           # output-laget: ŷ
 
@@ -289,7 +289,7 @@ def n_params(layers):
     <div class="container">
       <div class="section-badge">07 · Keras</div>
       <h2>Bygge, trene og <em>predikere</em></h2>
-      <div class="source-note">Notatene · avsnitt 2.5 · s. 41–43</div>
+      <div class="source-note">Notatene · avsnitt 2.6 · s. 40–42</div>
 
       <p class="dropcap">Kurset anbefaler <span class="term" data-term="keras">Keras</span> og tensorflow. De grunnleggende byggesteinene i tensorflow er keras-operasjoner. En \((10, 3)\)-dimensjonal tensor fylt med ettall til å eksperimentere med:</p>
 <pre class="notes"><code>from keras import ops
@@ -318,7 +318,7 @@ layer3(layer2(layer1(x)))    # sekvensen eksplisitt; gir ikke noe modell-objekt<
       <p>Det viktige å huske er at lag oppfører seg som elementer i en liste: <code>model.layers</code> gir lista over lagene modellen består av. Et enkelt mentalt bilde av et nevralt nettverk i Python er lag stablet oppå hverandre.</p>
 
       <div class="oppgave" data-quiz id="oppg-keras-vekter">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">2.5 · s. 42</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">2.6 · s. 41</span></div>
         <div class="o-text"><p>Lager vi modellen bare ved å stable lagene, uten å evaluere den (for eksempel på tensoren <code>x</code>), har den ingen vekter: <code>model.weights</code> gir en tom liste <code>[]</code>, og <code>model.summary()</code> viser <code>Output shape=?</code>. Modellparametrene finnes altså ikke. Hva er grunnen til dette?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
@@ -349,7 +349,7 @@ plt.xlabel("Epochs")
 plt.ylabel("Loss")
 plt.legend()
 plt.show()</code></pre>
-      <p>Beregnede metrikker lagres i <code>history</code>, hvert steg i SGD bruker 64 datapunkter (<span class="term" data-term="batch-size">batch size</span>), modellen trenes i 10 <span class="term" data-term="epoke">epoker</span>, og den evalueres på valideringsdata underveis. Som i 1C er det lurt å stanse treningen når både trenings- og valideringstapet flater ut, men før tapet på treningsdataene blir mye mindre enn tapet på valideringsdataene, siden det er et typisk tegn på overtilpasning. Keras har et <span class="term" data-term="early-stopping">early stopping</span>-kriterium der vi angir hva som skal monitoreres, vanligst <code>monitor="val_loss"</code>, og hvor tålmodig læringsalgoritmen skal være før treningen stoppes.</p>
+      <p>Beregnede metrikker lagres i <code>history</code>, hvert steg i SGD bruker 64 datapunkter (<span class="term" data-term="batch-size">batch size</span>), modellen trenes i 10 <span class="term" data-term="epoke">epoker</span>, og den evalueres på valideringsdata underveis. Hvert steg i SGD er mini-batch SGD fra 2B. Som i 1C er det lurt å stanse treningen når både trenings- og valideringstapet flater ut, men før tapet på treningsdataene blir mye mindre enn tapet på valideringsdataene, siden det er et typisk tegn på overtilpasning. Keras har et <span class="term" data-term="early-stopping">early stopping</span>-kriterium der vi angir hva som skal monitoreres, vanligst <code>monitor="val_loss"</code>, og hvor tålmodig læringsalgoritmen skal være før treningen stoppes.</p>
 <pre class="pseudo"><code>model.compile(optimizer=keras.optimizers.SGD(), loss="binary_crossentropy", metrics=["accuracy"])
 
 from keras.callbacks import EarlyStopping
@@ -399,7 +399,7 @@ history = model.fit(x_train, y_train, batch_size=64, epochs=200,
       </div>
 
       <nav class="page-nav">
-        <a href="perceptron.html" class="prev"><div class="pn-label">← Forrige · 2A</div><div class="pn-title">Perceptron, aktivering og arkitektur</div></a>
+        <a href="trening.html" class="prev"><div class="pn-label">← Forrige · 2B</div><div class="pn-title">Backpropagation og stochastic gradient descent</div></a>
         <a href="./" class="next"><div class="pn-label">Tilbake</div><div class="pn-title">Kapittel 2: oversikt →</div></a>
       </nav>
     </div>

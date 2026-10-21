@@ -127,12 +127,12 @@
     "anker": "arkitektur"
   },
   "2.4": {
-    "side": "kap2/perceptron.html",
+    "side": "kap2/trening.html",
     "anker": "backpropagation"
   },
   "2.5": {
-    "side": "kap2/koding.html",
-    "anker": "keras"
+    "side": "kap2/trening.html",
+    "anker": "sgd"
   },
   "3": {
     "side": "kap3/index.html"
@@ -156,5 +156,60 @@
   "3.1.4": {
     "side": "kap3/clustering.html",
     "anker": "dimensjoner"
+  },
+  "2.6": {
+    "side": "kap2/koding.html",
+    "anker": "keras"
+  },
+  "3.2": {
+    "side": "kap3/dimensjonsreduksjon.html",
+    "anker": "hvorfor"
+  },
+  "3.2.1": {
+    "side": "kap3/dimensjonsreduksjon.html",
+    "anker": "pca"
+  },
+  "3.2.2": {
+    "side": "kap3/dimensjonsreduksjon.html",
+    "anker": "tsne"
+  },
+  "3.3": {
+    "side": "kap3/anomali.html",
+    "anker": "intro"
+  },
+  "3.3.1": {
+    "side": "kap3/anomali.html",
+    "anker": "kmeans"
+  },
+  "3.3.2": {
+    "side": "kap3/anomali.html",
+    "anker": "dbscan"
+  },
+  "3.3.3": {
+    "side": "kap3/anomali.html",
+    "anker": "isolation-forest"
+  },
+  "4": {
+    "side": "kap4/index.html"
+  },
+  "4.1": {
+    "side": "kap4/rl.html",
+    "anker": "mdp"
+  },
+  "4.2": {
+    "side": "kap4/rl.html",
+    "anker": "q-verdier"
+  },
+  "4.3": {
+    "side": "kap4/rl.html",
+    "anker": "environments"
+  },
+  "4.4": {
+    "side": "kap4/rl.html",
+    "anker": "agenter"
+  },
+  "4.5": {
+    "side": "kap4/rl.html",
+    "anker": "q-tabell"
   }
 }

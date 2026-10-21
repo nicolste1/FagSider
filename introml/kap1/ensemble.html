@@ -53,7 +53,7 @@
 <main data-chapter="Kapittel 1: Veiledet læring">
   <header class="hero">
     <div class="container">
-      <div class="eyebrow">Kapittel 1 · 1D · Notater 1.5 · s. 32–34 · ~25 min</div>
+      <div class="eyebrow">Kapittel 1 · 1D · Notater 1.5 · s. 31–32 · ~25 min</div>
       <h1>Ensemble-<em>modeller</em></h1>
       <p class="lede">Én modell har alltid en svakhet. Flere modeller som stemmer, eller som retter opp hverandres feil, gjør det bedre. Bagging og random forest (parallelt), AdaBoost og gradient boosting (sekvensielt), og hvorfor bootstrap ikke er det samme som kryssvalidering.</p>
       <nav class="toc">
@@ -91,7 +91,7 @@
     <div class="container">
       <div class="section-badge">01 · Ensemble-modeller</div>
       <h2>Flere modeller som <em>kompenserer for hverandre</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.5 · s. 32–33</div>
+      <div class="source-note">Notatene · avsnitt 1.5 · s. 31–32</div>
 
       <p class="dropcap">Det kan være vanskelig å velge riktig modell for et gitt datasett og problem. Alle modeller har sine antakelser og svakheter: lineær regresjon antar at forholdet mellom features og target er lineært, og beslutningstrær antar at datarommet kan separeres med vertikale beslutningsflater (splitter). Tanken bak <span class="term" data-term="ensemble">ensemble learning</span> er at flere modeller kan kombineres slik at de kompenserer for hverandres svakheter, og til sammen utgjør en samling, et ensemble, som bruker hver enkelt modells styrke. Tenk på en gruppe eksperter der gruppens beslutning tar alle vurderingene med, men forkaster den som ikke deles av majoriteten.</p>
 
@@ -147,7 +147,7 @@
     <div class="container">
       <div class="section-badge">02 · Bagging</div>
       <h2><em>Bootstrap</em> + aggregering</h2>
-      <div class="source-note">Notatene · avsnitt 1.5.1 · s. 33–34</div>
+      <div class="source-note">Notatene · avsnitt 1.5.1 · s. 32</div>
 
       <p class="dropcap">Når vi lager et ensemble av modeller trent på ulike deler av treningsdataene og kombinerer prediksjonene til én, må vi ta stilling til to spørsmål: <strong>hvordan aggregere</strong> prediksjonene, og <strong>hvordan velge ut</strong> hvilke deler av treningsdataene hver modell trenes på.</p>
 
@@ -230,7 +230,7 @@
     <div class="container">
       <div class="section-badge">03 · Random forest</div>
       <h2>Trær som må være <em>diverse og uavhengige</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.5.1 · s. 34</div>
+      <div class="source-note">Notatene · avsnitt 1.5.1 · s. 33</div>
 
       <p class="dropcap">En enkel ensemblemodell som bruker bagging er <span class="term" data-term="random-forest">random forest</span> (tilfeldig skog). Den lages ved å sette sammen ulike <span class="term" data-term="beslutningstre">beslutningstrær</span>, eventuelt <span class="term" data-term="trestump">stumper</span>. For at ensemblet skal bli godt, må trærne være <strong>diverse og uavhengige</strong>. Det oppnår vi med to typer tilfeldighet:</p>
       <ol class="steps">
@@ -303,7 +303,7 @@
     <div class="container">
       <div class="section-badge">04 · Boosting</div>
       <h2>Svake modeller i <em>rekke</em></h2>
-      <div class="source-note">Notatene · avsnitt 1.5.2 · s. 34</div>
+      <div class="source-note">Notatene · avsnitt 1.5.2 · s. 32</div>
 
       <p class="dropcap"><span class="term" data-term="boosting">Boosting</span> er algoritmer som iterativt trener <span class="term" data-term="svak-modell">svake modeller</span> (for eksempel trestumper) på en datafordeling, og kombinerer dem til én sterk modell, ensemblet. En svak modell er en modell hvis prediksjoner bare er svakt korrelert med target; en sterk modell er vilkårlig sterkt korrelert med target. Navnet kommer av at feilene begått av de forrige modellene gjør den påfølgende modellen bedre («booster» den): AdaBoost tar hensyn til alle tidligere modeller, mens gradient boosting ser på prediksjonsfeilen til den forrige modellen. Modellene organiseres sekvensielt, og hver forholder seg til de forrige på en måte som gjør ensemblet sterkere enn hver enkelt modell. Notatene ser på to algoritmer.</p>
 
@@ -401,7 +401,7 @@
       </div>
 
       <div class="oppgave" data-quiz id="oppg-ensemble-navn">
-        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.5.2 · s. 34</span></div>
+        <div class="o-label"><span>Oppgave fra notatene</span><span class="o-ref">1.5.2 · s. 32</span></div>
         <div class="o-text"><p>Trebaserte ensemblemodeller du bør ha hørt om, og helst brukt på et datasett, er CatBoost, LightGBM, AdaBoost og XGBoost. Hvilke av dem er bagging, og hvilke er boosting?</p></div>
         <div class="quiz-reveal">
           <button class="reveal-btn">Se svar</button>
