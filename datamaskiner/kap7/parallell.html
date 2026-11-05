@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Parallell ytelse og Flynns taksonomi — Kap 7</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .ttl { font-size: 14px; font-weight: 600; }
+  .fig-svg .hdr { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; fill: var(--ink-faded); }
+  .fig-svg .cell { fill: var(--paper); stroke: var(--line); stroke-width: 1; }
+  .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; marker-end: url(#ah7); }
+  .fig-svg .ln { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; }
+  .fig-svg .dim { opacity: 0.5; }
+  .asm { font-family: var(--mono); font-size: 0.84rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+  .legend-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.5rem; justify-content: center; }
+  .legend-row span::before { content: ''; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .legend-row .l-a::before { background: var(--accent); }
+  .legend-row .l-w::before { background: var(--warm); }
+  .legend-row .l-g::before { background: var(--green); }
+  .legend-row .l-d::before { background: var(--ink-ghost); height: 1px; }
+  td.nw { white-space: nowrap; }
+  svg.mlplot .roof-fill { fill: var(--accent-soft); stroke: none; }
+  svg.mlplot .verdict { font-family: var(--sans); font-size: 11px; font-weight: 600; fill: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 7</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 7: Parallelle datamaskiner">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 7 · 7A · Læringsmål T7.1 · Boka kap. 6.1–6.3 og 6.11 · ~40 min</div>
+      <h1>Parallell ytelse og <em>Flynns taksonomi</em></h1>
+      <p class="lede">Flere prosessorer gir ikke automatisk et raskere program. Siden viser hvorfor ett parallelt program er vanskeligere enn mange uavhengige, hva Amdahls lov sier om sterk og svak skalering, hvordan Flynn deler maskinene i SISD, SIMD, MISD og MIMD, og hvordan Roofline-modellen avgjør om et program er minnebundet eller beregningsbundet. SISD mot SIMD var eksamensoppgave i 2025.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#vanskelig"><span>01</span> Hvorfor parallelt er vanskelig</a>
+        <a href="#skalering"><span>02</span> Amdahl, sterk og svak skalering</a>
+        <a href="#flynn"><span>03</span> Flynns taksonomi</a>
+        <a href="#roofline"><span>04</span> Roofline</a>
+        <a href="#oppsummering"><span>05</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T7.1: prio 2 · Ord. 25 oppg. 8.2 (6 p) · Kont 25 oppg. 5.1</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>SISD mot SIMD: viktigste forskjell, én fordel og én utfordring</strong> (Ord. 25 oppg. 8.2, 6 p, langsvar). Modellsvaret står i avsnitt 03: én instruksjonsstrøm i begge, men én mot mange datastrømmer; fordelen er enkel dataparallellitet med én kontrollenhet; utfordringen er kode der elementene skal behandles ulikt.</li>
+          <li><span class="tag regn">Regn</span><strong>Amdahls lov på parallelle programmer</strong> (Kont 25 oppg. 5.1): speedup for en gitt parallell andel og N prosessorer, og motsatt vei: hvor stor sekvensiell andel et speedup-mål tåler. Vit forskjellen på sterk og svak skalering, og hva skjev lastbalanse koster.</li>
+          <li><span class="tag">Forklar</span><strong>Flynns fire klasser med ett eksempel på hver</strong>, hvorfor uavhengige programmer er lettere å kjøre parallelt enn ett program, og hvordan vektorarkitektur skiller seg fra SIMD-utvidelser.</li>
+          <li><span class="tag regn">Regn</span><strong>Roofline</strong>: oppnåelig ytelse = min(minnebåndbredde × operasjonsintensitet, topp-flyttallsytelse). Avgjør om et program er minnebundet eller beregningsbundet. Prinsippet og én figur holder.</li>
+          <li><span class="tag">Lavere</span>Benchmarkene for multiprosessorer (Linpack, SPECrate, PARSEC, MLPerf), «takene» under taklinjen i Roofline, RISC-V-vektorinstruksjonene i detalj og nettverkstopologier (6.9) er kuttet eller lagt i utdypning.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 VANSKELIG ─────────────────────────── -->
+  <section id="vanskelig">
+    <div class="container">
+      <div class="section-badge">01 · Hvorfor parallelt er vanskelig</div>
+      <h2>Mange programmer, eller <em>ett program på mange prosessorer</em></h2>
+      <div class="source-note">Boka · kap. 6.1–6.2 · s. 520–523 · figur 6.1</div>
+      <span class="lm-pill">Læringsmål T7.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvorfor det er enklere å utnytte parallellitet mellom uavhengige program enn innad i ett program.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="multiprosessor">multiprosessor</span> er en datamaskin med minst to prosessorer; i en <span class="term" data-term="flerkjerne">flerkjerneprosessor</span> ligger de som kjerner på samme brikke. Prosessorene kan brukes på to måter. Med <span class="term" data-term="jobbnivaa-parallellitet">jobbnivå-parallellitet</span> (task-level parallelism) kjører uavhengige programmer samtidig på hver sin prosessor: ingen av dem blir raskere, men <span class="term" data-term="gjennomstromning">gjennomstrømningen</span> øker. Et <span class="term" data-term="parallelt-program">parallelt program</span> (parallel processing program) er ett program som kjører på flere prosessorer samtidig for å bli fortere ferdig.</p>
+
+      <p>Det første er lett: jobbene deler ingen data, så operativsystemet kan legge hver jobb på en ledig kjerne uten at programmene endres. Det andre er vanskelig, fordi programmet må skrives om, og det må faktisk bli raskere eller mer energieffektivt. Ellers er det sekvensielle programmet på én prosessor både enklere og like godt. Fem ting må gå opp samtidig, og alle blir verre jo flere prosessorer som skal brukes:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Hinder</th><th>Hva som må til</th><th>Hva som går galt</th></tr></thead>
+          <tbody>
+            <tr><td>Oppdeling</td><td>Arbeidet deles i biter som kan gjøres uavhengig av hverandre.</td><td>Biter som avhenger av hverandre må gjøres etter tur.</td></tr>
+            <tr><td><span class="term" data-term="lastbalanse">Lastbalanse</span></td><td>Bitene er like store.</td><td>Alle venter på prosessoren med den største biten.</td></tr>
+            <tr><td>Synkronisering</td><td>Prosessorene blir enige om når delte data er ferdig skrevet.</td><td>Venting på låser, eller feil svar uten dem (7B).</td></tr>
+            <tr><td>Kommunikasjon</td><td>Delresultater sendes mellom prosessorene.</td><td>Tiden går med til å flytte data i stedet for å regne.</td></tr>
+            <tr><td>Den sekvensielle delen</td><td>Også små deler av programmet må parallelliseres.</td><td><span class="term" data-term="amdahls-lov">Amdahls lov</span>: resten setter et tak (avsnitt 02).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Lenge slapp programmereren unna: <span class="term" data-term="ilp">parallellitet på instruksjonsnivå</span> (samlebånd, superskalar, utføring ut av rekkefølge) ga raskere programmer uten at koden ble endret. Parallellitet mellom prosessorer er synlig for programmet, og må skrives inn i det.</p>
+
+      <div class="oppgave" data-quiz id="oppg-cy-6-1">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§6.1 · s. 522</span></div>
+        <div class="o-text"><p>Sant eller usant: For å ha nytte av en multiprosessor må en applikasjon være skrevet som samtidige (concurrent) deler.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Usant. Jobbnivå-parallellitet hjelper også sekvensielle applikasjoner: flere av dem kjører samtidig på hver sin prosessor. Sekvensielle applikasjoner kan dessuten gjøres om til å kjøre på parallell maskinvare, selv om det er mer krevende.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-6-2">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">6.2 · s. 590–591</span></div>
+        <div class="o-text"><p>Du skal bake tre like kaker. Oppskriften for én kake: (1) forvarm ovnen og smør formen, (2) rør deigen i en bolle med mikser, (3) ha i bær, hell i formen og stek i 60 minutter. 6.2.1 Du har én ovn med plass til én kake, én bolle, én form og én mikser. Sett opp en plan, og pek ut flaskehalsene. 6.2.2 Hvor mye raskere går det med tre boller, tre former og tre miksere? 6.2.3 Hva endres om to venner hjelper til og ovnen har plass til alle tre kakene? 6.2.4 Sammenlikn med tre iterasjoner av en løkke på en parallell datamaskin. Hva er dataparallellitet og hva er jobbnivå-parallellitet her?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · antar 20 min forarbeid per kake</span>
+            <p><strong>6.2.1</strong> Ovnen forvarmes mens deig 1 røres. Kake 1 står i ovnen fra 20 til 80 min, kake 2 fra 80 til 140 og kake 3 fra 140 til 200; deig 2 og 3 røres mens forrige kake stekes. Totalt \(20 + 3 \cdot 60 = 200\) min. Flaskehalsen er ovnen (og formen): de 180 minuttene med steking kan ikke overlappes. Bolle og mikser står stort sett stille.</p>
+            <p><strong>6.2.2</strong> Ingenting å hente: all deigen kan røres tidligere, men ovnen tar fortsatt én kake om gangen. Fortsatt 200 min, speedup 1,0. Ressursene som ble lagt til, var ikke flaskehalsen.</p>
+            <p><strong>6.2.3</strong> Med utstyret fra 6.2.2 rører tre personer hver sin deig samtidig (20 min), og alle kakene stekes samtidig (60 min): 80 min, speedup \(200/80 = 2{,}5\). Med bare én bolle og mikser må røringen gå etter tur: \(3 \cdot 20 + 60 = 120\) min, speedup 1,67. Da er bollen den sekvensielle delen.</p>
+            <p><strong>6.2.4</strong> Hver kake er én iterasjon, og iterasjonene avhenger ikke av hverandre. Dataparallellitet: samme operasjon på flere «data» samtidig, som tre kaker i én ovn i 60 minutter eller tre personer som gjør samme steg på hver sin deig. Jobbnivå-parallellitet: ulike oppgaver samtidig, som å forvarme ovnen mens deigen røres. Den lille ovnen er en delt ressurs som tvinger iterasjonene i rekkefølge.</p>
+          </div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: sekvensiell og samtidig, seriell og parallell</summary>
+        <p>Programvare er enten sekvensiell (kompilatoren: ett steg om gangen) eller samtidig (operativsystemet: mange samarbeidende prosesser). Maskinvare er enten seriell (én prosessor) eller parallell (flere). Alle fire kombinasjonene finnes: samtidig programvare kan kjøre på én prosessor, og sekvensiell programvare kan kjøre på parallell maskinvare. «Parallelt program» brukes her om begge slags programvare når den kjører på parallell maskinvare.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 SKALERING ─────────────────────────── -->
+  <section id="skalering">
+    <div class="container">
+      <div class="section-badge">02 · Amdahl, sterk og svak skalering</div>
+      <h2>Den sekvensielle delen <em>setter taket</em></h2>
+      <div class="source-note">Boka · kap. 6.2 · s. 523–526 · Amdahls lov er utledet i kapittel 1 (1B, avsnitt 06)</div>
+      <span class="lm-pill">Læringsmål T7.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne bruke Amdahls lov til å analysere skalerbarheten til parallelle programmer.</li>
+        <li>Studenten skal kjenne til konseptene sterk og svak skalering og kunne bruke dem til å vurdere skalerbarheten til ulike applikasjoner.</li>
+      </ul>
+
+      <p class="dropcap"><a href="../kap1/ytelse.html#amdahl">Amdahls lov fra kapittel 1</a> gjelder uendret for parallelle programmer: forbedringsfaktoren er antall prosessorer \(N\), og den virker bare på den parallelle andelen \(P\) av kjøretiden. Den sekvensielle andelen \(1 - P\) går like sakte som før.</p>
+
+      \[ \text{Speedup} = \frac{1}{(1 - P) + \dfrac{P}{N}} \qquad\text{med tak}\qquad \frac{1}{1 - P}\ \text{når}\ N \to \infty \]
+
+      <div class="oppgave" data-quiz id="oppg-eks-speedup90">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">6.2 · s. 523–524</span></div>
+        <div class="o-text"><p>Du vil ha en <span class="term" data-term="speedup">speedup</span> på 90 med 100 prosessorer. Hvor stor andel av den opprinnelige beregningen kan være sekvensiell?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            \[ 90 = \frac{1}{(1 - P) + P/100} \;\Rightarrow\; 90\,(1 - 0{,}99P) = 1 \;\Rightarrow\; P = \frac{89}{89{,}1} = 0{,}999 \]
+            <p>Den sekvensielle andelen kan være høyst \(1 - 0{,}999 = 0{,}1\ \%\). Én promille sekvensiell kode er nok til å miste ti prosent av gevinsten fra 100 prosessorer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-matrisesum">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">6.2 · s. 524–525</span></div>
+        <div class="o-text"><p>Et program gjør to summer: ti skalare variabler legges sammen (sekvensielt), og to matriser på 10 × 10 adderes (kan parallelliseres). Hva er speedup med 10 og med 40 prosessorer? Regn på nytt når matrisene vokser til 20 × 20.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>La \(t\) være tiden for én addisjon. 10 × 10: 10 sekvensielle og 100 parallelle addisjoner, \(110t\) på én prosessor. 20 × 20: \(10t + 400t = 410t\).</p>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Matrise</th><th>N</th><th>Tid</th><th>Speedup</th><th>Andel av ideell</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">10 × 10</td><td class="mono">10</td><td class="mono nw">100t/10 + 10t = 20t</td><td class="mono nw">110/20 = 5,5</td><td class="mono">55 %</td></tr>
+                <tr><td class="mono">10 × 10</td><td class="mono">40</td><td class="mono nw">100t/40 + 10t = 12,5t</td><td class="mono nw">110/12,5 = 8,8</td><td class="mono">22 %</td></tr>
+                <tr><td class="mono">20 × 20</td><td class="mono">10</td><td class="mono nw">400t/10 + 10t = 50t</td><td class="mono nw">410/50 = 8,2</td><td class="mono">82 %</td></tr>
+                <tr><td class="mono">20 × 20</td><td class="mono">40</td><td class="mono nw">400t/40 + 10t = 20t</td><td class="mono nw">410/20 = 20,5</td><td class="mono">51 %</td></tr>
+              </tbody>
+            </table></div>
+            <p>Med fast problemstørrelse faller utbyttet raskt når prosessorene blir flere. Vokser problemet, blir den sekvensielle delen en mindre andel, og de samme prosessorene gir mye mer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="def-box">
+        <span class="def-label">To måter å måle skalering på</span>
+        <div class="def-term"><span class="term" data-term="sterk-skalering">Sterk</span> og <span class="term" data-term="svak-skalering">svak</span> skalering</div>
+        <p><strong>Sterk skalering</strong>: speedup måles med fast problemstørrelse. Den er bundet av Amdahls lov, og taket er \(1/(1-P)\). <strong>Svak skalering</strong>: problemet vokser proporsjonalt med antall prosessorer. Den sekvensielle delen blir en stadig mindre andel, så speedup fortsetter å vokse. Er arbeidssettet \(M\) i hovedminnet, får hver av de \(N\) prosessorene omtrent \(M/N\) ved sterk skalering og \(M\) ved svak.</p>
+        <p>Hvilken som passer, avhenger av applikasjonen. En bank som får en raskere maskin, får ikke kunder som bruker minibanken hundre ganger oftere; den får flere kunder, og da er svak skalering det riktige målet. Skal et problem av gitt størrelse løses fortere, er det sterk skalering som teller. Svak skalering er vanligvis lettest, men ikke alltid: vokser datasettet ut av siste nivå i hurtigbufferen, kan ytelsen bli mye dårligere.</p>
+      </div>
+
+      <div class="widget" id="w-skal">
+        <div class="widget-label">Prøv selv · Sterk og svak skalering</div>
+        <p class="widget-intro">Velg hvor stor andel av grunnproblemet som er sekvensiell, og antall prosessorer \(N\). Sterk: problemet er fast. Svak: den parallelle delen av arbeidet vokser \(N\) ganger (samme regnemåte som i matriseeksempelet; formelen \(s + (1-s)N\) er kjent som Gustafsons lov, egen tilføyelse). Med andel 0,50 gir den svake kurven tallene fra eksempelet: 5,5 for \(N = 10\) og 20,5 for \(N = 40\).</p>
+        <svg viewBox="0 0 560 260" data-w="560" data-h="260" aria-label="Speedup mot antall prosessorer ved sterk og svak skalering"></svg>
+        <div class="legend-row"><span class="l-a">sterk (fast problem)</span><span class="l-w">svak (problemet vokser)</span><span class="l-g">ideell (N)</span><span class="l-d">tak 1/s</span></div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sk-s">sekvensiell andel s</label><input type="range" id="sk-s" min="0" max="0.6" step="0.01" value="0.1"><span class="w-val" id="sk-s-val">0,10</span></div>
+          <div class="w-ctl"><label for="sk-n">N</label><input type="range" id="sk-n" min="1" max="64" step="1" value="16"><span class="w-val" id="sk-n-val">16</span></div>
+        </div>
+        <div class="w-out" id="sk-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-lastbalanse">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">6.2 · s. 525–526</span></div>
+        <div class="o-text"><p>Speedup 20,5 med 40 prosessorer på 20 × 20-problemet forutsatte at hver prosessor fikk 2,5 % av det parallelle arbeidet. Hva blir speedup om én prosessor får dobbelt så mye (5 %), og om den får fem ganger så mye (12,5 %)? Hvor godt utnyttes de andre 39?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p><strong>5 %:</strong> prosessoren får \(0{,}05 \cdot 400 = 20\) addisjoner, de andre deler 380. Prosessorene arbeider samtidig, så den tregeste bestemmer:</p>
+            \[ \max\!\left(\frac{380t}{39},\ \frac{20t}{1}\right) + 10t = 30t \quad\Rightarrow\quad \text{speedup} = \frac{410t}{30t} \approx 14 \]
+            <p>De andre regner i \(380t/39 = 9{,}7t\) av \(20t\): under halve tiden.</p>
+            <p><strong>12,5 %:</strong> 50 addisjoner på én prosessor: \(\max(350t/39,\ 50t) + 10t = 60t\), speedup \(410/60 \approx 7\). De andre er i arbeid \(9t\) av \(50t\), under 20 %. Én prosessor med dobbel last kutter speedup med en tredjedel; fem ganger lasten kutter den til en tredjedel.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-6-2">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§6.2 · s. 527</span></div>
+        <div class="o-text"><p>Sant eller usant: Sterk skalering er ikke bundet av Amdahls lov.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Usant. Svak skalering kan kompensere for en sekvensiell del som ellers ville begrenset skalerbarheten, fordi den parallelle delen vokser med problemet. Sterk skalering kan ikke det.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-6-3">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">6.3 · s. 591</span></div>
+        <div class="o-text"><p>Binærsøk finner verdien X i en sortert tabell med N elementer ved å halvere søkeområdet i hver runde. 6.3.1 Du har Y kjerner, og Y er mye mindre enn N. Hvilken speedup kan du vente, uttrykt ved Y og N? 6.3.2 Hva endres om Y = N, og hvordan ville du skrevet om koden for best mulig speedup ved fast problemstørrelse (sterk skalering)?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p><strong>6.3.1</strong> Slik koden står, er speedup 1: hver runde avhenger av utfallet av forrige, så de \(\log_2 N\) rundene må gå etter tur. Med Y kjerner kan hver runde i stedet sammenlikne X med Y jevnt fordelte elementer samtidig og dele området i \(Y + 1\) deler. Da trengs \(\log_{Y+1} N\) runder:</p>
+            \[ \text{Speedup} = \frac{\log_2 N}{\log_{Y+1} N} = \log_2 (Y + 1) \]
+            <p>Uavhengig av N, og bare logaritmisk i Y: 3 kjerner gir 2, 7 kjerner gir 3, 15 kjerner gir 4. Å la hver kjerne søke binært i sin \(N/Y\)-del er enda dårligere: \(\log_2 N / (\log_2 N - \log_2 Y)\), for eksempel \(20/18 = 1{,}11\) for \(N = 2^{20}\) og \(Y = 4\).</p>
+            <p><strong>6.3.2</strong> Med Y = N sammenlikner hver kjerne sitt eget element med X i én runde. Speedup blir omtrent \(\log_2 N\): 20 med en million kjerner. Algoritmen er allerede så rask sekvensielt at det nesten ikke er noe å dele på. Best sterk skalering gir den parallelle \((Y+1)\)-delingen over. Søk skalerer derimot perfekt som jobbnivå-parallellitet: mange uavhengige søk samtidig.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">95 % av kjøretiden til et program kan parallelliseres. Hva blir speedup på 8 og på 64 kjerner med fast problemstørrelse, og hva er taket?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">8 kjerner: \(1/(0{,}05 + 0{,}95/8) = 1/0{,}169 = 5{,}9\). 64 kjerner: \(1/(0{,}05 + 0{,}95/64) = 1/0{,}0648 = 15{,}4\). Taket er \(1/0{,}05 = 20\). Åtte ganger så mange kjerner ga bare 2,6 ganger så høy speedup: det er sterk skalering som møter den sekvensielle delen.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 FLYNN ─────────────────────────── -->
+  <section id="flynn">
+    <div class="container">
+      <div class="section-badge">03 · Flynns taksonomi</div>
+      <h2>Instruksjonsstrømmer og <em>datastrømmer</em></h2>
+      <div class="source-note">Boka · kap. 6.3 · s. 527–533 · figur 6.2–6.4 · Kompendiet · kap. 6 «Typer parallelle systemer» · Eksamen: Ord. 25 oppg. 8.2</div>
+      <span class="lm-pill">Læringsmål T7.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare Flynns taksonomi og kunne gi eksempler på SISD, SIMD, og MIMD maskiner.</li>
+      </ul>
+
+      <p class="dropcap"><span class="term" data-term="flynns-taksonomi">Flynns taksonomi</span> deler maskinvare inn etter to spørsmål: hvor mange instruksjonsstrømmer utføres samtidig, og hvor mange datastrømmer arbeider de på? Det gir fire klasser.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="-14 0 624 334" aria-label="Flynns taksonomi som 2 × 2-tabell">
+          <defs><marker id="ah7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <text class="hdr" x="215" y="22" text-anchor="middle">ÉN DATASTRØM</text>
+          <text class="hdr" x="475" y="22" text-anchor="middle">FLERE DATASTRØMMER</text>
+          <text class="hdr" x="-10" y="96">ÉN</text><text class="hdr" x="-10" y="110">INSTRUKSJONS-</text><text class="hdr" x="-10" y="124">STRØM</text>
+          <text class="hdr" x="-10" y="246">FLERE</text><text class="hdr" x="-10" y="260">INSTRUKSJONS-</text><text class="hdr" x="-10" y="274">STRØMMER</text>
+
+          <!-- SISD -->
+          <rect class="cell" x="90" y="34" width="250" height="140" rx="6"/>
+          <text class="ttl" x="102" y="54">SISD</text><text class="cap" x="102" y="68">enprosessor · Intel Pentium 4</text>
+          <rect class="box box-a" x="187" y="80" width="56" height="20" rx="3"/><text x="215" y="94" text-anchor="middle">kontroll</text>
+          <rect class="box box-w" x="187" y="112" width="56" height="20" rx="3"/><text x="215" y="126" text-anchor="middle">ALU</text>
+          <rect class="box box-g" x="187" y="144" width="56" height="20" rx="3"/><text x="215" y="158" text-anchor="middle">data</text>
+          <path class="arr" d="M215 100 V111"/><path class="arr" d="M215 144 V133"/>
+
+          <!-- SIMD -->
+          <rect class="cell" x="350" y="34" width="250" height="140" rx="6"/>
+          <text class="ttl" x="362" y="54">SIMD</text><text class="cap" x="362" y="68">SSE/AVX i x86 · vektorprosessor</text>
+          <rect class="box box-a" x="372" y="80" width="206" height="20" rx="3"/><text x="475" y="94" text-anchor="middle">én kontrollenhet · én PC</text>
+          <rect class="box box-w" x="372" y="112" width="44" height="20" rx="3"/><text x="394" y="126" text-anchor="middle">ALU</text>
+          <rect class="box box-w" x="426" y="112" width="44" height="20" rx="3"/><text x="448" y="126" text-anchor="middle">ALU</text>
+          <rect class="box box-w" x="480" y="112" width="44" height="20" rx="3"/><text x="502" y="126" text-anchor="middle">ALU</text>
+          <rect class="box box-w" x="534" y="112" width="44" height="20" rx="3"/><text x="556" y="126" text-anchor="middle">ALU</text>
+          <rect class="box box-g" x="372" y="144" width="44" height="20" rx="3"/><text x="394" y="158" text-anchor="middle">data</text>
+          <rect class="box box-g" x="426" y="144" width="44" height="20" rx="3"/><text x="448" y="158" text-anchor="middle">data</text>
+          <rect class="box box-g" x="480" y="144" width="44" height="20" rx="3"/><text x="502" y="158" text-anchor="middle">data</text>
+          <rect class="box box-g" x="534" y="144" width="44" height="20" rx="3"/><text x="556" y="158" text-anchor="middle">data</text>
+          <path class="arr" d="M394 100 V111"/><path class="arr" d="M448 100 V111"/><path class="arr" d="M502 100 V111"/><path class="arr" d="M556 100 V111"/>
+          <path class="arr" d="M394 144 V133"/><path class="arr" d="M448 144 V133"/><path class="arr" d="M502 144 V133"/><path class="arr" d="M556 144 V133"/>
+
+          <!-- MISD -->
+          <rect class="cell" x="90" y="184" width="250" height="140" rx="6"/>
+          <text class="ttl" x="102" y="204">MISD</text><text class="cap" x="102" y="218">ingen vanlige eksempler i dag</text>
+          <g class="dim">
+            <rect class="box box-a" x="112" y="230" width="56" height="20" rx="3"/><text x="140" y="244" text-anchor="middle">kontroll</text>
+            <rect class="box box-a" x="187" y="230" width="56" height="20" rx="3"/><text x="215" y="244" text-anchor="middle">kontroll</text>
+            <rect class="box box-a" x="262" y="230" width="56" height="20" rx="3"/><text x="290" y="244" text-anchor="middle">kontroll</text>
+            <rect class="box box-w" x="112" y="262" width="56" height="20" rx="3"/><text x="140" y="276" text-anchor="middle">ALU</text>
+            <rect class="box box-w" x="187" y="262" width="56" height="20" rx="3"/><text x="215" y="276" text-anchor="middle">ALU</text>
+            <rect class="box box-w" x="262" y="262" width="56" height="20" rx="3"/><text x="290" y="276" text-anchor="middle">ALU</text>
+            <rect class="box box-g" x="112" y="294" width="56" height="20" rx="3"/><text x="140" y="308" text-anchor="middle">data</text>
+            <path class="arr" d="M140 250 V261"/><path class="arr" d="M215 250 V261"/><path class="arr" d="M290 250 V261"/>
+            <path class="arr" d="M140 294 V283"/><path class="arr" d="M168 272 H186"/><path class="arr" d="M243 272 H261"/>
+          </g>
+
+          <!-- MIMD -->
+          <rect class="cell" x="350" y="184" width="250" height="140" rx="6"/>
+          <text class="ttl" x="362" y="204">MIMD</text><text class="cap" x="362" y="218">flerkjerne (Intel Core i7) · klynge</text>
+          <rect class="box box-a" x="372" y="230" width="56" height="20" rx="3"/><text x="400" y="244" text-anchor="middle">kontroll</text>
+          <rect class="box box-a" x="447" y="230" width="56" height="20" rx="3"/><text x="475" y="244" text-anchor="middle">kontroll</text>
+          <rect class="box box-a" x="522" y="230" width="56" height="20" rx="3"/><text x="550" y="244" text-anchor="middle">kontroll</text>
+          <rect class="box box-w" x="372" y="262" width="56" height="20" rx="3"/><text x="400" y="276" text-anchor="middle">ALU</text>
+          <rect class="box box-w" x="447" y="262" width="56" height="20" rx="3"/><text x="475" y="276" text-anchor="middle">ALU</text>
+          <rect class="box box-w" x="522" y="262" width="56" height="20" rx="3"/><text x="550" y="276" text-anchor="middle">ALU</text>
+          <rect class="box box-g" x="372" y="294" width="56" height="20" rx="3"/><text x="400" y="308" text-anchor="middle">data</text>
+          <rect class="box box-g" x="447" y="294" width="56" height="20" rx="3"/><text x="475" y="308" text-anchor="middle">data</text>
+          <rect class="box box-g" x="522" y="294" width="56" height="20" rx="3"/><text x="550" y="308" text-anchor="middle">data</text>
+          <path class="arr" d="M400 250 V261"/><path class="arr" d="M475 250 V261"/><path class="arr" d="M550 250 V261"/>
+          <path class="arr" d="M400 294 V283"/><path class="arr" d="M475 294 V283"/><path class="arr" d="M550 294 V283"/>
+        </svg>
+        <figcaption>Etter figur 6.2 i boka. Kontroll = programteller og kontrollenhet (én instruksjonsstrøm). SIMD har én kontrollenhet som styrer mange utførende enheter; MIMD har flere komplette prosessorer.</figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Klasse</th><th>Betyr</th><th>Eksempler</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="sisd">SISD</span></td><td>Single Instruction stream, Single Data stream: én prosessor utfører én instruksjon om gangen på ett dataelement.</td><td>Enprosessor: prosessorene i kapittel 3–5, Intel Pentium 4. Samlebånd og superskalar er fortsatt SISD: det er én instruksjonsstrøm.</td></tr>
+            <tr><td><span class="term" data-term="simd">SIMD</span></td><td>Single Instruction stream, Multiple Data streams: samme instruksjon utføres på mange dataelementer samtidig.</td><td>SSE- og AVX-instruksjonene i x86, vektorprosessorer, SIMD-banene i en GPU.</td></tr>
+            <tr><td><span class="term" data-term="misd">MISD</span></td><td>Multiple Instruction streams, Single Data stream.</td><td>Ingen vanlige. Nærmest kommer en strømprosessor som gjør en kjede av ulike operasjoner på én datastrøm.</td></tr>
+            <tr><td><span class="term" data-term="mimd">MIMD</span></td><td>Multiple Instruction streams, Multiple Data streams: flere prosessorer utfører hver sitt program på hver sine data.</td><td>Flerkjerneprosessorer (Intel Core i7), multiprosessorer med delt minne, klynger.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>En MIMD-maskin programmeres vanligvis ikke med ulike programmer på hver prosessor, men med ett program som kjører på alle, der betingelser styrer hvilken del av dataene hver prosessor tar: <span class="term" data-term="spmd">SPMD</span> (Single Program, Multiple Data).</p>
+
+      <div class="def-box">
+        <span class="def-label">Det eksamen spør om</span>
+        <div class="def-term">SIMD: én kontrollenhet, mange dataelementer</div>
+        <p>En SIMD-instruksjon sendes til mange utførende enheter på én gang, for eksempel 64 ALU-er som legger sammen 64 tallpar. Alle enhetene går synkront og styres av én programteller, så for programmereren likner maskinen en SISD: ett program, én rekkefølge. Hver enhet har likevel sine egne adresseregistre og dermed sine egne data. Kontrollenheten deles av alle, og det trengs bare én kopi av koden.</p>
+        <p>SIMD krever <span class="term" data-term="dataparallellitet">dataparallellitet</span> (data-level parallelism): mye likt strukturert data som skal ha samme operasjon, typisk tabeller i for-løkker. Svakheten er kode der elementene skal behandles ulikt (case eller switch): enhetene med «feil» data må slås av mens de andre arbeider, så med \(n\) ulike tilfeller går maskinen i praksis på \(1/n\) av toppytelsen.</p>
+      </div>
+
+      <h3>Skalar, SIMD-utvidelser og vektor</h3>
+      <p>SIMD finnes i to utgaver i dagens prosessorer. Multimedieutvidelsene (MMX, SSE, AVX) bygger på <span class="term" data-term="subord-parallellitet">subord-parallellitet</span>. En <span class="term" data-term="vektorarkitektur">vektorarkitektur</span> henter dataelementene inn i store vektorregistre, regner på dem med samlebåndsdelte enheter og skriver resultatet tilbake. Under er \(Y = a \cdot X + Y\) for 64 flyttall, først som vanlig løkke og så med RISC-V-vektorinstruksjoner (\(a\) ligger i f0, adressene til X og Y i x10 og x11).</p>
+
+<div class="asm"><span class="c">// skalar: 1 + 8 · 64 = 513 instruksjoner</span>
+      addi   x12, x10, 512    <span class="c">// slutten av X (64 · 8 byte)</span>
+loop: fld    f1, 0(x10)       <span class="c">// X[i]</span>
+      fmul.d f1, f1, f0       <span class="c">// a · X[i]</span>
+      fld    f2, 0(x11)       <span class="c">// Y[i]</span>
+      fadd.d f2, f2, f1       <span class="c">// a · X[i] + Y[i]</span>
+      fsd    f2, 0(x11)       <span class="c">// lagre Y[i]</span>
+      addi   x10, x10, 8
+      addi   x11, x11, 8
+      bltu   x10, x12, loop
+
+<span class="c">// vektor: 6 instruksjoner</span>
+      vsetvli  x0, x0, e64    <span class="c">// elementene er 64 bit</span>
+      vle.v    v0, 0(x10)     <span class="c">// hele X inn i v0</span>
+      vfmul.vf v0, v0, f0     <span class="c">// a · X, alle 64 elementene</span>
+      vle.v    v1, 0(x11)     <span class="c">// hele Y inn i v1</span>
+      vfadd.vv v1, v1, v0     <span class="c">// a · X + Y</span>
+      vse.v    v1, 0(x11)     <span class="c">// lagre Y</span></div>
+
+      <p>Vektorkoden er raskere og bruker mindre energi av fire grunner: langt færre instruksjoner hentes og dekodes; elementene i en vektor er uavhengige, så maskinvaren sjekker datafarer én gang per vektor i stedet for per element; løkkehoppet og kontrollfarene er borte; og minnet får et kjent aksessmønster og kan levere hele vektoren i ett. Elementene kan dessuten regnes ut i flere parallelle <span class="term" data-term="vektorbane">baner</span> (vector lanes): med fire baner blir fire elementer ferdige per sykel.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Skalar</th><th>SIMD-utvidelser (MMX, SSE, AVX)</th><th>Vektorarkitektur (RISC-V V)</th></tr></thead>
+          <tbody>
+            <tr><td>Én instruksjon gjør</td><td>én operasjon</td><td>noen få, f.eks. åtte 64-bits flyttall</td><td>titalls, f.eks. 64 elementer</td></tr>
+            <tr><td>Antall elementer</td><td>1</td><td>ligger i opcoden: bredere registre krever nye instruksjoner (MMX → SSE → AVX)</td><td>ligger i et eget register: samme binærkode på maskiner med ulik vektorlengde</td></tr>
+            <tr><td>Minnetilgang</td><td>ett ord</td><td>sammenhengende data</td><td>også med fast steglengde og indeksert (gather-scatter)</td></tr>
+            <tr><td>Maskinvare</td><td>én ALU</td><td>bred ALU delt i felt</td><td>vektorregistre og samlebåndsdelte enheter i parallelle baner</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-8-2">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 8.2</span><span class="o-ref">SISD og SIMD · 6 p</span></div>
+        <div class="o-text"><p>Hva er den viktigste forskjellen på en SISD og en SIMD maskin? Nevn en fordel og en utfordring med SIMD-maskiner.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Modellsvar skrevet fra boka (kap. 6.3) · ikke offisielt løsningsforslag</span>
+            <div class="modell">
+              <span class="ml">Modellsvar</span>
+              <p><strong>Forskjellen:</strong> SISD og SIMD er to av klassene i Flynns taksonomi, som deler maskiner inn etter antall instruksjonsstrømmer og antall datastrømmer. Begge har én instruksjonsstrøm: én programteller og én kontrollenhet henter og dekoder én instruksjon om gangen. I en SISD-maskin (Single Instruction, Single Data) utføres instruksjonen på ett dataelement; det er en vanlig enprosessor. I en SIMD-maskin (Single Instruction, Multiple Data) utføres den samme instruksjonen samtidig på mange dataelementer, fordi den sendes til mange utførende enheter som har hver sine data. Én SIMD-instruksjon kan for eksempel legge sammen 64 tallpar, der SISD-maskinen må gå 64 runder i en løkke. Forskjellen er altså antall datastrømmer. Eksempler på SIMD er SSE/AVX-instruksjonene i x86 og vektorprosessorer.</p>
+              <p><strong>Fordel:</strong> SIMD utnytter dataparallellitet med enkel maskinvare og enkel programmering. Kontrollenheten deles av alle de utførende enhetene, det trengs bare én kopi av koden, og alle enhetene går synkront, så programmereren tenker sekvensielt som på en SISD og slipper å synkronisere tråder. Én instruksjon erstatter en hel løkke, så færre instruksjoner hentes og dekodes, og det gir både høyere ytelse og lavere energibruk per operasjon.</p>
+              <p><strong>Utfordring:</strong> SIMD virker bare når mye likt strukturert data skal ha samme operasjon, som tabeller i for-løkker. Kode der elementene skal behandles ulikt (if eller switch per element) passer dårlig: enhetene med «feil» data må slås av mens de andre arbeider, og med \(n\) tilfeller faller ytelsen mot \(1/n\) av toppytelsen. I tillegg må koden vektoriseres av kompilator eller programmerer, og for multimedieutvidelsene gir hver ny registerbredde nye instruksjoner, så programmet må kompileres på nytt for å utnytte dem.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-6-3">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§6.3 · s. 533</span></div>
+        <div class="o-text"><p>Sant eller usant: Multimedieutvidelsene i x86 kan ses som en vektorarkitektur med korte vektorer som bare støtter sammenhengende dataoverføringer.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Sant, men de mangler nyttige vektoregenskaper som gather-scatter og et vektorlengderegister, som gjør vektorarkitekturer mer effektive.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-6-11">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">6.11 · s. 597 · delene om ytelse</span></div>
+        <div class="o-text"><p>Løkka under skal kjøres så effektivt som mulig på (a) en MIMD-maskin med fire prosessorer og (b) en SIMD-maskin med åtte parallelle funksjonsenheter. Hvordan deles arbeidet, hva blir speedup på MIMD-maskinen, og hvor mange instruksjoner utføres på SIMD-maskinen sammenliknet med MIMD-maskinen?</p>
+<div class="asm">for (i = 0; i &lt; 2000; i++)
+  for (j = 0; j &lt; 3000; j++)
+    X_array[i][j] = Y_array[j][i] + 200;</div>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · antar seks instruksjoner per runde</span>
+            <p>Løkka har \(2000 \cdot 3000 = 6\) millioner iterasjoner, og ingen avhenger av en annen. En skalar runde er omtrent seks instruksjoner (last, adder, lagre, to pekeroppdateringer, hopp): 36 millioner instruksjoner.</p>
+            <p><strong>MIMD:</strong> den ytre løkka deles i fire like deler, prosessor \(k\) tar \(i = 500k\) til \(500k + 499\) (samme program på alle, SPMD). Ingen sekvensiell del og jevn last gir speedup nær 4. Antall instruksjoner er uendret, 9 millioner på hver prosessor.</p>
+            <p><strong>SIMD:</strong> den indre løkka tar åtte elementer per runde: \(3000/8 = 375\) runder per rad, \(2000 \cdot 375 = 750\,000\) runder, omtrent 4,5 millioner instruksjoner. Det er en åttendedel av MIMD-maskinens 36 millioner, og speedup opp mot 8 med én kontrollenhet. Merk at Y leses kolonnevis (\(j\) er første indeks), så lastingen trenger fast steglengde; det har en vektorarkitektur, men ikke de enkle SIMD-utvidelsene.</p>
+            <p>Løkka gjør bare én addisjon per element som hentes og lagres, så i praksis er det minnet som setter grensen for begge maskinene (avsnitt 04).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Plasser i Flynns taksonomi: (a) femstegs-samlebåndet fra kapittel 5, (b) AVX-instruksjonene i en x86-kjerne, (c) en firekjerners prosessor, (d) en klynge med tusen servere.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(a) SISD: flere instruksjoner er i arbeid samtidig, men de kommer fra én instruksjonsstrøm. (b) SIMD. (c) MIMD: fire instruksjonsstrømmer på hver sine data, med delt minne. (d) MIMD, med hvert sitt minne og meldingsutveksling (7B).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 ROOFLINE ─────────────────────────── -->
+  <section id="roofline">
+    <div class="container">
+      <div class="section-badge">04 · Roofline</div>
+      <h2>Minnebundet eller <em>beregningsbundet</em></h2>
+      <div class="source-note">Boka · kap. 6.11 «Performance models» · s. 564–567 · figur 6.18–6.20</div>
+      <span class="lm-pill">Læringsmål T7.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne bruke Roofline-modellen og konseptet operasjonsintensitet til å analysere hvorvidt en applikasjon er minnebundet eller beregningsbundet på en gitt datamaskin.</li>
+      </ul>
+
+      <p class="dropcap">To ting kan holde igjen et program som regner tungt på flyttall. Prosessorene kan ikke regne fortere enn <span class="term" data-term="topp-flyttallsytelse">topp-flyttallsytelsen</span> (GFLOP/s, summert over alle kjernene), og minnet bak hurtigbufferne kan ikke levere data fortere enn <span class="term" data-term="minnebaandbredde">minnebåndbredden</span> (GB/s). Hvilken grense programmet møter først, avgjøres av <span class="term" data-term="operasjonsintensitet">operasjonsintensiteten</span> (arithmetic intensity): antall flyttallsoperasjoner per byte som hentes fra hovedminnet.</p>
+
+      <div class="def-box">
+        <span class="def-label">Roofline-modellen</span>
+        <div class="def-term"><span class="term" data-term="roofline">Taket over oppnåelig ytelse</span></div>
+        \[ \begin{aligned} \text{Oppnåelig GFLOP/s} = \min\bigl(&amp;\text{minnebåndbredde} \times \text{operasjonsintensitet},\\ &amp;\text{topp-flyttallsytelse}\bigr) \end{aligned} \]
+        <p>Enhetene går opp: GB/s × FLOP/byte = GFLOP/s. Tegnet med operasjonsintensitet langs x-aksen og logaritmiske akser blir minnegrensen en skrå linje og beregningsgrensen en flat: til sammen en taklinje. Knekkpunktet ligger der topp-flyttallsytelse = minnebåndbredde × intensitet. Et program til venstre for knekken treffer skråtaket og er <span class="term" data-term="minnebundet">minnebundet</span>; til høyre treffer det flattaket og er beregningsbundet. Taklinjen lages én gang per maskin og gjelder for alle programmer.</p>
+      </div>
+
+      <div class="widget" id="w-roof">
+        <div class="widget-label">Prøv selv · Roofline</div>
+        <p class="widget-intro">Sett maskinens topp-flyttallsytelse og minnebåndbredde, og programmets operasjonsintensitet. Stangen fra x-aksen treffer taket der programmet havner. Knappene gir de to programmene fra eksempelet under, og en etterfølger med fire ganger så høy toppytelse og samme minne.</p>
+        <svg viewBox="0 0 560 280" data-w="560" data-h="280" aria-label="Roofline-modellen i log-log"></svg>
+        <div class="w-row">
+          <div class="w-ctl"><label for="rf-peak">topp GFLOP/s</label><input type="number" id="rf-peak" min="1" max="128" step="1" value="16"></div>
+          <div class="w-ctl"><label for="rf-bw">minne GB/s</label><input type="number" id="rf-bw" min="4" max="128" step="1" value="16"></div>
+          <div class="w-ctl"><label for="rf-ai">intensitet</label><input type="range" id="rf-ai" min="-3" max="4" step="0.25" value="-1"><span class="w-val" id="rf-ai-val">0,5</span></div>
+        </div>
+        <div class="w-row">
+          <button class="w-btn secondary" id="rf-k1" type="button">Program 1 · 0,5 FLOP/byte</button>
+          <button class="w-btn secondary" id="rf-k2" type="button">Program 2 · 4 FLOP/byte</button>
+          <button class="w-btn secondary" id="rf-ng" type="button">Etterfølger · 4 × toppytelse</button>
+        </div>
+        <div class="w-out" id="rf-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-roofline">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">6.11 · figur 6.19 · s. 566</span></div>
+        <div class="o-text"><p>En maskin har topp-flyttallsytelse 16 GFLOP/s og minnebåndbredde 16 GB/s. Program 1 har operasjonsintensitet 0,5 FLOP/byte, program 2 har 4 FLOP/byte. Hva er høyeste oppnåelige ytelse for hvert av dem, og hva begrenser?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Knekkpunktet ligger på \(16/16 = 1\) FLOP/byte.</p>
+            <p>Program 1: \(\min(16 \cdot 0{,}5,\ 16) = 8\) GFLOP/s. Det ligger til venstre for knekken og er minnebundet: prosessoren kunne regnet dobbelt så fort om minnet hadde levert.</p>
+            <p>Program 2: \(\min(16 \cdot 4,\ 16) = 16\) GFLOP/s. Det ligger til høyre og er beregningsbundet: minnet kunne matet 64 GFLOP/s.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Knekkpunktet sier noe om maskinen. Ligger det langt til høyre, er det bare programmer med svært høy operasjonsintensitet som når toppytelsen; ligger det langt til venstre, kan nesten alle det. Flere og raskere kjerner uten mer minnebåndbredde flytter knekken mot høyre.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Maskinen i eksempelet får en etterfølger med samme minnebåndbredde (16 GB/s), men 64 GFLOP/s. Hvor ligger knekkpunktet nå, og hva oppnår programmer med intensitet 0,5, 2 og 4 FLOP/byte før og etter?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Knekken flytter fra 1 til \(64/16 = 4\) FLOP/byte. Intensitet 0,5: 8 GFLOP/s før og etter, minnebundet på begge. Intensitet 2: før \(\min(32, 16) = 16\), beregningsbundet; etter \(\min(32, 64) = 32\), nå minnebundet. Intensitet 4: før 16, etter \(\min(64, 64) = 64\), akkurat på knekken. Programmer som var beregningsbundet, kan altså bli minnebundet på neste generasjon, og de med lav intensitet får ingenting igjen for de nye kjernene.</div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: hva gjør man med svaret</summary>
+        <p>Er programmet beregningsbundet, hjelper det å bruke SIMD og mer parallellitet på instruksjonsnivå, og å ha en jevn blanding av addisjoner og multiplikasjoner. Er det minnebundet, hjelper det å hente data på forhånd (software prefetching) og å legge data i minnet nær prosessoren som bruker dem. Operasjonsintensiteten er heller ikke fast: for tette matriser og N-legeme-problemer øker den med problemstørrelsen, som er én grunn til at svak skalering ofte lykkes bedre enn sterk, og bedre utnyttelse av hurtigbufferen flytter programmet mot høyre fordi færre byte må hentes fra hovedminnet.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">05 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Jobbnivå / parallelt program</strong>Uavhengige programmer på hver sin prosessor gir gjennomstrømning uten omskriving. Ett program på flere prosessorer må deles opp.</div>
+        <div class="recap-pill"><strong>Fem hindre</strong>Oppdeling, lastbalanse, synkronisering, kommunikasjon og den sekvensielle delen.</div>
+        <div class="recap-pill"><strong>Amdahl</strong>Speedup = 1 / ((1 − P) + P/N). Tak 1 / (1 − P). Speedup 90 på 100 prosessorer krever 99,9 % parallelt.</div>
+        <div class="recap-pill"><strong>Sterk skalering</strong>Fast problemstørrelse. Bundet av Amdahl. Minne per prosessor M/N.</div>
+        <div class="recap-pill"><strong>Svak skalering</strong>Problemet vokser med N. Den sekvensielle andelen krymper. Minne per prosessor M.</div>
+        <div class="recap-pill"><strong>Lastbalanse</strong>Tregeste prosessor bestemmer: dobbel last på én av 40 kutter speedup fra 20,5 til 14.</div>
+        <div class="recap-pill"><strong>Flynn</strong>SISD enprosessor · SIMD AVX, vektor · MISD ingen · MIMD flerkjerne, klynge. SPMD: ett program på alle.</div>
+        <div class="recap-pill"><strong>SIMD</strong>Én kontrollenhet, mange dataelementer. Fordel: enkel dataparallellitet. Utfordring: ulik behandling per element.</div>
+        <div class="recap-pill"><strong>Vektor / SIMD-utvidelser</strong>Vektorlengde i register mot i opcoden; gather-scatter mot sammenhengende; titalls mot få elementer.</div>
+        <div class="recap-pill"><strong>Roofline</strong>min(minnebåndbredde × intensitet, topp-flyttallsytelse). Venstre for knekken minnebundet, høyre beregningsbundet.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvorfor er det lettere å utnytte åtte kjerner med åtte uavhengige programmer enn med ett program?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Uavhengige programmer deler ingen data: operativsystemet legger dem på hver sin kjerne, ingenting må skrives om, og gjennomstrømningen øker åtte ganger (jobbnivå-parallellitet). Ett program må deles i åtte like store, uavhengige biter, bitene må synkroniseres og utveksle data, og den delen som ikke lar seg dele, setter et tak etter Amdahls lov.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Et program har 2 % sekvensiell kjøretid. Hva er speedup på 32 prosessorer med fast problemstørrelse? Hvor mange prosessorer trengs for speedup 40, og er speedup 60 mulig?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">32 prosessorer: \(1/(0{,}02 + 0{,}98/32) = 1/0{,}0506 = 19{,}8\). Speedup 40: \(1/40 = 0{,}025 = 0{,}02 + 0{,}98/N\) gir \(N = 0{,}98/0{,}005 = 196\). Speedup 60 er umulig ved sterk skalering: taket er \(1/0{,}02 = 50\). Med svak skalering (større problem) kan speedup likevel fortsette å vokse.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">En maskin har 32 GFLOP/s og 8 GB/s. Et program har operasjonsintensitet 1 FLOP/byte. Lønner det seg å skrive det om til bredere SIMD-instruksjoner som dobler topp-flyttallsytelsen? Hva hjelper i stedet?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Knekkpunktet er \(32/8 = 4\) FLOP/byte, og programmet ligger til venstre: \(\min(8 \cdot 1,\ 32) = 8\) GFLOP/s, minnebundet. Bredere SIMD løfter bare flattaket til 64 og flytter knekken til 8; programmet får fortsatt 8 GFLOP/s. Det som hjelper, er høyere operasjonsintensitet (bedre bruk av hurtigbufferen, så færre byte hentes fra minnet per operasjon) eller mer minnebåndbredde. Først ved 4 FLOP/byte når programmet dagens toppytelse.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 7: oversikt</div></a>
+        <a href="multiprosessorer.html" class="next"><div class="pn-label">Neste · 7B</div><div class="pn-title">Multiprosessorer og akseleratorer →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  function nb(v, d) { return (+v).toLocaleString('nb-NO', { maximumFractionDigits: d == null ? 2 : d }); }
+  function nb2(v) { return (+v).toLocaleString('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  /* KJERNE-START (ren regning, testes i node) */
+  function sterk(s, n) { return 1 / (s + (1 - s) / n); }
+  function svak(s, n) { return s + (1 - s) * n; }
+  function roof(peak, bw, ai) {
+    var mem = bw * ai, got = Math.min(mem, peak);
+    return { mem: mem, got: got, ridge: peak / bw, bound: mem < peak ? 'minne' : (mem > peak ? 'beregning' : 'knekk') };
+  }
+  function roofPts(peak, bw, X0, X1, yMin) {
+    var lb = Math.log2(bw), lp = Math.log2(peak), xr = lp - lb, xs = Math.max(X0, Math.log2(yMin) - lb);
+    if (xr <= X0) return [[X0, lp], [X1, lp]];
+    if (xr >= X1) return [[xs, lb + xs], [X1, lb + X1]];
+    return [[xs, lb + xs], [xr, lp], [X1, lp]];
+  }
+  /* KJERNE-SLUTT */
+
+  /* ─── Widget 1: sterk og svak skalering ─── */
+  (function () {
+    var root = document.getElementById('w-skal'); if (!root) return;
+    var svg = root.querySelector('svg'), sIn = document.getElementById('sk-s'), nIn = document.getElementById('sk-n'), out = document.getElementById('sk-out');
+    var plot = MLPlot.make(svg, { x: [1, 64], y: [0, 64], xLabel: 'N prosessorer', yLabel: 'speedup', xTicks: [1, 8, 16, 32, 48, 64], yTicks: [0, 16, 32, 48, 64] });
+    function draw() {
+      var s = +sIn.value, n = +nIn.value, st = sterk(s, n), sv = svak(s, n);
+      document.getElementById('sk-s-val').textContent = nb2(s); document.getElementById('sk-n-val').textContent = n;
+      plot.clearData(); plot.clearOverlay();
+      plot.curve(function (x) { return x; }, 'curve-3', 64);
+      plot.curve(function (x) { return svak(s, x); }, 'curve-2', 64);
+      plot.curve(function (x) { return sterk(s, x); }, 'curve', 252);
+      if (s > 0 && 1 / s <= 64) plot.hline(1 / s, 'guide');
+      plot.point(n, sv, 'marker');
+      plot.point(n, st, 'marker-accent');
+      var tak = s > 0 ? nb(1 / s, 1) : '∞';
+      out.innerHTML = 'Sterk (fast problem):    1 / (' + nb2(s) + ' + ' + nb2(1 - s) + '/' + n + ') = <span class="hl">' + nb(st, 2) + '</span>  ·  ' + Math.round(100 * st / n) + ' % av ideell\n' +
+        'Svak (problemet vokser): ' + nb2(s) + ' + ' + nb2(1 - s) + ' · ' + n + ' = <span class="hl">' + nb(sv, 2) + '</span>  ·  ' + Math.round(100 * sv / n) + ' % av ideell\n' +
+        'Tak ved sterk skalering: 1/s = ' + tak + '\n' +
+        'Arbeidssett per prosessor: M/' + n + ' ved sterk skalering, M ved svak.';
+    }
+    sIn.addEventListener('input', draw); nIn.addEventListener('input', draw);
+    draw();
+  })();
+
+  /* ─── Widget 2: Roofline (log-log, regnet om til log2 før plotting) ─── */
+  (function () {
+    var root = document.getElementById('w-roof'); if (!root) return;
+    var svg = root.querySelector('svg'), pIn = document.getElementById('rf-peak'), bIn = document.getElementById('rf-bw'), aIn = document.getElementById('rf-ai'), out = document.getElementById('rf-out');
+    var X0 = -3, X1 = 4, Y0 = -1, Y1 = 8;
+    var plot = MLPlot.make(svg, { x: [X0, X1], y: [Y0, Y1], xLabel: 'operasjonsintensitet (FLOP/byte)', yLabel: 'oppnåelig GFLOP/s', xTicks: [], yTicks: [], pad: { l: 48, t: 16 } });
+    var el = MLPlot.el, k, t, xl = ['1/8', '1/4', '1/2', '1', '2', '4', '8', '16'];
+    for (k = X0; k <= X1; k++) {
+      el('line', { x1: plot.sx(k), x2: plot.sx(k), y1: plot.sy(Y0), y2: plot.sy(Y1), 'class': 'grid' }, plot.layers.grid);
+      t = el('text', { x: plot.sx(k), y: plot.H - 34 + 16, 'text-anchor': 'middle' }, plot.layers.axes); t.textContent = xl[k - X0];
+    }
+    for (k = Y0; k <= Y1; k++) {
+      el('line', { x1: plot.sx(X0), x2: plot.sx(X1), y1: plot.sy(k), y2: plot.sy(k), 'class': 'grid' }, plot.layers.grid);
+      t = el('text', { x: 48 - 8, y: plot.sy(k) + 4, 'text-anchor': 'end' }, plot.layers.axes); t.textContent = nb(Math.pow(2, k), 1);
+    }
+    function clamp(inp, lo, hi, def) { var v = +inp.value; if (!isFinite(v) || inp.value === '') v = def; return Math.max(lo, Math.min(hi, v)); }
+    function draw() {
+      var peak = clamp(pIn, 1, 128, 16), bw = clamp(bIn, 4, 128, 16), xa = +aIn.value, ai = Math.pow(2, xa), r = roof(peak, bw, ai);
+      document.getElementById('rf-ai-val').textContent = nb(ai, 2);
+      plot.clearData(); plot.clearOverlay();
+      var pts = roofPts(peak, bw, X0, X1, 0.5), d = '', i;
+      for (i = 0; i < pts.length; i++) d += (i ? 'L' : 'M') + plot.sx(pts[i][0]).toFixed(1) + ' ' + plot.sy(pts[i][1]).toFixed(1) + ' ';
+      el('path', { d: d + 'L' + plot.sx(X1).toFixed(1) + ' ' + plot.sy(Y0).toFixed(1) + ' L' + plot.sx(pts[0][0]).toFixed(1) + ' ' + plot.sy(Y0).toFixed(1) + ' Z', 'class': 'roof-fill' }, plot.layers.data);
+      el('path', { d: d, 'class': 'curve' }, plot.layers.data);
+      var xr = Math.log2(r.ridge), ya = Math.log2(r.got), lbl;
+      if (xr > X0 && xr < X1) {
+        el('line', { x1: plot.sx(xr), x2: plot.sx(xr), y1: plot.sy(Y0), y2: plot.sy(Math.log2(peak)), 'class': 'guide' }, plot.layers.overlay);
+        var yl = plot.sy(Math.log2(peak)) - 9;
+        if (xr - 1.5 > X0) { lbl = el('text', { x: plot.sx(xr) - 8, y: yl, 'text-anchor': 'end', 'class': r.bound === 'minne' ? 'verdict' : 'lbl' }, plot.layers.overlay); lbl.textContent = '← minnebundet'; }
+        if (xr + 1.8 < X1) { lbl = el('text', { x: plot.sx(xr) + 8, y: yl, 'text-anchor': 'start', 'class': r.bound === 'beregning' ? 'verdict' : 'lbl' }, plot.layers.overlay); lbl.textContent = 'beregningsbundet →'; }
+      } else if (xr >= X1) {
+        lbl = el('text', { x: plot.sx(X1) - 8, y: plot.sy(Math.log2(bw) + X1) - 9, 'text-anchor': 'end', 'class': 'verdict' }, plot.layers.overlay); lbl.textContent = 'minnebundet i hele området';
+      } else {
+        lbl = el('text', { x: plot.sx(X0) + 8, y: plot.sy(Math.log2(peak)) - 9, 'text-anchor': 'start', 'class': 'verdict' }, plot.layers.overlay); lbl.textContent = 'beregningsbundet i hele området';
+      }
+      el('line', { x1: plot.sx(xa), x2: plot.sx(xa), y1: plot.sy(Y0), y2: plot.sy(ya), 'class': 'curve-2' }, plot.layers.overlay);
+      plot.point(xa, ya, 'marker');
+      out.innerHTML = 'Minnegrense:       ' + nb(bw, 2) + ' GB/s × ' + nb(ai, 2) + ' FLOP/byte = ' + nb(r.mem, 2) + ' GFLOP/s\n' +
+        'Beregningsgrense:  ' + nb(peak, 2) + ' GFLOP/s\n' +
+        'Oppnåelig:         min(' + nb(r.mem, 2) + ', ' + nb(peak, 2) + ') = <span class="hl">' + nb(r.got, 2) + ' GFLOP/s</span>  →  ' + (r.bound === 'minne' ? '<span class="bad">minnebundet</span>' : (r.bound === 'beregning' ? '<span class="ok">beregningsbundet</span>' : 'akkurat på knekkpunktet')) + '\n' +
+        'Knekkpunkt:        ' + nb(peak, 2) + ' / ' + nb(bw, 2) + ' = ' + nb(r.ridge, 2) + ' FLOP/byte';
+    }
+    function sett(p, b, a) { if (p != null) pIn.value = p; if (b != null) bIn.value = b; if (a != null) aIn.value = a; draw(); }
+    [pIn, bIn, aIn].forEach(function (e) { e.addEventListener('input', draw); });
+    document.getElementById('rf-k1').addEventListener('click', function () { sett(16, 16, -1); });
+    document.getElementById('rf-k2').addEventListener('click', function () { sett(16, 16, 2); });
+    document.getElementById('rf-ng').addEventListener('click', function () { sett(64, 16, null); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

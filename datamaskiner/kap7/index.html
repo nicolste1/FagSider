@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 7 — Parallelle datamaskiner</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
+  .lm-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; }
+  .lm-card .lm-k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+  .lm-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; color: var(--ink-soft); }
+  .lm-card .lm-src { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-ghost); margin-top: 0.4rem; }
+  .lm-card .tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-left: 6px; background: var(--accent-soft); color: var(--accent); }
+  .lm-card .tag.regn { background: var(--warm-soft); color: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 7: Parallelle datamaskiner">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 7 · Tema T7 · Boka kap. 6.1–6.8 og 6.11, 5.10, 2.11 · Kompendiet kap. 6 og kap. 1 · Forelesning 12 · ~1 t 15 min totalt</div>
+      <h1>Parallelle <em>datamaskiner</em></h1>
+      <p class="lede">Én kjerne blir ikke mye raskere, så ytelsen må komme fra mange: flere kjerner, flere maskiner og spesialiserte akseleratorer. Kapittelet handler om hva det koster å få dem til å samarbeide. Siste del av eksamen: 6 av 100 poeng i Ord. 2025, og deloppgave 5.1–5.4 i Kont 2025.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringsmaal">Læringsmål og prioritet</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">05</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 5 endte med at mer parallellitet inne i én kjerne koster for mye. Kapittel 7 tar konsekvensen: flere prosessorer. En <span class="term" data-term="multiprosessor">multiprosessor</span> gir uten videre mer <span class="term" data-term="gjennomstromning">gjennomstrømning</span> for uavhengige programmer, men skal ett program bli raskere, må det deles opp, og da bestemmer <span class="term" data-term="amdahls-lov">Amdahls lov</span> hvor langt det går. <span class="term" data-term="flynns-taksonomi">Flynns taksonomi</span> sorterer maskinene etter instruksjons- og datastrømmer, og resten av kapittelet går gjennom hvordan hver type er bygd og hva den krever av programmet.</p>
+
+      <ul>
+        <li><strong>Ytelse og Flynn (7A).</strong> Jobbnivå-parallellitet mot ett parallelt program; de fem hindrene; Amdahls lov med sterk og svak skalering og lastbalanse; SISD, SIMD, MISD og MIMD med eksempler; vektorarkitektur mot SIMD-utvidelser; Roofline-modellen. Prio 2: SISD mot SIMD ga 6 poeng i Ord. 2025.</li>
+        <li><strong>Multiprosessorer og akseleratorer (7B).</strong> Delt minne mot distribuert minne; flerkjerneprosessoren med private og delte hurtigbuffere; synkronisering med lås og lr.w/sc.w; koherens med snooping, falsk deling og minnekonsistens; heterogene maskiner, GPU-er og domenespesifikke akseleratorer. Prio 3: bare i Kont-settene så langt.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilder og utvalg</span>
+        <p>Sidene følger læringsutbyttebeskrivelsen tema T7 (T7.1–T7.3) og bygger på boka kapittel 6.1–6.8 og 6.11, pluss 5.10 (koherens) og 2.11 (synkronisering), og kompendiets oversikt over parallelle systemer. Alle bokoppgavene beskrivelsen lister (6.2, 6.3, 6.11; 6.6, 6.7, 6.19) er med, sammen med eksamensoppgave 8.2 fra Ord. 2025 og bokas regneeksempler. Eksamensanalysen (godkjent 2. oktober 2026) gir T7.1 prio 2 og T7.2 og T7.3 prio 3. Amdahls lov er utledet i <a href="../kap1/ytelse.html#amdahl">kapittel 1</a> og gjentas ikke; SIMD-instruksjonene er innført i <a href="../kap3/alu.html#simd">kapittel 3</a>. Har du lite tid: les 7A avsnitt 02 og 03 og tabellene i 7B.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringsmaal">
+    <div class="container">
+      <div class="section-badge">Læringsmål og prioritet</div>
+      <h2>Fra <em>læringsutbyttebeskrivelsen</em></h2>
+      <p class="section-intro">Tema T7 dekker K1 (konstruksjon og virkemåte), K6 (begrensningene ved én prosessor, og hvordan multiprosessorer, grafikkprosessorer og domenespesifikke akseleratorer møter dem) og G1.</p>
+      <div class="lm-grid">
+        <div class="lm-card">
+          <div class="lm-k">T7.1 · Ytelse og Flynns taksonomi <span class="tag">Forklar</span><span class="tag regn">Regn</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare hvorfor det er enklere å utnytte parallellitet mellom uavhengige program enn innad i ett program.</li>
+            <li>Studenten skal kunne bruke Amdahls lov til å analysere skalerbarheten til parallelle programmer.</li>
+            <li>Studenten skal kjenne til konseptene sterk og svak skalering og kunne bruke dem til å vurdere skalerbarheten til ulike applikasjoner.</li>
+            <li>Studenten skal kunne forklare Flynns taksonomi og kunne gi eksempler på SISD, SIMD, og MIMD maskiner.</li>
+            <li>Studenten skal kunne bruke Roofline-modellen og konseptet operasjonsintensitet til å analysere hvorvidt en applikasjon er minnebundet eller beregningsbundet på en gitt datamaskin.</li>
+          </ul>
+          <div class="lm-src">Prio 2 · Forelesning 12 · Boka 6.1–6.3 og 6.11 · Oppgaver 6.2, 6.3, 6.11 · Eksamen: Ord. 25 oppg. 8.2 (6 p, på siden), Kont 25 oppg. 5.1 · <a href="parallell.html">7A</a> · ~40 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T7.2 · Multiprosessorer <span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten kan beskrive den overordnede arkitekturen til multiprosessorer med delt minne og distribuert minne samt kjenne til deres styrker og svakheter.</li>
+            <li>Studenten skal kunne beskrive den overordnede arkitekturen til en flerkjerneprosessor og kunne motivere for hvorfor arkitekturen er som den er.</li>
+            <li>Studenten skal kunne forklare hvorfor synkronisering er nødvendig og de grove trekkene i hvordan synkronisering implementeres.</li>
+            <li>Studenten skal kjenne til behovet for å holde hurtigbuffere koherente og de grove trekkene i hvordan det løses.</li>
+            <li>Studenten skal kunne beskrive minnekonsistensproblemet og kjenne til de grove trekkene i hvordan det løses.</li>
+          </ul>
+          <div class="lm-src">Prio 3 · Forelesning 12 · Boka 6.4, 6.5 og 6.8; 5.10; 2.11 · Oppgaver 6.6, 6.7, 6.19 · Eksamen: Kont 25 oppg. 5.2 · <a href="multiprosessorer.html#minne">7B avsnitt 01–04</a> · ~20 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T7.3 · Akseleratorer (Grafikkprosessorer og domene-spesifikke akseleratorer) <span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal vite hva en heterogen datamaskin er og kunne forklare hvorfor datamaskiner med høy ytelse typisk er heterogene.</li>
+            <li>Studenten skal kunne forklare den overordnede arkitekturen til grafikkprosessorer (GPUer) samt kunne beskrive programmeringsmodellen som benyttes når man bruker GPUer til generell beregning.</li>
+            <li>Studenten skal kunne beskrive likheter og forskjeller mellom GPUer, vektorprosessorer, og SIMD-instruksjoner.</li>
+            <li>Studenten skal kunne forklare hva en domene-spesifikk akselerator (DSE) er og motivere for hvorfor disse kan oppnå høyere ytelse enn mer generelle arkitekturer (altså CPUer og GPUer).</li>
+          </ul>
+          <div class="lm-src">Prio 3 · Forelesning 12 · Boka 6.6, 6.7 · ingen bokoppgaver · Eksamen: Kont 25 oppg. 5.3 og 5.4, Kont 24 oppg. 5 · <a href="multiprosessorer.html#gpu">7B avsnitt 05–06</a> · ~15 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="parallell.html" class="subpage-card">
+          <span class="sp-icon">7A</span>
+          <div class="sp-info">
+            <div class="sp-title">Parallell ytelse og Flynns taksonomi</div>
+            <div class="sp-desc">T7.1 · Boka 6.1–6.3, 6.11: jobbnivå-parallellitet mot parallelle programmer, Amdahl med sterk og svak skalering, lastbalanse, SISD/SIMD/MISD/MIMD, vektor mot SIMD-utvidelser, Roofline. 11 oppgaver (1 fra eksamen), 2 widgeter (skalering, Roofline). ~40 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="multiprosessorer.html" class="subpage-card">
+          <span class="sp-icon">7B</span>
+          <div class="sp-info">
+            <div class="sp-title">Multiprosessorer og akseleratorer</div>
+            <div class="sp-desc">T7.2 og T7.3 · Boka 6.4–6.8, 5.10, 2.11: delt mot distribuert minne, flerkjerneprosessoren, synkronisering med lr.w/sc.w, koherens og konsistens, GPU-er og domenespesifikke akseleratorer. 6 oppgaver, 1 widget (koherens-simulator). ~35 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">17 bokser: eksamensoppgaven fra Ord. 2025 med modellsvar, bokoppgavene læringsutbyttebeskrivelsen lister, og bokas eksempler og kontrollspørsmål. Grønn status: svar fra boka. Gul: forslag eller modellsvar skrevet for denne siden.</p>
+
+      <h3>7A · Parallell ytelse og Flynns taksonomi</h3>
+      <ul class="oppgave-index">
+        <li><a href="parallell.html#oppg-cy-6-1"><span class="oi-ref">§6.1 · s. 522</span><span>Må en applikasjon være samtidig for å ha nytte av en multiprosessor?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="parallell.html#oppg-6-2"><span class="oi-ref">6.2 · s. 590</span><span>Tre kaker, én ovn: plan, flaskehalser, data- og jobbnivå-parallellitet.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="parallell.html#oppg-eks-speedup90"><span class="oi-ref">Eks. · s. 523</span><span>Speedup 90 på 100 prosessorer: hvor mye kan være sekvensielt?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="parallell.html#oppg-eks-matrisesum"><span class="oi-ref">Eks. · s. 524</span><span>Ti skalarer pluss matrise 10 × 10 og 20 × 20 på 10 og 40 prosessorer.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="parallell.html#oppg-eks-lastbalanse"><span class="oi-ref">Eks. · s. 525</span><span>Én prosessor med dobbel og femdobbel last: speedup og utnyttelse.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="parallell.html#oppg-cy-6-2"><span class="oi-ref">§6.2 · s. 527</span><span>Er sterk skalering bundet av Amdahls lov?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="parallell.html#oppg-6-3"><span class="oi-ref">6.3 · s. 591</span><span>Binærsøk på Y kjerner: speedup som funksjon av Y og N.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="parallell.html#oppg-eks-o25-8-2"><span class="oi-ref">Ord. 25 · 8.2</span><span>Eksamen: SISD mot SIMD, én fordel og én utfordring (6 p).</span><span class="oi-status forslag">Modellsvar</span></a></li>
+        <li><a href="parallell.html#oppg-cy-6-3"><span class="oi-ref">§6.3 · s. 533</span><span>Er multimedieutvidelsene en vektorarkitektur med korte vektorer?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="parallell.html#oppg-6-11"><span class="oi-ref">6.11 · s. 597</span><span>Dobbel løkke på MIMD med fire prosessorer og åtte bred SIMD: speedup og instruksjonstall.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="parallell.html#oppg-eks-roofline"><span class="oi-ref">Eks. · s. 566</span><span>Roofline: 16 GFLOP/s og 16 GB/s, programmer med 0,5 og 4 FLOP/byte.</span><span class="oi-status notes">Fra boka</span></a></li>
+      </ul>
+
+      <h3>7B · Multiprosessorer og akseleratorer</h3>
+      <ul class="oppgave-index">
+        <li><a href="multiprosessorer.html#oppg-eks-sum64000"><span class="oi-ref">Eks. · s. 539</span><span>Summer 64 000 tall på 64 prosessorer med delt minne: oppdeling og reduksjon.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="multiprosessorer.html#oppg-6-7"><span class="oi-ref">6.7 · s. 594</span><span>Fire kjerner, fire setninger: alle mulige verdier av w, x, y og z.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="multiprosessorer.html#oppg-eks-koherens"><span class="oi-ref">Eks. · s. 476</span><span>A leser, B leser, A skriver: uten og med koherensprotokoll.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="multiprosessorer.html#oppg-6-6"><span class="oi-ref">6.6 · s. 594</span><span>Matrisemultiplikasjon på fire kjerner: speedup, falsk deling og kuren.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="multiprosessorer.html#oppg-cy-6-6"><span class="oi-ref">§6.6 · s. 549</span><span>Bruker GPU-er grafikk-DRAM for å korte ned minneforsinkelsen?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="multiprosessorer.html#oppg-6-19"><span class="oi-ref">6.19 · s. 600</span><span>Tre ulike prosessorer skal telle X ≥ Y i to matriser: fordeling av arbeidet.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">Eksamensoppgavene Kont 25 oppg. 5.1–5.4 og Kont 24 oppg. 5 (tekstene finnes ikke i repoet; de egne spørsmålene på 7A og 7B er laget etter temaene). Fra bokoppgave 6.11: å skrive RISC-V-koden for hver prosessor og SIMD-programmet. Bokas øvrige oppgaver til kapittel 6 (6.1, 6.4, 6.5, 6.8–6.10, 6.12–6.18, 6.20), som læringsutbyttebeskrivelsen ikke lister, og kontrollspørsmålene til 6.4, 6.5, 6.7 (tatt som quiz på 7B), 6.8 og 6.11.</p>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever 7A og 7B i sammenheng. Flere finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">Et program bruker 80 % av kjøretiden i en løkke over store tabeller og 20 % i sekvensiell kode. Alternativ A: SIMD-instruksjoner som gjør løkka 8 ganger raskere. Alternativ B: fire kjerner som deler løkka. Hva blir speedup for A, for B og for begge samtidig, og hva er taket?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">A: \(1/(0{,}2 + 0{,}8/8) = 3{,}33\). B: \(1/(0{,}2 + 0{,}8/4) = 2{,}5\). Begge (løkka 32 ganger raskere): \(1/(0{,}2 + 0{,}8/32) = 4{,}44\). Taket er \(1/0{,}2 = 5\). SIMD og flere kjerner utnytter begge dataparallelliteten i løkka, men ingen av dem rører de 20 prosentene, og de bestemmer etter hvert alt.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Plasser hver maskin i Flynns taksonomi, og si hvordan prosessorene deler data: (a) en åttekjerners prosessor med AVX, (b) en GPU, (c) en klynge i et datasenter, (d) en TPU.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(a) MIMD der hver kjerne også har SIMD-instruksjoner; delt minne med koherente hurtigbuffere. (b) MIMD satt sammen av flertrådede SIMD-prosessorer; eget GPU-minne, og data kopieres til og fra CPU-en som akselerator i en heterogen maskin. (c) MIMD med distribuert minne: private adresserom og meldingsutveksling over nettverk. (d) Domenespesifikk akselerator som bruker SIMD: tusenvis av ALU-er styrt av én instruksjonsstrøm, med dedikerte minner på brikka.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et parallelt program gir riktig svar, men går saktere på åtte kjerner enn på fire. Nevn fire mulige årsaker fra kapittelet, og hva du ville sjekket for hver.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">(1) Skjev lastbalanse: én tråd har mye mer arbeid, og de andre venter; se på hvor lenge hver tråd er i arbeid. (2) Synkronisering: trådene står i kø for samme lås; se på tiden i kritiske områder. (3) Falsk deling: trådene skriver til ulike variabler i samme blokk, så blokken ugyldiggjøres hele tiden; se etter mange hurtigbufferbommer på data hver tråd skriver for seg selv. (4) Programmet er minnebundet: Roofline sier at flere kjerner bare løfter flattaket, mens minnebåndbredden er den samme. I tillegg setter den sekvensielle delen et tak for speedup, men den alene gjør ikke programmet tregere.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Hvorfor lykkes svak skalering oftere enn sterk? Gi én grunn fra Amdahls lov og én fra Roofline-modellen, og én ting som kan ødelegge.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Amdahl: når problemet vokser, vokser den parallelle delen, mens den sekvensielle står stille og blir en mindre andel. Roofline: for noen typer programmer (tette matriser, N-legeme-problemer) øker operasjonsintensiteten med problemstørrelsen, så programmet flytter seg mot høyre og blir mindre minnebundet. Det som kan ødelegge, er minnehierarkiet: vokser datasettet ut av siste nivå i hurtigbufferen, kan ytelsen falle mye.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap6/" class="prev"><div class="pn-label">← Forrige</div><div class="pn-title">Kapittel 6: Minnesystemet</div></a>
+        <a href="parallell.html" class="next"><div class="pn-label">Start · 7A</div><div class="pn-title">Parallell ytelse og Flynns taksonomi →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

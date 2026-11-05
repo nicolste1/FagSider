@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Multiprosessorer og akseleratorer — Kap 7</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .ttl { font-size: 13px; font-weight: 600; }
+  .fig-svg .big { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  .fig-svg .cell { fill: var(--paper); stroke: var(--line); stroke-width: 1; }
+  .fig-svg .node { fill: none; stroke: var(--ink-ghost); stroke-width: 1; stroke-dasharray: 4 3; }
+  .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; marker-end: url(#ah7b); }
+  .fig-svg .ln { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; }
+  .fig-svg .bus { stroke: var(--ink); stroke-width: 3; }
+  .fig-svg .cb-none { fill: var(--paper); stroke: var(--ink-ghost); stroke-width: 1.1; stroke-dasharray: 4 3; }
+  .fig-svg .cb-ok { fill: rgba(61,107,58,0.16); stroke: var(--green); stroke-width: 1.4; }
+  .fig-svg .cb-ex { fill: rgba(27,94,90,0.16); stroke: var(--accent); stroke-width: 1.8; }
+  .fig-svg .cb-inv { fill: rgba(179,38,30,0.07); stroke: var(--red); stroke-width: 1.2; stroke-dasharray: 5 3; }
+  .fig-svg .cb-stale { fill: rgba(179,38,30,0.16); stroke: var(--red); stroke-width: 1.8; }
+  .fig-svg .busmsg { font-family: var(--mono); font-size: 11px; fill: var(--warm); font-weight: 600; }
+  .asm { font-family: var(--mono); font-size: 0.84rem; background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 4px; padding: 0.8rem 1.1rem; margin: 0.8rem 0; line-height: 1.6; white-space: pre; overflow-x: auto; }
+  .asm .c { color: var(--ink-faded); }
+  table.koh { font-family: var(--mono); font-size: 0.8rem; }
+  table.koh td, table.koh th { padding: 4px 9px; letter-spacing: 0; white-space: nowrap; }
+  table.koh td:nth-child(3) { white-space: normal; }
+  table.koh td.inv { color: var(--red); }
+  table.koh td.ex { color: var(--accent); font-weight: 600; }
+  table.small td { font-size: 0.9rem; padding: 0.5rem 0.7rem; }
+  table.small th { padding: 0.5rem 0.7rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 7</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 7: Parallelle datamaskiner">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 7 · 7B · Læringsmål T7.2 og T7.3 · Boka kap. 6.4–6.8, 5.10 og 2.11 · ~35 min</div>
+      <h1>Multiprosessorer og <em>akseleratorer</em></h1>
+      <p class="lede">Hvordan flere prosessorer deler data: ett felles minne eller meldinger mellom private minner. Hva som da må til for at svaret skal bli riktig: låser, koherente hurtigbuffere og en regel for når en skriving blir synlig. Og hvorfor de raskeste maskinene setter spesialiserte akseleratorer som GPU-er ved siden av CPU-en.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#minne"><span>01</span> Delt og distribuert minne</a>
+        <a href="#flerkjerne"><span>02</span> Flerkjerneprosessoren</a>
+        <a href="#synkronisering"><span>03</span> Synkronisering</a>
+        <a href="#koherens"><span>04</span> Koherens og konsistens</a>
+        <a href="#gpu"><span>05</span> GPU-er</a>
+        <a href="#dsa"><span>06</span> Domenespesifikke akseleratorer</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T7.2: prio 3 · Kont 25 oppg. 5.2 · T7.3: prio 3 · Kont 25 oppg. 5.3–5.4, Kont 24 oppg. 5 · ingen av delene var med i Ord. 25</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Delt minne mot distribuert minne</strong> (Kont 25 oppg. 5.2): ett felles adresserom med delte variabler mot private minner med meldingsutveksling, og én styrke og én svakhet ved hver. Tabellen i avsnitt 01.</li>
+          <li><span class="tag">Forklar</span><strong>Hvorfor delt minne krever synkronisering og koherente hurtigbuffere</strong>, i grove trekk: lås bygd på en atomisk les-og-skriv; snooping med ugyldiggjøring ved skriving.</li>
+          <li><span class="tag">Forklar</span><strong>Heterogene maskiner og GPU mot CPU</strong> (Kont 25 oppg. 5.3–5.4, Kont 24 oppg. 5): hvorfor akseleratorer, hvordan en GPU er bygd og programmeres, GPU mot vektorprosessor mot SIMD-instruksjoner, og hvorfor en domenespesifikk akselerator kan slå begge.</li>
+          <li><span class="tag">Lavere</span>Hele siden er prio 3: lær tabellene og definisjonene, ikke detaljene. UMA og NUMA, OpenMP og MapReduce, variantene av maskinvare-multitråding og tallene for TPU er kuttet ned til én linje eller lagt i utdypning.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 DELT / DISTRIBUERT ─────────────────────────── -->
+  <section id="minne">
+    <div class="container">
+      <div class="section-badge">01 · Delt og distribuert minne</div>
+      <h2>Ett felles minne, eller <em>meldinger mellom mange</em></h2>
+      <div class="source-note">Boka · kap. 6.5 og 6.8 · s. 537–541 og 552–557 · figur 6.7 og 6.14</div>
+      <span class="lm-pill">Læringsmål T7.2</span>
+      <ul class="lm-list">
+        <li>Studenten kan beskrive den overordnede arkitekturen til multiprosessorer med delt minne og distribuert minne samt kjenne til deres styrker og svakheter.</li>
+      </ul>
+
+      <p class="dropcap">Prosessorene i en multiprosessor må kunne dele data, og det finnes to grunnformer. I en <span class="term" data-term="smp">multiprosessor med delt minne</span> (shared memory multiprocessor, SMP) har alle prosessorene ett felles fysisk adresserom. De kommuniserer gjennom delte variabler: det én prosessor lagrer, kan en annen laste. Slik er nesten alle flerkjerneprosessorer bygd.</p>
+
+      <p>Med distribuert minne har hver prosessor sitt eget private adresserom, og data må sendes eksplisitt med <span class="term" data-term="meldingsutveksling">meldingsutveksling</span> (message passing): én prosessor sender, en annen tar imot. Den vanligste utgaven er <span class="term" data-term="klynge">klyngen</span> (cluster): hele datamaskiner, hver med sin egen kopi av operativsystemet, koblet sammen over et vanlig nettverk. Datasentrene bak <span class="term" data-term="sky">skytjenestene</span> er svært store klynger.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 226" aria-label="Multiprosessor med delt minne og med distribuert minne">
+          <defs><marker id="ah7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <text class="ttl" x="151" y="20" text-anchor="middle">Delt minne (SMP)</text>
+          <rect class="box box-a" x="22" y="32" width="78" height="24" rx="3"/><text x="61" y="48" text-anchor="middle">Prosessor</text>
+          <rect class="box box-a" x="112" y="32" width="78" height="24" rx="3"/><text x="151" y="48" text-anchor="middle">Prosessor</text>
+          <rect class="box box-a" x="202" y="32" width="78" height="24" rx="3"/><text x="241" y="48" text-anchor="middle">Prosessor</text>
+          <rect class="box box-w" x="22" y="64" width="78" height="24" rx="3"/><text x="61" y="80" text-anchor="middle">Hurtigbuffer</text>
+          <rect class="box box-w" x="112" y="64" width="78" height="24" rx="3"/><text x="151" y="80" text-anchor="middle">Hurtigbuffer</text>
+          <rect class="box box-w" x="202" y="64" width="78" height="24" rx="3"/><text x="241" y="80" text-anchor="middle">Hurtigbuffer</text>
+          <path class="ln" d="M61 56 V64 M151 56 V64 M241 56 V64 M61 88 V106 M151 88 V106 M241 88 V106"/>
+          <rect class="box" x="22" y="106" width="258" height="24" rx="3"/><text x="151" y="122" text-anchor="middle">Sammenkoblingsnett</text>
+          <path class="ln" d="M117 130 V152 M231 130 V152"/>
+          <rect class="box box-g" x="52" y="152" width="130" height="30" rx="3"/><text x="117" y="171" text-anchor="middle">Felles minne</text>
+          <rect class="box" x="202" y="152" width="58" height="30" rx="3"/><text x="231" y="171" text-anchor="middle">I/O</text>
+          <text class="cap" x="151" y="202" text-anchor="middle">ett fysisk adresserom · delte variabler</text>
+          <text class="cap" x="151" y="215" text-anchor="middle">trenger koherens og låser</text>
+
+          <path class="node" d="M320 12 V214"/>
+
+          <text class="ttl" x="471" y="20" text-anchor="middle">Distribuert minne (klynge)</text>
+          <rect class="node" x="336" y="27" width="90" height="98" rx="5"/><rect class="node" x="426" y="27" width="90" height="98" rx="5"/><rect class="node" x="516" y="27" width="90" height="98" rx="5"/>
+          <rect class="box box-a" x="342" y="32" width="78" height="24" rx="3"/><text x="381" y="48" text-anchor="middle">Prosessor</text>
+          <rect class="box box-a" x="432" y="32" width="78" height="24" rx="3"/><text x="471" y="48" text-anchor="middle">Prosessor</text>
+          <rect class="box box-a" x="522" y="32" width="78" height="24" rx="3"/><text x="561" y="48" text-anchor="middle">Prosessor</text>
+          <rect class="box box-w" x="342" y="64" width="78" height="24" rx="3"/><text x="381" y="80" text-anchor="middle">Hurtigbuffer</text>
+          <rect class="box box-w" x="432" y="64" width="78" height="24" rx="3"/><text x="471" y="80" text-anchor="middle">Hurtigbuffer</text>
+          <rect class="box box-w" x="522" y="64" width="78" height="24" rx="3"/><text x="561" y="80" text-anchor="middle">Hurtigbuffer</text>
+          <rect class="box box-g" x="342" y="96" width="78" height="24" rx="3"/><text x="381" y="112" text-anchor="middle">Minne</text>
+          <rect class="box box-g" x="432" y="96" width="78" height="24" rx="3"/><text x="471" y="112" text-anchor="middle">Minne</text>
+          <rect class="box box-g" x="522" y="96" width="78" height="24" rx="3"/><text x="561" y="112" text-anchor="middle">Minne</text>
+          <path class="ln" d="M381 56 V64 M471 56 V64 M561 56 V64 M381 88 V96 M471 88 V96 M561 88 V96 M381 120 V152 M471 120 V152 M561 120 V152"/>
+          <rect class="box" x="342" y="152" width="258" height="30" rx="3"/><text x="471" y="171" text-anchor="middle">Sammenkoblingsnett (nettverk)</text>
+          <text class="cap" x="471" y="202" text-anchor="middle">private adresserom · send og motta meldinger</text>
+          <text class="cap" x="471" y="215" text-anchor="middle">hver node er en hel datamaskin</text>
+        </svg>
+        <figcaption>Etter figur 6.7 og 6.14 i boka. Med delt minne ligger nettet mellom hurtigbufferne og minnet; med distribuert minne ligger det mellom ferdige noder med prosessor og minne.</figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table class="small">
+          <thead><tr><th></th><th>Delt minne (SMP, flerkjerne)</th><th>Distribuert minne (klynge)</th></tr></thead>
+          <tbody>
+            <tr><td>Kommunikasjon</td><td>Implisitt: load og store til delte variabler.</td><td>Eksplisitt: send og motta meldinger.</td></tr>
+            <tr><td>Koordinering</td><td>Egne mekanismer: låser (avsnitt 03) og koherente hurtigbuffere (04).</td><td>Innebygd: avsenderen vet når meldingen er sendt, mottakeren når den kom.</td></tr>
+            <tr><td>Styrker</td><td>Lett å flytte et sekvensielt program over: maskinvaren finner selv ut hvilke data som må deles. Rask kommunikasjon: minnebussen har høy båndbredde og kort forsinkelse.</td><td>Enklere maskinvare å bygge. Skalerer til tusenvis av noder. Billig: standard maskiner og nett. Høy tilgjengelighet: en node kan byttes eller legges til uten at systemet stopper. Få ytelsesoverraskelser, siden all kommunikasjon er synlig i programmet.</td></tr>
+            <tr><td>Svakheter</td><td>Vanskeligere maskinvare (koherens) som skalerer dårligere. Én feilet prosessor er vanskelig å isolere. Skjult kommunikasjon kan gi ytelsesoverraskelser, som falsk deling.</td><td>Vanskeligere å programmere: all kommunikasjon må pekes ut på forhånd, ellers virker ikke programmet. Tregere kommunikasjon over nettverk. Ett operativsystem å drifte per node.</td></tr>
+            <tr><td>Passer til</td><td>Parallelle programmer der trådene deler mye data.</td><td>Jobbnivå-parallellitet og lite kommunikasjon: nettsøk, e-post, filtjenere.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-sum64000">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">6.5 · s. 539–540 · figur 6.8</span></div>
+        <div class="o-text"><p>64 000 tall skal summeres på en multiprosessor med delt minne og 64 prosessorer. Hvordan deles arbeidet, og hvordan slås delsummene sammen til én sum?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka · speedup-anslaget er egen utregning</span>
+            <p>Først jevn last: prosessor Pn (0–63) summerer sine 1000 tall, A[1000·Pn] til A[1000·Pn + 999], inn i sum[Pn]. Ingen data flyttes; prosessorene får bare ulike startadresser i det felles minnet, og løkkevariabelen er privat for hver prosessor.</p>
+            <p>Så en <span class="term" data-term="reduksjon">reduksjon</span>: halvparten av prosessorene legger sammen par av delsummer, deretter en fjerdedel, og så videre: 64 → 32 → 16 → 8 → 4 → 2 → 1, seks runder i stedet for 63 addisjoner etter tur. Før hver runde må prosessorene synkronisere, så ingen leser en delsum før den er ferdig skrevet.</p>
+            <p>Omtrent \(1000 + 6\) addisjonssteg mot 64 000 på én prosessor: speedup nær 64, før kostnaden ved synkronisering.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Forklar forskjellen på en multiprosessor med delt minne og en med distribuert minne. Gi én styrke og én svakhet ved hver.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><strong>Delt minne:</strong> alle prosessorene har ett felles fysisk adresserom og kommuniserer ved å lese og skrive delte variabler. Styrke: enkelt å programmere og rask kommunikasjon. Svakhet: krever synkronisering og koherente hurtigbuffere, som gjør maskinvaren vanskeligere og begrenser hvor stor maskinen kan bli. <strong>Distribuert minne:</strong> hver prosessor har privat minne, og data utveksles med eksplisitte meldinger over et nett. Styrke: enkel og billig maskinvare som skalerer til svært mange noder og tåler at noder feiler. Svakhet: programmet må skrives om med eksplisitt kommunikasjon, og kommunikasjonen er tregere.</div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: UMA, NUMA, OpenMP og MapReduce</summary>
+        <p>Maskiner med delt minne finnes i to utgaver. I <span class="term" data-term="numa">UMA</span> (uniform memory access) tar en minneaksess like lang tid uansett hvilken prosessor som spør. I NUMA (nonuniform memory access) er minnet delt opp og festet til hver sin prosessor eller minnekontroller, så noen aksesser er mye raskere enn andre. NUMA er vanskeligere å programmere, men kan bygges større.</p>
+        <p>OpenMP er et sett kompilatordirektiver for delt minne som deler en for-løkke på trådene og gjør reduksjoner. MapReduce er det tilsvarende rammeverket for klynger: Map kjører en funksjon på hver post på tusenvis av servere, Reduce slår resultatene sammen.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 FLERKJERNE ─────────────────────────── -->
+  <section id="flerkjerne">
+    <div class="container">
+      <div class="section-badge">02 · Flerkjerneprosessoren</div>
+      <h2>Flere prosessorer på <em>én brikke</em></h2>
+      <div class="source-note">Boka · kap. 6.5 · s. 537–538 · kap. 6.4 · s. 534–537 · figur 6.5 · hurtigbuffernivåene: kap. 5.13 · figur 5.42</div>
+      <span class="lm-pill">Læringsmål T7.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne beskrive den overordnede arkitekturen til en flerkjerneprosessor og kunne motivere for hvorfor arkitekturen er som den er.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="flerkjerne">flerkjerneprosessor</span> er en multiprosessor med delt minne på én brikke. Hver kjerne er en komplett prosessor med eget samlebånd, egne registre og egne små <span class="term" data-term="hurtigbuffer">hurtigbuffere</span>: L1 delt i instruksjoner og data, og L2. Det siste og største nivået, L3, deles av alle kjernene, og bak det ligger ett hovedminne med ett fysisk adresserom. Ett operativsystem styrer alle kjernene.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 250" aria-label="Flerkjerneprosessor med private L1 og L2 og delt L3">
+          <rect class="node" x="20" y="10" width="600" height="184" rx="8"/><text class="cap" x="32" y="24">ÉN BRIKKE</text>
+          <rect class="box" x="40" y="32" width="122" height="94" rx="4"/><text class="ttl" x="101" y="49" text-anchor="middle">Kjerne 0</text>
+          <rect class="box box-w" x="48" y="58" width="50" height="22" rx="3"/><text x="73" y="73" text-anchor="middle">L1 I</text>
+          <rect class="box box-w" x="104" y="58" width="50" height="22" rx="3"/><text x="129" y="73" text-anchor="middle">L1 D</text>
+          <rect class="box box-w" x="48" y="88" width="106" height="26" rx="3"/><text x="101" y="105" text-anchor="middle">L2 · privat</text>
+          <rect class="box" x="186" y="32" width="122" height="94" rx="4"/><text class="ttl" x="247" y="49" text-anchor="middle">Kjerne 1</text>
+          <rect class="box box-w" x="194" y="58" width="50" height="22" rx="3"/><text x="219" y="73" text-anchor="middle">L1 I</text>
+          <rect class="box box-w" x="250" y="58" width="50" height="22" rx="3"/><text x="275" y="73" text-anchor="middle">L1 D</text>
+          <rect class="box box-w" x="194" y="88" width="106" height="26" rx="3"/><text x="247" y="105" text-anchor="middle">L2 · privat</text>
+          <rect class="box" x="332" y="32" width="122" height="94" rx="4"/><text class="ttl" x="393" y="49" text-anchor="middle">Kjerne 2</text>
+          <rect class="box box-w" x="340" y="58" width="50" height="22" rx="3"/><text x="365" y="73" text-anchor="middle">L1 I</text>
+          <rect class="box box-w" x="396" y="58" width="50" height="22" rx="3"/><text x="421" y="73" text-anchor="middle">L1 D</text>
+          <rect class="box box-w" x="340" y="88" width="106" height="26" rx="3"/><text x="393" y="105" text-anchor="middle">L2 · privat</text>
+          <rect class="box" x="478" y="32" width="122" height="94" rx="4"/><text class="ttl" x="539" y="49" text-anchor="middle">Kjerne 3</text>
+          <rect class="box box-w" x="486" y="58" width="50" height="22" rx="3"/><text x="511" y="73" text-anchor="middle">L1 I</text>
+          <rect class="box box-w" x="542" y="58" width="50" height="22" rx="3"/><text x="567" y="73" text-anchor="middle">L1 D</text>
+          <rect class="box box-w" x="486" y="88" width="106" height="26" rx="3"/><text x="539" y="105" text-anchor="middle">L2 · privat</text>
+          <path class="ln" d="M101 126 V148 M247 126 V148 M393 126 V148 M539 126 V148"/>
+          <rect class="box box-a" x="40" y="148" width="560" height="30" rx="4"/><text x="320" y="167" text-anchor="middle">L3 · delt av alle kjernene</text>
+          <path class="ln" d="M320 178 V210"/>
+          <rect class="box box-g" x="170" y="210" width="300" height="30" rx="4"/><text x="320" y="229" text-anchor="middle">Hovedminne · ett felles fysisk adresserom</text>
+        </svg>
+        <figcaption>Egen figur etter kap. 6.5 og figur 5.42 i boka (Intel Core i7: L1 og L2 per kjerne, L3 delt).</figcaption>
+      </figure>
+
+      <div class="callout">
+        <span class="label">Hvorfor arkitekturen er slik · punktene om L1–L3 er egen tolkning etter læringsmålet</span>
+        <ul>
+          <li><strong>Flere kjerner i stedet for én større:</strong> effektmuren stoppet klokka, og det er lite parallellitet på instruksjonsnivå igjen å hente. Flere, enklere kjerner gir mer ytelse per joule, om programvaren klarer å bruke dem.</li>
+          <li><strong>Delt fysisk minne:</strong> programmene trenger ikke vite hvor dataene ligger. Alle variabler er tilgjengelige for alle kjerner, og gamle programmer er lettere å flytte over.</li>
+          <li><strong>Private L1 og L2:</strong> de må være små for å holde følge med kjernens klokke, og når hver kjerne har sine egne, slipper kjernene å konkurrere om dem.</li>
+          <li><strong>Delt L3:</strong> stor og tregere. Plassen går til de kjernene som trenger den, og data én kjerne har hentet, kan brukes av en annen uten en tur til hovedminnet.</li>
+          <li><strong>Prisen:</strong> samme blokk kan ligge i flere private hurtigbuffere samtidig, så de må holdes koherente (avsnitt 04), og delte data må synkroniseres (avsnitt 03).</li>
+        </ul>
+      </div>
+
+      <h3>Flere tråder i én kjerne</h3>
+      <p>En <span class="term" data-term="traad">tråd</span> har egen programteller, egne registre og egen stakk, men deler adresserom med de andre trådene i samme prosess. <span class="term" data-term="maskinvare-multitraading">Maskinvare-multitråding</span> (hardware multithreading) lar flere tråder dele funksjonsenhetene i én kjerne: kjernen har en kopi av programteller og registre per tråd, og når én tråd står fast, for eksempel på en hurtigbufferbom, brukes maskinvaren av en annen.</p>
+
+      <div class="table-wrap">
+        <table class="small">
+          <thead><tr><th>Variant</th><th>Når byttes tråd</th><th>Fordel</th><th>Ulempe</th></tr></thead>
+          <tbody>
+            <tr><td>Finkornet</td><td>For hver instruksjon, på omgang; tråder som står, hoppes over.</td><td>Skjuler både korte og lange stans.</td><td>Bremser den enkelte tråden, også når den kunne gått uten stans.</td></tr>
+            <tr><td>Grovkornet</td><td>Bare ved dyre stans, som bom i siste hurtigbuffernivå.</td><td>Bremser ikke enkelttråden; byttet trenger ikke være lynraskt.</td><td>Samlebåndet må tømmes og fylles ved hvert bytte, så korte stans skjules ikke.</td></tr>
+            <tr><td><span class="term" data-term="smt">Samtidig (SMT)</span></td><td>Aldri: instruksjoner fra flere tråder startes i samme sykel.</td><td>Fyller de ledige plassene i en superskalar kjerne; gjenbruker <span class="term" data-term="register-renaming">register renaming</span> og <span class="term" data-term="dynamisk-planlegging">dynamisk planlegging</span>.</td><td>Krever en kjerne med <span class="term" data-term="dynamisk-multiple-issue">dynamisk multiple issue</span>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 SYNKRONISERING ─────────────────────────── -->
+  <section id="synkronisering">
+    <div class="container">
+      <div class="section-badge">03 · Synkronisering</div>
+      <h2>Når to tråder vil <em>endre det samme</em></h2>
+      <div class="source-note">Boka · kap. 2.11 · s. 128–131 · kap. 6.5 · s. 538</div>
+      <span class="lm-pill">Læringsmål T7.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvorfor synkronisering er nødvendig og de grove trekkene i hvordan synkronisering implementeres.</li>
+      </ul>
+
+      <p class="dropcap">Tråder som samarbeider, skriver verdier som andre skal lese. <span class="term" data-term="synkronisering">Synkronisering</span> er koordineringen som sørger for at den ene er ferdig før den andre begynner. Uten den får programmet et <span class="term" data-term="data-race">data race</span>: to aksesser fra ulike tråder til samme minneadresse, der minst én er en skriving og de kommer rett etter hverandre. Da avhenger resultatet av hvem som tilfeldigvis kom først. Det enkleste eksempelet er to tråder som begge utfører <code>teller = teller + 1</code>, som i maskinkode er tre steg: last, adder, lagre.</p>
+
+      <div class="table-wrap">
+        <table class="small">
+          <thead><tr><th>Steg</th><th>Tråd 1</th><th>Tråd 2</th><th>teller i minnet</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">1</td><td>laster teller: 5</td><td></td><td class="mono">5</td></tr>
+            <tr><td class="mono">2</td><td></td><td>laster teller: 5</td><td class="mono">5</td></tr>
+            <tr><td class="mono">3</td><td>adderer 1, lagrer 6</td><td></td><td class="mono">6</td></tr>
+            <tr><td class="mono">4</td><td></td><td>adderer 1, lagrer 6</td><td class="mono">6</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>To økninger, men telleren gikk bare fra 5 til 6. Løsningen er en <span class="term" data-term="synk-laas">lås</span> (lock) rundt de tre stegene: bare én prosessor kan holde låsen om gangen, og de andre må vente til den slippes. Området låsen beskytter, gir <span class="term" data-term="gjensidig-utelukkelse">gjensidig utelukkelse</span> (mutual exclusion).</p>
+
+      <div class="def-box">
+        <span class="def-label">Hvordan det implementeres</span>
+        <div class="def-term"><span class="term" data-term="atomisk-operasjon">En atomisk les-og-endre</span> i maskinvaren</div>
+        <p>Selve låsen er en minnecelle: 0 betyr ledig, 1 betyr opptatt. Å ta låsen er å lese cellen og skrive 1 i den, og det må skje atomisk: ingenting kan komme imellom lesingen og skrivingen. Ellers kunne to prosessorer begge lese 0 og begge tro at de fikk låsen. Maskinvaren må derfor tilby en slik operasjon. Én mulighet er et atomisk bytte, som bytter innholdet i et register med innholdet i minnecellen i én udelelig instruksjon. Bytter du inn 1 og får 0 tilbake, er låsen din; får du 1 tilbake, var den opptatt.</p>
+        <p>RISC-V bruker i stedet et instruksjonspar, <span class="term" data-term="lr-sc">lr.w og sc.w</span> (load-reserved og store-conditional). <code>lr.w</code> leser cellen og reserverer adressen. <code>sc.w</code> skriver bare hvis ingen annen har skrevet til adressen siden <code>lr.w</code>, og melder fra i et register: 0 betyr at paret gikk som om det var atomisk, alt annet betyr «prøv igjen». Låser og andre synkroniseringsmekanismer bygges i biblioteker oppå disse instruksjonene.</p>
+      </div>
+
+<div class="asm">      addi x6, x0, 1         <span class="c">// verdien «opptatt»</span>
+prov: lr.w x5, (x10)         <span class="c">// les låsen, reserver adressen</span>
+      bne  x5, x0, prov      <span class="c">// opptatt? prøv igjen</span>
+      sc.w x7, x6, (x10)     <span class="c">// prøv å skrive 1; x7 = 0 om det gikk</span>
+      bne  x7, x0, prov      <span class="c">// noen kom imellom: prøv igjen</span>
+      <span class="c">// kritisk område: last teller, adder 1, lagre</span>
+      sw   x0, 0(x10)        <span class="c">// slipp låsen: skriv 0</span></div>
+
+      <div class="oppgave" data-quiz id="oppg-6-7">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">6.7 · s. 594–595</span></div>
+        <div class="o-text"><p>Fire kjerner i en multiprosessor med delt minne kjører samtidig hver sin setning. Før start er x = y = 0. Kjerne 1: <code>x = 2;</code> Kjerne 2: <code>y = 2;</code> Kjerne 3: <code>w = x + y + 1;</code> Kjerne 4: <code>z = x + y;</code> 6.7.1 Hvilke verdier kan w, x, y og z ende med, og hvordan oppstår hver av dem? 6.7.2 Hvordan kan utføringen gjøres deterministisk, så bare ett sett verdier er mulig?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p><strong>6.7.1</strong> x og y ender alltid som 2. Kjerne 3 og 4 leser x og y hver for seg, og hver lesing kan komme før eller etter skrivingen:</p>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Leseren ser</th><th>x + y</th><th>w</th><th>z</th></tr></thead>
+              <tbody>
+                <tr><td>ingen av skrivingene (0, 0)</td><td class="mono">0</td><td class="mono">1</td><td class="mono">0</td></tr>
+                <tr><td>én av dem (2, 0) eller (0, 2)</td><td class="mono">2</td><td class="mono">3</td><td class="mono">2</td></tr>
+                <tr><td>begge (2, 2)</td><td class="mono">4</td><td class="mono">5</td><td class="mono">4</td></tr>
+              </tbody>
+            </table></div>
+            <p>Kjerne 3 og 4 leser til ulike tider, så w og z velges uavhengig: \(w \in \{1, 3, 5\}\) og \(z \in \{0, 2, 4\}\), ni mulige utfall. For eksempel gir rekkefølgen «kjerne 4 leser x, kjerne 1 skriver, kjerne 3 leser x og y, kjerne 2 skriver, kjerne 4 leser y» resultatet \(w = 3\), \(z = 2\).</p>
+            <p><strong>6.7.2</strong> Synkroniser, så rekkefølgen mellom skrivingene og lesingene er bestemt: la kjerne 3 og 4 vente til kjerne 1 og 2 har meldt at de er ferdige (en barriere, som mellom rundene i en reduksjon). Da er eneste utfall \(w = 5\), \(z = 4\). En lås alene er ikke nok: den hindrer samtidig tilgang, men bestemmer ikke hvem som kommer først.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 KOHERENS ─────────────────────────── -->
+  <section id="koherens">
+    <div class="container">
+      <div class="section-badge">04 · Koherens og konsistens</div>
+      <h2>Mange kopier, <em>én sannhet</em></h2>
+      <div class="source-note">Boka · kap. 5.10 · s. 475–479 · figur 5.39–5.40</div>
+      <span class="lm-pill">Læringsmål T7.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kjenne til behovet for å holde hurtigbuffere koherente og de grove trekkene i hvordan det løses.</li>
+        <li>Studenten skal kunne beskrive minnekonsistensproblemet og kjenne til de grove trekkene i hvordan det løses.</li>
+      </ul>
+
+      <p class="dropcap">Hver kjerne ser minnet gjennom sin egen hurtigbuffer. Har to kjerner hver sin kopi av samme blokk, og den ene skriver, sitter den andre igjen med en gammel verdi. Det er <span class="term" data-term="hurtigbufferkoherens">koherensproblemet</span>. Minnet er koherent når tre ting gjelder: en prosessor som skriver X og så leser X, får sin egen verdi; en lesing som kommer tilstrekkelig lenge etter en annen prosessors skriving, får den skrevne verdien; og skrivinger til samme adresse blir sett i samme rekkefølge av alle (skriveserialisering).</p>
+
+      <p>Løsningen er en koherensprotokoll i maskinvaren. Den vanligste er <span class="term" data-term="snooping">snooping</span>: alle hurtigbufferne er koblet til et felles medium, en buss, der bommer og ugyldiggjøringer kringkastes. Hver hurtigbufferkontroller lytter og sjekker om den har en kopi av blokken det gjelder. Med <span class="term" data-term="write-invalidate">ugyldiggjøring ved skriving</span> (write invalidate) skaffer en prosessor seg eksklusiv tilgang før den skriver: den sender en ugyldiggjøring, og alle andre kopier merkes ugyldige. Neste gang en annen kjerne leser, bommer den og må hente en fersk kopi. Vil to skrive samtidig, vinner én bussen; den andre får kopien sin ugyldiggjort og må hente blokken på nytt. Dermed blir skrivingene også serialisert.</p>
+
+      <div class="widget" id="w-koh">
+        <div class="widget-label">Prøv selv · To kjerner, én delt blokk</div>
+        <p class="widget-intro">Kjerne A og B deler en blokk med variabelen X, som starter som 0 i minnet. La dem lese og skrive, og følg tilstanden i hver hurtigbuffer og meldingen på bussen. Hver skriving skriver et nytt tall (1, 2, 3, …). Slå av protokollen for å se problemet. Hurtigbufferne skriver tilbake til minnet først når blokken deles (write-back).</p>
+        <svg class="fig-svg" viewBox="0 0 560 226" data-w="560" data-h="226" aria-label="To kjerner med hver sin hurtigbuffer, felles buss og minne">
+          <rect class="box box-a" x="40" y="12" width="200" height="28" rx="4"/><text class="ttl" x="140" y="31" text-anchor="middle">Kjerne A</text>
+          <rect class="box box-a" x="320" y="12" width="200" height="28" rx="4"/><text class="ttl" x="420" y="31" text-anchor="middle">Kjerne B</text>
+          <path class="ln" d="M140 40 V48 M420 40 V48 M140 108 V140 M420 108 V140 M280 140 V166"/>
+          <rect id="koh-ra" class="cb-none" x="40" y="48" width="200" height="60" rx="4"/>
+          <text class="cap" x="48" y="60">HURTIGBUFFER A</text>
+          <text class="big" id="koh-a1" x="140" y="82" text-anchor="middle">—</text>
+          <text id="koh-a2" x="140" y="100" text-anchor="middle">ingen kopi</text>
+          <rect id="koh-rb" class="cb-none" x="320" y="48" width="200" height="60" rx="4"/>
+          <text class="cap" x="328" y="60">HURTIGBUFFER B</text>
+          <text class="big" id="koh-b1" x="420" y="82" text-anchor="middle">—</text>
+          <text id="koh-b2" x="420" y="100" text-anchor="middle">ingen kopi</text>
+          <path class="bus" d="M40 140 H520"/>
+          <text class="cap" x="44" y="134">BUSS</text>
+          <text class="busmsg" id="koh-bus" x="280" y="133" text-anchor="middle"></text>
+          <rect class="box box-g" x="170" y="166" width="220" height="48" rx="4"/>
+          <text class="cap" x="178" y="178">HOVEDMINNE</text>
+          <text class="big" id="koh-m1" x="280" y="196" text-anchor="middle">X = 0</text>
+          <text class="cap" id="koh-m2" x="280" y="208" text-anchor="middle"></text>
+        </svg>
+        <div class="w-row">
+          <button class="w-btn" id="koh-ar" type="button">A leser X</button>
+          <button class="w-btn" id="koh-aw" type="button">A skriver X</button>
+          <button class="w-btn" id="koh-br" type="button">B leser X</button>
+          <button class="w-btn" id="koh-bw" type="button">B skriver X</button>
+        </div>
+        <div class="w-row">
+          <button class="w-btn secondary" id="koh-eks" type="button">Spill av: A leser, B leser, A skriver, B leser</button>
+          <button class="w-btn secondary" id="koh-null" type="button">Nullstill</button>
+          <div class="w-ctl"><label><input type="checkbox" id="koh-prot" checked> Koherensprotokoll på</label></div>
+        </div>
+        <div class="w-out" id="koh-out"></div>
+        <div class="table-wrap"><table class="koh" id="koh-tab"></table></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-koherens">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">5.10 · figur 5.39 og 5.40 · s. 476–478</span></div>
+        <div class="o-text"><p>X er 0 i minnet, og ingen av hurtigbufferne har en kopi. Kjerne A leser X, kjerne B leser X, og så skriver A verdien 1 til X. Hva inneholder de to hurtigbufferne og minnet uten koherensprotokoll, og hva får B om den leser X igjen? Hva skjer i stedet med snooping og ugyldiggjøring ved skriving?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p><strong>Uten protokoll</strong> (skrivingen går rett gjennom til minnet): etter de to lesingene har A og B begge 0. Etter skrivingen har A og minnet 1, men B har fortsatt 0, og leser B igjen, får den 0: gammel verdi.</p>
+            <p><strong>Med protokoll:</strong> de to lesingene er bommer som kringkastes på bussen. Når A skal skrive, sender den en ugyldiggjøring for X; B ser den og merker kopien sin ugyldig. A har nå 1, minnet har ennå 0. Bs neste lesing bommer; A ser bommen, svarer med blokken i stedet for minnet, og minnet oppdateres samtidig. B får 1.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Protokollen utveksler hele blokker, ikke enkeltvariabler. Det gir <span class="term" data-term="falsk-deling">falsk deling</span> (false sharing): to variabler som ikke har noe med hverandre å gjøre, ligger i samme blokk. Skriver kjerne A den ene og kjerne B den andre, ugyldiggjør de hverandres kopi ved hver skriving, og blokken sendes fram og tilbake selv om ingen data egentlig deles. Programmet blir riktig, men tregt. Kuren er å legge slike variabler i hver sin blokk.</p>
+
+      <div class="def-box">
+        <span class="def-label">Den andre halvdelen</span>
+        <div class="def-term"><span class="term" data-term="minnekonsistens">Minnekonsistens</span>: når blir en skriving synlig?</div>
+        <p>Koherens sier <em>hvilke</em> verdier en lesing kan gi. Konsistens sier <em>når</em> en skrevet verdi må være synlig for de andre, og dermed hvilken rekkefølge andre kjerner ser skrivinger til ulike adresser i. Problemet er at en skriving ikke kan bli synlig overalt i samme øyeblikk: verdien har kanskje ikke forlatt prosessoren når en annen kjerne leser. Uten en regel kan to kjerner se hendelsene i ulik rekkefølge, og programmereren kan ikke resonnere om programmet.</p>
+        <p>Løsningen er en konsistensmodell som maskinvaren lover å holde. En enkel modell har to krav: en skriving er ikke fullført før alle prosessorer har sett virkningen av den, og en prosessor bytter aldri om rekkefølgen på en skriving og en annen minneaksess. Skriver en prosessor først X og så Y, vil da enhver som ser den nye Y, også se den nye X. Lesinger kan stokkes om, skrivinger må fullføres i programrekkefølge.</p>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: sterkere og svakere modeller (egen tolkning etter læringsmålet)</summary>
+        <p>Den strengeste vanlige modellen er sekvensiell konsistens: resultatet skal være som om alle minneaksessene fra alle kjernene var flettet inn i én felles rekkefølge, der hver kjernes aksesser står i programrekkefølge. Den er lett å resonnere om, men dyr, fordi kjernen ikke kan la en skriving vente i en buffer mens den går videre. Prosessorer bruker derfor ofte svakere modeller, der skrivinger kan bli synlige for andre litt senere enn programrekkefølgen tilsier. Et eksempel: kjerne 1 gjør «X = 1, les Y», kjerne 2 gjør «Y = 1, les X», begge starter på 0. Med sekvensiell konsistens kan ikke begge lese 0; med en svakere modell kan det skje. Der rekkefølgen betyr noe, bruker programmet låser eller egne instruksjoner som tvinger skrivingene ut før det går videre.</p>
+      </details>
+
+      <div class="oppgave" data-quiz id="oppg-6-6">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">6.6 · s. 594</span></div>
+        <div class="o-text"><p>C = A · B skal regnes ut, der hvert element er \(c_{i,j} = \sum_k a_{i,k}\, b_{k,j}\). Matrisene ligger kolonnevis i minnet: \(a_{1,1}, a_{2,1}, a_{3,1}, \ldots\) 6.6.1 Hvilken speedup kan du vente på en maskin med fire kjerner og delt minne, sammenliknet med én kjerne, når du ser bort fra minnet? 6.6.2 Hva blir speedup om oppdateringer av C gir en hurtigbufferbom på grunn av falsk deling når naboelementer langs indeks \(i\) oppdateres? 6.6.3 Hvordan fjerner du den falske delingen?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · bomstraffen er en antakelse</span>
+            <p><strong>6.6.1</strong> Hvert element i C regnes ut uavhengig av de andre. Deles elementene likt på fire kjerner, er det ingen sekvensiell del og jevn last: speedup nær 4.</p>
+            <p><strong>6.6.2</strong> Naboer langs \(i\) ligger ved siden av hverandre i minnet og dermed i samme blokk. Fordeles de på ulike kjerner (kjerne 0 tar \(i = 1, 5, 9, \ldots\), kjerne 1 tar \(i = 2, 6, \ldots\)), ugyldiggjør hver skriving blokken hos de andre, og hver oppdatering blir en bom. La \(T\) være tiden for å regne ut ett element og \(M\) bomstraffen:</p>
+            \[ \text{Speedup} = \frac{T}{(T + M)/4} = \frac{4}{1 + M/T} \]
+            <p>Er bommen like dyr som utregningen (\(M = T\)), halveres speedup til 2; med \(M = 3T\) er hele gevinsten borte. Jo større matriser (flere ledd i summen), jo mindre betyr bommen.</p>
+            <p><strong>6.6.3</strong> La hver kjerne skrive et sammenhengende område: gi kjernene hver sine kolonner \(j\), så bare blokkene i grensen mellom to områder deles. Summer dessuten \(c_{i,j}\) i et register og skriv til minnet én gang, og juster områdene til blokkgrenser.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hvorfor må hurtigbufferne i en flerkjerneprosessor holdes koherente, og hvordan gjøres det i grove trekk?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Kjernene deler ett fysisk minne, men ser det gjennom hver sin private hurtigbuffer. Har flere kjerner en kopi av samme blokk og én skriver, ville de andre lest en gammel verdi, og programmer med delte data ville gitt feil svar. En koherensprotokoll holder styr på hvem som har gyldige kopier. Med snooping lytter alle hurtigbufferne på en felles buss; før en kjerne skriver, kringkaster den en ugyldiggjøring, så alle andre kopier blir ugyldige og må hentes på nytt ved neste lesing. Prisen er ekstra bommer og buss-trafikk, særlig ved falsk deling.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 GPU ─────────────────────────── -->
+  <section id="gpu">
+    <div class="container">
+      <div class="section-badge">05 · GPU-er</div>
+      <h2>Heterogene maskiner og <em>grafikkprosessoren</em></h2>
+      <div class="source-note">Boka · kap. 6.6 · s. 542–549 · figur 6.9–6.12 · kap. 6.7 · s. 549</div>
+      <span class="lm-pill">Læringsmål T7.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal vite hva en heterogen datamaskin er og kunne forklare hvorfor datamaskiner med høy ytelse typisk er heterogene.</li>
+        <li>Studenten skal kunne forklare den overordnede arkitekturen til grafikkprosessorer (GPUer) samt kunne beskrive programmeringsmodellen som benyttes når man bruker GPUer til generell beregning.</li>
+        <li>Studenten skal kunne beskrive likheter og forskjeller mellom GPUer, vektorprosessorer, og SIMD-instruksjoner.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="heterogen-datamaskin">heterogen datamaskin</span> kombinerer ulike slags prosessorer: generelle CPU-kjerner som kjører operativsystemet og vanlige programmer, og <span class="term" data-term="akselerator">akseleratorer</span> som gjør én type arbeid svært godt. Maskiner med høy ytelse er heterogene fordi de andre veiene er stengt: klokkefrekvensen står stille på grunn av <span class="term" data-term="effektmur">effektmuren</span>, transistorene blir ikke lenger billigere og sparsommere i samme takt, og Amdahls lov begrenser hva flere like kjerner kan gi. Spesialisering er det som er igjen. En akselerator trenger ikke kunne alt, for CPU-en tar resten, og dermed kan den bruke alle ressursene på sitt område.</p>
+
+      <p><span class="term" data-term="gpu">Grafikkprosessoren</span> (GPU) er den vanligste akseleratoren. Den ble laget for grafikk, men brukes nå til all slags dataparallell beregning. Tre valg skiller den fra en CPU. Den er en MIMD-maskin satt sammen av mange flertrådede SIMD-prosessorer, hver med mange parallelle baner: langt flere regneenheter enn i en CPU, men enklere. Den skjuler forsinkelsen mot minnet med maskinvare-multitråding i stedet for store hurtigbuffere på flere nivåer: mens én tråd venter på data, kjøres andre, og arealet som spares, går til regneenheter og registre. Og minnet er bygd for høy båndbredde, ikke kort forsinkelse, og er mindre enn hovedminnet. Siden GPU-en er en koprosessor med eget minne, må data kopieres mellom CPU-minnet og GPU-minnet, og den tiden teller med.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 250" aria-label="Heterogen maskin med CPU og GPU">
+          <rect class="cell" x="14" y="14" width="250" height="222" rx="6"/>
+          <text class="ttl" x="26" y="35">CPU</text><text class="cap" x="26" y="49">få, store kjerner · kort forsinkelse</text>
+          <rect class="box box-a" x="30" y="60" width="100" height="32" rx="3"/><text x="80" y="80" text-anchor="middle">kjerne</text>
+          <rect class="box box-a" x="148" y="60" width="100" height="32" rx="3"/><text x="198" y="80" text-anchor="middle">kjerne</text>
+          <rect class="box box-a" x="30" y="100" width="100" height="32" rx="3"/><text x="80" y="120" text-anchor="middle">kjerne</text>
+          <rect class="box box-a" x="148" y="100" width="100" height="32" rx="3"/><text x="198" y="120" text-anchor="middle">kjerne</text>
+          <rect class="box box-w" x="30" y="142" width="218" height="28" rx="3"/><text x="139" y="160" text-anchor="middle">store hurtigbuffere, L1–L3</text>
+          <rect class="box box-g" x="30" y="184" width="218" height="36" rx="3"/><text x="139" y="206" text-anchor="middle">hovedminne (stort)</text>
+
+          <path class="arr" d="M270 112 H370"/><text class="cap" x="320" y="104" text-anchor="middle">data og oppdrag</text>
+          <path class="arr" d="M370 142 H270"/><text class="cap" x="320" y="156" text-anchor="middle">resultater</text>
+
+          <rect class="cell" x="376" y="14" width="250" height="222" rx="6"/>
+          <text class="ttl" x="388" y="35">GPU</text><text class="cap" x="388" y="49">mange flertrådede SIMD-prosessorer</text>
+          <rect class="box" x="390" y="60" width="50" height="44" rx="3"/><rect class="box-w" x="395" y="65" width="7" height="22"/><rect class="box-w" x="406" y="65" width="7" height="22"/><rect class="box-w" x="417" y="65" width="7" height="22"/><rect class="box-w" x="428" y="65" width="7" height="22"/><rect class="box-g" x="395" y="91" width="40" height="8"/>
+          <rect class="box" x="448" y="60" width="50" height="44" rx="3"/><rect class="box-w" x="453" y="65" width="7" height="22"/><rect class="box-w" x="464" y="65" width="7" height="22"/><rect class="box-w" x="475" y="65" width="7" height="22"/><rect class="box-w" x="486" y="65" width="7" height="22"/><rect class="box-g" x="453" y="91" width="40" height="8"/><rect class="box" x="506" y="60" width="50" height="44" rx="3"/><rect class="box-w" x="511" y="65" width="7" height="22"/><rect class="box-w" x="522" y="65" width="7" height="22"/><rect class="box-w" x="533" y="65" width="7" height="22"/><rect class="box-w" x="544" y="65" width="7" height="22"/><rect class="box-g" x="511" y="91" width="40" height="8"/><rect class="box" x="564" y="60" width="50" height="44" rx="3"/><rect class="box-w" x="569" y="65" width="7" height="22"/><rect class="box-w" x="580" y="65" width="7" height="22"/><rect class="box-w" x="591" y="65" width="7" height="22"/><rect class="box-w" x="602" y="65" width="7" height="22"/><rect class="box-g" x="569" y="91" width="40" height="8"/>
+          <rect class="box" x="390" y="112" width="50" height="44" rx="3"/><rect class="box-w" x="395" y="117" width="7" height="22"/><rect class="box-w" x="406" y="117" width="7" height="22"/><rect class="box-w" x="417" y="117" width="7" height="22"/><rect class="box-w" x="428" y="117" width="7" height="22"/><rect class="box-g" x="395" y="143" width="40" height="8"/><rect class="box" x="448" y="112" width="50" height="44" rx="3"/><rect class="box-w" x="453" y="117" width="7" height="22"/><rect class="box-w" x="464" y="117" width="7" height="22"/><rect class="box-w" x="475" y="117" width="7" height="22"/><rect class="box-w" x="486" y="117" width="7" height="22"/><rect class="box-g" x="453" y="143" width="40" height="8"/><rect class="box" x="506" y="112" width="50" height="44" rx="3"/><rect class="box-w" x="511" y="117" width="7" height="22"/><rect class="box-w" x="522" y="117" width="7" height="22"/><rect class="box-w" x="533" y="117" width="7" height="22"/><rect class="box-w" x="544" y="117" width="7" height="22"/><rect class="box-g" x="511" y="143" width="40" height="8"/><rect class="box" x="564" y="112" width="50" height="44" rx="3"/><rect class="box-w" x="569" y="117" width="7" height="22"/><rect class="box-w" x="580" y="117" width="7" height="22"/><rect class="box-w" x="591" y="117" width="7" height="22"/><rect class="box-w" x="602" y="117" width="7" height="22"/><rect class="box-g" x="569" y="143" width="40" height="8"/>
+          <text class="cap" x="390" y="172">stolper = SIMD-baner · felt = lokalt minne</text>
+          <rect class="box box-g" x="390" y="184" width="224" height="36" rx="3"/><text x="502" y="206" text-anchor="middle">GPU-minne (mindre, høy båndbredde)</text>
+        </svg>
+        <figcaption>Egen figur etter beskrivelsen i kap. 6.6 og figur 6.9 i boka. CPU-en kjører hovedprogrammet og sender de dataparallelle delene til GPU-en.</figcaption>
+      </figure>
+
+      <p><strong>Programmeringsmodellen.</strong> Til generell beregning programmeres GPU-en i et C-liknende språk: <span class="term" data-term="cuda">CUDA</span> fra NVIDIA, eller OpenCL, som virker på tvers av leverandører. CPU-en kjører hovedprogrammet og sender de dataparallelle løkkene til GPU-en. Programmereren skriver koden for ett element, en CUDA-tråd, som svarer til én iterasjon av løkka. Trådene samles i trådblokker, og blokkene i et rutenett (grid) som utgjør hele løkka. Maskinvaren kjører trådene 32 om gangen som én tråd av SIMD-instruksjoner. En blokkplanlegger fordeler blokkene på SIMD-prosessorene, og en trådplanlegger i hver SIMD-prosessor velger hvilken SIMD-tråd som er klar. Samme program går derfor på GPU-er med ulikt antall prosessorer. Modellen virker bare for problemer med mye dataparallellitet.</p>
+
+      <div class="table-wrap">
+        <table class="small">
+          <thead><tr><th></th><th>SIMD-instruksjoner i flerkjerne-CPU</th><th>Vektorprosessor</th><th>GPU</th></tr></thead>
+          <tbody>
+            <tr><td>Felles</td><td colspan="3">Alle utnytter dataparallellitet: én instruksjon virker på mange elementer, og elementene regnes ut i parallelle baner.</td></tr>
+            <tr><td>Regneenheter</td><td>Få baner per kjerne (2–4), noen titalls kjerner.</td><td>Få, dypt samlebåndsdelte enheter; lange vektorer.</td><td>Mange baner per SIMD-prosessor (8–16) og mange prosessorer: bred og grunn.</td></tr>
+            <tr><td>Elementer per instruksjon</td><td>Fast, gitt av opcoden.</td><td>Gitt av et vektorlengderegister.</td><td>32 per SIMD-tråd; resten ordnes av planleggerne.</td></tr>
+            <tr><td>Minnetilgang</td><td>Sammenhengende data.</td><td>Også gather-scatter.</td><td>Også gather-scatter.</td></tr>
+            <tr><td>Multitråding</td><td>Litt (2–4 tråder per kjerne).</td><td>Vanligvis ikke.</td><td>Grunnleggende: mange SIMD-tråder per prosessor skjuler minneforsinkelsen.</td></tr>
+            <tr><td>Minne</td><td>Store hurtigbuffere på flere nivåer, stort hovedminne, koherent.</td><td>Høy minnebåndbredde er avgjørende.</td><td>Små hurtigbuffere, lite eget minne, ikke koherent; data kopieres til og fra CPU-en.</td></tr>
+            <tr><td>Programmering</td><td>Vanlig program; kompilatoren eller programmereren velger SIMD-instruksjonene.</td><td>Vektoriserende kompilator.</td><td>CUDA eller OpenCL: tråder, blokker, rutenett.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-cy-6-6">
+        <div class="o-label"><span>Sjekk deg selv · fra boka</span><span class="o-ref">§6.6 · s. 549</span></div>
+        <div class="o-text"><p>Sant eller usant: GPU-er bruker egne grafikk-DRAM-brikker for å redusere forsinkelsen mot minnet, og øker slik ytelsen i grafikkapplikasjoner.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka</span>
+            <p>Usant. Grafikk-DRAM er verdsatt for høyere båndbredde, ikke kortere forsinkelse. Forsinkelsen skjuler GPU-en med multitråding.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Hva er en heterogen datamaskin, og hvorfor er datamaskiner med høy ytelse typisk heterogene?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">En maskin som kombinerer ulike typer prosessorer: generelle CPU-kjerner pluss akseleratorer som GPU-er eller domenespesifikke brikker. Grunnen er at generelle prosessorer ikke lenger blir mye raskere: effektmuren stoppet klokkefrekvensen, det er lite mer å hente på instruksjonsnivå, og Amdahls lov begrenser gevinsten av flere like kjerner. En akselerator som bare skal gjøre én type arbeid, kan droppe alt det generelle og bruke areal og effekt på mange enkle regneenheter, og gir mye mer ytelse per watt på sitt område. CPU-en beholdes for alt akseleratoren ikke kan: operativsystemet, sekvensiell kode og styring.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Vanskelig</div>
+        <div class="q-text">Nevn to likheter og to forskjeller mellom en GPU og SIMD-instruksjonene i en flerkjerne-CPU.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer"><strong>Likheter:</strong> begge er MIMD-maskiner der hver prosessor regner med parallelle SIMD-baner, og begge utnytter dataparallellitet ved å la én instruksjon virke på mange elementer. Begge bruker også maskinvare-multitråding. <strong>Forskjeller:</strong> GPU-en har mange flere prosessorer, baner og tråder; den skjuler minneforsinkelsen med multitråding og har små hurtigbuffere, mens CPU-en har store hurtigbuffere på flere nivåer; GPU-en har et lite, eget minne som data må kopieres til; og den programmeres med CUDA eller OpenCL i stedet for som et vanlig program.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 DSA ─────────────────────────── -->
+  <section id="dsa">
+    <div class="container">
+      <div class="section-badge">06 · Domenespesifikke akseleratorer</div>
+      <h2>Få ting, <em>svært godt</em></h2>
+      <div class="source-note">Boka · kap. 6.7 · s. 549–552 · figur 6.13</div>
+      <span class="lm-pill">Læringsmål T7.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hva en domene-spesifikk akselerator (DSE) er og motivere for hvorfor disse kan oppnå høyere ytelse enn mer generelle arkitekturer (altså CPUer og GPUer).</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="dsa">domenespesifikk akselerator</span> (domain-specific architecture, DSA) er en prosessor skreddersydd for ett anvendelsesområde, for eksempel nevrale nett, bildebehandling eller bioinformatikk. Den står ved siden av vanlige prosessorer, som tar alt det andre. GPU-en var det første eksempelet; en domenespesifikk akselerator går lenger i samme retning. Den kan slå både CPU-er og GPU-er på sitt område fordi konstruktørene kjenner programmene på forhånd:</p>
+
+      <div class="table-wrap">
+        <table class="small">
+          <thead><tr><th>Prinsipp</th><th>Hvorfor det gir ytelse</th></tr></thead>
+          <tbody>
+            <tr><td>Dedikerte minner nær beregningen</td><td>Data flyttes kortere. Generelle hurtigbuffere på flere nivåer bruker mye areal og energi på å gjette hvor data bør ligge; her styrer programvaren det selv.</td></tr>
+            <tr><td>Dropp avanserte optimaliseringer</td><td>Utføring ut av rekkefølge, spekulasjon, multitråding og store hurtigbuffere koster mye. Ressursene brukes heller på flere regneenheter og mer minne på brikka.</td></tr>
+            <tr><td>Enkleste parallellitet som passer</td><td>Domenene har innebygd parallellitet. Holder det med SIMD, er det enklere og mer effektivt enn MIMD.</td></tr>
+            <tr><td>Minste datatype som holder</td><td>For eksempel 8-bits heltall i stedet for 32-bits flyttall: mer data per byte minnebåndbredde, og flere regneenheter på samme areal.</td></tr>
+            <tr><td>Domenespesifikt programmeringsspråk</td><td>Programmer skrevet i for eksempel TensorFlow eller Halide kan flyttes til akseleratoren uten å skrives om.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Googles <span class="term" data-term="tpu">TPU</span> for nevrale nett følger alle fem: en matriseenhet med 256 × 256 ALU-er styrt som SIMD, 8- og 16-bits heltall, store buffere på brikka i stedet for hurtigbuffere, og programmering i TensorFlow. Resultatet er rundt 30 ganger så høy ytelse per watt som en samtidig GPU, og rundt 80 ganger en CPU.</p>
+
+      <div class="oppgave" data-quiz id="oppg-6-19">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">6.19 · s. 600–601</span></div>
+        <div class="o-text"><p>En heterogen maskin har tre prosessorer med delt minne. A: flerkjerne med flyttallsenhet, 1 GHz, to instruksjoner per sykel. B: enkjernes heltallsprosessor uten flyttall, 3 GHz, én instruksjon per sykel. C: vektorprosessor, 250 MHz, åtte kopier av samme instruksjon per sykel, men bare flyttallsaddisjon, -subtraksjon, load og store. Oppgaven: tell hvor mange posisjoner i to 1024 × 1024-matriser med flyttall som har \(X \ge Y\). 6.19.1 Hvordan vil du fordele arbeidet? 6.19.2 Hvilken instruksjon ville du gitt C for å få bedre ytelse?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · instruksjonstallene per element er anslag</span>
+            <p><strong>Kapasitet:</strong> A gjør \(2 \cdot 10^9\) instruksjoner per sekund, B \(3 \cdot 10^9\) (bare heltall), C \(8 \cdot 250 \cdot 10^6 = 2 \cdot 10^9\) elementoperasjoner per sekund (bare flyttalls-pluss/minus og minne).</p>
+            <p><strong>6.19.1</strong> Gi hver prosessor det den er god på. C regner \(D = X - Y\) åtte elementer om gangen og lagrer D (fire vektorinstruksjoner per åtte elementer, omtrent \(0{,}5 \cdot 10^9\) elementer per sekund). C kan ikke sammenlikne eller telle, så B leser D som heltall, ser på fortegnsbitet og teller de ikke-negative (omtrent fem heltallsinstruksjoner per element, \(0{,}6 \cdot 10^9\) elementer per sekund). B holder dermed følge med C. A kan gjøre hele jobben alene med flyttallssammenlikning (omtrent seks instruksjoner per element, \(0{,}33 \cdot 10^9\) elementer per sekund). Del derfor matrisene omtrent 60/40: C og B tar 60 % som et samlebånd, A tar 40 %, og de to tellerne legges sammen til slutt.</p>
+            <p><strong>6.19.2</strong> En vektorsammenlikning som gir en maske (ett bit per element med \(X \ge Y\)), sammen med en instruksjon som teller bitene i masken. Da kan C gjøre hele jobben med åtte elementer per sykel uten hjelp fra B.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Sant eller usant: Domenespesifikke akseleratorer er mer effektive enn CPU-er og GPU-er først og fremst fordi man kan forsvare en mye større brikke når den bare skal brukes til ett domene. Begrunn svaret.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Usant. Det er CPU-er og GPU-er som har råd til store brikker, på grunn av store volumer; TPU-en er under halvparten så stor. Akseleratoren vinner fordi den dropper det domenet ikke trenger (utføring ut av rekkefølge, spekulasjon, store generelle hurtigbuffere) og bruker ressursene på flere regneenheter og mer minne på brikka, med enkel parallellitet, små datatyper og et språk tilpasset domenet.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Delt minne</strong>Ett fysisk adresserom, delte variabler. Lett å programmere, rask kommunikasjon. Krever låser og koherens; skalerer dårligere.</div>
+        <div class="recap-pill"><strong>Distribuert minne</strong>Private minner, meldingsutveksling. Enkel, billig maskinvare som skalerer og tåler feil. Vanskeligere å programmere.</div>
+        <div class="recap-pill"><strong>Flerkjerne</strong>Kjerner med private L1 og L2, delt L3, felles minne, ett operativsystem.</div>
+        <div class="recap-pill"><strong>Multitråding</strong>Finkornet: bytt hver instruksjon. Grovkornet: bytt ved dyre stans. SMT: flere tråder i samme sykel.</div>
+        <div class="recap-pill"><strong>Synkronisering</strong>Data race: to aksesser, minst én skriving, tilfeldig rekkefølge. Lås = minnecelle + atomisk les-og-endre (lr.w / sc.w).</div>
+        <div class="recap-pill"><strong>Koherens</strong>Alle kopier av en blokk må stemme. Snooping: lytt på bussen. Ugyldiggjør andres kopier før skriving.</div>
+        <div class="recap-pill"><strong>Falsk deling</strong>Urelaterte variabler i samme blokk: blokken kastes fram og tilbake. Riktig svar, dårlig ytelse.</div>
+        <div class="recap-pill"><strong>Konsistens</strong>Når en skriving blir synlig for andre. Modellen lover en rekkefølge: skrivinger fullføres i programrekkefølge.</div>
+        <div class="recap-pill"><strong>Heterogen / GPU</strong>CPU + akselerator. GPU: MIMD av flertrådede SIMD-prosessorer, multitråding i stedet for hurtigbuffere, eget minne, CUDA.</div>
+        <div class="recap-pill"><strong>DSA</strong>Dedikerte minner, flere regneenheter, enkleste parallellitet, små datatyper, eget språk. Eksempel: TPU.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Et nettsøk skal betjene millioner av uavhengige forespørsler. En simulering har tråder som hele tiden leser hverandres resultater. Hvilken av de to passer best på en klynge, og hvilken på en maskin med delt minne?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Nettsøket passer på en klynge: forespørslene er uavhengige (jobbnivå-parallellitet), trenger nesten ingen kommunikasjon, og klyngen er billig, kan bygges ut og tåler at noder feiler. Simuleringen passer på delt minne: trådene deler mye data, og delte variabler over minnebussen er mye raskere og enklere enn å sende meldinger over et nettverk.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Hva er forskjellen på hurtigbufferkoherens og minnekonsistens, og hvorfor fjerner ikke en koherensprotokoll behovet for låser?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Koherens handler om hvilke verdier en lesing kan gi: alle kopier av en adresse skal stemme, og alle skal se skrivinger til samme adresse i samme rekkefølge. Konsistens handler om når en skriving blir synlig for andre kjerner, og dermed rekkefølgen mellom skrivinger til ulike adresser. Ingen av dem gjør en sekvens av instruksjoner udelelig: <code>teller = teller + 1</code> er last, adder og lagre, og en annen kjerne kan skrive imellom selv om hver enkelt lesing og skriving er koherent. Det må en lås til, bygd på en atomisk operasjon.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Et program bruker 90 % av kjøretiden i dataparallelle løkker. En GPU kjører løkkene 50 ganger raskere. Hva blir speedup for hele programmet, og hva sier det om CPU-ens rolle i en heterogen maskin?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Amdahls lov: \(1/(0{,}1 + 0{,}9/50) = 1/0{,}118 = 8{,}5\). Taket er 10 uansett hvor rask GPU-en er, og tiden til å kopiere data mellom CPU-minnet og GPU-minnet kommer i tillegg. De 10 prosentene som går på CPU-en, dominerer etter akselereringen. Derfor trenger en heterogen maskin fortsatt en rask CPU, og gevinsten avhenger av hvor stor del av arbeidet som passer akseleratoren.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="parallell.html" class="prev"><div class="pn-label">← Forrige · 7A</div><div class="pn-title">Parallell ytelse og Flynns taksonomi</div></a>
+        <a href="../" class="next"><div class="pn-label">Ferdig med kapittel 7</div><div class="pn-title">Alle kapitler →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* KJERNE-START (ren tilstandsmaskin, testes i node)
+     Tilstand per hurtigbuffer: N = ingen kopi, S = gyldig (delt), M = gyldig (eksklusiv, endret), I = ugyldig */
+  function nyTilstand() { return { mem: 0, siste: 0, skriv: 0, A: { s: 'N', v: null }, B: { s: 'N', v: null } }; }
+  function steg(t, p, hva, prot) {
+    var P = t[p], o = p === 'A' ? 'B' : 'A', O = t[o], r = { p: p, hva: hva, buss: '', note: '', feil: false, verdi: null };
+    if (hva === 'les') {
+      if (prot) {
+        if (P.s === 'S' || P.s === 'M') {
+          r.note = 'Treff: ' + p + ' har en gyldig kopi og leser X = ' + P.v + '. Ingenting sendes på bussen.';
+        } else {
+          r.buss = 'Bom for X (lesing)';
+          if (O.s === 'M') {
+            t.mem = O.v; O.s = 'S';
+            r.note = (P.s === 'I' ? p + ' sin kopi er ugyldig, så lesingen bommer. ' : p + ' har ingen kopi, så lesingen bommer. ') + o + ' ser bommen på bussen, har den eneste gyldige kopien og svarer med X = ' + O.v + ' i stedet for minnet. Minnet oppdateres samtidig, og begge har nå en gyldig, delt kopi.';
+          } else {
+            r.note = (P.s === 'I' ? p + ' sin kopi er ugyldig, så lesingen bommer. ' : p + ' har ingen kopi, så lesingen bommer. ') + 'Blokken hentes fra minnet: X = ' + t.mem + '.';
+          }
+          P.v = t.mem; P.s = 'S';
+        }
+      } else {
+        if (P.s === 'N') { r.buss = 'Bom for X (lesing)'; P.v = t.mem; P.s = 'S'; r.note = p + ' har ingen kopi og henter X = ' + t.mem + ' fra minnet.'; }
+        else if (P.v !== t.siste) { r.feil = true; r.note = p + ' leser X = ' + P.v + ' fra sin egen kopi, men siste skrevne verdi er ' + t.siste + '. Uten protokoll vet ikke ' + p + ' at kopien er utdatert.'; }
+        else r.note = 'Treff: ' + p + ' leser X = ' + P.v + ' fra sin egen kopi.';
+      }
+      r.verdi = P.v;
+    } else {
+      var v = ++t.skriv;
+      if (prot) {
+        if (P.s === 'M') {
+          r.note = p + ' har allerede eksklusiv tilgang og skriver X = ' + v + ' uten å bruke bussen.';
+        } else if (P.s === 'S') {
+          r.buss = 'Ugyldiggjør X';
+          if (O.s === 'S') { O.s = 'I'; r.note = p + ' må ha eksklusiv tilgang før den skriver, og sender en ugyldiggjøring. ' + o + ' ser den på bussen og merker kopien sin ugyldig. ' + p + ' skriver X = ' + v + '. Minnet oppdateres først når blokken deles igjen.'; }
+          else r.note = p + ' sender en ugyldiggjøring (ingen andre har en gyldig kopi) og skriver X = ' + v + '.';
+        } else {
+          r.buss = 'Bom for X (skriving) + ugyldiggjør X';
+          var fra = O.s === 'M' ? 'fra ' + o + ', som har den nyeste verdien' : 'fra minnet';
+          if (O.s === 'M') t.mem = O.v;
+          var hadde = O.s === 'S' || O.s === 'M';
+          if (hadde) O.s = 'I';
+          r.note = p + ' har ingen gyldig kopi. Blokken hentes ' + fra + ', ' + (hadde ? o + ' sin kopi merkes ugyldig, ' : '') + 'og ' + p + ' skriver X = ' + v + ' med eksklusiv tilgang.';
+        }
+        P.v = v; P.s = 'M';
+      } else {
+        P.v = v; P.s = 'S'; t.mem = v; r.buss = 'Skriv X = ' + v + ' til minnet';
+        r.note = p + ' skriver X = ' + v + ' i sin egen hurtigbuffer og i minnet.';
+        if (O.s !== 'N') { r.feil = true; r.note += ' ' + o + ' får ikke vite noe og sitter igjen med X = ' + O.v + ': de to hurtigbufferne er ikke lenger koherente.'; }
+      }
+      t.siste = v; r.verdi = v;
+    }
+    return r;
+  }
+  /* KJERNE-SLUTT */
+
+  var root = document.getElementById('w-koh'); if (!root) return;
+  function $(id) { return document.getElementById(id); }
+  var prot = $('koh-prot'), out = $('koh-out'), tab = $('koh-tab'), t, logg;
+
+  function vis(c) {
+    if (c.s === 'N') return { a: '—', b: 'ingen kopi', cls: 'cb-none', celle: '', ccls: '' };
+    if (!prot.checked) {
+      if (c.v !== t.siste) return { a: 'X = ' + c.v, b: 'utdatert, men vet det ikke', cls: 'cb-stale', celle: c.v + ' (utdatert)', ccls: 'inv' };
+      return { a: 'X = ' + c.v, b: 'kopi', cls: 'cb-ok', celle: '' + c.v, ccls: '' };
+    }
+    if (c.s === 'S') return { a: 'X = ' + c.v, b: 'gyldig · delt', cls: 'cb-ok', celle: '' + c.v, ccls: '' };
+    if (c.s === 'M') return { a: 'X = ' + c.v, b: 'gyldig · eksklusiv (endret)', cls: 'cb-ex', celle: c.v + ' (ekskl.)', ccls: 'ex' };
+    return { a: 'X = ' + c.v, b: 'ugyldig', cls: 'cb-inv', celle: 'ugyldig', ccls: 'inv' };
+  }
+  function tegn(r) {
+    var a = vis(t.A), b = vis(t.B);
+    $('koh-ra').setAttribute('class', a.cls); $('koh-a1').textContent = a.a; $('koh-a2').textContent = a.b;
+    $('koh-rb').setAttribute('class', b.cls); $('koh-b1').textContent = b.a; $('koh-b2').textContent = b.b;
+    $('koh-bus').textContent = r ? r.buss : '';
+    $('koh-m1').textContent = 'X = ' + t.mem;
+    $('koh-m2').textContent = t.mem !== t.siste ? 'utdatert til blokken skrives tilbake' : '';
+    out.className = 'w-out' + (r && r.feil ? ' warn' : '');
+    out.innerHTML = r ? (r.feil ? '<span class="bad">Ikke koherent.</span> ' : '') + r.note : 'Ingen har lest eller skrevet ennå. X = 0 ligger bare i minnet.';
+    var rows = logg.map(function (l) {
+      return '<tr><td>' + l.n + '</td><td>' + l.hva + '</td><td>' + (l.buss || '—') + '</td><td class="' + l.ac + '">' + l.a + '</td><td class="' + l.bc + '">' + l.b + '</td><td>' + l.m + '</td></tr>';
+    }).join('');
+    tab.innerHTML = '<thead><tr><th>#</th><th>Prosessor</th><th>På bussen</th><th>Buffer A</th><th>Buffer B</th><th>Minne</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6">Trykk på en knapp for å starte.</td></tr>') + '</tbody>';
+  }
+  var teller = 0;
+  function gjor(p, hva) {
+    var r = steg(t, p, hva, prot.checked), a = vis(t.A), b = vis(t.B);
+    logg.push({ n: ++teller, hva: p + (hva === 'les' ? ' leser X' : ' skriver X = ' + r.verdi), buss: r.buss, a: a.celle, ac: a.ccls, b: b.celle, bc: b.ccls, m: t.mem });
+    if (logg.length > 10) logg.shift();
+    tegn(r);
+  }
+  function nullstill() { t = nyTilstand(); logg = []; teller = 0; tegn(null); }
+  $('koh-ar').addEventListener('click', function () { gjor('A', 'les'); });
+  $('koh-aw').addEventListener('click', function () { gjor('A', 'skriv'); });
+  $('koh-br').addEventListener('click', function () { gjor('B', 'les'); });
+  $('koh-bw').addEventListener('click', function () { gjor('B', 'skriv'); });
+  $('koh-null').addEventListener('click', nullstill);
+  $('koh-eks').addEventListener('click', function () { nullstill(); gjor('A', 'les'); gjor('B', 'les'); gjor('A', 'skriv'); gjor('B', 'les'); });
+  prot.addEventListener('change', nullstill);
+  nullstill();
+})();
+</script>
+</body>
+</html>

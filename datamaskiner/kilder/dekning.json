@@ -67,5 +67,46 @@
   "5.3": {
     "side": "kap5/unntak-ytelse.html",
     "anker": "ilp"
+  },
+  "6": {
+    "side": "kap6/index.html"
+  },
+  "6.1": {
+    "side": "kap6/hurtigbuffer.html",
+    "anker": "lokalitet"
+  },
+  "6.2": {
+    "side": "kap6/teknologi.html",
+    "anker": "fire"
+  },
+  "6.3": {
+    "side": "kap6/virtuelt-minne.html",
+    "anker": "ide"
+  },
+  "7": {
+    "side": "kap7/index.html"
+  },
+  "7.1": {
+    "side": "kap7/parallell.html",
+    "anker": "vanskelig"
+  },
+  "7.2": {
+    "side": "kap7/multiprosessorer.html",
+    "anker": "minne"
+  },
+  "7.3": {
+    "side": "kap7/multiprosessorer.html",
+    "anker": "gpu"
+  },
+  "4": {
+    "side": "kap4/index.html"
+  },
+  "4.1": {
+    "side": "kap4/flersykel.html",
+    "anker": "datasti"
+  },
+  "4.2": {
+    "side": "kap4/sekvensiell.html",
+    "anker": "laaser"
   }
 }

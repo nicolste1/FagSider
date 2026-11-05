@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Minnehierarki og hurtigbuffer — Kap 6</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .sig { font-family: var(--mono); font-size: 9px; fill: var(--accent); }
+  .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .box-o { fill: rgba(184,134,11,0.14); stroke: var(--ochre); }
+  .fig-svg .wire { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+  .adr { display: grid; gap: 3px; margin: 0.8rem 0; font-family: var(--mono); font-size: 0.8rem; }
+  .adr .f { border: 1px solid var(--line); border-radius: 4px; padding: 6px 4px; text-align: center; background: var(--paper); min-width: 0; }
+  .adr .f .fn { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; color: var(--accent); }
+  .adr .f .fv { display: block; font-size: 0.84rem; color: var(--ink); margin-top: 2px; }
+  .adr .f .fb { font-size: 0.66rem; color: var(--ink-ghost); display: block; }
+  .adr .f.t { background: var(--accent-soft); } .adr .f.i { background: var(--warm-soft); } .adr .f.o { background: rgba(61,107,58,0.10); }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.88rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  table.tr { font-family: var(--mono); font-size: 0.78rem; }
+  table.tr td, table.tr th { padding: 3px 6px; text-align: center; letter-spacing: 0; white-space: nowrap; }
+  #sim-tab { font-size: 0.74rem; }
+  table.tr td.hit { color: var(--green); font-weight: 600; } table.tr td.miss { color: var(--red); }
+  table.tr td.l { text-align: left; }
+  table.ctrl td, table.ctrl th { text-align: center; font-family: var(--mono); font-size: 0.84rem; letter-spacing: 0; }
+  table.ctrl td:first-child, table.ctrl th:first-child { text-align: left; font-family: var(--sans); }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 6</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 6: Minnesystemet">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 6 · 6A · Læringsmål T6.1 · Boka kap. 5.1, 5.3, 5.4 · Kompendiet kap. 5 · ~75 min</div>
+      <h1>Minnehierarki og <em>hurtigbuffer</em></h1>
+      <p class="lede">Programmereren vil ha uendelig mye raskt minne. Raskt minne er dyrt og lite, stort minne er tregt. Hierarkiet gir illusjonen av begge deler ved å holde det som brukes mest nærmest prosessoren. Eksamen spør hvert år om de samme to regnestykkene: hvilke bit i adressen som er offset, indeks og tag, og hva den gjennomsnittlige aksesstiden blir.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#lokalitet"><span>01</span> Lokalitet og hierarki</a>
+        <a href="#direkte"><span>02</span> Direktetilordnet</a>
+        <a href="#blokk"><span>03</span> Blokker, bom og skriving</a>
+        <a href="#assosiativ"><span>04</span> Assosiativitet</a>
+        <a href="#ytelse"><span>05</span> Aksesstid og ytelse</a>
+        <a href="#programvare"><span>06</span> Samlebånd og programvare</a>
+        <a href="#oppsummering"><span>07</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T6.1: prio 1 · Ord. 25 oppg. 7.1–7.4 (15 p), Kont 26 oppg. 6, Kont 25 oppg. 4, Ord. 24 oppg. 5, Kont 24 oppg. 4, Ord. 23 oppg. 6, Ord. 22 oppg. 8, Kont 22 oppg. 4, Ord. 21 oppg. 2, 3 og 6</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag regn">Regn</span><strong>Adresseformatet</strong>: gitt kapasitet, blokkstørrelse, assosiativitet og adressebredde, finn bitposisjonene til offset, indeks og tag (Ord. 25 oppg. 7.1, 3 p), og <strong>forklar</strong> utregningen (7.2, 6 p). Oppskriften: offset = log<sub>2</sub>(blokkstørrelse i byte), indeks = log<sub>2</sub>(antall sett), tag = resten.</li>
+          <li><span class="tag regn">Regn</span><strong>Gjennomsnittlig aksesstid</strong> for ett eller flere nivåer: trefftid + bomrate × bomstraff, nøstet innover (7.3, 2 p; forklaring 7.4, 4 p). Og virkningen på CPI (oppgave 5.10).</li>
+          <li><span class="tag regn">Regn</span><strong>Følg en adresserekke gjennom hurtigbufferen</strong>: tag, indeks, treff eller bom, hva som kastes ut, for direktetilordnet og settassosiativ med LRU (oppgave 5.2, 5.5, 5.11). Antall bit hurtigbufferen trenger i alt (5.3).</li>
+          <li><span class="tag">Forklar</span>Lokalitet i tid og rom og hvorfor den oppstår; hvordan hierarkiet gir illusjonen av stort og raskt minne; figur 5.10 og 5.18; hvorfor assosiativitet øker treffraten; skrivestrategiene; hvordan en bom håndteres i samlebåndet; hva programvaren kan gjøre.</li>
+          <li><span class="tag">Lavere</span>Feilrettende koder og pålitelighet (5.5), tilstandsmaskinen for hurtigbufferkontrolleren (5.9), ARM- og Intel-eksemplene (5.13) og detaljene i blokket matrisemultiplikasjon er tatt ut eller nevnt i én linje.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 LOKALITET ─────────────────────────── -->
+  <section id="lokalitet">
+    <div class="container">
+      <div class="section-badge">01 · Lokalitet og hierarki</div>
+      <h2>Det du nettopp brukte, <em>bruker du snart igjen</em></h2>
+      <div class="source-note">Boka · kap. 5.1 · s. 388–392 · figur 5.1–5.3 · Kompendiet · kap. 5 «Lokalitet og minnebruk»</div>
+      <span class="lm-pill">Læringsmål T6.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare begrepene lokalitet i tid og lokalitet i rom og vite hvorfor lokalitet oppstår.</li>
+        <li>Studenten skal forstå hvordan og hvorfor et hierarki av minner kan gi illusjonen av ett stort og raskt minne.</li>
+      </ul>
+
+      <p class="dropcap">Programmer bruker bare en liten del av adresserommet sitt om gangen. <span class="term" data-term="lokalitet-tid">Lokalitet i tid</span>: noe som nettopp er brukt, blir sannsynligvis brukt igjen snart. Den kommer av løkker: de samme instruksjonene og de samme variablene (teller, sum) går igjen runde etter runde. <span class="term" data-term="lokalitet-rom">Lokalitet i rom</span>: brukes én adresse, brukes naboene sannsynligvis snart. Den kommer av at instruksjoner ligger etter hverandre og utføres i rekkefølge, og av at data ligger samlet i tabeller og poster som gås gjennom element for element.</p>
+
+      <p>Et <span class="term" data-term="minnehierarki">minnehierarki</span> utnytter dette. Øverst, nærmest prosessoren, ligger et lite, raskt og dyrt minne; nedover blir nivåene større, tregere og billigere per bit. Data kopieres bare mellom nabonivåer, og hvert nivå holder en delmengde av nivået under. Så lenge det meste prosessoren ber om finnes øverst, oppleves hele minnet som like raskt som det øverste nivået og like stort som det nederste.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 230" aria-label="Minnehierarkiet">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <path class="box box-w" d="M290 20 L350 20 L372 62 L268 62 Z"/><text x="320" y="46" text-anchor="middle" style="font-weight:600">L1</text>
+          <path class="box box-w" d="M266 66 L374 66 L396 108 L244 108 Z"/><text x="320" y="92" text-anchor="middle" style="font-weight:600">L2 / L3</text>
+          <path class="box box-a" d="M242 112 L398 112 L422 156 L218 156 Z"/><text x="320" y="139" text-anchor="middle" style="font-weight:600">Hovedminne (DRAM)</text>
+          <path class="box box-g" d="M216 160 L424 160 L448 204 L192 204 Z"/><text x="320" y="187" text-anchor="middle" style="font-weight:600">Flash / disk</text>
+          <text class="cap" x="456" y="44">hurtigbuffer i SRAM · ~1 ns · KiB</text>
+          <text class="cap" x="456" y="90">SRAM · noen ns · MiB</text>
+          <text class="cap" x="456" y="138">50–70 ns · GiB</text>
+          <text class="cap" x="456" y="186">µs til ms · TiB</text>
+          <path class="arr" d="M150 200 L150 30"/><text class="cap" x="158" y="40">raskere,</text><text class="cap" x="158" y="52">dyrere per bit</text>
+          <path class="arr" d="M110 30 L110 200"/><text class="cap" x="102" y="188" text-anchor="end">større,</text><text class="cap" x="102" y="200" text-anchor="end">billigere</text>
+          <text class="cap" x="320" y="222" text-anchor="middle">Prosessoren snakker bare med toppen. En bom sender forespørselen ett nivå ned.</text>
+        </svg>
+        <figcaption>Etter figur 5.1 og 5.3 i boka. Hvert nivå er en hurtigbuffer for nivået under.</figcaption>
+      </figure>
+
+      <div class="def-box">
+        <span class="def-label">Ordene alle regnestykkene bruker</span>
+        <div class="def-term">Blokk, treff og bom</div>
+        <p>Minste enhet som flyttes mellom to nivåer er en <span class="term" data-term="blokk">blokk</span> (eller linje). Finnes dataene i det øvre nivået, er det et <span class="term" data-term="treff">treff</span>; ellers en <span class="term" data-term="bom">bom</span>, og blokken må hentes nedenfra. <span class="term" data-term="treffrate">Treffrate</span> er andelen aksesser som treffer; <span class="term" data-term="bomrate">bomrate</span> = 1 − treffrate. <span class="term" data-term="trefftid">Trefftid</span> er tiden det tar å slå opp i det øvre nivået, inkludert å avgjøre om det er treff. <span class="term" data-term="bomstraff">Bomstraff</span> er ekstratiden en bom koster: hente blokken fra nivået under, legge den inn og levere den.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-1">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.1.1–5.1.5 · s. 499</span></div>
+        <div class="o-text"><p>Koden <code>for (I = 0; I &lt; 8; I++) for (J = 0; J &lt; 8000; J++) A[I][J] = B[I][0] + A[J][I];</code> er skrevet i C, der elementene i en rad ligger etter hverandre i minnet. Hvert element er et 64-bits heltall. 1. Hvor mange slike heltall får plass i en 16-byte hurtigbufferblokk? 2. Hvilke variabelreferanser har lokalitet i tid? 3. Hvilke har lokalitet i rom? 4–5. Samme spørsmål når koden kjøres i Matlab, der elementene i en kolonne ligger etter hverandre.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. 16 byte / 8 byte = 2 heltall per blokk.</p>
+            <p>2. Lokalitet i tid: I og J (leses og skrives hver runde) og B[I][0] (samme element i alle 8000 rundene av den indre løkka).</p>
+            <p>3. Lokalitet i rom i C: A[I][J]. Den indre løkka øker J, så referansen går bortover én rad, og naboene ligger i samme eller neste blokk. A[J][I] hopper en hel rad for hver runde og har ingen romlig lokalitet.</p>
+            <p>4. I Matlab: samme som i 2, lokalitet i tid for I, J og B(I,0). 5. Nå er det omvendt for A: A(J,I) går nedover én kolonne, som ligger sammenhengende, og har lokalitet i rom. A(I,J) hopper en hel kolonne per runde og har det ikke. Lokalitet avhenger altså både av rekkefølgen programmet går i og av hvordan dataene er lagt ut.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 DIREKTE ─────────────────────────── -->
+  <section id="direkte">
+    <div class="container">
+      <div class="section-badge">02 · Direktetilordnet hurtigbuffer</div>
+      <h2>Én adresse, <em>én plass</em></h2>
+      <div class="source-note">Boka · kap. 5.3 · s. 398–406 · figur 5.7–5.10 · Kompendiet · kap. 5 «Hurtigbuffer-strategier», eksempel 1 og 2</div>
+      <span class="lm-pill">Læringsmål T6.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal forstå hvordan vi konstruerer et direktetilordnet hurtigbuffer (kunne gjengi og forklare figur 5.10) samt hvordan det kan utvides til å håndtere hurtigbufferblokker som består av mer enn ett ord.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="hurtigbuffer">hurtigbuffer</span> må svare på to spørsmål for hver adresse: hvor skal jeg lete, og er det riktig blokk som ligger der? I en <span class="term" data-term="direktetilordnet">direktetilordnet</span> hurtigbuffer har hver minneblokk nøyaktig én mulig plass: blokkadressen modulo antall blokker i hurtigbufferen. Er antallet en toerpotens, er det bare å lese de laveste bitene av blokkadressen. Disse bitene er <span class="term" data-term="indeks">indeksen</span>.</p>
+
+      <p>Mange minneblokker deler samme plass, så hver plass lagrer i tillegg en <span class="term" data-term="tag">tag</span>: de øvre adressebitene som ikke ble brukt til indeksen. Stemmer taggen med de øvre bitene i adressen, er det riktig blokk. Et <span class="term" data-term="gyldig-bit">gyldig-bit</span> sier om plassen inneholder noe i det hele tatt; ved oppstart er alle 0. Inneholder blokken flere ord (eller byte), velger de aller laveste adressebitene, <span class="term" data-term="blokkforskyvning">offset</span>, hvilket ord i blokken.</p>
+
+      <div class="adr" style="grid-template-columns: 5fr 3fr 2fr">
+        <div class="f t"><span class="fn">tag</span><span class="fv">øvre bit</span><span class="fb">sammenliknes med lagret tag</span></div>
+        <div class="f i"><span class="fn">indeks</span><span class="fv">log<sub>2</sub>(antall blokker)</span><span class="fb">velger plassen</span></div>
+        <div class="f o"><span class="fn">offset</span><span class="fv">log<sub>2</sub>(byte per blokk)</span><span class="fb">velger byte i blokken</span></div>
+      </div>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 300" aria-label="Direktetilordnet hurtigbuffer (figur 5.10)">
+          <rect class="box box-a" x="60" y="20" width="200" height="26"/><rect class="box box-w" x="260" y="20" width="110" height="26"/><rect class="box box-g" x="370" y="20" width="50" height="26"/>
+          <text x="160" y="38" text-anchor="middle">tag (20 bit)</text><text x="315" y="38" text-anchor="middle">indeks (10 bit)</text><text x="395" y="38" text-anchor="middle">offset</text>
+          <text class="cap" x="60" y="14">31</text><text class="cap" x="256" y="14" text-anchor="end">12</text><text class="cap" x="264" y="14">11</text><text class="cap" x="366" y="14" text-anchor="end">2</text><text class="cap" x="374" y="14">1</text><text class="cap" x="420" y="14" text-anchor="end">0</text>
+          <text class="cap" x="440" y="36">adresse (32 bit)</text>
+          <g>
+            <rect class="box" x="150" y="90" width="26" height="130"/><rect class="box box-a" x="176" y="90" width="110" height="130"/><rect class="box" x="286" y="90" width="170" height="130"/>
+            <text class="cap" x="163" y="84" text-anchor="middle">V</text><text class="cap" x="231" y="84" text-anchor="middle">tag</text><text class="cap" x="371" y="84" text-anchor="middle">data (32 bit)</text>
+            <path class="wire" d="M150 116 L456 116 M150 142 L456 142 M150 168 L456 168 M150 194 L456 194"/>
+            <text class="cap" x="140" y="107" text-anchor="end">0</text><text class="cap" x="140" y="133" text-anchor="end">1</text><text class="cap" x="140" y="159" text-anchor="end">2</text><text class="cap" x="140" y="185" text-anchor="end">⋮</text><text class="cap" x="140" y="211" text-anchor="end">1023</text>
+            <rect x="150" y="142" width="306" height="26" fill="rgba(160,82,45,0.14)" stroke="none"/>
+          </g>
+          <path class="arr" d="M315 46 L315 62 L100 62 L100 155 L148 155"/><text class="cap" x="440" y="52">indeksen velger én rad</text>
+          <path class="wire" d="M160 46 L160 56 L40 56 L40 250 L200 250"/>
+          <path class="arr" d="M231 168 L231 238"/>
+          <ellipse class="box" cx="231" cy="250" rx="30" ry="12"/><text x="231" y="254" text-anchor="middle">=</text>
+          <path class="arr" d="M163 168 L163 276 L300 276"/><path class="arr" d="M261 250 L285 250 L285 268 L300 268"/>
+          <path class="box" d="M300 260 L318 260 A12 12 0 0 1 318 284 L300 284 Z"/><path class="arr" d="M330 272 L370 272"/><text x="374" y="276">Treff</text>
+          <path class="arr" d="M371 168 L371 200 L520 200 L520 272 L560 272"/><text x="564" y="276">Data</text>
+          <text class="cap" x="60" y="268">tag fra adressen</text><text class="cap" x="60" y="280">= lagret tag?</text>
+        </svg>
+        <figcaption>Etter figur 5.10 i boka: 1024 blokker à ett ord. Indeksen velger raden, taggen i raden sammenliknes med adressens øvre bit, og treff = lik tag OG gyldig-bit. Offset (2 bit) velger byte i ordet og brukes ikke i oppslaget.</figcaption>
+      </figure>
+
+      <p><strong>Hvor mange bit trengs i alt?</strong> Størrelsen på en hurtigbuffer oppgis som datamengden, men den må også lagre tag og gyldig-bit per blokk. Med 2<sup>n</sup> blokker à 2<sup>m</sup> ord og 32-bits adresser er taggen 32 − (n + m + 2) bit, og totalen er</p>
+      \[ 2^{n} \times \bigl(2^{m} \times 32 + (32 - n - m - 2) + 1\bigr) \ \text{bit} \]
+
+      <div class="oppgave" data-quiz id="oppg-eks-bits">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">5.3 · s. 405–406</span></div>
+        <div class="o-text"><p>(a) Hvor mange bit trengs i alt for en direktetilordnet hurtigbuffer med 16 KiB data og blokker på fire ord, når adressene er 32 bit? (b) En hurtigbuffer har 64 blokker à 16 byte. Hvilken blokk havner byteadresse 1200 i?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka · mellomregning skrevet for denne siden</span>
+            <p>(a) 16 KiB = 4096 ord = 1024 blokker à 4 ord, så n = 10 og m = 2. Hver blokk: 4 × 32 = 128 bit data, tag 32 − 10 − 2 − 2 = 18 bit, 1 gyldig-bit: 147 bit. I alt 1024 × 147 = 150 528 bit ≈ 18,4 KiB, altså 1,15 ganger datamengden.</p>
+            <p>(b) Blokkadresse = byteadresse / byte per blokk = ⌊1200 / 16⌋ = 75. Plass = 75 mod 64 = 11. Blokk 11 dekker byteadressene 1200 til 1215.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-cache">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 5 · eksempel 1 og 2</span></div>
+        <div class="o-text"><p>(1) En 4 KB direktetilordnet hurtigbuffer: prosessoren leser adresse 0x2000 og rett etter 0x2004. Blir den andre et treff? (2) Av 1000 aksesser treffer 950. Hva er bomraten?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet · med egen merknad til (1)</span>
+            <p>(2) Bomrate = (1000 − 950) / 1000 = 0,05 = 5 %.</p>
+            <p>(1) Kompendiet svarer treff, fordi adressene ligger i samme blokk. Egen merknad: det forutsetter at blokken er minst 8 byte. Med blokker på 4 byte, som kompendiet oppgir, dekker én blokk 0x2000–0x2003, og 0x2004 er første byte i neste blokk: da blir det en bom. Med 8-byte-blokker (offset 3 bit) deler de to adressene tag og indeks, og den andre treffer. Det er romlig lokalitet som gjør at større blokker gir slike treff.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-sim">
+        <div class="widget-label">Prøv selv · Følg en adresserekke gjennom hurtigbufferen</div>
+        <p class="widget-intro">Velg oppbygging og skriv en rekke ordadresser (hex med 0x, eller desimalt). Tabellen viser tag, indeks og offset, om det blir treff eller bom, hva som kastes ut (LRU), og innholdet i settet etterpå. Forhåndsvalgene dekker bokas eksempler og oppgavene 5.2 og 5.11. Direktetilordnet = 1 vei; fullassosiativ = 1 sett.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sim-pre">forhåndsvalg</label>
+            <select id="sim-pre">
+              <option value="e1">Bokas eksempel: 8 blokker, direktetilordnet</option>
+              <option value="o521">Oppgave 5.2.1: 16 blokker à 1 ord</option>
+              <option value="o522">Oppgave 5.2.2: 8 blokker à 2 ord</option>
+              <option value="a1">0, 8, 0, 6, 8 · direktetilordnet, 4 blokker</option>
+              <option value="a2">0, 8, 0, 6, 8 · 2-veis, 2 sett</option>
+              <option value="a4">0, 8, 0, 6, 8 · fullassosiativ, 4 blokker</option>
+              <option value="o511">Oppgave 5.11.2: 3-veis, 8 sett, 2 ord per blokk</option>
+            </select>
+          </div>
+        </div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sim-sets">sett</label><input type="number" id="sim-sets" value="8" min="1" max="64"></div>
+          <div class="w-ctl"><label for="sim-ways">veier</label><input type="number" id="sim-ways" value="1" min="1" max="8"></div>
+          <div class="w-ctl"><label for="sim-words">ord per blokk</label><input type="number" id="sim-words" value="1" min="1" max="8"></div>
+          <div class="w-ctl"><label for="sim-addr">adresser</label><input type="text" id="sim-addr" value="22, 26, 22, 26, 16, 3, 16, 18, 16" style="width:340px"></div>
+          <button class="w-btn" id="sim-run" type="button">Kjør</button>
+        </div>
+        <div class="table-wrap"><table class="tr" id="sim-tab"></table></div>
+        <div class="w-out" id="sim-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-2">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.2.1–5.2.2 · s. 499</span></div>
+        <div class="o-text"><p>Ordadressene 0x03, 0xb4, 0x2b, 0x02, 0xbf, 0x58, 0xbe, 0x0e, 0xb5, 0x2c, 0xba, 0xfd refereres i tur og orden; hurtigbufferen er tom ved start. 1. Finn tag og indeks og avgjør treff eller bom for en direktetilordnet hurtigbuffer med 16 blokker à ett ord. 2. Samme, pluss offset, for en med 8 blokker à to ord.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. 16 blokker gir 4 indeksbit: indeks = siste hex-siffer, tag = det første. 0x03 (tag 0, indeks 3), 0xb4 (b, 4), 0x2b (2, b), 0x02 (0, 2), 0xbf (b, f), 0x58 (5, 8), 0xbe (b, e), 0x0e (0, e), 0xb5 (b, 5), 0x2c (2, c), 0xba (b, a), 0xfd (f, d). Ingen to referanser har samme tag og indeks: tolv bom, null treff. 0x0e kaster ut 0xbe.</p>
+            <p>2. To ord per blokk gir 1 offsetbit (laveste bit) og 8 blokker gir 3 indeksbit (bit 3–1); taggen er fortsatt de fire øverste. Nå ligger naboord i samme blokk:</p>
+            <div class="table-wrap"><table class="tr">
+              <thead><tr><th>Adresse</th><th>Binært</th><th>Tag</th><th>Indeks</th><th>Offset</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>0x03</td><td>0000 001 1</td><td>0</td><td>1</td><td>1</td><td class="miss">bom</td></tr>
+                <tr><td>0xb4</td><td>1011 010 0</td><td>b</td><td>2</td><td>0</td><td class="miss">bom</td></tr>
+                <tr><td>0x2b</td><td>0010 101 1</td><td>2</td><td>5</td><td>1</td><td class="miss">bom</td></tr>
+                <tr><td>0x02</td><td>0000 001 0</td><td>0</td><td>1</td><td>0</td><td class="hit">treff</td></tr>
+                <tr><td>0xbf</td><td>1011 111 1</td><td>b</td><td>7</td><td>1</td><td class="miss">bom</td></tr>
+                <tr><td>0x58</td><td>0101 100 0</td><td>5</td><td>4</td><td>0</td><td class="miss">bom</td></tr>
+                <tr><td>0xbe</td><td>1011 111 0</td><td>b</td><td>7</td><td>0</td><td class="hit">treff</td></tr>
+                <tr><td>0x0e</td><td>0000 111 0</td><td>0</td><td>7</td><td>0</td><td class="miss">bom (kaster ut b)</td></tr>
+                <tr><td>0xb5</td><td>1011 010 1</td><td>b</td><td>2</td><td>1</td><td class="hit">treff</td></tr>
+                <tr><td>0x2c</td><td>0010 110 0</td><td>2</td><td>6</td><td>0</td><td class="miss">bom</td></tr>
+                <tr><td>0xba</td><td>1011 101 0</td><td>b</td><td>5</td><td>0</td><td class="miss">bom (kaster ut 2)</td></tr>
+                <tr><td>0xfd</td><td>1111 110 1</td><td>f</td><td>6</td><td>1</td><td class="miss">bom (kaster ut 2)</td></tr>
+              </tbody>
+            </table></div>
+            <p>Tre treff av tolv. Samme datamengde (16 ord), men blokker på to ord fanger romlig lokalitet. Kjør begge i simulatoren.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-3">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.3 · s. 500</span></div>
+        <div class="o-text"><p>Direktetilordnede hurtigbuffere, byteadressert, 32-bits adresser og ord. 1. Hvor mange bit trengs i alt for 32 KiB data med blokker på to ord? 2. For 64 KiB med blokker på 16 ord, og hvor mye større er den enn den første? 3. Hvorfor kan den store likevel gi dårligere ytelse? 4. Lag en rekke leseforespørsler som gir lavere bomrate på en 2-veis settassosiativ hurtigbuffer på 32 KiB enn på den første.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Blokk = 8 byte, så 32 KiB / 8 = 4096 blokker: indeks 12 bit, offset 3 bit, tag 32 − 12 − 3 = 17 bit. Per blokk 64 + 17 + 1 = 82 bit. I alt 4096 × 82 = 335 872 bit ≈ 41 KiB.</p>
+            <p>2. Blokk = 64 byte, 64 KiB / 64 = 1024 blokker: indeks 10, offset 6, tag 16. Per blokk 512 + 16 + 1 = 529 bit. I alt 1024 × 529 = 541 696 bit ≈ 66 KiB. Forholdet er 541 696 / 335 872 ≈ 1,61: dobbelt så mye data for 61 % flere bit, fordi det blir færre tagger.</p>
+            <p>3. Færre blokker (1024 mot 4096) gir flere kollisjoner om samme plass, hver bom må hente 16 ord i stedet for 2 (større bomstraff), og en større hurtigbuffer kan ha lengre trefftid.</p>
+            <p>4. To adresser som har samme indeks i den direktetilordnede, brukt annenhver gang: 0x0000, 0x8000, 0x0000, 0x8000, … (avstand 32 KiB). Direktetilordnet: de kaster hverandre ut hver gang, 100 % bom. 2-veis: begge får plass i samme sett, bare de to første bommer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-5">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.5 · s. 500</span></div>
+        <div class="o-text"><p>En direktetilordnet hurtigbuffer bruker adressebitene slik: tag 31–10, indeks 9–5, offset 4–0. 1. Blokkstørrelse i ord? 2. Antall blokker? 3. Forholdet mellom totalt antall bit og databit? Fra oppstart refereres byteadressene (hex) 00, 04, 10, 84, E8, A0, 400, 1E, 8C, C1C, B4, 884. 4. Tag, indeks, offset, treff/bom og hva som erstattes for hver. 5. Treffraten? 6. Sluttilstanden.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. 5 offsetbit = 32 byte = 8 ord à 32 bit. 2. 5 indeksbit = 32 blokker. 3. Per blokk 256 databit + 22 tagbit + 1 gyldig-bit = 279: forhold 279 / 256 ≈ 1,09.</p>
+            <p>4. Indeks = (adresse / 32) mod 32, tag = adresse / 1024:</p>
+            <div class="table-wrap"><table class="tr">
+              <thead><tr><th>Adresse</th><th>Tag</th><th>Indeks</th><th>Offset</th><th></th><th>Erstatter</th></tr></thead>
+              <tbody>
+                <tr><td>0x00</td><td>0</td><td>0</td><td>0</td><td class="miss">bom</td><td></td></tr>
+                <tr><td>0x04</td><td>0</td><td>0</td><td>4</td><td class="hit">treff</td><td></td></tr>
+                <tr><td>0x10</td><td>0</td><td>0</td><td>16</td><td class="hit">treff</td><td></td></tr>
+                <tr><td>0x84</td><td>0</td><td>4</td><td>4</td><td class="miss">bom</td><td></td></tr>
+                <tr><td>0xE8</td><td>0</td><td>7</td><td>8</td><td class="miss">bom</td><td></td></tr>
+                <tr><td>0xA0</td><td>0</td><td>5</td><td>0</td><td class="miss">bom</td><td></td></tr>
+                <tr><td>0x400</td><td>1</td><td>0</td><td>0</td><td class="miss">bom</td><td>0x00–0x1F</td></tr>
+                <tr><td>0x1E</td><td>0</td><td>0</td><td>30</td><td class="miss">bom</td><td>0x400–0x41F</td></tr>
+                <tr><td>0x8C</td><td>0</td><td>4</td><td>12</td><td class="hit">treff</td><td></td></tr>
+                <tr><td>0xC1C</td><td>3</td><td>0</td><td>28</td><td class="miss">bom</td><td>0x00–0x1F</td></tr>
+                <tr><td>0xB4</td><td>0</td><td>5</td><td>20</td><td class="hit">treff</td><td></td></tr>
+                <tr><td>0x884</td><td>2</td><td>4</td><td>4</td><td class="miss">bom</td><td>0x80–0x9F</td></tr>
+              </tbody>
+            </table></div>
+            <p>5. 4 treff av 12 = 33 %. 6. Gyldige rader: &lt;0, 3, Mem[0xC00–0xC1F]&gt;, &lt;4, 2, Mem[0x880–0x89F]&gt;, &lt;5, 0, Mem[0xA0–0xBF]&gt;, &lt;7, 0, Mem[0xE0–0xFF]&gt;.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 BLOKK ─────────────────────────── -->
+  <section id="blokk">
+    <div class="container">
+      <div class="section-badge">03 · Blokker, bom og skriving</div>
+      <h2>Større blokker, og <em>hva en skriving gjør</em></h2>
+      <div class="source-note">Boka · kap. 5.3 · s. 406–412 · figur 5.11–5.13</div>
+      <span class="lm-pill">Læringsmål T6.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kjenne til prinsippene for hvordan hurtigbuffere håndterer skriveoperasjoner.</li>
+      </ul>
+
+      <p class="dropcap"><strong>Blokkstørrelse.</strong> Større blokker utnytter romlig lokalitet: en bom henter også naboene, så bomraten faller. Men for en gitt datamengde blir det færre blokker, og blir blokkene for store i forhold til hurtigbufferen, konkurrerer for mange adresser om for få plasser, og bomraten stiger igjen. Bomstraffen øker også, fordi flere ord må hentes per bom.</p>
+
+      <p><strong>En bom ved lesing</strong> håndteres av kontrollenheten sammen med en egen kontroller: prosessoren stanses, blokken hentes fra nivået under, legges inn med tag og gyldig-bit, og aksessen gjentas, nå som et treff.</p>
+
+      <p><strong>Skriving</strong> er vanskeligere, fordi hurtigbufferen og minnet kan bli <em>inkonsistente</em>: skrives bare hurtigbufferen, har minnet en gammel verdi.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Strategi</th><th>Hva som skjer ved skriving</th><th>Fordel</th><th>Ulempe</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="skrivegjennom">Skriv gjennom</span> (write-through)</td><td>Skriv både hurtigbufferen og minnet, hver gang.</td><td>Alltid konsistent, enkel.</td><td>Hver skriving koster en minneaksess. Ti prosent skrivinger à 100 sykler tredobler CPI.</td></tr>
+            <tr><td>Skriv gjennom med <span class="term" data-term="skrivebuffer">skrivebuffer</span></td><td>Dataene legges i en liten kø; prosessoren fortsetter mens køen tømmes til minnet.</td><td>Prosessoren venter ikke.</td><td>Er køen full, må den vente likevel. Hjelper ikke om skrivingene kommer raskere enn minnet tar unna.</td></tr>
+            <tr><td><span class="term" data-term="tilbakeskriving">Skriv tilbake</span> (write-back)</td><td>Skriv bare hurtigbufferen. Blokken skrives til minnet først når den kastes ut, og bare hvis den er endret (skittenbit).</td><td>Mange skrivinger til samme blokk gir én minneskriving.</td><td>Mer komplisert; en bom kan måtte skrive ut en blokk først.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Ved en <em>skrivebom</em> (blokken finnes ikke i hurtigbufferen) er det vanlige å hente blokken inn først og så skrive i den (write-allocate), siden resten av blokken ellers ville mangle.</p>
+
+      <div class="oppgave" data-quiz id="oppg-5-7">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.7 · s. 501</span></div>
+        <div class="o-text"><p>Et program gjør 250 datalesinger og 100 dataskrivinger per 1000 instruksjoner. Bomraten er 0,30 % i instruksjonshurtigbufferen og 2 % i datahurtigbufferen; blokkene er 64 byte; CPI er 2. 1. Med skriv gjennom og write-allocate: hva er lese- og skrivebåndbredden mellom minnet og hurtigbufferen, i byte per sykel? 2. Med skriv tilbake, der 30 % av datablokkene som kastes ut er endret?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · forutsetter 8 byte per skrevet ord</span>
+            <p>Lesing fra minnet skjer ved hver bom, én blokk à 64 byte. Per instruksjon: instruksjonsbom 0,003 × 64 = 0,192 byte; datalesebom 0,25 × 0,02 × 64 = 0,32 byte; skrivebom med write-allocate 0,10 × 0,02 × 64 = 0,128 byte. Sum 0,64 byte per instruksjon. Med CPI 2: <strong>0,32 byte per sykel</strong> lest, i begge deloppgavene.</p>
+            <p>1. Skriv gjennom: hver av de 0,10 skrivingene per instruksjon går til minnet med ett ord, 8 byte: 0,8 byte per instruksjon = <strong>0,4 byte per sykel</strong>.</p>
+            <p>2. Skriv tilbake: minnet skrives bare når en endret blokk kastes ut. Databom per instruksjon: (0,25 + 0,10) × 0,02 = 0,007; 30 % av dem skriver ut en blokk: 0,007 × 0,3 × 64 = 0,134 byte per instruksjon = <strong>0,067 byte per sykel</strong>. Seks ganger mindre skrivetrafikk.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 ASSOSIATIV ─────────────────────────── -->
+  <section id="assosiativ">
+    <div class="container">
+      <div class="section-badge">04 · Assosiativitet</div>
+      <h2>Flere plasser <em>å velge mellom</em></h2>
+      <div class="source-note">Boka · kap. 5.4 · s. 416–424 · figur 5.14–5.18 · Kompendiet · kap. 5 «Hurtigbuffer-organisering», eksempel 3 · Eksamen: Ord. 25 oppg. 7.1–7.2</div>
+      <span class="lm-pill">Læringsmål T6.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal forstå hvorfor settassosiative og fullassosiative hurtigbuffere kan øke treffraten og hvordan de konstrueres (gjengi og forklar figur 5.18).</li>
+      </ul>
+
+      <p class="dropcap">I en direktetilordnet hurtigbuffer kan to blokker som brukes om hverandre, slå hverandre ut hele tiden selv om resten av hurtigbufferen er tom. Løsningen er å gi hver blokk flere mulige plasser. I en <span class="term" data-term="fullassosiativ">fullassosiativ</span> hurtigbuffer kan en blokk ligge hvor som helst; da må alle taggene sammenliknes samtidig, og det er bare praktisk for små hurtigbuffere. Mellomtingen er <span class="term" data-term="settassosiativ">settassosiativ</span>: hurtigbufferen deles i sett med n plasser (veier) hver. Indeksen velger settet, og blokken kan ligge i en hvilken som helst av de n plassene i det.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl">
+          <caption>Samme åtte blokker, fire måter (figur 5.15). Direktetilordnet er 1-veis; fullassosiativ er ett sett.</caption>
+          <thead><tr><th>Organisering</th><th>Sett</th><th>Blokker per sett</th><th>Indeksbit</th><th>Sammenliknere</th></tr></thead>
+          <tbody>
+            <tr><td>Direktetilordnet (1-veis)</td><td>8</td><td>1</td><td>3</td><td>1</td></tr>
+            <tr><td>2-veis settassosiativ</td><td>4</td><td>2</td><td>2</td><td>2</td></tr>
+            <tr><td>4-veis settassosiativ</td><td>2</td><td>4</td><td>1</td><td>4</td></tr>
+            <tr><td>Fullassosiativ (8-veis)</td><td>1</td><td>8</td><td>0</td><td>8</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="def-box">
+        <span class="def-label">Oppskriften for adresseformatet</span>
+        <div class="def-term">Offset, indeks, tag</div>
+        <p>1. <strong>Offset</strong> = log<sub>2</sub>(blokkstørrelse i byte) bit, de laveste. 2. Antall blokker = kapasitet / blokkstørrelse; <strong>antall sett</strong> = antall blokker / antall veier. 3. <strong>Indeks</strong> = log<sub>2</sub>(antall sett) bit, rett over offset. 4. <strong>Tag</strong> = resten av adressen. Dobles assosiativiteten, halveres antall sett: indeksen mister ett bit og taggen får ett. Fullassosiativ har ingen indeks; alt over offset er tag.</p>
+      </div>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 310" aria-label="Fireveis settassosiativ hurtigbuffer (figur 5.18)">
+          <rect class="box box-a" x="60" y="16" width="230" height="24"/><rect class="box box-w" x="290" y="16" width="90" height="24"/><rect class="box box-g" x="380" y="16" width="40" height="24"/>
+          <text x="175" y="33" text-anchor="middle">tag (22 bit)</text><text x="335" y="33" text-anchor="middle">indeks (8)</text><text x="400" y="33" text-anchor="middle">off.</text>
+          <g id="ways">
+            <g><rect class="box" x="60" y="80" width="14" height="110"/><rect class="box box-a" x="74" y="80" width="44" height="110"/><rect class="box" x="118" y="80" width="60" height="110"/><text class="cap" x="67" y="74" text-anchor="middle">V</text><text class="cap" x="96" y="74" text-anchor="middle">tag</text><text class="cap" x="148" y="74" text-anchor="middle">data</text><text x="119" y="62" text-anchor="middle">vei 0</text></g>
+            <g><rect class="box" x="200" y="80" width="14" height="110"/><rect class="box box-a" x="214" y="80" width="44" height="110"/><rect class="box" x="258" y="80" width="60" height="110"/><text class="cap" x="207" y="74" text-anchor="middle">V</text><text class="cap" x="236" y="74" text-anchor="middle">tag</text><text class="cap" x="288" y="74" text-anchor="middle">data</text><text x="259" y="62" text-anchor="middle">vei 1</text></g>
+            <g><rect class="box" x="340" y="80" width="14" height="110"/><rect class="box box-a" x="354" y="80" width="44" height="110"/><rect class="box" x="398" y="80" width="60" height="110"/><text class="cap" x="347" y="74" text-anchor="middle">V</text><text class="cap" x="376" y="74" text-anchor="middle">tag</text><text class="cap" x="428" y="74" text-anchor="middle">data</text><text x="399" y="62" text-anchor="middle">vei 2</text></g>
+            <g><rect class="box" x="480" y="80" width="14" height="110"/><rect class="box box-a" x="494" y="80" width="44" height="110"/><rect class="box" x="538" y="80" width="60" height="110"/><text class="cap" x="487" y="74" text-anchor="middle">V</text><text class="cap" x="516" y="74" text-anchor="middle">tag</text><text class="cap" x="568" y="74" text-anchor="middle">data</text><text x="539" y="62" text-anchor="middle">vei 3</text></g>
+          </g>
+          <rect x="60" y="124" width="538" height="20" fill="rgba(160,82,45,0.16)" stroke="none"/>
+          <text class="cap" x="604" y="138">sett i</text>
+          <path class="wire" d="M335 40 L335 50 L30 50 L30 134 L58 134"/><text class="cap" x="430" y="32">indeksen velger ett av 256 sett</text>
+          <g>
+            <ellipse class="box" cx="96" cy="216" rx="18" ry="10"/><text x="96" y="220" text-anchor="middle">=</text><path class="wire" d="M96 190 L96 206"/>
+            <ellipse class="box" cx="236" cy="216" rx="18" ry="10"/><text x="236" y="220" text-anchor="middle">=</text><path class="wire" d="M236 190 L236 206"/>
+            <ellipse class="box" cx="376" cy="216" rx="18" ry="10"/><text x="376" y="220" text-anchor="middle">=</text><path class="wire" d="M376 190 L376 206"/>
+            <ellipse class="box" cx="516" cy="216" rx="18" ry="10"/><text x="516" y="220" text-anchor="middle">=</text><path class="wire" d="M516 190 L516 206"/>
+          </g>
+          
+          <path class="box" d="M260 262 L340 262 L330 286 L270 286 Z"/><text x="300" y="278" text-anchor="middle">4:1-mux</text>
+          <path class="wire" d="M148 190 L148 254 L270 254 L270 262 M288 190 L288 262 M428 190 L428 254 L312 254 L312 262 M568 190 L568 258 L330 258 L330 262"/>
+          <path class="wire" d="M300 286 L300 302"/><text x="308" y="302">Data</text>
+          <path class="wire" d="M96 226 L96 240 L600 240 M236 226 L236 240 M376 226 L376 240 M516 226 L516 240"/>
+          <path class="box" d="M598 229 Q606 240 598 251 Q616 251 626 240 Q616 229 598 229 Z"/><path class="wire" d="M626 240 L636 240"/><text x="612" y="268" text-anchor="middle">Treff</text><text class="cap" x="612" y="222" text-anchor="middle">OR</text>
+        </svg>
+        <figcaption>Etter figur 5.18 i boka: 4-veis settassosiativ med 256 sett. Indeksen velger ett sett; alle fire taggene i settet sammenliknes parallelt; treff i én av dem styrer muxen som velger data. Treff = OR av de fire.</figcaption>
+      </figure>
+
+      <p>Høyere assosiativitet gir lavere bomrate, fordi færre blokker kastes ut bare på grunn av kollisjon. Prisen er flere sammenliknere, flere tagbit, og en mux i datastien som kan øke trefftiden. Gevinsten er størst fra 1 til 2 veier og flater ut. Når et sett er fullt, må én blokk velges ut: vanligst er <span class="term" data-term="lru">LRU</span>, kast den som er lengst siden sist brukt.</p>
+
+      <div class="widget" id="w-adr">
+        <div class="widget-label">Prøv selv · Adresseformatet fra kapasitet, blokkstørrelse og assosiativitet</div>
+        <p class="widget-intro">Sett inn tallene fra oppgaven og se bitposisjonene og utregningen. Forhåndsutfylt med Ord. 2025 oppgave 7.1. Prøv å endre assosiativiteten og se indeks og tag bytte bit.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="ad-cap">kapasitet</label><input type="number" id="ad-cap" value="256" min="1"><select id="ad-unit"><option value="1">byte</option><option value="1024" selected>KiB</option><option value="1048576">MiB</option></select></div>
+          <div class="w-ctl"><label for="ad-blk">blokk (byte)</label><input type="number" id="ad-blk" value="128" min="1"></div>
+          <div class="w-ctl"><label for="ad-way">veier</label><select id="ad-way"><option value="1">1 (direktetilordnet)</option><option value="2" selected>2</option><option value="4">4</option><option value="8">8</option><option value="0">fullassosiativ</option></select></div>
+          <div class="w-ctl"><label for="ad-bits">adressebit</label><input type="number" id="ad-bits" value="32" min="8" max="64"></div>
+        </div>
+        <div class="adr" id="ad-bar"></div>
+        <div class="w-out" id="ad-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-7-1">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 7.1 og 7.2</span><span class="o-ref">Adresseformat · 3 + 6 p</span></div>
+        <div class="o-text"><p>En 2-veis settassosiativ hurtigbuffer har kapasitet 256 KiB og blokkstørrelse 128 byte. Minneadressene er 32 bit, og minnet er byteadresserbart. Hvilke bit i adressen brukes til offset, indeks og tag? Oppgi minst og mest signifikante bit for hvert felt; minst signifikante bit i adressen er bit 0. (7.2) Forklar hvordan du kom fram til adresseformatet.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (figur 5.17) · ikke offisielt løsningsforslag</span>
+            <div class="table-wrap"><table class="ctrl">
+              <thead><tr><th>Felt</th><th>Minst signifikante bit</th><th>Mest signifikante bit</th><th>Antall bit</th></tr></thead>
+              <tbody><tr><td>Offset</td><td>0</td><td>6</td><td>7</td></tr><tr><td>Indeks</td><td>7</td><td>16</td><td>10</td></tr><tr><td>Tag</td><td>17</td><td>31</td><td>15</td></tr></tbody>
+            </table></div>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p><strong>Offset:</strong> minnet er byteadresserbart, så offset må kunne peke ut hver byte i en blokk. En blokk er 128 = 2<sup>7</sup> byte, altså 7 bit: bit 0 til 6.</p>
+              <p><strong>Indeks:</strong> indeksen velger sett. Antall blokker er kapasitet delt på blokkstørrelse: 256 KiB / 128 byte = 2<sup>18</sup> / 2<sup>7</sup> = 2<sup>11</sup> = 2048 blokker. Med 2 veier er det 2 blokker per sett: 2048 / 2 = 1024 = 2<sup>10</sup> sett, altså 10 bit: bit 7 til 16.</p>
+              <p><strong>Tag:</strong> resten av adressen, 32 − 7 − 10 = 15 bit: bit 17 til 31. Taggen lagres sammen med blokken og sammenliknes med adressens øvre bit i begge veiene i settet for å avgjøre om det er treff.</p>
+              <p>Kontroll: 7 + 10 + 15 = 32.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-assoc">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">5.4 · s. 419–423</span></div>
+        <div class="o-text"><p>(a) Tre hurtigbuffere har fire blokker à ett ord hver: direktetilordnet, 2-veis settassosiativ og fullassosiativ. Hvor mange bom gir blokkadressene 0, 8, 0, 6, 8 i hver (LRU)? (b) En hurtigbuffer har 4096 blokker à fire ord og 32-bits adresser. Hvor mange tagbit trengs i alt som direktetilordnet, 2-veis, 4-veis og fullassosiativ?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka · mellomregning skrevet for denne siden</span>
+            <p>(a) Direktetilordnet: 0, 8 havner begge på plass 0 (0 mod 4 = 8 mod 4 = 0) og 6 på plass 2. Hver referanse til 0 eller 8 kaster ut den andre: <strong>5 bom</strong>. 2-veis (2 sett): 0, 8 og 6 er alle partall og havner i sett 0. 0 bom, 8 bom, 0 treff, 6 bom (kaster ut 8, den minst nylig brukte), 8 bom (kaster ut 0): <strong>4 bom</strong>. Fullassosiativ: alle tre får plass: 0 bom, 8 bom, 0 treff, 6 bom, 8 treff: <strong>3 bom</strong>. Kjør de tre forhåndsvalgene i simulatoren i avsnitt 02.</p>
+            <p>(b) Offset 4 bit (16 byte), så 28 bit er igjen til indeks og tag. Direktetilordnet: indeks 12, tag 16, i alt 16 × 4096 = 66 K tagbit. 2-veis: 2048 sett, indeks 11, tag 17, i alt 17 × 4096 = 70 K. 4-veis: indeks 10, tag 18: 74 K. Fullassosiativ: tag 28: 115 K. Hver dobling av assosiativiteten flytter ett bit fra indeks til tag.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-11">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.11.1–5.11.2 · s. 503</span></div>
+        <div class="o-text"><p>Ordadressene 0x03, 0xb4, 0x2b, 0x02, 0xbe, 0x58, 0xbf, 0x0e, 0x1f, 0xb5, 0xbf, 0xba, 0x2e, 0xce refereres. 1. Skisser en 3-veis settassosiativ hurtigbuffer med blokker på to ord og total størrelse 48 ord, og vis bredden på feltene. 2. Følg rekka gjennom den med ekte LRU: tag, indeks, offset, treff/bom, og hvilke tagger som ligger i settet etterpå.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. 48 ord / 2 ord per blokk = 24 blokker; 24 / 3 veier = 8 sett. Ordadresse: offset 1 bit, indeks 3 bit, tag resten (4 bit for disse 8-bits adressene). Tegningen er som figur 5.18 med tre veier: åtte rader, hver med tre ganger (gyldig-bit, tag, 2 ord data), tre sammenliknere og en 3:1-mux.</p>
+            <p>2.</p>
+            <div class="table-wrap"><table class="tr">
+              <thead><tr><th>Adresse</th><th>Binært</th><th>Tag</th><th>Indeks</th><th>Offset</th><th></th><th class="l">Tagger i settet etterpå</th></tr></thead>
+              <tbody>
+                <tr><td>0x03</td><td>0000 001 1</td><td>0</td><td>1</td><td>1</td><td class="miss">bom</td><td class="l">sett 1: 0</td></tr>
+                <tr><td>0xb4</td><td>1011 010 0</td><td>b</td><td>2</td><td>0</td><td class="miss">bom</td><td class="l">sett 2: b</td></tr>
+                <tr><td>0x2b</td><td>0010 101 1</td><td>2</td><td>5</td><td>1</td><td class="miss">bom</td><td class="l">sett 5: 2</td></tr>
+                <tr><td>0x02</td><td>0000 001 0</td><td>0</td><td>1</td><td>0</td><td class="hit">treff</td><td class="l">sett 1: 0</td></tr>
+                <tr><td>0xbe</td><td>1011 111 0</td><td>b</td><td>7</td><td>0</td><td class="miss">bom</td><td class="l">sett 7: b</td></tr>
+                <tr><td>0x58</td><td>0101 100 0</td><td>5</td><td>4</td><td>0</td><td class="miss">bom</td><td class="l">sett 4: 5</td></tr>
+                <tr><td>0xbf</td><td>1011 111 1</td><td>b</td><td>7</td><td>1</td><td class="hit">treff</td><td class="l">sett 7: b</td></tr>
+                <tr><td>0x0e</td><td>0000 111 0</td><td>0</td><td>7</td><td>0</td><td class="miss">bom</td><td class="l">sett 7: b, 0</td></tr>
+                <tr><td>0x1f</td><td>0001 111 1</td><td>1</td><td>7</td><td>1</td><td class="miss">bom</td><td class="l">sett 7: b, 0, 1</td></tr>
+                <tr><td>0xb5</td><td>1011 010 1</td><td>b</td><td>2</td><td>1</td><td class="hit">treff</td><td class="l">sett 2: b</td></tr>
+                <tr><td>0xbf</td><td>1011 111 1</td><td>b</td><td>7</td><td>1</td><td class="hit">treff</td><td class="l">sett 7: b, 0, 1 (b nyest)</td></tr>
+                <tr><td>0xba</td><td>1011 101 0</td><td>b</td><td>5</td><td>0</td><td class="miss">bom</td><td class="l">sett 5: 2, b</td></tr>
+                <tr><td>0x2e</td><td>0010 111 0</td><td>2</td><td>7</td><td>0</td><td class="miss">bom</td><td class="l">sett 7: b, 2, 1 (kaster ut 0)</td></tr>
+                <tr><td>0xce</td><td>1100 111 0</td><td>c</td><td>7</td><td>0</td><td class="miss">bom</td><td class="l">sett 7: b, 2, c (kaster ut 1)</td></tr>
+              </tbody>
+            </table></div>
+            <p>Fire treff av fjorten. Uten treffet på 0xbf like før ville b vært eldst i sett 7 og blitt kastet ut; LRU ser på sist bruk, ikke på når blokken kom inn.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-assoc">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 5 · eksempel 3</span></div>
+        <div class="o-text"><p>Hvorfor gir en 4-veis settassosiativ hurtigbuffer færre bom enn en direktetilordnet?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet</span>
+            <p>Den reduserer antall konfliktbom, særlig når flere minneadresser ofte kolliderer i samme sett: opptil fire blokker med samme indeks kan ligge i hurtigbufferen samtidig, mot én i den direktetilordnede.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 YTELSE ─────────────────────────── -->
+  <section id="ytelse">
+    <div class="container">
+      <div class="section-badge">05 · Aksesstid og ytelse</div>
+      <h2>Trefftid pluss <em>bomrate ganger bomstraff</em></h2>
+      <div class="source-note">Boka · kap. 5.4 · s. 412–416, 424–427 · Kompendiet · kap. 5 «Ytelsesberegning for hurtigbuffer» · Eksamen: Ord. 25 oppg. 7.3–7.4</div>
+      <span class="lm-pill">Læringsmål T6.1</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne beregne hvordan minneaksesstid påvirker datamaskinens ytelse.</li>
+        <li>Studenten skal kunne beregne hvordan treffraten i flernivå hurtigbuffer påvirker den gjennomsnittlige aksesstiden.</li>
+      </ul>
+
+      <p class="dropcap">Hver aksess betaler trefftiden. En andel av dem, bomraten, betaler i tillegg bomstraffen. <span class="term" data-term="amat">Gjennomsnittlig aksesstid</span> (AMAT, average memory access time) er</p>
+      \[ \text{AMAT} = \text{trefftid} + \text{bomrate} \times \text{bomstraff} \]
+      <p>Med flere nivåer er bomstraffen for ett nivå aksesstiden til nivået under, som regnes på samme måte. Formelen nøstes innover:</p>
+      \[ \text{AMAT} = t_{L1} + m_{L1} \times \bigl( t_{L2} + m_{L2} \times t_{\text{minne}} \bigr) \]
+      <p>Her er \(m_{L2}\) den <span class="term" data-term="lokal-bomrate">lokale bomraten</span>: andelen av aksessene som <em>når</em> L2, og som bommer også der. Den globale bomraten er \(m_{L1} \times m_{L2}\), andelen av alle aksesser som går helt til minnet. Et <span class="term" data-term="flernivaa-hurtigbuffer">flernivå-hurtigbuffer</span> lar L1 være lite og raskt (kort trefftid, det bestemmer klokka) og L2 stort (lav bomrate, det skjuler det trege minnet).</p>
+
+      <p>For prosessoren som helhet legges stanssyklene til CPI: CPI = CPI uten bom + bom per instruksjon × bomstraff i sykler. Hver instruksjon hentes fra instruksjonshurtigbufferen, og bare load og store bruker datahurtigbufferen.</p>
+
+      <div class="widget" id="w-amat">
+        <div class="widget-label">Prøv selv · Gjennomsnittlig aksesstid i ett til tre nivåer</div>
+        <p class="widget-intro">Fyll inn latens og bomrate per nivå; la bomraten stå tom (eller 0 nivåer under) for å kutte et nivå. Forhåndsutfylt med Ord. 2025 oppgave 7.3. Enheten er den du selv bruker (sykler eller ns).</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="am-t1">L1 latens</label><input type="number" id="am-t1" value="3" step="any"></div>
+          <div class="w-ctl"><label for="am-m1">L1 bomrate %</label><input type="number" id="am-m1" value="15" step="any"></div>
+          <div class="w-ctl"><label for="am-t2">L2 latens</label><input type="number" id="am-t2" value="10" step="any"></div>
+          <div class="w-ctl"><label for="am-m2">L2 bomrate %</label><input type="number" id="am-m2" value="30" step="any"></div>
+        </div>
+        <div class="w-row">
+          <div class="w-ctl"><label for="am-t3">L3 latens</label><input type="number" id="am-t3" value="" step="any" placeholder="—"></div>
+          <div class="w-ctl"><label for="am-m3">L3 bomrate %</label><input type="number" id="am-m3" value="" step="any" placeholder="—"></div>
+          <div class="w-ctl"><label for="am-tm">minne latens</label><input type="number" id="am-tm" value="75" step="any"></div>
+        </div>
+        <div class="w-out" id="am-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-7-3">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 7.3 og 7.4</span><span class="o-ref">Aksesstid · 2 + 4 p</span></div>
+        <div class="o-text"><p>Nivå 1-hurtigbufferen har latens 3 klokkesykler og bomrate 15 %. Nivå 2-hurtigbufferen har latens 10 sykler og bomrate 30 %. Minnet har latens 75 sykler. Hva blir gjennomsnittlig minneaksesstid? (7.4) Forklar hvordan du kom fram til svaret.</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Svar kontrollert mot boka (kap. 5.4) · ikke offisielt løsningsforslag</span>
+            <p>7,875 klokkesykler.</p>
+            <div class="modell">
+              <span class="ml">Modellsvar · forklaringen</span>
+              <p>Gjennomsnittlig aksesstid er trefftiden pluss bomraten ganger bomstraffen, og bomstraffen for ett nivå er aksesstiden til nivået under. Jeg regner derfor innenfra og ut.</p>
+              <p>En aksess som når L2, bruker alltid 10 sykler der, og 30 % av dem må videre til minnet og bruker 75 sykler til: aksesstid sett fra L2 = 10 + 0,30 × 75 = 32,5 sykler. Det er bomstraffen for L1.</p>
+              <p>Alle aksesser bruker 3 sykler i L1, og 15 % av dem bommer og betaler de 32,5 syklene: AMAT = 3 + 0,15 × 32,5 = 3 + 4,875 = 7,875 sykler.</p>
+              <p>Bomraten for L2 er lokal: den gjelder de 15 % som bommer i L1. Bare 0,15 × 0,30 = 4,5 % av alle aksessene går helt til minnet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-amat">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">5.4 · s. 413–416, 425</span></div>
+        <div class="o-text"><p>(a) Klokkeperiode 1 ns, bomstraff 20 sykler, bomrate 0,05 bom per instruksjon, trefftid 1 sykel. Hva er AMAT? (b) Instruksjonsbomrate 2 %, databomrate 4 %, CPI 2 uten bom, bomstraff 100 sykler, 36 % load og store. Hvor mye raskere er en prosessor med perfekt hurtigbuffer? (c) Grunn-CPI 1,0 på 4 GHz, minneaksess 100 ns, bomrate 2 % per instruksjon i primærhurtigbufferen. Hvor mye raskere blir prosessoren med en sekundærhurtigbuffer med aksesstid 5 ns som senker bomraten mot minnet til 0,5 %?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka · mellomregning skrevet for denne siden</span>
+            <p>(a) AMAT = 1 + 0,05 × 20 = 2 sykler = 2 ns.</p>
+            <p>(b) Instruksjonsbom: 0,02 × 100 = 2,00 sykler per instruksjon. Databom: 0,36 × 0,04 × 100 = 1,44. CPI = 2 + 3,44 = 5,44. Perfekt hurtigbuffer har CPI 2: 5,44 / 2 = 2,72 ganger raskere. Halvparten av tiden går altså med til bom.</p>
+            <p>(c) Én sykel er 0,25 ns. Bomstraff til minnet: 100 / 0,25 = 400 sykler. Ett nivå: CPI = 1 + 0,02 × 400 = 9. To nivåer: bomstraff til L2 er 5 / 0,25 = 20 sykler, og 0,5 % går videre til minnet: CPI = 1 + 0,02 × 20 + 0,005 × 400 = 1 + 0,4 + 2,0 = 3,4. Speedup 9 / 3,4 ≈ 2,6.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-komp-amat">
+        <div class="o-label"><span>Eksempel fra kompendiet</span><span class="o-ref">Kap. 5 · «Gjennomsnittlig aksesstid»</span></div>
+        <div class="o-text"><p>Treffrate 90 %, aksesstid 2 ns i hurtigbufferen, bomrate 10 % og 100 ns aksesstid i hovedminnet. Hva er gjennomsnittlig aksesstid?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra kompendiet · med egen merknad</span>
+            <p>Kompendiet regner treffrate × hurtigbuffertid + bomrate × minnetid = 0,9 × 2 + 0,1 × 100 = 1,8 + 10 = 11,8 ns.</p>
+            <p>Egen merknad: den formelen lar en bom slippe tiden i hurtigbufferen. Med formelen over, der alle aksesser betaler trefftiden, blir det 2 + 0,1 × 100 = 12 ns. Forskjellen er liten her, men det er den additive formen eksamensoppgaven og boka bruker (3 + 0,15 × …). Oppgis minnetiden som total tid ved bom og ikke som tillegg, bruk kompendiets form.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-10">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.10 · s. 502</span></div>
+        <div class="o-text"><p>Minneaksess tar 70 ns, og 36 % av instruksjonene bruker dataminnet. P1 har L1 på 2 KiB med bomrate 8,0 % og trefftid 0,66 ns; P2 har 4 KiB, 6,0 % og 0,90 ns. Trefftiden bestemmer klokkeperioden. 1. Klokkefrekvensene? 2. AMAT i sykler? 3. Total CPI med grunn-CPI 1,0, og hvilken er raskest? P1 får så en L2 på 1 MiB med lokal bomrate 95 % og trefftid 5,62 ns. 4. AMAT nå? 5. Total CPI? 6. Hvor lav må L2-bomraten være for at P1 med L2 skal slå P1 uten? 7. For å slå P2?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka · tider rundet opp til hele sykler</span>
+            <p>1. P1: 1 / 0,66 ns ≈ 1,52 GHz. P2: 1 / 0,90 ns ≈ 1,11 GHz.</p>
+            <p>2. Minnet i sykler: P1 70 / 0,66 = 106,1, altså 107 sykler; P2 70 / 0,90 = 77,8, altså 78. AMAT P1 = 1 + 0,08 × 107 = 9,56 sykler (6,31 ns). AMAT P2 = 1 + 0,06 × 78 = 5,68 sykler (5,11 ns).</p>
+            <p>3. Hver instruksjon gjør én instruksjonsaksess og 0,36 dataaksesser: 1,36 aksesser som kan bomme. P1: 1 + 1,36 × 0,08 × 107 = 12,64. P2: 1 + 1,36 × 0,06 × 78 = 7,36. Tid per instruksjon: P1 12,64 × 0,66 = 8,34 ns, P2 7,36 × 0,90 = 6,63 ns. P2 er raskest, selv med tregere klokke.</p>
+            <p>4. L2 i sykler: 5,62 / 0,66 = 8,5, altså 9. AMAT = 1 + 0,08 × (9 + 0,95 × 107) = 1 + 0,08 × 110,65 = 9,85 sykler. Verre enn uten L2: nesten alt bommer i L2 også, så L2 bare forsinker.</p>
+            <p>5. CPI = 1 + 1,36 × 0,08 × 110,65 = 13,04.</p>
+            <p>6. L2 lønner seg når 9 + m × 107 &lt; 107, altså m &lt; 0,916: lokal bomrate under 91,6 %.</p>
+            <p>7. P1 med L2 må under 6,63 ns per instruksjon: (1 + 0,1088 × (9 + 107 m)) × 0,66 &lt; 6,63 gir 9 + 107 m &lt; 83,1, altså m &lt; 0,69: lokal bomrate under omtrent 69 %.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 PROGRAMVARE ─────────────────────────── -->
+  <section id="programvare">
+    <div class="container">
+      <div class="section-badge">06 · Samlebånd og programvare</div>
+      <h2>Hurtigbufferen <em>i prosessoren</em>, og i koden din</h2>
+      <div class="source-note">Boka · kap. 5.3 «Handling cache misses» · s. 408–409 · kap. 5.4 «Software optimization via blocking» · s. 427–431 · kap. 5.8 · s. 464–470</div>
+      <span class="lm-pill">Læringsmål T6.1</span>
+      <ul class="lm-list">
+        <li>Studenten kunne forklare hvordan hurtigbuffere kan integreres i en samlebåndsarkitektur.</li>
+        <li>Studenten skal kjenne til hvordan man på programvarenivå kan påvirke treffraten i hurtigbuffere.</li>
+      </ul>
+
+      <p class="dropcap"><strong>I samlebåndet</strong> erstatter to hurtigbuffere de to minnene i datastien: en instruksjonshurtigbuffer i IF og en datahurtigbuffer i MEM. Ved treff er de like raske som stegene forutsetter. Ved bom stanses hele prosessoren: alle samlebåndsregistrene og PC fryses mens blokken hentes, i motsetning til en datafare, der bare de bakerste stegene holdes. For en instruksjonsbom: send den opprinnelige PC-verdien (PC − 4) til minnet og start en lesing; vent; skriv blokken, taggen og gyldig-bitet inn i hurtigbufferen; hent instruksjonen på nytt, nå som et treff. En databom håndteres likt i MEM.</p>
+
+      <p><strong>I programvaren</strong> avgjør rekkefølgen dataene brukes i om lokaliteten utnyttes. Gå gjennom en todimensjonal tabell i den retningen den ligger lagret (rad for rad i C), så treffer naboelementene samme blokk. Jobber en algoritme på store matriser, kan den deles opp så den gjør seg ferdig med én delmatrise som får plass i hurtigbufferen, før den går videre: <span class="term" data-term="blokking">blokking</span> (cache blocking). Det endrer ikke antall operasjoner, men utnytter lokalitet i tid, og kan gi flere ganger høyere ytelse. Det samme gjelder valg av datastruktur: en algoritme med færre instruksjoner kan tape mot en med bedre lokalitet.</p>
+
+      <details><summary>Utdypning · lavere prioritet: de tre bomtypene</summary>
+        <p>Alle bom kan sorteres i tre grupper (de tre C-ene). <strong>Tvungne bom</strong> (compulsory): første gang en blokk brukes; reduseres med større blokker. <strong>Kapasitetsbom</strong>: hurtigbufferen rommer ikke alle blokkene programmet bruker; reduseres med større hurtigbuffer. <strong>Konfliktbom</strong>: flere blokker konkurrerer om samme sett selv om det er plass andre steder; reduseres med høyere assosiativitet og finnes ikke i en fullassosiativ hurtigbuffer. Hvert tiltak har en pris: større hurtigbuffer og høyere assosiativitet kan øke trefftiden, og større blokker øker bomstraffen.</p>
+      </details>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">En løkke summerer en 1024 × 1024-matrise med 4-byte-tall, lagret rad for rad. Blokkene er 64 byte. Omtrent hvilken bomrate får du om du går rad for rad, og om du går kolonne for kolonne (hurtigbufferen rommer langt mindre enn hele matrisen)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Rad for rad: 16 tall per blokk, så én bom per 16 aksesser, omtrent 6 %. Kolonne for kolonne: hvert steg hopper 4096 byte fram, til en ny blokk; når du kommer tilbake til samme blokk en hel kolonne senere, er den kastet ut. Omtrent 100 % bom. Samme regning, 16 ganger flere bom.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 07 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">07 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Lokalitet</strong>Tid: løkker bruker det samme om igjen. Rom: instruksjoner og tabeller ligger etter hverandre.</div>
+        <div class="recap-pill"><strong>Hierarki</strong>Lite og raskt øverst, stort og tregt nederst; hvert nivå er hurtigbuffer for det under.</div>
+        <div class="recap-pill"><strong>Adressen</strong>tag | indeks | offset. Offset = log<sub>2</sub>(byte per blokk), indeks = log<sub>2</sub>(antall sett), tag = resten.</div>
+        <div class="recap-pill"><strong>Antall sett</strong>= kapasitet / blokkstørrelse / veier. Direktetilordnet: 1 vei. Fullassosiativ: 1 sett, ingen indeks.</div>
+        <div class="recap-pill"><strong>Treff</strong>Indeksen velger sett; lagret tag = adressens tag og gyldig-bit = 1 i en av veiene.</div>
+        <div class="recap-pill"><strong>Totalt antall bit</strong>Blokker × (databit + tagbit + gyldig-bit).</div>
+        <div class="recap-pill"><strong>Skriving</strong>Skriv gjennom (+ skrivebuffer) eller skriv tilbake med skittenbit.</div>
+        <div class="recap-pill"><strong>AMAT</strong>Trefftid + bomrate × bomstraff, nøstet: t<sub>1</sub> + m<sub>1</sub>(t<sub>2</sub> + m<sub>2</sub> t<sub>minne</sub>). CPI = grunn-CPI + bom per instruksjon × straff.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">En 4-veis settassosiativ hurtigbuffer på 64 KiB har blokker på 32 byte, og adressene er 32 bit. Hvilke bit er offset, indeks og tag?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Offset: 32 = 2<sup>5</sup>, bit 0–4. Blokker: 64 KiB / 32 = 2048; sett: 2048 / 4 = 512 = 2<sup>9</sup>, indeks bit 5–13. Tag: 32 − 5 − 9 = 18 bit, bit 14–31.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">L1: 1 sykel, bomrate 10 %. L2: 8 sykler, lokal bomrate 20 %. L3: 30 sykler, lokal bomrate 50 %. Minnet: 200 sykler. AMAT?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Innenfra: L3: 30 + 0,5 × 200 = 130. L2: 8 + 0,2 × 130 = 34. L1: 1 + 0,1 × 34 = 4,4 sykler.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Du dobler assosiativiteten i en hurtigbuffer uten å endre kapasitet eller blokkstørrelse. Hva skjer med antall sett, indeksbit, tagbit, totalt antall lagrede bit, bomrate og trefftid?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Antall sett halveres, indeksen mister ett bit og taggen får ett. Totalt antall bit øker litt (ett tagbit mer per blokk, pluss LRU-informasjon). Bomraten synker (færre konfliktbom), mest ved første dobling. Trefftiden kan øke: flere sammenliknere og en bredere mux i datastien.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="./" class="prev"><div class="pn-label">← Tilbake</div><div class="pn-title">Kapittel 6: oversikt</div></a>
+        <a href="teknologi.html" class="next"><div class="pn-label">Neste · 6B</div><div class="pn-title">Minneteknologier →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  function log2(n) { var k = Math.round(Math.log(n) / Math.LN2); return Math.pow(2, k) === n ? k : null; }
+  function bin(v, n) { var s = v.toString(2); while (s.length < n) s = '0' + s; return s; }
+  function fmt(v) { return (Math.round(v * 10000) / 10000).toString().replace('.', ','); }
+
+  /* ───── Adresseformat ───── */
+  (function () {
+    var cap = document.getElementById('ad-cap'), unit = document.getElementById('ad-unit'), blk = document.getElementById('ad-blk'), way = document.getElementById('ad-way'), bits = document.getElementById('ad-bits');
+    var bar = document.getElementById('ad-bar'), out = document.getElementById('ad-out'); if (!cap) return;
+    function draw() {
+      var C = (+cap.value) * (+unit.value), B = +blk.value, W = +way.value, A = +bits.value;
+      var ob = log2(B), nb = C / B;
+      if (ob == null || !(nb >= 1) || nb !== Math.floor(nb)) { bar.innerHTML = ''; out.innerHTML = '<span class="bad">Blokkstørrelsen må være en toerpotens, og kapasiteten et helt antall blokker.</span>'; return; }
+      if (W === 0) W = nb;
+      var sets = nb / W, ib = log2(sets);
+      if (ib == null) { bar.innerHTML = ''; out.innerHTML = '<span class="bad">Antall sett (' + fmt(sets) + ') må være en toerpotens. Sjekk kapasitet, blokkstørrelse og veier.</span>'; return; }
+      var tb = A - ib - ob; if (tb < 0) { bar.innerHTML = ''; out.innerHTML = '<span class="bad">Adressen er for kort for denne hurtigbufferen.</span>'; return; }
+      function rng(lo, n) { return n === 0 ? 'ingen bit' : 'bit ' + (lo + n - 1) + '–' + lo; }
+      bar.style.gridTemplateColumns = Math.max(tb, 3) + 'fr ' + Math.max(ib, 3) + 'fr ' + Math.max(ob, 3) + 'fr';
+      bar.innerHTML = '<div class="f t"><span class="fn">tag</span><span class="fv">' + tb + ' bit</span><span class="fb">' + rng(ib + ob, tb) + '</span></div><div class="f i"><span class="fn">indeks</span><span class="fv">' + ib + ' bit</span><span class="fb">' + rng(ob, ib) + '</span></div><div class="f o"><span class="fn">offset</span><span class="fv">' + ob + ' bit</span><span class="fb">' + rng(0, ob) + '</span></div>';
+      var total = nb * (B * 8 + tb + 1);
+      out.innerHTML = 'Offset: log2(' + B + ' byte) = <span class="hl">' + ob + '</span> bit\nBlokker: ' + C + ' byte / ' + B + ' byte = ' + nb + '\nSett: ' + nb + ' blokker / ' + W + (W === 1 ? ' vei' : ' veier') + ' = ' + sets + ' → indeks log2(' + sets + ') = <span class="hl">' + ib + '</span> bit\nTag: ' + A + ' − ' + ib + ' − ' + ob + ' = <span class="hl">' + tb + '</span> bit\nLagret i alt: ' + nb + ' × (' + (B * 8) + ' data + ' + tb + ' tag + 1 gyldig) = ' + total + ' bit ≈ ' + fmt(total / 8 / 1024) + ' KiB (' + fmt(total / (C * 8)) + ' × datamengden)';
+    }
+    [cap, unit, blk, way, bits].forEach(function (e) { e.addEventListener('input', draw); e.addEventListener('change', draw); });
+    draw();
+  })();
+
+  /* ───── Simulator ───── */
+  (function () {
+    var pre = document.getElementById('sim-pre'), setsI = document.getElementById('sim-sets'), waysI = document.getElementById('sim-ways'), wordsI = document.getElementById('sim-words'), addrI = document.getElementById('sim-addr'), run = document.getElementById('sim-run');
+    var tab = document.getElementById('sim-tab'), out = document.getElementById('sim-out'); if (!pre) return;
+    var P = {
+      e1: [8, 1, 1, '22, 26, 22, 26, 16, 3, 16, 18, 16'],
+      o521: [16, 1, 1, '0x03, 0xb4, 0x2b, 0x02, 0xbf, 0x58, 0xbe, 0x0e, 0xb5, 0x2c, 0xba, 0xfd'],
+      o522: [8, 1, 2, '0x03, 0xb4, 0x2b, 0x02, 0xbf, 0x58, 0xbe, 0x0e, 0xb5, 0x2c, 0xba, 0xfd'],
+      a1: [4, 1, 1, '0, 8, 0, 6, 8'], a2: [2, 2, 1, '0, 8, 0, 6, 8'], a4: [1, 4, 1, '0, 8, 0, 6, 8'],
+      o511: [8, 3, 2, '0x03, 0xb4, 0x2b, 0x02, 0xbe, 0x58, 0xbf, 0x0e, 0x1f, 0xb5, 0xbf, 0xba, 0x2e, 0xce']
+    };
+    function go() {
+      var S = +setsI.value, W = +waysI.value, K = +wordsI.value, ib = log2(S), ob = log2(K);
+      if (ib == null || ob == null || !(W >= 1)) { tab.innerHTML = ''; out.innerHTML = '<span class="bad">Antall sett og ord per blokk må være toerpotenser, og minst én vei.</span>'; return; }
+      var toks = addrI.value.split(/[\s,;]+/).filter(Boolean), addrs = [], hexIn = false;
+      for (var i = 0; i < toks.length; i++) { var t = toks[i], v = /^0x[0-9a-f]+$/i.test(t) ? parseInt(t, 16) : (/^\d+$/.test(t) ? parseInt(t, 10) : NaN); if (isNaN(v)) { tab.innerHTML = ''; out.innerHTML = '<span class="bad">Forstår ikke adressen «' + t + '».</span>'; return; } if (/^0x/i.test(t)) hexIn = true; addrs.push(v); }
+      if (!addrs.length || addrs.length > 40) { tab.innerHTML = ''; out.innerHTML = '<span class="bad">Skriv 1–40 adresser.</span>'; return; }
+      var maxA = Math.max.apply(null, addrs), nb = Math.max(ib + ob + 1, maxA.toString(2).length), tb = nb - ib - ob;
+      function show(v) { return hexIn ? '0x' + v.toString(16) : String(v); }
+      var sets = []; for (var s = 0; s < S; s++) sets.push([]);  /* hver: liste av {tag, t} */
+      var hits = 0, rows = '', clock = 0;
+      addrs.forEach(function (a) {
+        clock++;
+        var off = a & (K - 1), idx = (a >> ob) & (S - 1), tag = a >> (ob + ib), set = sets[idx], e = null, repl = '';
+        for (var j = 0; j < set.length; j++) if (set[j].tag === tag) e = set[j];
+        var hit = !!e;
+        if (hit) { hits++; e.t = clock; }
+        else if (set.length < W) set.push({ tag: tag, t: clock });
+        else { var old = set[0], oi = 0; for (var q = 1; q < set.length; q++) if (set[q].t < old.t) { old = set[q]; oi = q; } repl = show(old.tag); set[oi] = { tag: tag, t: clock }; }
+        var b = bin(a, nb), bs = (tb ? b.slice(0, tb) + ' ' : '') + (ib ? b.slice(tb, tb + ib) + ' ' : '') + b.slice(tb + ib);
+        rows += '<tr><td>' + show(a) + '</td><td>' + bs.trim() + '</td><td>' + show(tag) + '</td><td>' + (ib ? idx : '—') + '</td><td>' + (ob ? off : '—') + '</td><td class="' + (hit ? 'hit">treff' : 'miss">bom') + '</td><td>' + (repl ? 'tag ' + repl : '') + '</td><td class="l">' + (S > 1 ? 'sett ' + idx + ': ' : '') + set.map(function (x) { return show(x.tag); }).join(', ') + '</td></tr>';
+      });
+      tab.innerHTML = '<thead><tr><th>Adr.</th><th>Binært</th><th>Tag</th><th>Indeks</th><th>Offset</th><th></th><th>Ut</th><th class="l">Settet etterpå</th></tr></thead><tbody>' + rows + '</tbody>';
+      out.innerHTML = (W === 1 ? 'Direktetilordnet' : (S === 1 ? 'Fullassosiativ' : W + '-veis settassosiativ')) + ', ' + S * W + ' blokker à ' + K + ' ord (' + S + ' sett). Felt: tag ' + tb + ' bit, indeks ' + ib + ' bit, offset ' + ob + ' bit.\n<span class="hl">' + hits + ' treff, ' + (addrs.length - hits) + ' bom</span> av ' + addrs.length + ' · bomrate ' + fmt(100 * (addrs.length - hits) / addrs.length) + ' %';
+    }
+    function load() { var p = P[pre.value]; setsI.value = p[0]; waysI.value = p[1]; wordsI.value = p[2]; addrI.value = p[3]; go(); }
+    pre.addEventListener('change', load); run.addEventListener('click', go);
+    [setsI, waysI, wordsI, addrI].forEach(function (e) { e.addEventListener('change', go); });
+    load();
+  })();
+
+  /* ───── AMAT ───── */
+  (function () {
+    var ids = ['am-t1', 'am-m1', 'am-t2', 'am-m2', 'am-t3', 'am-m3', 'am-tm'], el = {}, out = document.getElementById('am-out'); if (!out) return;
+    ids.forEach(function (i) { el[i] = document.getElementById(i); });
+    function num(i) { var v = el[i].value.trim(); return v === '' ? null : +v.replace(',', '.'); }
+    function draw() {
+      var lv = [], tm = num('am-tm');
+      [['am-t1', 'am-m1', 'L1'], ['am-t2', 'am-m2', 'L2'], ['am-t3', 'am-m3', 'L3']].forEach(function (r) { var t = num(r[0]), m = num(r[1]); if (t != null && m != null) lv.push({ t: t, m: m / 100, n: r[2] }); });
+      if (!lv.length || tm == null) { out.innerHTML = '<span class="bad">Fyll inn minst L1 (latens og bomrate) og minnets latens.</span>'; return; }
+      var acc = tm, lines = ['Minnet: ' + fmt(tm)], glob = 1;
+      for (var i = lv.length - 1; i >= 0; i--) { var nv = lv[i].t + lv[i].m * acc; lines.push(lv[i].n + ': ' + fmt(lv[i].t) + ' + ' + fmt(lv[i].m) + ' × ' + fmt(acc) + ' = ' + fmt(nv)); acc = nv; }
+      lv.forEach(function (l) { glob *= l.m; });
+      out.innerHTML = 'Innenfra og ut:\n' + lines.join('\n') + '\n<span class="hl">AMAT = ' + fmt(acc) + '</span>\nAndel av aksessene som når minnet (global bomrate): ' + fmt(glob * 100) + ' %';
+    }
+    ids.forEach(function (i) { el[i].addEventListener('input', draw); });
+    draw();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 4 — Flersykelprosessor</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
+  .lm-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; }
+  .lm-card .lm-k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+  .lm-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; color: var(--ink-soft); }
+  .lm-card .lm-src { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-ghost); margin-top: 0.4rem; }
+  .lm-card .tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-left: 6px; background: var(--accent-soft); color: var(--accent); }
+  .lm-card .tag.regn { background: var(--warm-soft); color: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 4: Flersykelprosessor">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 4 · Tema T4 · Boka kap. 4.5 (nettseksjon), appendiks A.7, A.8, A.10 og A.11 · Kompendiet kap. 4 og appendiks A · Forelesning 6 · Ekstraforelesning 2 · Teoriøving 4 · ~1,5 t totalt</div>
+      <h1>Flersykel<em>prosessor</em></h1>
+      <p class="lede">Prosessoren fra kapittel 3 delt i steg på én kort klokkesykel hver, med ett minne og én ALU som brukes om igjen. For å få det til trengs registre som husker mellom syklene og en kontrollenhet som husker hvor den er. Derfor kommer sekvensiell logikk først: klokke, lås, vippe, registerfil og tilstandsmaskin.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringsmaal">Læringsmål og prioritet</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">05</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Kapittel 3 bygde en prosessor av kombinatorisk logikk og noen få <span class="term" data-term="tilstandselement">tilstandselementer</span>, og tok tilstandselementene for gitt. Kapittel 4 åpner dem: en <span class="term" data-term="d-vippe">D-vippe</span> lagrer én bit på klokkeflanken, n vipper er et register, og registre med mux og dekoder rundt er en <span class="term" data-term="registerfil">registerfil</span>. Et register pluss kombinatorisk logikk som regner ut neste innhold, er en <span class="term" data-term="tilstandsmaskin">tilstandsmaskin</span>. Med de to verktøyene kan instruksjonen deles i steg: <span class="term" data-term="flersykelprosessor">flersykelprosessoren</span> bruker tre til fem korte sykler per instruksjon, lagrer mellomresultatene i interne registre, og styres av en tilstandsmaskin der hver tilstand har sitt <span class="term" data-term="kontrollord">kontrollord</span>.</p>
+
+      <ul>
+        <li><strong>Sekvensiell logikk (4A).</strong> Klokkesignal, periode og flanke; SR-lås, D-lås og D-vippe; setup- og hold-tid; register og registerfil med leseport og skriveport; tilstandsmaskin som tilstandsregister pluss logikk; klokkeperiode og kritisk sti. Prio 3: ikke egen eksamensoppgave siden 2023, men grunnlaget for 4B og kapittel 5.</li>
+        <li><strong>Flersykelprosessoren (4B).</strong> Ett minne, én ALU og fem interne registre; figur e4.5.4 med de tolv kontrollsignalene; de fem stegene og antall sykler per instruksjon; kontrollen som tilstandsmaskin med ni tilstander og kontrollordet i hver; CPI og sammenlikning med enkeltsykel og samlebånd. Prio 2: egen del i Kont 26 og Ord. 24.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilder og utvalg</span>
+        <p>Sidene følger læringsutbyttebeskrivelsen tema T4 (T4.1 og T4.2) og bygger på boka kapittel 4.5 (nettseksjonen om flersykelimplementasjonen) og appendiks A.7, A.8, A.10 og A.11, pluss kompendiets kapittel 4 og appendiks A. Bokoppgavene beskrivelsen lister for T4.2 (A.36–A.39) er med, sammen med bokas CPI-eksempel og kompendiets to eksempler. T4.1 har ingen tilgjengelige bokoppgaver, og tekstene til eksamensoppgavene (Kont 26 oppg. 4, Ord. 24 oppg. 3) finnes ikke i materialet; 4B har derfor egne spørsmål i eksamensform: kontrollord i en tilstand, antall sykler, CPI og «forklar hvorfor». Eksamensanalysen (godkjent 2. oktober 2026) gir T4.1 prio 2 og T4.2 prio 3. Har du dårlig tid: les avsnitt 04 i 4A og gå rett til 4B.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringsmaal">
+    <div class="container">
+      <div class="section-badge">Læringsmål og prioritet</div>
+      <h2>Fra <em>læringsutbyttebeskrivelsen</em></h2>
+      <p class="section-intro">Tema T4 dekker K1–K3 (konstruksjon og virkemåte, instruksjonssettet, prosessorens oppbygging), F2 og F3 (analysere og konstruere enkle digitale kretser og prosessorer) og G1.</p>
+      <div class="lm-grid">
+        <div class="lm-card">
+          <div class="lm-k">T4.1 · Flersykelprosessor <span class="tag">Forklar</span><span class="tag">Tegn</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare mikroarkitekturen til en flersykelprosessor (kunne gjengi og forklare figur e.4.5.4).</li>
+            <li>Studenten skal kunne forklare hvorfor kontrollenheten til flersykelprosessoren blir en tilstandsmaskin.</li>
+            <li>Studenten skal kunne beskrive sammenhengen mellom kontrollordet til flersykelprosessoren og tilstanden i tilstandsmaskinen.</li>
+            <li>Studenten skal kunne beskrive fordeler og ulemper ved flersykelprosessoren sammenliknet med enkeltsykelprosessoren.</li>
+          </ul>
+          <div class="lm-src">Prio 2 · Forelesning 6 · Teoriøving 4 · Boka 4.5 · ingen tilgjengelige bokoppgaver · Eksamen: Kont 26 oppg. 4, Ord. 24 oppg. 3 (tekstene mangler) · <a href="flersykel.html">4B</a> · ~50 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T4.2 · Sekvensiell logikk <span class="tag">Forklar</span><span class="tag">Tegn</span></div>
+          <ul>
+            <li>Studenten skal kunne beskrive oppførselen til komponentene SR-lås, D-lås, og D-vippe.</li>
+            <li>Studenten skal kunne konstruere registre og registerfiler med kombinatoriske og sekvensielle logiske komponenter (kunne gjengi og forklare figur A.8.8 og figur A.8.9).</li>
+            <li>Studenten skal kunne forklare hva en tilstandsmaskin er og beskrive hvordan den implementeres i maskinvare (kunne gjengi og forklare figur A.10.3).</li>
+            <li>Studenten skal kunne forklare funksjonen til klokkesignalet i en datamaskin og begrepet «kritisk sti».</li>
+          </ul>
+          <div class="lm-src">Prio 3 · Ekstraforelesning 2 · Boka A.8, A.10 og A.11 · Oppgaver A.36, A.37, A.38, A.39 · Eksamen: Ord. 23 oppg. 2, Ord. 22 oppg. 2 og 3, Kont 22 oppg. 2 (ikke siden 2023) · <a href="sekvensiell.html">4A</a> · ~40 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="sekvensiell.html" class="subpage-card">
+          <span class="sp-icon">4A</span>
+          <div class="sp-info">
+            <div class="sp-title">Sekvensiell logikk: kretser som husker</div>
+            <div class="sp-desc">T4.2 · Boka A.7, A.8, A.10, A.11: klokke og flanke, SR-lås, D-lås og D-vippe, setup og hold, registerfilens lese- og skriveport, tilstandsmaskin med trafikklyseksempelet, kritisk sti. 5 oppgaver, 2 widgeter (tidsdiagram for lås mot vippe, trafikklys som tilstandsmaskin). ~40 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="flersykel.html" class="subpage-card">
+          <span class="sp-icon">4B</span>
+          <div class="sp-info">
+            <div class="sp-title">Flersykelprosessoren: datasti og tilstandsmaskin</div>
+            <div class="sp-desc">T4.1 · Boka 4.5: ideen, de fem interne registrene, figur e4.5.4 som SVG, de fem stegene, tilstandsdiagrammet med ni tilstander og kontrollordet i hver, CPI og sammenlikning med enkeltsykel og samlebånd. 3 oppgaver, 1 widget (stepp en instruksjon sykel for sykel: aktiv sti, tilstand og kontrollord, med testmodus). ~50 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">8 bokser: de fire bokoppgavene læringsutbyttebeskrivelsen lister, bokas CPI-eksempel og Sjekk deg selv-spørsmål fra 4.5, og kompendiets to eksempler. Grønn status: svar fra boka eller kompendiet. Gul: forslag skrevet for denne siden.</p>
+
+      <h3>4A · Sekvensiell logikk</h3>
+      <ul class="oppgave-index">
+        <li><a href="sekvensiell.html#oppg-komp-sr-led"><span class="oi-ref">Komp. eks. 2</span><span>SR-lås som styrer en lysdiode, og D-vippe som lagrer tilstanden.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="sekvensiell.html#oppg-a-36"><span class="oi-ref">A.36 · s. A-85</span><span>Leseport for to registre à to bit, tegnet bit for bit med D-vipper og muxer.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="sekvensiell.html#oppg-a-37"><span class="oi-ref">A.37 · s. A-85</span><span>Elektronisk øye med tre lamper: tilstandsdiagram.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="sekvensiell.html#oppg-a-38"><span class="oi-ref">A.38 · s. A-85</span><span>Tilstandstilordning og logiske likninger for det elektroniske øyet.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="sekvensiell.html#oppg-a-39"><span class="oi-ref">A.39 · s. A-86</span><span>3-bits teller av tre D-vipper med reset og inc.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>4B · Flersykelprosessoren</h3>
+      <ul class="oppgave-index">
+        <li><a href="flersykel.html#oppg-komp-lw-flersykel"><span class="oi-ref">Komp. kap. 4</span><span>lw x1, 0(x2) sykel for sykel, med merknad om fire mot fem sykler.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="flersykel.html#oppg-cy-4-5"><span class="oi-ref">§4.5 · e20</span><span>Kan PCWriteCond erstattes av PCSource?</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="flersykel.html#oppg-eks-cpi-flersykel"><span class="oi-ref">Eks. · e12</span><span>CPI for en miks med 20 % load, 8 % store, 10 % hopp og 62 % ALU.</span><span class="oi-status notes">Fra boka</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">Bokas oppgave A.35 (når gir lås og vippe samme utgang; dekket av tidsdiagram-widgeten på 4A), A.40 (Gray-kode-teller), A.41 (trafikklys med gult), Sjekk deg selv-spørsmålene i A.10 og A.11 (Moore mot Mealy, stor klokkeskjevhet) og Verilog-eksemplene. Eksamensoppgavene Kont 26 oppg. 4 og Ord. 24 oppg. 3 (T4.1) og Ord. 23 oppg. 2, Ord. 22 oppg. 2–3 og Kont 22 oppg. 2 (T4.2) legges inn som bokser når tekstene er tilgjengelige.</p>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever 4A og 4B i sammenheng. Flere finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hvilke av disse er tilstandselementer i flersykeldatastien, og hvilke er kombinatoriske: PC, ALU, IR, mux, registerfil, MDR, Imm Gen, minne, A og B, ALUOut?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Tilstandselementer: PC, minnet og registerfilen (den programmerer-synlige tilstanden), og de fem interne registrene IR, MDR, A, B og ALUOut. Kombinatoriske: ALU-en, muxene og Imm Gen. I tillegg kommer tilstandsregisteret inne i kontrollenheten, som figuren ikke viser.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Instruksjonsregisteret IR er 32 bit og har skrivesignalet IRWrite. Beskriv hvordan det bygges av D-vipper, og hva IRWrite gjør.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">IR er 32 D-vipper med felles klokkeinngang. D-inngangene er koblet til minnets utgang MemData, én bit hver, og Q-utgangene er IR[31:0]. C-inngangen på alle vippene er klokka AND IRWrite. Når IRWrite = 1 (bare i tilstand 0), lagrer vippene det minnet leverer på flanken. Når IRWrite = 0, kommer ingen flanke fram, og instruksjonen blir stående selv om minnets utgang endrer seg, for eksempel når lw leser data i tilstand 3.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Trafikklyset i 4A og kontrollenheten i 4B er samme slags maskin. Hva tilsvarer tilstand, innganger, utganger, neste-tilstand-funksjon og klokke i kontrollenheten?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Tilstand: hvilket steg av instruksjonen som utføres, ni tilstander lagret i et 4-bits tilstandsregister (trafikklyset har to tilstander og én bit). Innganger: opcoden i IR[6:0] (sensorene NScar og EWcar). Utganger: kontrollordet, de tolv signalene til datastien (NSlite og EWlite). Neste-tilstand-funksjon: buene i tilstandsdiagrammet, for eksempel «fra 1 til 6 hvis opcoden er R-type» («fra NSgreen til EWgreen hvis EWcar»). Klokke: prosessorklokka, én tilstand per sykel (én sykel per 30 sekunder). Begge er Moore-maskiner: utgangene avhenger bare av tilstanden.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Vanskelig</div>
+        <div class="q-text">Bruk begrepet kritisk sti til å forklare hvorfor flersykelprosessoren kan ha kortere klokkeperiode enn enkeltsykelprosessoren. Regn så med disse tallene: minne 250 ps, registerfil 150 ps, ALU 200 ps, og vipper med forplantningstid 30 ps og setup-tid 20 ps. Hva blir perioden i flersykelprosessoren, og hvor lang tid tar lw?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Klokkeperioden må dekke den kritiske stien, den lengste veien mellom to tilstandselementer. I enkeltsykelprosessoren går den for lw fra PC gjennom instruksjonsminnet, registerfilen, ALU-en, dataminnet og tilbake til registerfilen: fem enheter i serie. Flersykelprosessoren har registre etter hver enhet, så ingen sti inneholder mer enn én stor enhet. Den kritiske stien er det tregeste steget, her minnet: T ≥ 30 + 250 + 20 = 300 ps (muxer ikke medregnet). lw bruker fem sykler: 5 · 300 = 1500 ps. I enkeltsykel tar samme instruksjon omtrent 250 + 150 + 200 + 250 + 150 = 1000 ps pluss én gang 30 + 20 ps. Perioden er altså mye kortere, men lw tar lengre tid i alt, fordi registrene legger til forsinkelse i hver sykel og de korte stegene må vente på de lange. (Tallene er laget for denne oppgaven.)</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap3/" class="prev"><div class="pn-label">← Forrige</div><div class="pn-title">Kapittel 3: Enkeltsykelprosessor</div></a>
+        <a href="sekvensiell.html" class="next"><div class="pn-label">Start · 4A</div><div class="pn-title">Sekvensiell logikk →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

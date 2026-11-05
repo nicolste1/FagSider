@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Minneteknologier — Kap 6</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text, .cpu text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap, .cpu .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .box, .cpu .u { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .wire, .cpu .w { stroke: var(--ink-ghost); stroke-width: 1.2; fill: none; }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+  .cpu .u.on { fill: rgba(160,82,45,0.18); stroke: var(--warm); stroke-width: 1.6; }
+  .cpu .u.rd { fill: rgba(27,94,90,0.16); stroke: var(--accent); stroke-width: 1.6; }
+  .cpu .w.on { stroke: var(--warm); stroke-width: 2.2; }
+  .cpu .val { font-family: var(--mono); font-size: 12px; fill: var(--ink); font-weight: 600; }
+  .w-ctl select { font-family: var(--mono); font-size: 0.9rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  table.ctrl td, table.ctrl th { text-align: center; font-family: var(--mono); font-size: 0.84rem; letter-spacing: 0; }
+  table.ctrl td:first-child, table.ctrl th:first-child { text-align: left; font-family: var(--sans); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 6</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 6: Minnesystemet">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 6 · 6B · Læringsmål T6.2 · Boka kap. 5.2, appendiks A.9 · ~20 min</div>
+      <h1>Minne<em>teknologier</em></h1>
+      <p class="lede">Fire teknologier med fire størrelsesordener i fart og pris forklarer hvorfor hierarkiet ser ut som det gjør. Pluss hvordan et SRAM-minne bygges av låser og en dekoder, og hvordan DRAM klarer seg med én transistor per bit.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#fire"><span>01</span> Fire teknologier</a>
+        <a href="#sram"><span>02</span> SRAM</a>
+        <a href="#dram"><span>03</span> DRAM</a>
+        <a href="#oppsummering"><span>04</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T6.2: prio 3 · ingen kjente eksamensoppgaver 2021–2026 · 0 p i Ord. 2025</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Lavere</span><strong>Hele siden er prio 3.</strong> Stoffet har ikke vært egen eksamensoppgave. Les den én gang; det kan dukke opp som et kort faktaspørsmål eller som begrunnelse i en hurtigbufferoppgave.</li>
+          <li><span class="tag">Forklar</span>Flyktig mot ikke-flyktig, statisk mot dynamisk. Omtrentlig aksesstid og pris for SRAM, DRAM, flash og disk, og hvor i hierarkiet hver brukes.</li>
+          <li><span class="tag">Forklar</span>Hvordan et lite SRAM bygges av D-låser, en dekoder og tre-tilstandsbuffere (figur A.9.3); DRAM-cella med transistor og kondensator, oppfriskning, og oppslag i to steg med rad og kolonne (figur A.9.5 og A.9.6).</li>
+          <li><span class="tag">Lavere</span>DDR-generasjoner, diskgeometri og flash-slitasje er nevnt i én linje hver. Pålitelighet og RAID er tatt ut.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 FIRE ─────────────────────────── -->
+  <section id="fire">
+    <div class="container">
+      <div class="section-badge">01 · Fire teknologier</div>
+      <h2>Raskt, eller <em>billig</em></h2>
+      <div class="source-note">Boka · kap. 5.2 · s. 392–398 · figur 5.4–5.6</div>
+      <span class="lm-pill">Læringsmål T6.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare begrepene volatilt og ikke-volatilt minne samt statisk og dynamisk minne.</li>
+        <li>Studenten skal kjenne til omtrentlig aksesstid og kostnad per bit for SRAM, DRAM, Flash, og magnetisk disk og kunne forklare hvordan dette påvirker hvordan teknologiene brukes i minnehierarkiet.</li>
+      </ul>
+
+      <p class="dropcap">To begrepspar sorterer minneteknologiene. <span class="term" data-term="flyktig-minne">Flyktig</span> (volatilt) minne mister innholdet når strømmen går; <span class="term" data-term="ikke-flyktig">ikke-flyktig</span> beholder det. <span class="term" data-term="statisk-minne">Statisk</span> minne holder en bit så lenge det har strøm; <span class="term" data-term="dynamisk-minne">dynamisk</span> minne lagrer biten som ladning som lekker, og må friskes opp jevnlig.</p>
+
+      <div class="table-wrap">
+        <table class="ctrl">
+          <caption>Typiske tall (2020). Hvert steg nedover er omtrent hundre ganger tregere og hundre ganger billigere.</caption>
+          <thead><tr><th>Teknologi</th><th>Aksesstid</th><th>Pris per GiB</th><th>Flyktig</th><th>Rolle i hierarkiet</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="sram">SRAM</span></td><td>0,5–2,5 ns</td><td>$500–1000</td><td>ja</td><td>hurtigbuffere, inne i prosessoren</td></tr>
+            <tr><td><span class="term" data-term="dram">DRAM</span></td><td>50–70 ns</td><td>$3–6</td><td>ja</td><td>hovedminne</td></tr>
+            <tr><td><span class="term" data-term="flashminne">Flash</span></td><td>5 000–50 000 ns</td><td>$0,06–0,12</td><td>nei</td><td>sekundærminne i mobile enheter og SSD</td></tr>
+            <tr><td><span class="term" data-term="magnetisk-disk">Magnetisk disk</span></td><td>5–20 millioner ns</td><td>$0,01–0,02</td><td>nei</td><td>sekundærminne i servere, størst og billigst</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Tabellen <em>er</em> begrunnelsen for hierarkiet. SRAM er raskt nok til å holde følge med prosessoren, men for dyrt og plasskrevende til mer enn noen megabyte: det blir hurtigbuffer. DRAM er hundre ganger billigere per bit og tett nok til gigabyte, men 50 ganger tregere: det blir hovedminne, skjult bak hurtigbufferne. Flash og disk er billige og ikke-flyktige, men tusen til hundre tusen ganger tregere enn DRAM: de holder filer og sidene det virtuelle minnet ikke har plass til.</p>
+
+      <details><summary>Utdypning · lavere prioritet: flash og disk i korte trekk</summary>
+        <p>Flash er elektrisk slettbart minne (EEPROM). Skriving sliter på cellene, så kontrolleren sprer skrivingene jevnt utover (wear leveling). En magnetisk disk har roterende plater delt i spor og sektorer; en aksess består av søketid (flytte armen til riktig spor), rotasjonsforsinkelse (vente til sektoren kommer under hodet, i snitt en halv omdreining) og overføringstid. Det mekaniske er grunnen til millisekundene.</p>
+      </details>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Hvorfor bygges ikke hele hovedminnet i SRAM, og hvorfor brukes ikke DRAM som L1-hurtigbuffer?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">SRAM koster over hundre ganger mer per bit og tar mer areal (seks til åtte transistorer per bit mot én), så gigabyte med SRAM er uaktuelt. DRAM er for tregt: 50–70 ns er over hundre klokkesykler, mens L1 må svare på én til noen få sykler for ikke å bestemme klokkeperioden.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 SRAM ─────────────────────────── -->
+  <section id="sram">
+    <div class="container">
+      <div class="section-badge">02 · SRAM</div>
+      <h2>Låser, en dekoder og <em>delte bitlinjer</em></h2>
+      <div class="source-note">Boka · appendiks A.9 · s. A-57–A-62 · figur A.9.1–A.9.4</div>
+      <span class="lm-pill">Læringsmål T6.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne konstruere et SRAM minne fra grunnleggende kombinatoriske og sekvensielle komponenter (kunne gjengi og forklare figur A.9.3).</li>
+      </ul>
+
+      <p class="dropcap">Et SRAM er en tabell av minneceller med en adresseinngang, datainnganger og -utganger, og styresignaler for å velge brikken, lese og skrive. Et «4 × 2»-SRAM har fire ord à to bit. Hver celle er i prinsippet en D-lås (kapittel 4): den slipper inn dataene når enable-inngangen er 1 og holder dem ellers.</p>
+
+      <p><strong>Skriving.</strong> En <span class="term" data-term="dekoder">dekoder</span> gjør adressen om til én aktiv ordlinje per ord. Ordlinjen AND-es med skrivesignalet, og resultatet er enable for låsene i det ordet. Datainngangene går til alle ordene, men bare det valgte ordet slipper dem inn.</p>
+
+      <p><strong>Lesing.</strong> En stor multiplekser på utgangen ville blitt enorm for et minne med tusenvis av ord. I stedet deler alle cellene i en kolonne én <span class="term" data-term="bitlinje">bitlinje</span>, og hver celle kobles til den gjennom en <span class="term" data-term="tre-tilstandsbuffer">tre-tilstandsbuffer</span>: en port som enten driver utgangen med sin verdi, eller kobler seg helt fra (høy impedans). Ordlinjen fra dekoderen slår på bufferne i det valgte ordet, så nøyaktig én celle driver hver bitlinje.</p>
+
+      <div class="widget" id="w-sram">
+        <div class="widget-label">Prøv selv · Et 4 × 2 SRAM</div>
+        <p class="widget-intro">Velg adresse, datainngang og om det skal skrives. Figuren viser hvilken ordlinje dekoderen aktiverer, hvilke celler som slipper inn data (skriving) eller driver bitlinjene (lesing), og hva som kommer ut.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="sr-adr">adresse</label><select id="sr-adr"><option value="0">00</option><option value="1">01</option><option value="2" selected>10</option><option value="3">11</option></select></div>
+          <div class="w-ctl"><label for="sr-din">Din[1:0]</label><select id="sr-din"><option>00</option><option>01</option><option>10</option><option selected>11</option></select></div>
+          <button class="w-btn" id="sr-write" type="button">Skriv (Write = 1)</button>
+          <button class="w-btn secondary" id="sr-reset" type="button">Nullstill</button>
+        </div>
+        <svg class="cpu" id="sram-w" viewBox="0 0 640 330" aria-label="4 × 2 SRAM"></svg>
+        <div class="w-out" id="sr-out"></div>
+      </div>
+
+      <p>Store SRAM-er bruker oppslag i to steg for å holde dekoderen liten: adressens øvre bit velger en rad i en kvadratisk tabell, og de nedre bitene velger så riktig bit ut av raden med muxer. Et 4M × 8-SRAM kan bygges som åtte tabeller på 4096 × 1024 bit, med en 12-til-4096-dekoder og 1024-til-1-muxer.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 DRAM ─────────────────────────── -->
+  <section id="dram">
+    <div class="container">
+      <div class="section-badge">03 · DRAM</div>
+      <h2>Én transistor, <em>én kondensator</em></h2>
+      <div class="source-note">Boka · appendiks A.9 · s. A-62–A-65 · figur A.9.5–A.9.6 · kap. 5.2 · s. 393–395</div>
+      <span class="lm-pill">Læringsmål T6.2</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne beskrive prinsippene for hvordan vi konstruerer DRAM minner (kunne gjengi og forklare figur A.9.5 og A.9.6).</li>
+      </ul>
+
+      <p class="dropcap">En DRAM-celle lagrer biten som ladning på en liten kondensator. Én transistor, styrt av ordlinjen, kobler kondensatoren til bitlinjen. Det er alt: én transistor per bit mot seks til åtte i SRAM, derfor tettere og billigere.</p>
+
+      <div class="fig-row">
+        <figure>
+          <svg class="fig-svg" viewBox="0 0 280 200" aria-label="DRAM-celle (figur A.9.5)">
+            <path class="wire" d="M20 50 L260 50"/><text class="cap" x="22" y="42">ordlinje</text>
+            <path class="wire" d="M70 20 L70 180"/><text class="cap" x="76" y="176">bitlinje</text>
+            <path class="wire" d="M70 100 L110 100"/><path class="wire" d="M110 86 L110 114"/><path class="wire" d="M118 86 L118 114"/><path class="wire" d="M118 100 L170 100"/>
+            <path class="wire" d="M114 50 L114 80"/><circle cx="114" cy="50" r="2" fill="#3d3832"/><circle cx="70" cy="100" r="2" fill="#3d3832"/>
+            <text class="cap" x="126" y="80">transistor</text>
+            <path class="wire" d="M170 100 L170 120 M156 120 L184 120 M156 128 L184 128 M170 128 L170 150 M158 150 L182 150 M163 155 L177 155 M167 160 L173 160"/>
+            <text class="cap" x="192" y="128">kondensator</text><text class="cap" x="192" y="140">ladet = 1</text>
+          </svg>
+          <figcaption>Etter figur A.9.5: ordlinjen åpner transistoren og kobler kondensatoren til bitlinjen.</figcaption>
+        </figure>
+        <figure>
+          <svg class="fig-svg" viewBox="0 0 280 200" aria-label="DRAM organisert som rader og kolonner (figur A.9.6)">
+            <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+            <rect class="box" x="20" y="30" width="50" height="90" rx="4"/><text x="45" y="72" text-anchor="middle">Rad-</text><text x="45" y="86" text-anchor="middle">dekoder</text>
+            <rect class="box box-a" x="90" y="30" width="150" height="90" rx="4"/><text x="165" y="72" text-anchor="middle">2048 × 2048</text><text x="165" y="86" text-anchor="middle">celler</text>
+            <path class="arr" d="M70 75 L88 75"/>
+            <rect class="box box-w" x="90" y="132" width="150" height="20" rx="3"/><text x="165" y="146" text-anchor="middle">kolonnelåser</text>
+            <path class="arr" d="M165 120 L165 130"/>
+            <rect class="box" x="120" y="164" width="90" height="20" rx="3"/><text x="165" y="178" text-anchor="middle">mux 2048:1</text>
+            <path class="arr" d="M165 152 L165 162"/><path class="arr" d="M210 174 L250 174"/><text class="cap" x="252" y="170">Dout</text>
+            <path class="arr" d="M45 16 L45 28"/><text class="cap" x="20" y="12">adresse[10:0], to ganger</text>
+            <path class="wire" d="M45 120 L45 174 L118 174" stroke-dasharray="3 2"/>
+          </svg>
+          <figcaption>Etter figur A.9.6: 4M × 1 DRAM. Radadressen henter en hel rad til låsene; kolonneadressen velger én bit.</figcaption>
+        </figure>
+      </div>
+
+      <ul>
+        <li><strong>Lesing er destruktiv.</strong> Når transistoren åpner, fordeler ladningen seg på bitlinjen, og en følsom forsterker avgjør om det var 0 eller 1. Kondensatoren er da tappet, så verdien må skrives tilbake etter hver lesing.</li>
+        <li><strong><span class="term" data-term="oppfriskning">Oppfriskning</span>.</strong> Ladningen lekker bort i løpet av millisekunder. Hver rad må derfor leses og skrives tilbake med jevne mellomrom, enten den brukes eller ikke. Det er dette «dynamisk» betyr.</li>
+        <li><strong>Rad og kolonne.</strong> Cellene ligger i en kvadratisk tabell. Adressen sendes i to halvdeler på de samme pinnene: først radadressen, som henter hele raden ut i kolonnelåser (og frisker den opp i samme slengen), så kolonneadressen, som velger biten. Det halverer antall adressepinner, og gjør at flere bit fra samme rad kan leses raskt etter hverandre.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">04 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>Flyktig</strong>Mister innholdet uten strøm: SRAM, DRAM. Ikke-flyktig: flash, disk.</div>
+        <div class="recap-pill"><strong>Statisk / dynamisk</strong>SRAM holder biten så lenge det har strøm. DRAM lagrer ladning som lekker og må friskes opp.</div>
+        <div class="recap-pill"><strong>Fart og pris</strong>SRAM ~1 ns, DRAM ~60 ns, flash ~10 µs, disk ~10 ms. Prisen faller omtrent like mye per steg.</div>
+        <div class="recap-pill"><strong>SRAM</strong>D-låser; dekoder + Write gir enable; tre-tilstandsbuffere mot delt bitlinje i stedet for en stor mux.</div>
+        <div class="recap-pill"><strong>DRAM</strong>Transistor + kondensator; destruktiv lesing; oppfriskning; rad- og kolonneadresse i to steg.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Sorter SRAM, DRAM, flash og disk etter aksesstid, og si hvilke som er flyktige.</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">SRAM (ca. 1 ns) &lt; DRAM (50–70 ns) &lt; flash (5–50 µs) &lt; disk (5–20 ms). SRAM og DRAM er flyktige; flash og disk beholder innholdet uten strøm.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Et SRAM har 1024 ord à 8 bit. Hvor mange adressebit, hvor stor dekoder, og hvor mange tre-tilstandsbuffere driver hver bitlinje (ett-stegs oppslag)?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">10 adressebit (2<sup>10</sup> = 1024), en 10-til-1024-dekoder med én ordlinje per ord, og 1024 buffere per bitlinje (én per ord), der bare den i det valgte ordet er slått på. Åtte bitlinjer i alt.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Middels</div>
+        <div class="q-text">Hvorfor må en DRAM-rad skrives tilbake etter at den er lest, og hvorfor gjør det oppfriskning enkel?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Lesingen tapper kondensatorene i raden over på bitlinjene, så innholdet er borte fra cellene etterpå og må gjenopprettes fra kolonnelåsene. Oppfriskning er nettopp det samme: les en rad ut i låsene og skriv den tilbake. Brikken går gjennom alle radene i tur og orden.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="hurtigbuffer.html" class="prev"><div class="pn-label">← Forrige · 6A</div><div class="pn-title">Minnehierarki og hurtigbuffer</div></a>
+        <a href="virtuelt-minne.html" class="next"><div class="pn-label">Neste · 6C</div><div class="pn-title">Virtuelt minne →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function txt(x, y, s, cls, anchor, parent) { var t = el('text', { x: x, y: y, 'class': cls || '', 'text-anchor': anchor || 'start' }, parent); t.textContent = s; return t; }
+  var svg = document.getElementById('sram-w'); if (!svg) return;
+  var adr = document.getElementById('sr-adr'), din = document.getElementById('sr-din'), wr = document.getElementById('sr-write'), rs = document.getElementById('sr-reset'), out = document.getElementById('sr-out');
+  var mem = [[0, 0], [0, 1], [1, 0], [1, 1]];   /* mem[ord] = [bit1, bit0] */
+  var cells = [], vals = [], wl = [], bufs = [];
+  /* dekoder */
+  el('rect', { x: 60, y: 60, width: 70, height: 200, rx: 5, 'class': 'u' }, svg); txt(95, 156, '2-til-4', '', 'middle', svg); txt(95, 170, 'dekoder', '', 'middle', svg);
+  txt(20, 164, 'Adresse', 'cap', 'start', svg); el('path', { d: 'M44 170 L60 170', 'class': 'w' }, svg);
+  txt(300, 24, 'Din[1]', 'cap', 'middle', svg); txt(460, 24, 'Din[0]', 'cap', 'middle', svg);
+  var dv = [txt(300, 38, '', 'val', 'middle', svg), txt(460, 38, '', 'val', 'middle', svg)];
+  el('path', { d: 'M270 44 L270 250', 'class': 'w' }, svg); el('path', { d: 'M430 44 L430 250', 'class': 'w' }, svg);
+  /* bitlinjer (utgang) */
+  var bl = [el('path', { d: 'M360 70 L360 290', 'class': 'w' }, svg), el('path', { d: 'M520 70 L520 290', 'class': 'w' }, svg)];
+  txt(360, 306, 'Dout[1]', 'cap', 'middle', svg); txt(520, 306, 'Dout[0]', 'cap', 'middle', svg);
+  var ov = [txt(360, 322, '', 'val', 'middle', svg), txt(520, 322, '', 'val', 'middle', svg)];
+  for (var r = 0; r < 4; r++) {
+    var y = 70 + r * 50;
+    wl.push(el('path', { d: 'M130 ' + (y + 18) + ' L560 ' + (y + 18), 'class': 'w' }, svg));
+    txt(134, y + 12, 'ord ' + r, 'cap', 'start', svg);
+    var row = [], rv = [], rb = [];
+    [0, 1].forEach(function (c) {
+      var x = 280 + c * 160;
+      row.push(el('rect', { x: x, y: y, width: 46, height: 36, rx: 3, 'class': 'u' }, svg));
+      txt(x + 6, y + 13, 'D', 'cap', 'start', svg); txt(x + 6, y + 30, 'C', 'cap', 'start', svg); txt(x + 40, y + 13, 'Q', 'cap', 'end', svg);
+      rv.push(txt(x + 24, y + 24, '', 'val', 'middle', svg));
+      el('path', { d: 'M' + (x - 10) + ' ' + (y + 9) + ' L' + x + ' ' + (y + 9), 'class': 'w' }, svg);
+      rb.push(el('path', { d: 'M' + (x + 56) + ' ' + (y + 3) + ' L' + (x + 70) + ' ' + (y + 10) + ' L' + (x + 56) + ' ' + (y + 17) + ' Z', 'class': 'u' }, svg));
+      el('path', { d: 'M' + (x + 46) + ' ' + (y + 10) + ' L' + (x + 56) + ' ' + (y + 10) + ' M' + (x + 70) + ' ' + (y + 10) + ' L' + (x + 80) + ' ' + (y + 10), 'class': 'w' }, svg);
+    });
+    cells.push(row); vals.push(rv); bufs.push(rb);
+  }
+  txt(590, 96, 'Write', 'cap', 'start', svg);
+  var wv = txt(604, 112, '0', 'val', 'middle', svg);
+  function draw(writing) {
+    var a = +adr.value, d = din.value;
+    dv[0].textContent = d[0]; dv[1].textContent = d[1]; wv.textContent = writing ? '1' : '0';
+    for (var r = 0; r < 4; r++) {
+      wl[r].setAttribute('class', 'w' + (r === a ? ' on' : ''));
+      [0, 1].forEach(function (c) {
+        vals[r][c].textContent = mem[r][c];
+        cells[r][c].setAttribute('class', 'u' + (r === a ? (writing ? ' on' : ' rd') : ''));
+        bufs[r][c].setAttribute('class', 'u' + (r === a && !writing ? ' rd' : ''));
+      });
+    }
+    ov[0].textContent = mem[a][0]; ov[1].textContent = mem[a][1];
+    out.innerHTML = 'Adresse ' + adr.options[adr.selectedIndex].text + ': dekoderen aktiverer ordlinje ' + a + '.\n' + (writing ? '<span class="hl">Skriving:</span> ordlinje AND Write = 1 gir enable til de to låsene i ord ' + a + ', som slipper inn Din = ' + d + '. De andre ordene holder verdiene sine.' : '<span class="hl">Lesing:</span> tre-tilstandsbufferne i ord ' + a + ' driver bitlinjene; alle andre er frakoblet. Dout = ' + mem[a][0] + mem[a][1] + '.');
+  }
+  adr.addEventListener('change', function () { draw(false); }); din.addEventListener('change', function () { draw(false); });
+  wr.addEventListener('click', function () { var a = +adr.value, d = din.value; mem[a] = [+d[0], +d[1]]; draw(true); });
+  rs.addEventListener('click', function () { mem = [[0, 0], [0, 1], [1, 0], [1, 1]]; draw(false); });
+  draw(false);
+})();
+</script>
+</body>
+</html>

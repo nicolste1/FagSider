@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Virtuelt minne — Kap 6</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-pill { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm); background: var(--warm-soft); padding: 2px 9px; border-radius: 10px; margin: 0 0 0.8rem; }
+  .lm-list { font-size: 0.95rem; color: var(--ink-soft); margin: 0 0 1.2rem; padding-left: 1.2rem; }
+  .fokus-list { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+  .fokus-list li { margin-bottom: 0.3rem; }
+  .fokus-list .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-right: 6px; background: var(--accent-soft); color: var(--accent); }
+  .fokus-list .tag.regn { background: var(--warm-soft); color: var(--warm); }
+  .fig-svg text { font-family: var(--sans); font-size: 11px; fill: var(--ink); }
+  .fig-svg .cap { font-family: var(--mono); font-size: 9px; fill: var(--ink-faded); }
+  .fig-svg .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.1; }
+  .fig-svg .box-a { fill: rgba(27,94,90,0.14); stroke: var(--accent); }
+  .fig-svg .box-w { fill: rgba(160,82,45,0.14); stroke: var(--warm); }
+  .fig-svg .box-g { fill: rgba(61,107,58,0.16); stroke: var(--green); }
+  .fig-svg .box-r { fill: rgba(179,38,30,0.08); stroke: var(--red); }
+  .fig-svg .wire { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; }
+  .fig-svg .arr { stroke: var(--ink-soft); stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+  .adr { display: grid; gap: 3px; margin: 0.8rem 0; font-family: var(--mono); font-size: 0.8rem; }
+  .adr .f { border: 1px solid var(--line); border-radius: 4px; padding: 6px 4px; text-align: center; background: var(--paper); }
+  .adr .f .fn { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; color: var(--accent); }
+  .adr .f .fv { display: block; font-size: 0.92rem; color: var(--ink); margin-top: 2px; }
+  .adr .f .fb { font-size: 0.66rem; color: var(--ink-ghost); display: block; }
+  .adr .f.t { background: var(--accent-soft); } .adr .f.o { background: rgba(61,107,58,0.10); }
+  .w-ctl select, .w-ctl input[type=text] { font-family: var(--mono); font-size: 0.88rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); }
+  table.tr { font-family: var(--mono); font-size: 0.78rem; }
+  table.tr td, table.tr th { padding: 3px 6px; text-align: center; letter-spacing: 0; white-space: nowrap; }
+  #vm-tab { font-size: 0.74rem; }
+  table.tr td.hit { color: var(--green); font-weight: 600; } table.tr td.miss { color: var(--ochre); } table.tr td.fault { color: var(--red); font-weight: 600; }
+  table.tr td.l { text-align: left; }
+  table.ctrl td, table.ctrl th { text-align: center; font-family: var(--mono); font-size: 0.84rem; letter-spacing: 0; }
+  table.ctrl td:first-child, table.ctrl th:first-child { text-align: left; font-family: var(--sans); }
+  .modell { background: var(--paper-dark); border-left: 3px solid var(--green); padding: 0.7rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .modell .ml { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="./" class="nav-back">&larr; Kap 6</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 6: Minnesystemet">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 6 · 6C · Læringsmål T6.3 · Boka kap. 5.6–5.7 · ~40 min</div>
+      <h1>Virtuelt <em>minne</em></h1>
+      <p class="lede">Hvert program tror det har hele adresserommet for seg selv. Maskinvaren og operativsystemet oversetter hver adresse bak kulissene, og bruker det samme grepet til tre ting: dele minnet trygt mellom programmer, late som om det er mer minne enn det er, og holde programmene unna hverandre. TLB-en gjør oversettelsen rask nok til at det går an. Den var eksamensoppgave i 2025.</p>
+      <nav class="toc">
+        <a href="#fokus"><span>00</span> Eksamensfokus</a>
+        <a href="#ide"><span>01</span> Sider og adresser</a>
+        <a href="#sidetabell"><span>02</span> Sidetabell og sidefeil</a>
+        <a href="#tlb"><span>03</span> TLB</a>
+        <a href="#beskyttelse"><span>04</span> Beskyttelse</a>
+        <a href="#vm"><span>05</span> Virtuelle maskiner</a>
+        <a href="#oppsummering"><span>06</span> Oppsummering</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────── 00 EKSAMENSFOKUS ─────────────────────────── -->
+  <section id="fokus">
+    <div class="container">
+      <div class="section-badge">00 · Eksamensfokus</div>
+      <h2>Hva du må <em>kunne fra denne siden</em></h2>
+      <div class="source-note">Eksamensanalyse (godkjent 2. okt. 2026, Ord. 2025 + læringsutbyttebeskrivelsens liste) · T6.3: prio 2 · Ord. 25 oppg. 7.5 (4 p), Ord. 24 oppg. 5.5, Kont 23 oppg. 5 og 6, Ord. 21 oppg. 4</div>
+      <div class="callout callout-warm">
+        <span class="label">Prioritering</span>
+        <ul class="fokus-list">
+          <li><span class="tag">Forklar</span><strong>Hva en TLB gjør, og hvorfor den er viktig</strong> (Ord. 25 oppg. 7.5, 4 p, langsvar). Modellsvaret i avsnitt 03: hurtigbuffer for sidetabelloppføringer, sparer en minneaksess per aksess, virker på grunn av lokalitet.</li>
+          <li><span class="tag">Forklar</span><strong>Adresseoversettelsen steg for steg</strong>: virtuelt sidenummer + offset, TLB-treff, TLB-bom med oppslag i sidetabellen, sidefeil, og hvem som gjør hva av maskinvare og operativsystem. Hvordan en sidefeil håndteres. Hvordan virtuelt minne beskytter prosesser mot hverandre.</li>
+          <li><span class="tag regn">Regn</span><strong>Følg en adresserekke</strong> gjennom TLB og sidetabell (oppgave 5.16): sidenummer fra adressen, treff/bom, sidefeil, oppdatert TLB med LRU. Størrelsen på en sidetabell.</li>
+          <li><span class="tag">Lavere</span>Flernivå-sidetabeller og inverterte tabeller, de spesielle RISC-V-instruksjonene, og virtuelle maskiner ut over definisjonen er lagt i utdypning eller holdt til én linje.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 01 IDE ─────────────────────────── -->
+  <section id="ide">
+    <div class="container">
+      <div class="section-badge">01 · Sider og adresser</div>
+      <h2>Hovedminnet som <em>hurtigbuffer for disken</em></h2>
+      <div class="source-note">Boka · kap. 5.7 · s. 440–444 · figur 5.24–5.25</div>
+      <span class="lm-pill">Læringsmål T6.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan virtuelle adresser oversettes til fysiske adresser, inkludert arbeidsfordelingen mellom maskinvare og programvare.</li>
+      </ul>
+
+      <p class="dropcap"><span class="term" data-term="virtuelt-minne">Virtuelt minne</span> er nivået i hierarkiet mellom hovedminnet og sekundærminnet. Det har to oppgaver. Den viktigste i dag: la mange programmer dele hovedminnet effektivt og trygt, slik at hvert program bare kan lese og skrive sin egen del. Den opprinnelige: la et program bruke mer minne enn det som fysisk finnes, ved at bare de aktive delene ligger i hovedminnet og resten på disk eller flash.</p>
+
+      <p>Hvert program kompileres til sitt eget adresserom av <span class="term" data-term="virtuell-adresse">virtuelle adresser</span>. Under kjøring oversettes hver virtuell adresse til en <span class="term" data-term="fysisk-adresse">fysisk adresse</span> i hovedminnet: <span class="term" data-term="adresseoversettelse">adresseoversettelse</span>. Begrepene er de samme som for hurtigbuffere, med nye navn: en blokk heter en <span class="term" data-term="side">side</span>, og en bom heter en <span class="term" data-term="sidefeil">sidefeil</span>.</p>
+
+      <div class="adr" style="grid-template-columns: 20fr 12fr">
+        <div class="f t"><span class="fn">virtuelt sidenummer</span><span class="fv">bit 31–12 · 20 bit</span><span class="fb">oversettes til fysisk sidenummer</span></div>
+        <div class="f o"><span class="fn">sideoffset</span><span class="fv">bit 11–0 · 12 bit</span><span class="fb">uendret · 4 KiB sider</span></div>
+      </div>
+
+      <p>Adressen deles i et virtuelt sidenummer og en offset i siden. Bare sidenummeret oversettes; offseten kopieres rett over, fordi en side flyttes som en hel enhet. Antall offsetbit gir sidestørrelsen (12 bit er 4 KiB), og antall bit i sidenummeret avgjør hvor mange sider som kan adresseres: det virtuelle adresserommet kan være mye større enn det fysiske. At en side kan ligge hvor som helst i det fysiske minnet (relokasjon), gjør det også enkelt å laste programmer: operativsystemet trenger bare et tilstrekkelig antall ledige sider, ikke ett sammenhengende område.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Lett</div>
+        <div class="q-text">Sidene er 4 KiB. Hva er det virtuelle sidenummeret og offseten for adressen 0x0000365c, og hva blir den fysiske adressen om siden ligger i fysisk side 6?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">12 offsetbit er de tre siste hex-sifrene: offset 0x65c, virtuelt sidenummer 0x3. Fysisk adresse = fysisk sidenummer satt foran samme offset: 0x665c.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 02 SIDETABELL ─────────────────────────── -->
+  <section id="sidetabell">
+    <div class="container">
+      <div class="section-badge">02 · Sidetabell og sidefeil</div>
+      <h2>En tabell per program, og <em>en bom som koster millioner</em></h2>
+      <div class="source-note">Boka · kap. 5.7 · s. 444–452 · figur 5.26–5.28</div>
+      <span class="lm-pill">Læringsmål T6.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan sidefeil håndteres.</li>
+      </ul>
+
+      <p class="dropcap">En sidefeil betyr å hente fra disk, og det tar millioner av klokkesykler. Alt i utformingen følger av det. Sidene er store (4 KiB eller mer), så hver feil henter mye. En side kan plasseres hvor som helst i hovedminnet (fullassosiativt), så feilraten blir lavest mulig. Sidefeil håndteres av programvare, operativsystemet, fordi noen tusen instruksjoner ekstra er ingenting mot diskaksessen, og gir rom for smarte valg. Og skriving går alltid via tilbakeskriving, aldri skriv gjennom.</p>
+
+      <p>Fullassosiativ plassering uten å lete gjennom alt krever en tabell: <span class="term" data-term="sidetabell">sidetabellen</span>. Den ligger i hovedminnet, har én oppføring per virtuell side, og indekseres direkte med det virtuelle sidenummeret; ingen tag trengs. Hver oppføring har et gyldig-bit og et fysisk sidenummer. Et register i prosessoren, <span class="term" data-term="sidetabellregister">sidetabellregisteret</span> (SATP i RISC-V), peker på starten av tabellen. Hvert program har sin egen sidetabell; tabellen, PC og registrene utgjør til sammen programmets tilstand, en <span class="term" data-term="prosess">prosess</span>.</p>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 -4 640 274" aria-label="Sidetabellen oversetter virtuelt sidenummer til fysisk sidenummer">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3d3832"/></marker></defs>
+          <rect class="box box-a" x="40" y="20" width="150" height="24"/><rect class="box box-g" x="190" y="20" width="90" height="24"/>
+          <text x="115" y="37" text-anchor="middle">virtuelt sidenummer</text><text x="235" y="37" text-anchor="middle">offset</text><text class="cap" x="40" y="14">virtuell adresse</text>
+          <rect class="box" x="60" y="80" width="26" height="130"/><rect class="box box-w" x="86" y="80" width="130" height="130"/>
+          <text class="cap" x="73" y="74" text-anchor="middle">V</text><text class="cap" x="151" y="74" text-anchor="middle">fysisk side / disk</text>
+          <path class="wire" d="M60 106 L216 106 M60 132 L216 132 M60 158 L216 158 M60 184 L216 184"/>
+          <text x="73" y="98" text-anchor="middle">1</text><text x="73" y="124" text-anchor="middle">1</text><text x="73" y="150" text-anchor="middle">0</text><text x="73" y="176" text-anchor="middle">1</text><text x="73" y="202" text-anchor="middle">0</text>
+          <rect x="60" y="106" width="156" height="26" fill="rgba(160,82,45,0.16)" stroke="none"/>
+          <path class="arr" d="M115 44 L115 56 L30 56 L30 119 L58 119"/>
+          <text class="cap" x="60" y="226">sidetabell (i hovedminnet)</text>
+          <rect class="box" x="20" y="238" width="120" height="22" rx="4"/><text x="80" y="253" text-anchor="middle">sidetabellregister</text><path class="arr" d="M80 238 L80 212"/>
+          <rect class="box box-a" x="330" y="80" width="140" height="100" rx="4"/><text x="400" y="100" text-anchor="middle" style="font-weight:600">Hovedminne</text>
+          <path class="wire" d="M330 110 L470 110 M330 134 L470 134 M330 158 L470 158"/>
+          <rect x="330" y="134" width="140" height="24" fill="rgba(160,82,45,0.16)" stroke="none"/>
+          <path class="arr" d="M216 119 L300 119 L300 146 L328 146"/><text class="cap" x="222" y="112">gyldig = 1</text>
+          <rect class="box box-g" x="500" y="150" width="110" height="70" rx="20"/><text x="555" y="182" text-anchor="middle" style="font-weight:600">Disk / flash</text><text class="cap" x="555" y="198" text-anchor="middle">vekselområde</text>
+          <path class="arr" d="M216 145 L290 145 L290 205 L498 205"/><text class="cap" x="296" y="218">gyldig = 0: sidefeil, siden ligger her</text>
+          <rect class="box box-a" x="330" y="20" width="150" height="24"/><rect class="box box-g" x="480" y="20" width="90" height="24"/>
+          <text x="405" y="37" text-anchor="middle">fysisk sidenummer</text><text x="525" y="37" text-anchor="middle">offset</text><text class="cap" x="330" y="14">fysisk adresse</text>
+          <path class="arr" d="M235 44 L235 60 L525 60 L525 46"/><text class="cap" x="380" y="72" text-anchor="middle">offset kopieres uendret</text>
+        </svg>
+        <figcaption>Etter figur 5.26 og 5.27 i boka. Det virtuelle sidenummeret er indeks i sidetabellen. Gyldig-bit 1: oppføringen gir det fysiske sidenummeret. Gyldig-bit 0: siden er ikke i hovedminnet, og det blir en sidefeil.</figcaption>
+      </figure>
+
+      <div class="def-box">
+        <span class="def-label">Sidefeil</span>
+        <div class="def-term">Operativsystemet tar over</div>
+        <p>1. Gyldig-bitet er 0: maskinvaren utløser et unntak, og kontrollen går til operativsystemet. 2. Operativsystemet finner siden på disk i <span class="term" data-term="vekselomraade">vekselområdet</span> (swap space), der det har satt av plass til alle prosessens sider. 3. Er det ingen ledig fysisk side, velger det en side å kaste ut, helst en som ikke er brukt på lenge. Ekte LRU er for dyrt; i stedet har hver side et <span class="term" data-term="referansebit">referansebit</span> som maskinvaren setter ved bruk og operativsystemet nuller med jevne mellomrom. 4. Er siden som kastes ut endret (<span class="term" data-term="skittenbit">skittenbit</span> = 1), skrives den til disk først. 5. Den nye siden leses inn, sidetabellen oppdateres, og instruksjonen som feilet, startes på nytt. Mens disken jobber, lar operativsystemet en annen prosess kjøre.</p>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-eks-sidetabell">
+        <div class="o-label"><span>Eksempel fra boka</span><span class="o-ref">5.7 · s. 450–451</span></div>
+        <div class="o-text"><p>Virtuelle adresser er 32 bit, sidene 4 KiB, og hver oppføring i sidetabellen er 4 byte. Hvor stor blir sidetabellen for én prosess?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">
+            <span class="answer-src">Svar fra boka · mellomregning skrevet for denne siden</span>
+            <p>Antall oppføringer = 2<sup>32</sup> / 2<sup>12</sup> = 2<sup>20</sup>. Størrelse = 2<sup>20</sup> × 4 byte = 4 MiB per prosess. Med hundrevis av prosesser blir det mye, og med 64-bits adresser umulig. Derfor brukes teknikker som holder tabellen liten; se utdypningen.</p>
+          </div>
+        </div>
+      </div>
+
+      <details><summary>Utdypning · lavere prioritet: mindre sidetabeller</summary>
+        <p>De fleste prosesser bruker en liten del av adresserommet. Tabellen kan begrenses med et grenseregister og vokse etter behov, den kan hashes (invertert sidetabell), eller den kan deles i nivåer: RISC-V bruker to nivåer for 32-bits adresser, der første nivå peker til tabeller på andre nivå, og bare de delene av adresserommet som er i bruk, trenger tabeller. Prisen er flere minneoppslag per oversettelse, som gjør TLB-en enda viktigere.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 03 TLB ─────────────────────────── -->
+  <section id="tlb">
+    <div class="container">
+      <div class="section-badge">03 · TLB</div>
+      <h2>En hurtigbuffer <em>for oversettelsene</em></h2>
+      <div class="source-note">Boka · kap. 5.7 · s. 452–459 · figur 5.29–5.32 · Eksamen: Ord. 25 oppg. 7.5, Ord. 24 oppg. 5.5</div>
+      <span class="lm-pill">Læringsmål T6.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan et «Translation Lookaside Buffer (TLB)» brukes til å implementere rask adresseoversettelse.</li>
+      </ul>
+
+      <p class="dropcap">Sidetabellen ligger i minnet. Uten mer ville hver eneste minneaksess kostet to: én for å slå opp oversettelsen, én for selve dataene. Løsningen er den samme som alltid: lokalitet. Når en side nettopp er brukt, brukes den snart igjen, så de siste oversettelsene lønner det seg å huske. En <span class="term" data-term="tlb">TLB</span> (translation-lookaside buffer) er en liten hurtigbuffer som holder nylig brukte oppføringer fra sidetabellen.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>En TLB-oppføring. Taggen er det virtuelle sidenummeret; dataene er det sidetabellen inneholder.</caption>
+          <thead><tr><th>Felt</th><th>Innhold</th></tr></thead>
+          <tbody>
+            <tr><td>Gyldig</td><td>om oppføringen er i bruk</td></tr>
+            <tr><td>Tag</td><td>virtuelt sidenummer (hele, når TLB-en er fullassosiativ)</td></tr>
+            <tr><td>Fysisk sidenummer</td><td>oversettelsen</td></tr>
+            <tr><td>Skittenbit, referansebit</td><td>kopieres tilbake til sidetabellen når oppføringen kastes ut</td></tr>
+            <tr><td>Beskyttelse</td><td>lese-, skrive- og kjørerettigheter</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure>
+        <svg class="fig-svg" viewBox="0 0 640 250" aria-label="Flyten ved en minneaksess: TLB, sidetabell, hurtigbuffer">
+          <rect class="box box-a" x="20" y="20" width="120" height="34" rx="6"/><text x="80" y="41" text-anchor="middle">Virtuell adresse</text>
+          <path class="arr" d="M140 37 L170 37"/>
+          <path class="box" d="M230 12 L290 37 L230 62 L170 37 Z"/><text x="230" y="41" text-anchor="middle">TLB-treff?</text>
+          <path class="arr" d="M290 37 L330 37"/><text class="cap" x="296" y="30">ja</text>
+          <rect class="box box-g" x="330" y="20" width="130" height="34" rx="6"/><text x="395" y="41" text-anchor="middle">Fysisk adresse</text>
+          <path class="arr" d="M460 37 L490 37"/>
+          <rect class="box box-g" x="490" y="20" width="130" height="34" rx="6"/><text x="555" y="41" text-anchor="middle">Hurtigbuffer / minne</text>
+          <path class="arr" d="M230 62 L230 96"/><text class="cap" x="236" y="80">nei: TLB-bom</text>
+          <rect class="box box-w" x="150" y="98" width="160" height="34" rx="6"/><text x="230" y="119" text-anchor="middle">Slå opp i sidetabellen</text>
+          <path class="arr" d="M230 132 L230 152"/>
+          <path class="box" d="M230 154 L300 180 L230 206 L160 180 Z"/><text x="230" y="184" text-anchor="middle">Gyldig-bit = 1?</text>
+          <path class="arr" d="M300 180 L360 180"/><text class="cap" x="306" y="173">ja</text>
+          <rect class="box box-w" x="360" y="163" width="150" height="34" rx="6"/><text x="435" y="184" text-anchor="middle">Last oppføringen i TLB</text>
+          <path class="arr" d="M435 163 L435 110 L395 110 L395 56"/><text class="cap" x="442" y="130">prøv igjen</text>
+          <path class="arr" d="M230 206 L230 222 L100 222"/><text class="cap" x="236" y="220">nei</text>
+          <rect class="box box-r" x="20" y="205" width="80" height="34" rx="6"/><text x="60" y="226" text-anchor="middle">Sidefeil</text>
+          <text class="cap" x="20" y="150">maskinvare eller OS</text><text class="cap" x="20" y="198">alltid OS</text><text class="cap" x="470" y="76">maskinvare, hver aksess</text>
+        </svg>
+        <figcaption>Etter figur 5.30–5.32 i boka. TLB-treff er det vanlige tilfellet og skjer i maskinvare. En TLB-bom er ikke en sidefeil: som regel ligger siden i minnet, og bare oversettelsen manglet.</figcaption>
+      </figure>
+
+      <p><strong>Arbeidsfordelingen.</strong> TLB-oppslaget skjer i maskinvare ved hver aksess, parallelt med eller rett før hurtigbufferen. En TLB-bom kan håndteres av maskinvaren (en tilstandsmaskin som leser sidetabellen) eller av operativsystemet via et unntak; begge laster oppføringen inn i TLB-en og gjentar aksessen. En sidefeil håndteres alltid av operativsystemet. En TLB er liten (16 til 512 oppføringer), ofte fullassosiativ, med trefftid under en sykel og bomrate rundt 0,01 til 1 %. Fordi hver oppføring dekker en hel side på 4 KiB, rekker noen få oppføringer langt.</p>
+
+      <div class="oppgave" data-quiz id="oppg-eks-o25-7-5">
+        <div class="o-label"><span>Eksamen Ord. 2025 · oppg. 7.5</span><span class="o-ref">TLB · 4 p</span></div>
+        <div class="o-text"><p>Hva gjør et «Translation Lookaside Buffer (TLB)», og hvorfor er de viktige i datamaskiner som støtter virtuelt minne?</p></div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Modellsvar skrevet fra boka (kap. 5.7) · ikke offisielt løsningsforslag</span>
+            <div class="modell">
+              <span class="ml">Modellsvar</span>
+              <p><strong>Hva:</strong> Med virtuelt minne bruker hvert program virtuelle adresser, som må oversettes til fysiske adresser for hver eneste minneaksess. Oversettelsene står i sidetabellen, som ligger i hovedminnet. En TLB er en liten, rask hurtigbuffer i prosessoren som holder de sist brukte oversettelsene: den slås opp med det virtuelle sidenummeret som tag og gir det fysiske sidenummeret (pluss gyldig-, skitten- og beskyttelsesbit) direkte.</p>
+              <p><strong>Hvorfor viktig:</strong> Uten TLB måtte prosessoren lese sidetabellen i minnet før hver aksess, så hver minneaksess ville blitt minst to, og enda flere med flernivå-tabeller. Minneaksess er allerede flaskehalsen, så det ville gjort virtuelt minne uakseptabelt tregt. TLB-en virker fordi programmer har lokalitet: en side som nettopp er brukt, brukes snart igjen, og én oppføring dekker en hel side. Derfor treffer TLB-en nesten alltid, og oversettelsen koster en brøkdel av en klokkesykel.</p>
+              <p><strong>Ved bom:</strong> Oversettelsen hentes fra sidetabellen (av maskinvaren eller operativsystemet) og legges inn i TLB-en. Viser sidetabellen at siden ikke er i minnet, er det en sidefeil, og operativsystemet henter siden fra disk.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget" id="w-vm">
+        <div class="widget-label">Prøv selv · Adresser gjennom TLB og sidetabell</div>
+        <p class="widget-intro">En fullassosiativ TLB med fire oppføringer og LRU, og en sidetabell, forhåndsutfylt som i oppgave 5.16. Skriv virtuelle adresser (hex) og se sidenummer, TLB-treff eller -bom, om sidetabellen har siden eller det blir sidefeil, den fysiske adressen, og TLB-en etterpå. Nye sider fra disk får neste ledige fysiske sidenummer.</p>
+        <div class="w-row">
+          <div class="w-ctl"><label for="vm-addr">adresser</label><input type="text" id="vm-addr" value="0x123d, 0x08b3, 0x365c, 0x871b, 0xbee6, 0x3140, 0xc049" style="width:420px"></div>
+          <div class="w-ctl"><label for="vm-page">sidestørrelse</label><select id="vm-page"><option value="12" selected>4 KiB</option><option value="14">16 KiB</option></select></div>
+          <button class="w-btn" id="vm-run" type="button">Kjør</button>
+        </div>
+        <div class="table-wrap"><table class="tr" id="vm-tab"></table></div>
+        <div class="w-out" id="vm-out"></div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-16">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.16.1, 5.16.2 (drøfting) og 5.16.5 · s. 506</span></div>
+        <div class="o-text">
+          <p>De virtuelle adressene 0x123d, 0x08b3, 0x365c, 0x871b, 0xbee6, 0x3140, 0xc049 aksesseres i tur og orden. Sidene er 4 KiB, TLB-en er fullassosiativ med fire oppføringer og ekte LRU. Må en side hentes fra disk, får den neste større fysiske sidenummer.</p>
+          <div class="table-wrap"><table class="ctrl">
+            <caption>TLB ved start</caption>
+            <thead><tr><th>Gyldig</th><th>Tag</th><th>Fysisk side</th><th>Tid siden sist bruk</th></tr></thead>
+            <tbody><tr><td>1</td><td>0xb</td><td>12</td><td>4</td></tr><tr><td>1</td><td>0x7</td><td>4</td><td>1</td></tr><tr><td>1</td><td>0x3</td><td>6</td><td>3</td></tr><tr><td>0</td><td>0x4</td><td>9</td><td>7</td></tr></tbody>
+          </table></div>
+          <p>Sidetabell (indeks: fysisk side, eller disk): 0: 5 · 1: disk · 2: disk · 3: 6 · 4: 9 · 5: 11 · 6: disk · 7: 4 · 8: disk · 9: disk · a: 3 · b: 12.</p>
+          <p>1. For hver aksess: TLB-treff eller -bom, treff i sidetabellen eller sidefeil, og TLB-en etterpå. 2. Hva er fordeler og ulemper med større sider (16 KiB)? 5. Hvorfor må en prosessor ha TLB for høy ytelse, og hva skjer uten?</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Sidenummeret er adressen uten de tre siste hex-sifrene: 1, 0, 3, 8, b, 3, c.</p>
+            <div class="table-wrap"><table class="tr">
+              <thead><tr><th>Adresse</th><th>Side</th><th>TLB</th><th>Sidetabell</th><th>Fysisk side</th><th class="l">TLB etterpå (tag: fysisk side), eldste først</th></tr></thead>
+              <tbody>
+                <tr><td>0x123d</td><td>1</td><td class="miss">bom</td><td class="fault">sidefeil</td><td>13</td><td class="l">b: 12 · 3: 6 · 7: 4 · 1: 13 (inn på den ugyldige plassen)</td></tr>
+                <tr><td>0x08b3</td><td>0</td><td class="miss">bom</td><td class="hit">treff</td><td>5</td><td class="l">3: 6 · 7: 4 · 1: 13 · 0: 5 (kaster ut b)</td></tr>
+                <tr><td>0x365c</td><td>3</td><td class="hit">treff</td><td>—</td><td>6</td><td class="l">7: 4 · 1: 13 · 0: 5 · 3: 6</td></tr>
+                <tr><td>0x871b</td><td>8</td><td class="miss">bom</td><td class="fault">sidefeil</td><td>14</td><td class="l">1: 13 · 0: 5 · 3: 6 · 8: 14 (kaster ut 7)</td></tr>
+                <tr><td>0xbee6</td><td>b</td><td class="miss">bom</td><td class="hit">treff</td><td>12</td><td class="l">0: 5 · 3: 6 · 8: 14 · b: 12 (kaster ut 1)</td></tr>
+                <tr><td>0x3140</td><td>3</td><td class="hit">treff</td><td>—</td><td>6</td><td class="l">0: 5 · 8: 14 · b: 12 · 3: 6</td></tr>
+                <tr><td>0xc049</td><td>c</td><td class="miss">bom</td><td class="fault">sidefeil</td><td>15</td><td class="l">8: 14 · b: 12 · 3: 6 · c: 15 (kaster ut 0)</td></tr>
+              </tbody>
+            </table></div>
+            <p>To TLB-treff, fem TLB-bom, hvorav tre er sidefeil. Legg merke til at 0xbee6 bommer i TLB-en selv om side b lå der ved start: den ble kastet ut i mellomtiden, men siden er fortsatt i minnet, så det blir ingen sidefeil.</p>
+            <p>2. Større sider: hver TLB-oppføring dekker mer minne, så TLB-en bommer sjeldnere; sidetabellen får færre oppføringer; og en sidefeil henter mer om gangen. Ulemper: mer minne går til spille når en side bare er delvis i bruk (intern fragmentering), og hver sidefeil flytter mer data, også det som ikke trengs.</p>
+            <p>5. Uten TLB måtte sidetabellen leses fra minnet for hver aksess, så hver minneaksess ble minst to. Med TLB treffer nesten alle oversettelser i en liten, rask tabell i prosessoren.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="oppgave" data-quiz id="oppg-5-19">
+        <div class="o-label"><span>Oppgave fra boka</span><span class="o-ref">5.19 · s. 507</span></div>
+        <div class="o-text">
+          <p>En TLB med fire oppføringer:</p>
+          <div class="table-wrap"><table class="ctrl">
+            <thead><tr><th>Nr.</th><th>Gyldig</th><th>Virtuell side</th><th>Endret</th><th>Beskyttelse</th><th>Fysisk side</th></tr></thead>
+            <tbody><tr><td>1</td><td>1</td><td>140</td><td>1</td><td>RW</td><td>30</td></tr><tr><td>2</td><td>0</td><td>40</td><td>0</td><td>RX</td><td>34</td></tr><tr><td>3</td><td>1</td><td>200</td><td>1</td><td>RO</td><td>32</td></tr><tr><td>4</td><td>1</td><td>280</td><td>0</td><td>RW</td><td>31</td></tr></tbody>
+          </table></div>
+          <p>1. I hvilke situasjoner settes gyldig-bitet i oppføring 3 til 0? 2. Hva skjer når en instruksjon skriver til virtuell side 30? Når kan en programvarestyrt TLB være raskere enn en maskinvarestyrt? 3. Hva skjer når en instruksjon skriver til virtuell side 200?</p>
+        </div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer forslag">
+            <span class="answer-src">Forslag til svar · ikke fasit fra boka</span>
+            <p>1. Når oversettelsen ikke lenger gjelder: siden kastes ut av hovedminnet (til disk), operativsystemet endrer eller fjerner avbildningen, eller det byttes til en annen prosess og TLB-en tømmes (om oppføringene ikke er merket med prosess-ID).</p>
+            <p>2. Virtuell side 30 finnes ikke i TLB-en (30 står som <em>fysisk</em> side i oppføring 1): TLB-bom. Sidetabellen slås opp. Er siden i minnet, lastes oppføringen inn i TLB-en (en av de fire kastes ut, og er den endret, kopieres skittenbitet tilbake til sidetabellen), og skrivingen gjentas. Er den ikke i minnet: sidefeil. En programvarestyrt TLB kan være raskere når operativsystemet kan gjøre noe smartere enn et fast maskinvareoppslag, for eksempel bruke en datastruktur som passer arbeidslasten, eller laste inn flere oppføringer det vet vil trengs, på én gang.</p>
+            <p>3. TLB-treff på oppføring 3, men beskyttelsen er RO (bare lesing): skrivingen er ikke lov. Maskinvaren utløser et beskyttelsesunntak, og operativsystemet avgjør: avslutte prosessen, eller, om siden var skrivebeskyttet med vilje (for eksempel delt til første skriving), lage en egen kopi og la skrivingen gå.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 04 BESKYTTELSE ─────────────────────────── -->
+  <section id="beskyttelse">
+    <div class="container">
+      <div class="section-badge">04 · Beskyttelse</div>
+      <h2>Ingen prosess får <em>røre sin egen sidetabell</em></h2>
+      <div class="source-note">Boka · kap. 5.7 «Implementing protection with virtual memory» · s. 459–462</div>
+      <span class="lm-pill">Læringsmål T6.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hvordan virtuelt minne kan brukes til å beskytte prosesser fra hverandres minneaksesser.</li>
+      </ul>
+
+      <p class="dropcap">En prosess kan bare nå fysiske sider som sidetabellen dens peker på. Sørger operativsystemet for at to prosessers tabeller peker på forskjellige fysiske sider, kan de ikke lese eller skrive hverandres data, uansett hvilke adresser de bruker. Beskyttelsen står og faller dermed på at prosessen ikke kan endre sin egen sidetabell. Maskinvaren må gi tre ting:</p>
+      <ol>
+        <li><strong>Minst to modi.</strong> <span class="term" data-term="supervisormodus">Supervisormodus</span> for operativsystemet og brukermodus for vanlige prosesser.</li>
+        <li><strong>Tilstand som bare kan endres i supervisormodus.</strong> Sidetabellregisteret, modusbitet og TLB-en kan leses, men ikke skrives, av en brukerprosess. Sidetabellene ligger i operativsystemets eget adresserom.</li>
+        <li><strong>En kontrollert vei mellom modiene.</strong> Et systemkall (<code>ecall</code>) er et unntak som hopper til en fast adresse i operativsystemet og bytter til supervisormodus; retur (<code>sret</code>) bytter tilbake.</li>
+      </ol>
+
+      <p>Beskyttelsesbitene i hver oppføring gir finere kontroll: en side kan være bare lesbar, eller ikke kjørbar. Skal to prosesser dele data, lar operativsystemet begge tabellene peke på samme fysiske side, eventuelt skrivebeskyttet for den ene. Ved et <span class="term" data-term="kontekstbytte">kontekstbytte</span> til en annen prosess byttes sidetabellregisteret. TLB-en inneholder da oversettelser for feil prosess: enten tømmes den, eller hver oppføring merkes med en prosessidentifikator slik at bare prosessens egne oppføringer gir treff.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Sjekk forståelsen · Middels</div>
+        <div class="q-text">Prosess A og B bruker begge den virtuelle adressen 0x1000. Hvorfor kolliderer de ikke, og hva hindrer A i å lese Bs data ved å endre oversettelsen?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Hver prosess har sin egen sidetabell, og operativsystemet har latt virtuell side 1 peke på ulike fysiske sider i de to tabellene. A kan ikke endre oversettelsen: sidetabellen ligger i operativsystemets minne, og sidetabellregisteret og TLB-en kan bare skrives i supervisormodus. Den eneste veien inn i supervisormodus er et unntak eller systemkall, som hopper til operativsystemets egen kode.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 05 VM ─────────────────────────── -->
+  <section id="vm">
+    <div class="container">
+      <div class="section-badge">05 · Virtuelle maskiner</div>
+      <h2>Et helt operativsystem <em>som gjest</em></h2>
+      <div class="source-note">Boka · kap. 5.6 · s. 436–440</div>
+      <span class="lm-pill">Læringsmål T6.3</span>
+      <ul class="lm-list">
+        <li>Studenten skal kunne forklare hva en virtuell maskin er.</li>
+      </ul>
+
+      <p class="dropcap">En <span class="term" data-term="virtuell-maskin">virtuell maskin</span> gir programvaren illusjonen av å ha en hel datamaskin for seg selv: prosessor, minne og I/O, på instruksjonssettnivå. Flere virtuelle maskiner, hver med sitt eget operativsystem (gjester), deler én fysisk maskin (verten). Programvaren som står for delingen heter <span class="term" data-term="hypervisor">hypervisor</span> (virtual machine monitor): den avbilder virtuelle ressurser på fysiske, og er mye mindre enn et operativsystem.</p>
+
+      <p>Gjestene kjører i brukermodus. Når en gjest prøver noe privilegert, for eksempel å endre sidetabellregisteret, blir det et unntak som hypervisoren fanger og etterlikner virkningen av. Kravene til maskinvaren er de samme som for beskyttelse: minst to modi, og at alle instruksjoner som rører systemressurser, bare virker i supervisormodus. Virtuelle maskiner brukes for isolasjon og sikkerhet, for å kjøre flere operativsystemer på samme maskin, og er grunnlaget for skytjenester. Prisen er litt lavere ytelse, mest for I/O-tunge programmer.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── 06 OPPSUMMERING ─────────────────────────── -->
+  <section id="oppsummering">
+    <div class="container">
+      <div class="section-badge">06 · Oppsummering</div>
+      <h2>Det du bør <em>kunne</em></h2>
+
+      <div class="recap-grid">
+        <div class="recap-pill"><strong>To formål</strong>Trygg deling av minnet mellom prosesser, og mer minne enn det fysiske.</div>
+        <div class="recap-pill"><strong>Adressen</strong>Virtuelt sidenummer + offset. Bare sidenummeret oversettes; offset = log<sub>2</sub>(sidestørrelse) bit.</div>
+        <div class="recap-pill"><strong>Sidetabell</strong>Én per prosess, i minnet, indeksert med virtuelt sidenummer: gyldig-bit + fysisk sidenummer. Sidetabellregisteret peker på den.</div>
+        <div class="recap-pill"><strong>Sidefeil</strong>Gyldig-bit 0 → unntak → OS finner siden på disk, kaster ut en gammel (skriver den om den er endret), oppdaterer tabellen, starter instruksjonen på nytt.</div>
+        <div class="recap-pill"><strong>TLB</strong>Hurtigbuffer for oversettelser. Treff: fysisk sidenummer direkte. Bom: slå opp i sidetabellen. Sparer en minneaksess per aksess.</div>
+        <div class="recap-pill"><strong>Hvem gjør hva</strong>TLB-treff: maskinvare. TLB-bom: maskinvare eller OS. Sidefeil: alltid OS.</div>
+        <div class="recap-pill"><strong>Beskyttelse</strong>Egne sidetabeller som bare OS kan endre; supervisor- og brukermodus; systemkall som eneste vei inn.</div>
+        <div class="recap-pill"><strong>Virtuell maskin</strong>Hel maskin som illusjon; hypervisoren fanger privilegerte instruksjoner fra gjestene.</div>
+      </div>
+
+      <h3>Test deg selv</h3>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Lett</div>
+        <div class="q-text">Hva er forskjellen på en TLB-bom og en sidefeil?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">TLB-bom: oversettelsen står ikke i TLB-en, men kan stå i sidetabellen; da hentes den derfra på noen titalls sykler. Sidefeil: sidetabellen sier at siden ikke er i hovedminnet; operativsystemet må hente den fra disk, og det tar millioner av sykler. Hver sidefeil begynner som en TLB-bom, men de fleste TLB-bom er ikke sidefeil.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Virtuelle adresser er 40 bit, fysiske 32 bit, og sidene 16 KiB. Hvor mange bit er offset, virtuelt sidenummer og fysisk sidenummer? Hvor mange oppføringer har en ett-nivås sidetabell?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">16 KiB = 2<sup>14</sup>: offset 14 bit. Virtuelt sidenummer 40 − 14 = 26 bit. Fysisk sidenummer 32 − 14 = 18 bit. Sidetabellen har 2<sup>26</sup> ≈ 67 millioner oppføringer.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">En load-instruksjon gir TLB-treff og deretter bom i datahurtigbufferen. En annen gir TLB-bom, treff i sidetabellen og treff i hurtigbufferen. Hvorfor kan kombinasjonen «TLB-treff, sidetabellen sier ikke i minnet» aldri forekomme?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">TLB-en inneholder bare oversettelser for sider som er i hovedminnet. Når en side kastes ut til disk, gjøres også TLB-oppføringen ugyldig. Et TLB-treff betyr derfor at siden er i minnet. Av samme grunn kan data ikke ligge i hurtigbufferen hvis siden ikke er i minnet. De to første tilfellene er vanlige: oversettelse og data bufres hver for seg.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="teknologi.html" class="prev"><div class="pn-label">← Forrige · 6B</div><div class="pn-title">Minneteknologier</div></a>
+        <a href="../kap7/" class="next"><div class="pn-label">Neste · Kapittel 7</div><div class="pn-title">Parallelle datamaskiner →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var addrI = document.getElementById('vm-addr'), pageI = document.getElementById('vm-page'), run = document.getElementById('vm-run'), tab = document.getElementById('vm-tab'), out = document.getElementById('vm-out'); if (!addrI) return;
+  function hx(v) { return '0x' + v.toString(16); }
+  function go() {
+    var pb = +pageI.value;
+    /* Starttilstand fra oppgave 5.16. age = tid siden sist bruk (større = eldre). */
+    var tlb = [{ v: 1, tag: 0xb, ppn: 12, last: -4 }, { v: 1, tag: 0x7, ppn: 4, last: -1 }, { v: 1, tag: 0x3, ppn: 6, last: -3 }, { v: 0, tag: 0x4, ppn: 9, last: -7 }];
+    var pt = { 0: 5, 3: 6, 4: 9, 5: 11, 7: 4, 10: 3, 11: 12 }, nextP = 13;
+    var toks = addrI.value.split(/[\s,;]+/).filter(Boolean), rows = '', th = 0, tm = 0, pf = 0;
+    if (!toks.length || toks.length > 30) { tab.innerHTML = ''; out.innerHTML = '<span class="bad">Skriv 1–30 adresser.</span>'; return; }
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i], a = /^0x[0-9a-f]+$/i.test(t) ? parseInt(t, 16) : (/^\d+$/.test(t) ? parseInt(t, 10) : NaN);
+      if (isNaN(a)) { tab.innerHTML = ''; out.innerHTML = '<span class="bad">Forstår ikke adressen «' + t + '».</span>'; return; }
+      var vpn = Math.floor(a / Math.pow(2, pb)), off = a % Math.pow(2, pb), e = null, clock = i + 1, tl, ptc, ppn;
+      tlb.forEach(function (x) { if (x.v && x.tag === vpn) e = x; });
+      if (e) { th++; e.last = clock; ppn = e.ppn; tl = '<td class="hit">treff</td>'; ptc = '<td>—</td>'; }
+      else {
+        tm++; tl = '<td class="miss">bom</td>';
+        if (pt[vpn] != null) { ppn = pt[vpn]; ptc = '<td class="hit">treff</td>'; }
+        else { pf++; ppn = nextP++; pt[vpn] = ppn; ptc = '<td class="fault">sidefeil</td>'; }
+        var slot = null; tlb.forEach(function (x) { if (!x.v && !slot) slot = x; });
+        if (!slot) { slot = tlb[0]; tlb.forEach(function (x) { if (x.last < slot.last) slot = x; }); }
+        slot.v = 1; slot.tag = vpn; slot.ppn = ppn; slot.last = clock;
+      }
+      var order = tlb.filter(function (x) { return x.v; }).sort(function (p, q) { return p.last - q.last; }).map(function (x) { return x.tag.toString(16) + ': ' + x.ppn; }).join(' · ');
+      rows += '<tr><td>' + hx(a) + '</td><td>' + vpn.toString(16) + '</td><td>' + hx(off) + '</td>' + tl + ptc + '<td>' + ppn + '</td><td>' + hx(ppn * Math.pow(2, pb) + off) + '</td><td class="l">' + order + '</td></tr>';
+    }
+    tab.innerHTML = '<thead><tr><th>Adresse</th><th>Side</th><th>Offset</th><th>TLB</th><th>Tabell</th><th>Fys. side</th><th>Fys. adr.</th><th class="l">TLB etterpå, eldste først</th></tr></thead><tbody>' + rows + '</tbody>';
+    out.innerHTML = 'Sidestørrelse ' + (pb === 12 ? '4 KiB (12 offsetbit)' : '16 KiB (14 offsetbit)') + '.\n<span class="hl">' + th + ' TLB-treff, ' + tm + ' TLB-bom</span>, hvorav ' + pf + ' sidefeil. Start: TLB b: 12 · 3: 6 · 7: 4 (og én ugyldig plass); sidetabell 0: 5, 3: 6, 4: 9, 5: 11, 7: 4, a: 3, b: 12.';
+  }
+  run.addEventListener('click', go); pageI.addEventListener('change', go); addrI.addEventListener('change', go);
+  go();
+})();
+</script>
+</body>
+</html>

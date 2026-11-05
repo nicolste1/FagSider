@@ -17,8 +17,18 @@ window.FAG = {
     'kap3/logikk.html',
     'kap3/alu.html',
     'kap3/enkeltsykel.html',
+    'kap4/index.html',
+    'kap4/sekvensiell.html',
+    'kap4/flersykel.html',
     'kap5/index.html',
     'kap5/samleband.html',
-    'kap5/unntak-ytelse.html'
+    'kap5/unntak-ytelse.html',
+    'kap6/index.html',
+    'kap6/hurtigbuffer.html',
+    'kap6/teknologi.html',
+    'kap6/virtuelt-minne.html',
+    'kap7/index.html',
+    'kap7/parallell.html',
+    'kap7/multiprosessorer.html'
   ]
 };

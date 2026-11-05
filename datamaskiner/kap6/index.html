@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<title>Kapittel 6 — Minnesystemet</title>
+<link rel="stylesheet" href="../../style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  .lm-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
+  .lm-card { background: var(--paper-dark); border: 1px solid var(--line-soft); border-radius: 6px; padding: 0.8rem 1rem; }
+  .lm-card .lm-k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warm); margin-bottom: 0.3rem; }
+  .lm-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.95rem; color: var(--ink-soft); }
+  .lm-card .lm-src { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-ghost); margin-top: 0.4rem; }
+  .lm-card .tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 7px; border-radius: 8px; margin-left: 6px; background: var(--accent-soft); color: var(--accent); }
+  .lm-card .tag.regn { background: var(--warm-soft); color: var(--warm); }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="../" class="brand">TDT4160</a>
+    <a href="../" class="nav-back">&larr; Alle kapitler</a>
+    <div class="nav-search-wrapper">
+      <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="nav-search" placeholder="Laster…" autocomplete="off" disabled>
+      <div id="nav-search-results"></div>
+    </div>
+  </div>
+</nav>
+
+<main data-chapter="Kapittel 6: Minnesystemet">
+  <header class="hero">
+    <div class="container">
+      <div class="eyebrow">Kapittel 6 · Tema T6 · Boka kap. 5.1–5.4, 5.6–5.7, appendiks A.9 · Kompendiet kap. 5 · Forelesning 9–11 · Teoriøving 6 · ~2,5 t totalt</div>
+      <h1>Minne<em>systemet</em></h1>
+      <p class="lede">Prosessoren er rask, minnet er tregt, og stort minne er tregest. Hierarkiet av hurtigbuffere, hovedminne og disk skjuler det, og virtuelt minne legger trygg deling på toppen. Den poengtyngste delen av eksamen: 19 av 100 i Ord. 2025, med adresseformat, aksesstid og TLB.</p>
+    </div>
+  </header>
+
+  <nav class="chapter-toc">
+    <div class="container">
+      <ol class="chapter-toc-list">
+        <li><span class="toc-num">01</span><a href="#overblikk">Helhetsbilde</a></li>
+        <li><span class="toc-num">02</span><a href="#laeringsmaal">Læringsmål og prioritet</a></li>
+        <li><span class="toc-num">03</span><a href="#deler">Deler</a></li>
+        <li><span class="toc-num">04</span><a href="#oppgaver">Oppgavene</a></li>
+        <li><span class="toc-num">05</span><a href="#quiz">Test deg selv</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section id="overblikk">
+    <div class="container">
+      <div class="section-badge">Helhetsbilde</div>
+      <h2>Hva kapittelet <em>egentlig</em> handler om</h2>
+
+      <p class="dropcap">Samlebåndet i kapittel 5 antok at instruksjonsminnet og dataminnet svarer på én klokkesykel. Et ekte hovedminne bruker over hundre. Kapittelet handler om hvordan <span class="term" data-term="minnehierarki">minnehierarkiet</span> likevel får det til å se slik ut: en <span class="term" data-term="hurtigbuffer">hurtigbuffer</span> holder det som nettopp er brukt og naboene, fordi programmer har lokalitet. Det samme prinsippet brukes ett nivå ned, mellom hovedminne og disk, som <span class="term" data-term="virtuelt-minne">virtuelt minne</span>, og én gang til for selve adresseoversettelsen, som <span class="term" data-term="tlb">TLB</span>.</p>
+
+      <ul>
+        <li><strong>Hurtigbuffer (6A).</strong> Lokalitet; blokk, treff, bom; direktetilordnet med tag, indeks og offset; antall bit i alt; blokkstørrelse og skrivestrategier; settassosiativ og fullassosiativ med LRU; gjennomsnittlig aksesstid i flere nivåer og virkningen på CPI; hurtigbufferen i samlebåndet og i programvaren. Prio 1: fast eksamensdel.</li>
+        <li><strong>Minneteknologier (6B).</strong> SRAM, DRAM, flash og disk: fart, pris, flyktig og dynamisk; hvordan SRAM og DRAM er bygd. Prio 3, kort.</li>
+        <li><strong>Virtuelt minne (6C).</strong> Sider og adresseoversettelse; sidetabell og sidefeil; TLB; beskyttelse; virtuelle maskiner. Prio 2: TLB var oppgave 7.5 i Ord. 2025.</li>
+      </ul>
+
+      <div class="callout callout-warm">
+        <span class="label">Kilder og utvalg</span>
+        <p>Sidene følger læringsutbyttebeskrivelsen tema T6 (T6.1–T6.3) og bygger på boka kapittel 5.1–5.4, 5.6, 5.7 og appendiks A.9, og kompendiets kapittel 5. Alle bokoppgavene beskrivelsen lister (5.1, 5.2, 5.3, 5.5, 5.7, 5.10, 5.11, 5.16, 5.19) er med, sammen med de tre eksamensoppgavene fra Ord. 2025 del 7 (adresseformat, aksesstid, TLB), bokas regneeksempler og kompendiets eksempler. Eksamensanalysen (godkjent 2. oktober 2026) gir T6.1 prio 1, T6.3 prio 2 og T6.2 prio 3. Av de lange bokoppgavene er delene som likner eksamen tatt med; resten står under «Ekstra». Kompendiets formel for aksesstid avviker litt fra bokas; det er forklart ved eksempelet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="laeringsmaal">
+    <div class="container">
+      <div class="section-badge">Læringsmål og prioritet</div>
+      <h2>Fra <em>læringsutbyttebeskrivelsen</em></h2>
+      <p class="section-intro">Tema T6 dekker K1, K2, K5 (minnesystemets oppbygging og virkemåte), F2, F3 og G1.</p>
+      <div class="lm-grid">
+        <div class="lm-card">
+          <div class="lm-k">T6.1 · Minnehierarki og hurtigbuffer <span class="tag regn">Regn</span><span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare begrepene lokalitet i tid og lokalitet i rom og vite hvorfor lokalitet oppstår.</li>
+            <li>Studenten skal forstå hvordan og hvorfor et hierarki av minner kan gi illusjonen av ett stort og raskt minne.</li>
+            <li>Studenten skal forstå hvordan vi konstruerer et direktetilordnet hurtigbuffer (kunne gjengi og forklare figur 5.10) samt hvordan det kan utvides til å håndtere hurtigbufferblokker som består av mer enn ett ord.</li>
+            <li>Studenten kunne forklare hvordan hurtigbuffere kan integreres i en samlebåndsarkitektur.</li>
+            <li>Studenten skal kjenne til prinsippene for hvordan hurtigbuffere håndterer skriveoperasjoner.</li>
+            <li>Studenten skal kunne beregne hvordan minneaksesstid påvirker datamaskinens ytelse.</li>
+            <li>Studenten skal kunne beregne hvordan treffraten i flernivå hurtigbuffer påvirker den gjennomsnittlige aksesstiden.</li>
+            <li>Studenten skal forstå hvorfor settassosiative og fullassosiative hurtigbuffere kan øke treffraten og hvordan de konstrueres (gjengi og forklar figur 5.18).</li>
+            <li>Studenten skal kjenne til hvordan man på programvarenivå kan påvirke treffraten i hurtigbuffere.</li>
+          </ul>
+          <div class="lm-src">Prio 1 · Forelesning 9, 10 og 11 · Teoriøving 6 · Boka 5.1, 5.3 og 5.4 · Oppgaver 5.1, 5.2, 5.3, 5.5, 5.7, 5.10, 5.11 · Eksamen: Ord. 25 oppg. 7.1–7.4 (15 p, på siden), Kont 26 oppg. 6, Kont 25 oppg. 4, Ord. 24 oppg. 5, Kont 24 oppg. 4, Ord. 23 oppg. 6, Ord. 22 oppg. 8, Kont 22 oppg. 4, Ord. 21 oppg. 2, 3 og 6 · <a href="hurtigbuffer.html">6A</a> · ~75 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T6.2 · Minneteknologier <span class="tag">Forklar</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare begrepene volatilt og ikke-volatilt minne samt statisk og dynamisk minne.</li>
+            <li>Studenten skal kjenne til omtrentlig aksesstid og kostnad per bit for SRAM, DRAM, Flash, og magnetisk disk og kunne forklare hvordan dette påvirker hvordan teknologiene brukes i minnehierarkiet.</li>
+            <li>Studenten skal kunne konstruere et SRAM minne fra grunnleggende kombinatoriske og sekvensielle komponenter (kunne gjengi og forklare figur A.9.3).</li>
+            <li>Studenten skal kunne beskrive prinsippene for hvordan vi konstruerer DRAM minner (kunne gjengi og forklare figur A.9.5 og A.9.6).</li>
+          </ul>
+          <div class="lm-src">Prio 3 · Forelesning 10 · Boka 5.2 og A.9 · ingen tilgjengelige oppgaver · ingen kjente eksamensoppgaver · <a href="teknologi.html">6B</a> · ~20 min</div>
+        </div>
+        <div class="lm-card">
+          <div class="lm-k">T6.3 · Virtuelt minne <span class="tag">Forklar</span><span class="tag regn">Regn</span></div>
+          <ul>
+            <li>Studenten skal kunne forklare hvordan virtuelle adresser oversettes til fysiske adresser, inkludert arbeidsfordelingen mellom maskinvare og programvare.</li>
+            <li>Studenten skal kunne forklare hvordan et «Translation Lookaside Buffer (TLB)» brukes til å implementere rask adresseoversettelse.</li>
+            <li>Studenten skal kunne forklare hvordan virtuelt minne kan brukes til å beskytte prosesser fra hverandres minneaksesser.</li>
+            <li>Studenten skal kunne forklare hvordan sidefeil håndteres.</li>
+            <li>Studenten skal kunne forklare hva en virtuell maskin er.</li>
+          </ul>
+          <div class="lm-src">Prio 2 · Forelesning 11 · Boka 5.6 og 5.7 · Oppgaver 5.16, 5.19 · Eksamen: Ord. 25 oppg. 7.5 (4 p, på siden), Ord. 24 oppg. 5.5, Kont 23 oppg. 5 og 6, Ord. 21 oppg. 4 · <a href="virtuelt-minne.html">6C</a> · ~40 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="deler">
+    <div class="container">
+      <div class="section-badge">Deler</div>
+      <h2>Utforsk <em>kapittelet</em></h2>
+      <div class="subpage-list">
+        <a href="hurtigbuffer.html" class="subpage-card">
+          <span class="sp-icon">6A</span>
+          <div class="sp-info">
+            <div class="sp-title">Minnehierarki og hurtigbuffer</div>
+            <div class="sp-desc">T6.1 · Boka 5.1, 5.3, 5.4: lokalitet, direktetilordnet, tag/indeks/offset, skriving, assosiativitet, aksesstid i flere nivåer, CPI, samlebånd og programvare. 15 oppgaver (2 fra eksamen), 3 widgeter (adresseformat, simulator med LRU, aksesstid). ~75 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="teknologi.html" class="subpage-card">
+          <span class="sp-icon">6B</span>
+          <div class="sp-info">
+            <div class="sp-title">Minneteknologier</div>
+            <div class="sp-desc">T6.2 · Boka 5.2, A.9: SRAM, DRAM, flash og disk, flyktig og dynamisk, SRAM av låser og dekoder, DRAM-cella og rad/kolonne. Ingen bokoppgaver, 1 widget (4 × 2 SRAM). ~20 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+        <a href="virtuelt-minne.html" class="subpage-card">
+          <span class="sp-icon">6C</span>
+          <div class="sp-info">
+            <div class="sp-title">Virtuelt minne</div>
+            <div class="sp-desc">T6.3 · Boka 5.6, 5.7: sider og adresseoversettelse, sidetabell, sidefeil, TLB, beskyttelse, virtuelle maskiner. 4 oppgaver (1 fra eksamen), 1 widget (adresser gjennom TLB og sidetabell). ~40 min.</div>
+          </div>
+          <span class="sp-arrow">&rarr;</span>
+        </a>
+      </div>
+      <p><a href="../begreper.html">Alle fagbegrepene, samlet →</a></p>
+    </div>
+  </section>
+
+  <section id="oppgaver">
+    <div class="container">
+      <div class="section-badge">Oppgavene fra fagstoffet</div>
+      <h2>Alle <em>oppgavene</em></h2>
+      <p class="section-intro">19 bokser: de tre eksamensoppgavene fra Ord. 2025 del 7, bokoppgavene læringsutbyttebeskrivelsen lister, bokas regneeksempler og kompendiets eksempler. Grønn status: svar fra boka eller kompendiet. Gul: forslag skrevet for denne siden, eller studentsvar kontrollert mot boka.</p>
+
+      <h3>6A · Minnehierarki og hurtigbuffer</h3>
+      <ul class="oppgave-index">
+        <li><a href="hurtigbuffer.html#oppg-5-1"><span class="oi-ref">5.1.1–5 · s. 499</span><span>Matriseløkke i C og Matlab: lokalitet i tid og rom.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-eks-bits"><span class="oi-ref">Eks. · s. 405</span><span>Totalt antall bit i en 16 KiB hurtigbuffer; hvilken blokk får byteadresse 1200?</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-komp-cache"><span class="oi-ref">Komp. eks. 1–2</span><span>0x2000 og 0x2004 i samme blokk? Bomrate for 950 treff av 1000.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-5-2"><span class="oi-ref">5.2.1–2 · s. 499</span><span>Tolv ordadresser gjennom to direktetilordnede hurtigbuffere.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-5-3"><span class="oi-ref">5.3 · s. 500</span><span>Totalt antall bit for 32 KiB og 64 KiB; hvorfor større kan være tregere.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-5-5"><span class="oi-ref">5.5 · s. 500</span><span>Gitt adresseformat: blokkstørrelse, antall blokker, tolv byteadresser, sluttilstand.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-5-7"><span class="oi-ref">5.7 · s. 501</span><span>Lese- og skrivebåndbredde med skriv gjennom og skriv tilbake.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-eks-o25-7-1"><span class="oi-ref">Ord. 25 · 7.1–7.2</span><span>Eksamen: offset, indeks og tag for 2-veis, 256 KiB, 128-byte blokker, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-eks-assoc"><span class="oi-ref">Eks. · s. 419</span><span>0, 8, 0, 6, 8 i tre organiseringer; tagbit for 4096 blokker.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-5-11"><span class="oi-ref">5.11.1–2 · s. 503</span><span>3-veis settassosiativ med LRU: skisse og spor for fjorten adresser.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-komp-assoc"><span class="oi-ref">Komp. eks. 3</span><span>Hvorfor 4-veis gir færre bom enn direktetilordnet.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-eks-o25-7-3"><span class="oi-ref">Ord. 25 · 7.3–7.4</span><span>Eksamen: gjennomsnittlig aksesstid for L1, L2 og minne, og forklar.</span><span class="oi-status forslag">Kontrollert</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-eks-amat"><span class="oi-ref">Eks. · s. 413–425</span><span>AMAT; CPI med instruksjons- og databom; gevinst av en sekundærhurtigbuffer.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-komp-amat"><span class="oi-ref">Komp. kap. 5</span><span>Aksesstid med 90 % treff, 2 ns og 100 ns.</span><span class="oi-status notes">Fra kompendiet</span></a></li>
+        <li><a href="hurtigbuffer.html#oppg-5-10"><span class="oi-ref">5.10 · s. 502</span><span>To prosessorer med ulik L1: klokke, AMAT, CPI, og når en L2 lønner seg.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>6C · Virtuelt minne</h3>
+      <ul class="oppgave-index">
+        <li><a href="virtuelt-minne.html#oppg-eks-sidetabell"><span class="oi-ref">Eks. · s. 450</span><span>Størrelsen på sidetabellen for 32-bits adresser og 4 KiB sider.</span><span class="oi-status notes">Fra boka</span></a></li>
+        <li><a href="virtuelt-minne.html#oppg-eks-o25-7-5"><span class="oi-ref">Ord. 25 · 7.5</span><span>Eksamen: hva gjør en TLB, og hvorfor er den viktig?</span><span class="oi-status forslag">Modellsvar</span></a></li>
+        <li><a href="virtuelt-minne.html#oppg-5-16"><span class="oi-ref">5.16 · s. 506</span><span>Sju virtuelle adresser gjennom TLB og sidetabell; større sider; hvorfor TLB.</span><span class="oi-status forslag">Forslag</span></a></li>
+        <li><a href="virtuelt-minne.html#oppg-5-19"><span class="oi-ref">5.19 · s. 507</span><span>TLB med fire oppføringer: ugyldiggjøring, TLB-bom, skrivebeskyttelse.</span><span class="oi-status forslag">Forslag</span></a></li>
+      </ul>
+
+      <h3>Ekstra, ikke på siden</h3>
+      <p class="section-intro">Bokoppgave 5.1.6 (antall blokker for hele matrisen), 5.2.3 (velg beste av tre utforminger), 5.11.3–5.11.8 (fullassosiativ med LRU, MRU og optimal utskifting; kjør dem i simulatoren på 6A med ett sett), 5.16.3–5.16.4 (settassosiativ og direktetilordnet TLB) og selvstudiene i 5.19. 6B har ingen bokoppgaver; læringsutbyttebeskrivelsen lister ingen for T6.2.</p>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="container">
+      <div class="section-badge">Test deg selv</div>
+      <h2>På tvers av <em>kapittelet</em></h2>
+      <p class="section-intro">Spørsmål som krever 6A, 6B og 6C i sammenheng, og kapittel 5. Flere finnes nederst på hver underside.</p>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 1 · Middels</div>
+        <div class="q-text">En direktetilordnet datahurtigbuffer er 16 KiB med blokker på 64 byte; adressene er 32 bit og sidene 4 KiB. Gi offset, indeks og tag, og virtuelt sidenummer og sideoffset. Hvilke bit i adressen overlapper indeksen med sidenummeret?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Hurtigbuffer: offset log<sub>2</sub> 64 = 6 bit (0–5); 16 KiB / 64 = 256 blokker, indeks 8 bit (6–13); tag 18 bit (14–31). Virtuelt minne: sideoffset 12 bit (0–11), sidenummer 20 bit (12–31). Indeksbit 12 og 13 ligger i sidenummeret, så hurtigbufferen kan ikke slås opp ferdig før TLB-en har oversatt de to bitene. Var hurtigbufferen 4 KiB (eller 4-veis med 16 KiB), ville indeks og offset ligget helt innenfor sideoffseten, og TLB og hurtigbuffer kunne slås opp parallelt.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 2 · Middels</div>
+        <div class="q-text">Grunn-CPI er 1,2. 30 % av instruksjonene er load eller store. Instruksjonshurtigbufferen bommer 1 %, datahurtigbufferen 5 %, og bomstraffen er 80 sykler. Hva er CPI, og hvor stor del av tiden går til bom?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Instruksjonsbom: 0,01 × 80 = 0,8 sykler per instruksjon. Databom: 0,30 × 0,05 × 80 = 1,2. CPI = 1,2 + 0,8 + 1,2 = 3,2. Bom står for 2,0 / 3,2 = 62,5 % av tiden.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 3 · Vanskelig</div>
+        <div class="q-text">Hurtigbuffer, TLB og virtuelt minne er tre utgaver av samme idé. Fyll ut for hver: hva er «blokken», hvor plasseres den (assosiativitet), hvem håndterer en bom, og hvorfor er valgene forskjellige?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Hurtigbuffer: blokk på noen titalls byte; direktetilordnet eller få veier, fordi oppslaget må gå på en sykel; bom håndteres i maskinvare (stans, hent blokk). TLB: én oversettelse (en sidetabelloppføring); liten og ofte fullassosiativ, fordi den er liten nok til det og bom er dyrere; bom håndteres av maskinvare eller operativsystem. Virtuelt minne: side på 4 KiB eller mer; fullassosiativ via sidetabellen; sidefeil håndteres av operativsystemet. Jo dyrere en bom er (noen titalls sykler, hundre, millioner), jo mer lønner det seg å bruke tid og fleksibilitet på å unngå den.</div>
+        </div>
+      </div>
+
+      <div class="quiz" data-quiz>
+        <div class="q-label">Spørsmål 4 · Middels</div>
+        <div class="q-text">I samlebåndet fra kapittel 5 bommer en lw i datahurtigbufferen mens den er i MEM. Hva skjer med de andre instruksjonene, og hvordan skiller dette seg fra en load-use-stans?</div>
+        <div class="quiz-reveal">
+          <button class="reveal-btn">Se svar</button>
+          <div class="answer">Hele prosessoren fryses: PC og alle samlebåndsregistrene holdes til blokken er hentet, også instruksjonen foran i WB. Det sendes ingen boble; alt står bare stille i bomstraffens lengde. Ved load-use holdes bare PC og IF/ID én sykel, en boble settes inn i EX, og instruksjonene foran går videre.</div>
+        </div>
+      </div>
+
+      <nav class="page-nav">
+        <a href="../kap5/" class="prev"><div class="pn-label">← Forrige</div><div class="pn-title">Kapittel 5: Samlebåndsprosessorer</div></a>
+        <a href="hurtigbuffer.html" class="next"><div class="pn-label">Start · 6A</div><div class="pn-title">Minnehierarki og hurtigbuffer →</div></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="ornament">&#10043; &#10043; &#10043;</div>
+    <p>NTNU · TDT4160 · Høst 2026</p>
+    <p class="notes-version" data-notater-versjon></p>
+  </div>
+</footer>
+
+<script src="../kilder/versjon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../fag.js"></script>
+<script src="../begreper.js"></script>
+<script src="../../glossary.js"></script>
+<script src="../../quiz.js"></script>
+<script src="../../site.js"></script>
+<script src="../../nav-search.js"></script>
+</body>
+</html>

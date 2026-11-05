@@ -4,8 +4,8 @@
   "dato_norsk": "26. august 2026",
   "sider": 0,
   "ekstrahert": "2026-09-22",
-  "antall_oppgaver": 113,
-  "_kommentar": "Skrevet for hånd. seksjoner lister bare temaene som er dekket på siden, slik at tools/valider.py sjekker dekning.json mot dem. Legg til 4, 4.1, … når kapitlene lages.",
+  "antall_oppgaver": 157,
+  "_kommentar": "Skrevet for hånd. seksjoner lister temaene som er dekket på siden (T1–T7, alle per 5. november 2026), slik at tools/valider.py sjekker dekning.json mot dem.",
   "seksjoner": [
     {
       "nummer": "1",
@@ -64,6 +64,18 @@
       "tittel": "T3.3 Aritmetisk-logisk enhet"
     },
     {
+      "nummer": "4",
+      "tittel": "T4 Flersykelprosessor (og sekvensiell logikk)"
+    },
+    {
+      "nummer": "4.1",
+      "tittel": "T4.1 Flersykelprosessor"
+    },
+    {
+      "nummer": "4.2",
+      "tittel": "T4.2 Sekvensiell logikk"
+    },
+    {
       "nummer": "5",
       "tittel": "T5 Samlebåndsprosessorer"
     },
@@ -78,6 +90,38 @@
     {
       "nummer": "5.3",
       "tittel": "T5.3 Prosessorer med høyere ytelse"
+    },
+    {
+      "nummer": "6",
+      "tittel": "T6 Minnesystemet"
+    },
+    {
+      "nummer": "6.1",
+      "tittel": "T6.1 Minnehierarki og hurtigbuffer"
+    },
+    {
+      "nummer": "6.2",
+      "tittel": "T6.2 Minneteknologier"
+    },
+    {
+      "nummer": "6.3",
+      "tittel": "T6.3 Virtuelt minne"
+    },
+    {
+      "nummer": "7",
+      "tittel": "T7 Parallelle datamaskiner"
+    },
+    {
+      "nummer": "7.1",
+      "tittel": "T7.1 Ytelse og Flynns taksonomi"
+    },
+    {
+      "nummer": "7.2",
+      "tittel": "T7.2 Multiprosessorer"
+    },
+    {
+      "nummer": "7.3",
+      "tittel": "T7.3 Akseleratorer"
     }
   ]
 }

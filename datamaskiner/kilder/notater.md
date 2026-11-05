@@ -193,7 +193,8 @@ logikk (boka A.1–A.3; oppgaver A.5, A.7, A.8, A.10, A.11), T3.3 ALU (boka 3.1�
 ## 4 T4 Flersykelprosessor (og sekvensiell logikk)
 
 Læringsutbytter: K1–K3, F2, F3, G1. T4.1 Flersykelprosessor (boka 4.5, nettseksjon e.4.5), T4.2 Sekvensiell logikk (boka
-A.8, A.10, A.11; oppgaver A.36–A.39). Kompendiet kapittel 4 og Appendix A. Ikke dekket på siden ennå.
+A.8, A.10, A.11; oppgaver A.36–A.39). Kompendiet kapittel 4 og Appendix A. Dekket på kap4/ (4A sekvensiell logikk, 4B flersykel),
+laget 5. november 2026 etter eksamensanalysen.
 
 ## 5 T5 Samlebåndsprosessorer
 
@@ -206,10 +207,12 @@ ytelse), laget 5. oktober 2026 etter eksamensanalysen.
 
 Læringsutbytter: K1, K2, K5, F2, F3, G1. T6.1 Minnehierarki og hurtigbuffer (boka 5.1, 5.3, 5.4; oppgaver 5.1–5.3, 5.5, 5.7,
 5.10, 5.11), T6.2 Minneteknologier (boka 5.2, A.9), T6.3 Virtuelt minne (boka 5.6, 5.7; oppgaver 5.16, 5.19). Kompendiet
-kapittel 5. Ikke dekket på siden ennå.
+kapittel 5. Eksamen: Ord. 25 oppg. 7. Dekket på kap6/ (6A hurtigbuffer, 6B minneteknologier, 6C virtuelt minne), laget
+5. november 2026 etter eksamensanalysen.
 
 ## 7 T7 Parallelle datamaskiner
 
 Læringsutbytter: K1, K6, G1. T7.1 Ytelse og Flynns taksonomi (boka 6.1–6.3, 6.11; oppgaver 6.2, 6.3, 6.11), T7.2
 Multiprosessorer (boka 6.4, 6.5, 6.8, 5.10, 2.11; oppgaver 6.6, 6.7, 6.19), T7.3 Akseleratorer (boka 6.6, 6.7).
-Kompendiet kapittel 6. Ikke dekket på siden ennå.
+Kompendiet kapittel 6. Eksamen: Ord. 25 oppg. 8.2. Dekket på kap7/ (7A ytelse, Flynn og Roofline, 7B multiprosessorer og
+akseleratorer), laget 5. november 2026 etter eksamensanalysen.

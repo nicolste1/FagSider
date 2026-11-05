@@ -103,14 +103,16 @@ Svarene i Ord. 25 er en students, ikke fasit. De er kontrollert mot boka under, 
 | Ord. 25 · 5.1–5.2 (0x40980000) | 3.3 | kap3/alu.html | Riktig (4,75) | lagt inn |
 | Ord. 25 · 6.1–6.2 (sw/lw/addi/beq) | 5.1 | kap5/samleband.html#kontroll | Riktig (ID/EX 1,0,0,1; EX/MEM 0,1,1,1; MEM/WB 0,X) | lagt inn |
 | Ord. 25 · 6.3 (add-kjede, videresending) | 5.1 | kap5/samleband.html#videresending | Riktig prinsipp; studenten bytter om kodene (boka: ForwardB = 10 fra EX/MEM, ForwardA = 01 fra MEM/WB) | lagt inn |
-| Ord. 25 · 7.1–7.2 (adresseformat) | 6.1 | kap6/hurtigbuffer.html | Riktig (offset 0–6, indeks 7–16, tag 17–31) | side mangler |
-| Ord. 25 · 7.3–7.4 (aksesstid) | 6.1 | kap6/hurtigbuffer.html | Riktig (3 + 0,15 × (10 + 0,3 × 75) = 7,875) | side mangler |
-| Ord. 25 · 7.5 (TLB) | 6.3 | kap6/virtuelt-minne.html | Rimelig, men lang; modellsvar skrives fra boka 5.7 | side mangler |
+| Ord. 25 · 7.1–7.2 (adresseformat) | 6.1 | kap6/hurtigbuffer.html#assosiativ | Riktig (offset 0–6, indeks 7–16, tag 17–31) | lagt inn |
+| Ord. 25 · 7.3–7.4 (aksesstid) | 6.1 | kap6/hurtigbuffer.html#ytelse | Riktig (3 + 0,15 × (10 + 0,3 × 75) = 7,875) | lagt inn |
+| Ord. 25 · 7.5 (TLB) | 6.3 | kap6/virtuelt-minne.html#tlb | Rimelig, men lang; modellsvar skrives fra boka 5.7 | lagt inn |
 | Ord. 25 · 8.1 (register renaming) | 5.3 | kap5/unntak-ytelse.html#renaming | Rimelig; modellsvar fra boka 4.11 | lagt inn |
-| Ord. 25 · 8.2 (SISD/SIMD) | 7.1 | kap7/flynn.html | Rimelig; modellsvar fra boka 6.3 | side mangler |
+| Ord. 25 · 8.2 (SISD/SIMD) | 7.1 | kap7/parallell.html#flynn | Rimelig; modellsvar fra boka 6.3 | lagt inn |
 | Ord. 24 · 5.4, Kont 26 · 5.5 (ytelse) | 1.3 | kap1/ytelse.html#ytelseslikningen | tekst ikke i repoet | mangler tekst |
 
-Kapittel 3 (2. oktober 2026) og kapittel 5 (5. oktober 2026) er laget. Sidenavnene for kap4, kap6 og kap7 er forslag.
+Alle sju kapitlene er laget: kapittel 3 (2. oktober 2026), kapittel 5 (5. oktober 2026), og kapittel 4, 6 og 7 (5. november 2026).
+Ingen eksamensoppgaver er lagt inn som bokser for T4, fordi tekstene til Kont 26 oppg. 4 og Ord. 24 oppg. 3 ikke finnes i repoet;
+4B har egne quiz i eksamensform i stedet.
 
 ## Hva som bevisst nedprioriteres
 

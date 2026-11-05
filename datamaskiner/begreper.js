@@ -25,6 +25,13 @@
   var H = 'kap3/alu.html';
   var K = 'kap5/samleband.html';
   var L = 'kap5/unntak-ytelse.html';
+  var M = 'kap6/hurtigbuffer.html';
+  var N = 'kap6/teknologi.html';
+  var O = 'kap6/virtuelt-minne.html';
+  var P = 'kap7/parallell.html';
+  var Q = 'kap7/multiprosessorer.html';
+  var I = 'kap4/sekvensiell.html';
+  var J = 'kap4/flersykel.html';
 
   window.GLOSSARY = {
     /* ── T1.1 Datamaskintyper og de 7 store ideene ── */
@@ -1465,6 +1472,793 @@
       alias: 'in-order commit, fullføring i rekkefølge',
       def: '<p>Resultater skrives til den programmerer-synlige tilstanden (registre og minne) i samme rekkefølge som instruksjonene ble hentet, selv om de ble utført i en annen. Utenfra ser utføringen sekvensiell ut.</p>',
       more: L + '#ooo'
+    },
+    /* ── T6.1 Minnehierarki og hurtigbuffer (6A) ── */
+    'lokalitet-tid': {
+      term: 'Lokalitet i tid',
+      alias: 'temporal locality, tidsmessig lokalitet',
+      def: '<p>Det som nettopp er brukt, blir sannsynligvis brukt igjen snart. Oppstår fordi programmer går i løkker: samme instruksjoner og samme variabler runde etter runde. Grunnen til at det lønner seg å holde nylig brukte data nær prosessoren.</p>',
+      more: M + '#lokalitet'
+    },
+    'lokalitet-rom': {
+      term: 'Lokalitet i rom',
+      alias: 'spatial locality, romlig lokalitet',
+      def: '<p>Brukes én adresse, brukes naboadressene sannsynligvis snart. Oppstår fordi instruksjoner ligger etter hverandre og data ligger samlet i tabeller. Grunnen til at blokker med flere ord lønner seg.</p>',
+      more: M + '#lokalitet'
+    },
+    'blokk': {
+      term: 'Blokk',
+      alias: 'block, line, hurtigbufferlinje',
+      def: '<p>Minste enhet som flyttes mellom to nivåer i minnehierarkiet og som enten er til stede eller ikke. I en hurtigbuffer typisk noen titalls byte; i virtuelt minne heter blokken en side.</p>',
+      more: M + '#lokalitet'
+    },
+    'treff': {
+      term: 'Treff',
+      alias: 'hit, cache hit',
+      def: '<p>Dataene prosessoren ber om, finnes i det øvre nivået (hurtigbufferen). Avgjøres ved at taggen stemmer og gyldig-bitet er 1.</p>',
+      more: M + '#lokalitet'
+    },
+    'bom': {
+      term: 'Bom',
+      alias: 'miss, cache miss',
+      def: '<p>Dataene finnes ikke i det øvre nivået, og blokken må hentes fra nivået under. Tre typer: tvungne (første bruk), kapasitetsbom (ikke plass) og konfliktbom (flere blokker om samme sett).</p>',
+      more: M + '#lokalitet'
+    },
+    'treffrate': {
+      term: 'Treffrate',
+      alias: 'hit rate',
+      def: '<p>Andelen minneaksesser som finner dataene i det øvre nivået. Treffrate = 1 − bomrate.</p>',
+      more: M + '#lokalitet'
+    },
+    'bomrate': {
+      term: 'Bomrate',
+      alias: 'miss rate',
+      def: '<p>Andelen minneaksesser som ikke finner dataene i det øvre nivået. Bomrate = 1 − treffrate. Synker med større hurtigbuffer, større blokker (opp til et punkt) og høyere assosiativitet.</p>',
+      more: M + '#lokalitet'
+    },
+    'trefftid': {
+      term: 'Trefftid',
+      alias: 'hit time',
+      def: '<p>Tiden det tar å slå opp i det øvre nivået, inkludert å avgjøre om det er treff eller bom. Betales av alle aksesser, og for L1 bestemmer den ofte klokkeperioden.</p>',
+      more: M + '#lokalitet'
+    },
+    'bomstraff': {
+      term: 'Bomstraff',
+      alias: 'miss penalty',
+      def: '<p>Ekstratiden en bom koster: hente blokken fra nivået under, legge den inn og levere den til prosessoren. Med flere nivåer er bomstraffen for L1 aksesstiden til L2.</p>',
+      more: M + '#lokalitet'
+    },
+    'direktetilordnet': {
+      term: 'Direktetilordnet hurtigbuffer',
+      alias: 'direct-mapped cache',
+      def: '<p>Hurtigbuffer der hver minneblokk har nøyaktig én mulig plass: blokkadresse modulo antall blokker, altså de laveste bitene av blokkadressen. Enkel og rask, men to blokker med samme indeks slår hverandre ut.</p>',
+      more: M + '#direkte'
+    },
+    'indeks': {
+      term: 'Indeks',
+      alias: 'index, cache index',
+      def: '<p>Adressefeltet som velger plass (sett) i hurtigbufferen. Antall bit = log<sub>2</sub>(antall sett). Ligger rett over offset.</p>',
+      more: M + '#direkte'
+    },
+    'tag': {
+      term: 'Tag',
+      alias: 'tag, merkelapp',
+      def: '<p>De øvre adressebitene som ikke brukes til indeks eller offset. Lagres sammen med blokken og sammenliknes med adressen for å avgjøre om blokken på plassen er den det spørres etter.</p>',
+      more: M + '#direkte'
+    },
+    'gyldig-bit': {
+      term: 'Gyldig-bit',
+      alias: 'valid bit',
+      def: '<p>Ett bit per plass som sier om plassen inneholder en gyldig blokk. 0 ved oppstart; et treff krever at gyldig-bitet er 1 i tillegg til at taggen stemmer.</p>',
+      more: M + '#direkte'
+    },
+    'blokkforskyvning': {
+      term: 'Offset (blokkforskyvning)',
+      alias: 'block offset, byte offset',
+      def: '<p>De laveste adressebitene, som velger byte (eller ord) inne i blokken. Antall bit = log<sub>2</sub>(blokkstørrelse i byte). Brukes ikke i oppslaget.</p>',
+      more: M + '#direkte'
+    },
+    'skrivegjennom': {
+      term: 'Skriv gjennom',
+      alias: 'write-through',
+      def: '<p>Skrivestrategi der hver skriving oppdaterer både hurtigbufferen og minnet. Alltid konsistent, men tregt uten skrivebuffer.</p>',
+      more: M + '#blokk'
+    },
+    'skrivebuffer': {
+      term: 'Skrivebuffer',
+      alias: 'write buffer',
+      def: '<p>Liten kø som holder data som venter på å bli skrevet til minnet, så prosessoren kan fortsette. Hjelper så lenge skrivingene ikke kommer raskere enn minnet tar unna.</p>',
+      more: M + '#blokk'
+    },
+    'tilbakeskriving': {
+      term: 'Skriv tilbake',
+      alias: 'write-back',
+      def: '<p>Skrivestrategi der bare hurtigbufferen skrives. Blokken skrives til minnet først når den kastes ut, og bare hvis den er endret (skittenbit). Færre minneskrivinger, mer komplisert.</p>',
+      more: M + '#blokk'
+    },
+    'fullassosiativ': {
+      term: 'Fullassosiativ hurtigbuffer',
+      alias: 'fully associative cache',
+      def: '<p>Hurtigbuffer der en blokk kan ligge på en hvilken som helst plass. Alle taggene sammenliknes parallelt; ingen indeks. Lavest bomrate, men dyr; brukes for små buffere som TLB.</p>',
+      more: M + '#assosiativ'
+    },
+    'settassosiativ': {
+      term: 'Settassosiativ hurtigbuffer',
+      alias: 'set-associative cache, n-way',
+      def: '<p>Hurtigbuffer delt i sett med n plasser (veier). Indeksen velger settet, og blokken kan ligge i en hvilken som helst av de n plassene. Antall sett = antall blokker / n. Direktetilordnet er 1-veis; fullassosiativ er ett sett.</p>',
+      more: M + '#assosiativ'
+    },
+    'lru': {
+      term: 'LRU',
+      alias: 'least recently used',
+      def: '<p>Utskiftingsregel: kast ut blokken det er lengst siden ble brukt. Brukes i settassosiative hurtigbuffere og, tilnærmet med referansebit, for sider i virtuelt minne.</p>',
+      more: M + '#assosiativ'
+    },
+    'amat': {
+      term: 'Gjennomsnittlig aksesstid (AMAT)',
+      alias: 'average memory access time',
+      def: '<p>Trefftid + bomrate × bomstraff. Med flere nivåer nøstes formelen: t<sub>L1</sub> + m<sub>L1</sub> × (t<sub>L2</sub> + m<sub>L2</sub> × t<sub>minne</sub>).</p>',
+      more: M + '#ytelse'
+    },
+    'lokal-bomrate': {
+      term: 'Lokal og global bomrate',
+      alias: 'local miss rate, global miss rate',
+      def: '<p>Lokal bomrate for L2: andelen av aksessene som når L2, og som bommer der. Global bomrate: andelen av alle aksesser som bommer i både L1 og L2, altså produktet av de lokale ratene.</p>',
+      more: M + '#ytelse'
+    },
+    'flernivaa-hurtigbuffer': {
+      term: 'Flernivå-hurtigbuffer',
+      alias: 'multilevel cache, L1, L2, L3',
+      def: '<p>Flere hurtigbuffere etter hverandre. L1 er liten og rask for kort trefftid; L2 og L3 er større for lav bomrate, så få aksesser må helt til hovedminnet.</p>',
+      more: M + '#ytelse'
+    },
+    'blokking': {
+      term: 'Blokking',
+      alias: 'cache blocking',
+      def: '<p>Programvareteknikk: del arbeidet på store matriser i delmatriser som får plass i hurtigbufferen, og gjør ferdig én om gangen. Utnytter lokalitet i tid uten å endre antall operasjoner.</p>',
+      more: M + '#programvare'
+    },
+
+    /* ── T6.2 Minneteknologier (6B) ── */
+    'ikke-flyktig': {
+      term: 'Ikke-flyktig minne',
+      alias: 'nonvolatile memory, ikke-volatilt',
+      def: '<p>Minne som beholder innholdet uten strøm: flash og magnetisk disk. Brukes som sekundærminne.</p>',
+      more: N + '#fire'
+    },
+    'statisk-minne': {
+      term: 'Statisk minne',
+      alias: 'static memory, SRAM',
+      def: '<p>Minne der en bit holdes så lenge det er strøm, uten oppfriskning. SRAM bruker seks til åtte transistorer per bit: raskt, men dyrt og plasskrevende.</p>',
+      more: N + '#fire'
+    },
+    'dynamisk-minne': {
+      term: 'Dynamisk minne',
+      alias: 'dynamic memory, DRAM',
+      def: '<p>Minne der biten lagres som ladning på en kondensator. Ladningen lekker, så innholdet må friskes opp jevnlig. Én transistor per bit: tett og billig, men tregere.</p>',
+      more: N + '#fire'
+    },
+    'bitlinje': {
+      term: 'Bitlinje og ordlinje',
+      alias: 'bit line, word line',
+      def: '<p>Ordlinjen velger ett ord (én rad med celler) og kommer fra dekoderen. Bitlinjen er den delte utgangslinjen for alle cellene i en kolonne; bare cella i det valgte ordet driver den.</p>',
+      more: N + '#sram'
+    },
+    'tre-tilstandsbuffer': {
+      term: 'Tre-tilstandsbuffer',
+      alias: 'three-state buffer, tristate, høy impedans',
+      def: '<p>Port med tre utgangstilstander: 0, 1 eller frakoblet (høy impedans). Lar mange celler dele én bitlinje uten en stor multiplekser, fordi bare den aktiverte bufferen driver linjen.</p>',
+      more: N + '#sram'
+    },
+    'oppfriskning': {
+      term: 'Oppfriskning',
+      alias: 'refresh',
+      def: '<p>Å lese en DRAM-rad og skrive den tilbake før ladningen har lekket bort. Må gjøres for alle rader med noen millisekunders mellomrom.</p>',
+      more: N + '#dram'
+    },
+
+    /* ── T6.3 Virtuelt minne (6C) ── */
+    'virtuelt-minne': {
+      term: 'Virtuelt minne',
+      alias: 'virtual memory',
+      def: '<p>Teknikk som bruker hovedminnet som hurtigbuffer for sekundærminnet. Hver prosess får sitt eget virtuelle adresserom, som oversettes til fysiske adresser side for side. Gir trygg deling av minnet og illusjonen av mer minne enn det fysiske.</p>',
+      more: O + '#ide'
+    },
+    'virtuell-adresse': {
+      term: 'Virtuell adresse',
+      alias: 'virtual address',
+      def: '<p>Adressen programmet bruker. Består av virtuelt sidenummer og sideoffset; sidenummeret oversettes til et fysisk sidenummer før minnet aksesseres.</p>',
+      more: O + '#ide'
+    },
+    'fysisk-adresse': {
+      term: 'Fysisk adresse',
+      alias: 'physical address',
+      def: '<p>Adressen i hovedminnet: fysisk sidenummer satt sammen med den uendrede sideoffseten.</p>',
+      more: O + '#ide'
+    },
+    'adresseoversettelse': {
+      term: 'Adresseoversettelse',
+      alias: 'address translation, address mapping',
+      def: '<p>Å gjøre en virtuell adresse om til en fysisk. Gjøres via TLB (raskt, i maskinvare) eller sidetabellen (ved TLB-bom); mangler siden i minnet, blir det en sidefeil.</p>',
+      more: O + '#ide'
+    },
+    'side': {
+      term: 'Side',
+      alias: 'page',
+      def: '<p>Blokken i virtuelt minne, typisk 4 KiB. Sideoffseten har log<sub>2</sub>(sidestørrelse) bit. En side flyttes som en hel enhet mellom disk og hovedminne.</p>',
+      more: O + '#ide'
+    },
+    'sidefeil': {
+      term: 'Sidefeil',
+      alias: 'page fault',
+      def: '<p>En aksess til en side som ikke er i hovedminnet (gyldig-bitet i sidetabellen er 0). Utløser et unntak; operativsystemet henter siden fra disk, kaster eventuelt ut en annen, og starter instruksjonen på nytt. Koster millioner av sykler.</p>',
+      more: O + '#sidetabell'
+    },
+    'sidetabell': {
+      term: 'Sidetabell',
+      alias: 'page table',
+      def: '<p>Tabell i hovedminnet med én oppføring per virtuell side, indeksert med det virtuelle sidenummeret. Hver oppføring har gyldig-bit og fysisk sidenummer (eller peker til disk). Hver prosess har sin egen.</p>',
+      more: O + '#sidetabell'
+    },
+    'sidetabellregister': {
+      term: 'Sidetabellregister',
+      alias: 'page table register, SATP',
+      def: '<p>Register i prosessoren som peker på starten av sidetabellen til prosessen som kjører. Byttes ved kontekstbytte, og kan bare endres i supervisormodus.</p>',
+      more: O + '#sidetabell'
+    },
+    'prosess': {
+      term: 'Prosess',
+      alias: 'process',
+      def: '<p>Et program under kjøring med sin tilstand: sidetabell, PC og registre. Operativsystemet bytter mellom prosesser, og hver har sitt eget virtuelle adresserom.</p>',
+      more: O + '#sidetabell'
+    },
+    'vekselomraade': {
+      term: 'Vekselområde',
+      alias: 'swap space',
+      def: '<p>Plass på disk eller flash som operativsystemet setter av til sidene i en prosess. Sider som kastes ut av hovedminnet, ligger her.</p>',
+      more: O + '#sidetabell'
+    },
+    'referansebit': {
+      term: 'Referansebit',
+      alias: 'reference bit, use bit',
+      def: '<p>Bit per side som maskinvaren setter når siden brukes, og som operativsystemet nuller med jevne mellomrom. Gir en billig tilnærming til LRU ved valg av side å kaste ut.</p>',
+      more: O + '#sidetabell'
+    },
+    'skittenbit': {
+      term: 'Skittenbit',
+      alias: 'dirty bit',
+      def: '<p>Bit som settes når en side (eller hurtigbufferblokk) skrives til. Bare skitne sider må skrives tilbake til disk når de kastes ut.</p>',
+      more: O + '#sidetabell'
+    },
+    'tlb': {
+      term: 'TLB',
+      alias: 'translation-lookaside buffer',
+      def: '<p>Liten, rask hurtigbuffer i prosessoren som holder nylig brukte oversettelser fra virtuelt til fysisk sidenummer. Sparer et oppslag i sidetabellen i minnet for hver aksess. Taggen er det virtuelle sidenummeret; treffer nesten alltid på grunn av lokalitet.</p>',
+      more: O + '#tlb'
+    },
+    'supervisormodus': {
+      term: 'Supervisormodus',
+      alias: 'supervisor mode, kernel mode, brukermodus',
+      def: '<p>Prosessormodus for operativsystemet, der sidetabellregisteret, TLB-en og annen systemtilstand kan endres. Vanlige prosesser kjører i brukermodus og kommer bare inn via unntak eller systemkall (ecall).</p>',
+      more: O + '#beskyttelse'
+    },
+    'kontekstbytte': {
+      term: 'Kontekstbytte',
+      alias: 'context switch, process switch',
+      def: '<p>Operativsystemet bytter hvilken prosess som kjører: lagrer tilstanden til den ene og laster den andres, inkludert sidetabellregisteret. TLB-en må tømmes eller ha oppføringer merket med prosess-ID.</p>',
+      more: O + '#beskyttelse'
+    },
+    'virtuell-maskin': {
+      term: 'Virtuell maskin',
+      alias: 'virtual machine, VM',
+      def: '<p>Illusjonen av en hel datamaskin (prosessor, minne, I/O) som et gjesteoperativsystem kjører på. Flere virtuelle maskiner deler én fysisk maskin, isolert fra hverandre.</p>',
+      more: O + '#vm'
+    },
+    'hypervisor': {
+      term: 'Hypervisor',
+      alias: 'virtual machine monitor, VMM',
+      def: '<p>Programvaren som kjører virtuelle maskiner: avbilder virtuelle ressurser på fysiske og fanger privilegerte instruksjoner fra gjestene. Mye mindre enn et operativsystem.</p>',
+      more: O + '#vm'
+    },
+    /* ── T7.1 Ytelse og Flynns taksonomi (7A) ── P = 'kap7/parallell.html' ── */
+    'multiprosessor': {
+      term: 'Multiprosessor',
+      alias: 'multiprocessor, uniprocessor, enprosessor',
+      def: '<p>Datamaskin med minst to prosessorer, i motsetning til en enprosessor. I en flerkjerneprosessor ligger prosessorene som kjerner på samme brikke. Målet er ytelse som skalerer med antall prosessorer, bedre energieffektivitet og høyere tilgjengelighet.</p>',
+      more: P + '#vanskelig'
+    },
+    'jobbnivaa-parallellitet': {
+      term: 'Jobbnivå-parallellitet',
+      alias: 'task-level parallelism, process-level parallelism, prosessnivå-parallellitet',
+      def: '<p>Å bruke flere prosessorer ved å kjøre uavhengige programmer samtidig. Ingen av programmene blir raskere, men gjennomstrømningen øker, og ingenting må skrives om.</p>',
+      more: P + '#vanskelig'
+    },
+    'parallelt-program': {
+      term: 'Parallelt program',
+      alias: 'parallel processing program',
+      def: '<p>Ett program som kjører på flere prosessorer samtidig for å bli fortere ferdig. Krever oppdeling, lastbalanse, synkronisering og kommunikasjon, og gevinsten begrenses av den sekvensielle delen (Amdahls lov).</p>',
+      more: P + '#vanskelig'
+    },
+    'lastbalanse': {
+      term: 'Lastbalanse',
+      alias: 'load balancing',
+      def: '<p>Å fordele arbeidet likt på prosessorene. Prosessoren med mest arbeid bestemmer kjøretiden: får én av 40 prosessorer dobbelt så mye som de andre, kan speedup falle fra 20,5 til 14, mens resten står stille over halve tiden.</p>',
+      more: P + '#skalering'
+    },
+    'sterk-skalering': {
+      term: 'Sterk skalering',
+      alias: 'strong scaling',
+      def: '<p>Speedup på en multiprosessor målt med fast problemstørrelse. Bundet av Amdahls lov: taket er 1 / (sekvensiell andel). Minnet per prosessor blir omtrent M/N.</p>',
+      more: P + '#skalering'
+    },
+    'svak-skalering': {
+      term: 'Svak skalering',
+      alias: 'weak scaling',
+      def: '<p>Speedup målt mens problemstørrelsen vokser proporsjonalt med antall prosessorer. Den sekvensielle delen blir en stadig mindre andel, så speedup fortsetter å vokse. Minnet per prosessor holder seg på omtrent M.</p>',
+      more: P + '#skalering'
+    },
+    'flynns-taksonomi': {
+      term: 'Flynns taksonomi',
+      alias: 'Flynn, SISD, SIMD, MISD, MIMD',
+      def: '<p>Inndeling av maskinvare etter antall instruksjonsstrømmer og antall datastrømmer: SISD (enprosessor), SIMD (én instruksjon på mange data), MISD (ingen vanlige eksempler) og MIMD (multiprosessor).</p>',
+      more: P + '#flynn'
+    },
+    'sisd': {
+      term: 'SISD',
+      alias: 'single instruction stream, single data stream',
+      def: '<p>Én instruksjonsstrøm, én datastrøm: en enprosessor som utfører én instruksjon om gangen på ett dataelement. Samlebånd og superskalar utføring endrer ikke klassen, for instruksjonene kommer fra én strøm.</p>',
+      more: P + '#flynn'
+    },
+    'mimd': {
+      term: 'MIMD',
+      alias: 'multiple instruction streams, multiple data streams',
+      def: '<p>Flere instruksjonsstrømmer, flere datastrømmer: en multiprosessor der hver prosessor utfører sitt program på sine data. Flerkjerneprosessorer (delt minne) og klynger (distribuert minne) er MIMD.</p>',
+      more: P + '#flynn'
+    },
+    'misd': {
+      term: 'MISD',
+      alias: 'multiple instruction streams, single data stream',
+      def: '<p>Flere instruksjonsstrømmer på én datastrøm. Ingen vanlige maskiner i dag; nærmest kommer en strømprosessor som gjør en kjede av ulike operasjoner på samme datastrøm.</p>',
+      more: P + '#flynn'
+    },
+    'spmd': {
+      term: 'SPMD',
+      alias: 'single program, multiple data',
+      def: '<p>Den vanlige måten å programmere en MIMD-maskin på: ett program kjører på alle prosessorene, og betingelser i koden styrer hvilken del av dataene hver prosessor arbeider på.</p>',
+      more: P + '#flynn'
+    },
+    'dataparallellitet': {
+      term: 'Dataparallellitet',
+      alias: 'data-level parallelism',
+      def: '<p>Parallellitet som oppstår når samme operasjon skal utføres på mange uavhengige dataelementer, typisk tabeller i for-løkker. Det SIMD, vektorprosessorer og GPU-er utnytter.</p>',
+      more: P + '#flynn'
+    },
+    'vektorarkitektur': {
+      term: 'Vektorarkitektur',
+      alias: 'vector architecture, vektorprosessor, vektorregister',
+      def: '<p>SIMD-variant der dataelementene hentes inn i store vektorregistre, behandles av samlebåndsdelte enheter og skrives tilbake. Antall elementer ligger i et eget register, ikke i opcoden, og minnet kan aksesseres med fast steglengde eller indeksert (gather-scatter). Én vektorinstruksjon erstatter en hel løkke.</p>',
+      more: P + '#flynn'
+    },
+    'vektorbane': {
+      term: 'Vektorbane',
+      alias: 'vector lane, SIMD lane, SIMD-bane',
+      def: '<p>Én av flere parallelle utføringsveier i en vektor- eller SIMD-enhet, med sin del av vektorregistrene. Med fire baner blir fire elementer av en vektoroperasjon ferdige per sykel. I en GPU heter de SIMD-baner.</p>',
+      more: P + '#flynn'
+    },
+    'roofline': {
+      term: 'Roofline-modellen',
+      alias: 'roofline model, taklinje',
+      def: '<p>Ytelsesmodell som gir øvre grense for flyttallsytelsen til et program på en gitt maskin: min(minnebåndbredde × operasjonsintensitet, topp-flyttallsytelse). I et log-log-plott blir det en skrå og en flat linje som møtes i et knekkpunkt.</p>',
+      more: P + '#roofline'
+    },
+    'operasjonsintensitet': {
+      term: 'Operasjonsintensitet',
+      alias: 'arithmetic intensity, aritmetisk intensitet',
+      def: '<p>Antall flyttallsoperasjoner et program utfører per byte data det henter fra hovedminnet (FLOP/byte). Lav intensitet gjør programmet minnebundet, høy gjør det beregningsbundet.</p>',
+      more: P + '#roofline'
+    },
+    'minnebaandbredde': {
+      term: 'Minnebåndbredde',
+      alias: 'peak memory bandwidth',
+      def: '<p>Hvor mange byte per sekund minnesystemet bak hurtigbufferne kan levere (GB/s). Den skrå delen av taket i Roofline-modellen.</p>',
+      more: P + '#roofline'
+    },
+    'topp-flyttallsytelse': {
+      term: 'Topp-flyttallsytelse',
+      alias: 'peak floating-point performance, GFLOP/s',
+      def: '<p>Det høyeste antallet flyttallsoperasjoner per sekund maskinen kan utføre, summert over alle kjernene (GFLOP/s). Den flate delen av taket i Roofline-modellen.</p>',
+      more: P + '#roofline'
+    },
+    'minnebundet': {
+      term: 'Minnebundet og beregningsbundet',
+      alias: 'memory bound, computation bound, compute bound, beregningsbundet',
+      def: '<p>Et program er minnebundet når minnebåndbredden begrenser ytelsen (venstre for knekkpunktet i Roofline), og beregningsbundet når prosessorenes topp-flyttallsytelse gjør det (høyre for knekkpunktet).</p>',
+      more: P + '#roofline'
+    },
+
+    /* ── T7.2 Multiprosessorer (7B) ── Q = 'kap7/multiprosessorer.html' ── */
+    'smp': {
+      term: 'Multiprosessor med delt minne (SMP)',
+      alias: 'shared memory multiprocessor, delt minne',
+      def: '<p>Parallell maskin der alle prosessorene deler ett fysisk adresserom og kommuniserer gjennom delte variabler med vanlige load og store. Nesten alle flerkjerneprosessorer. Krever synkronisering og koherente hurtigbuffere.</p>',
+      more: Q + '#minne'
+    },
+    'meldingsutveksling': {
+      term: 'Meldingsutveksling',
+      alias: 'message passing, distribuert minne, send, receive',
+      def: '<p>Kommunikasjon mellom prosessorer med private minner ved eksplisitt å sende og motta meldinger. Koordineringen er innebygd: avsenderen vet når meldingen er sendt, mottakeren når den kom.</p>',
+      more: Q + '#minne'
+    },
+    'klynge': {
+      term: 'Klynge',
+      alias: 'cluster',
+      def: '<p>Samling av hele datamaskiner, hver med eget minne og egen kopi av operativsystemet, koblet sammen over et vanlig nettverk slik at de virker som én multiprosessor med meldingsutveksling. Billig, skalerbar og feiltolerant, men med tregere kommunikasjon enn delt minne.</p>',
+      more: Q + '#minne'
+    },
+    'reduksjon': {
+      term: 'Reduksjon',
+      alias: 'reduction',
+      def: '<p>Funksjon som behandler en datastruktur og gir én verdi, for eksempel å slå sammen delsummene fra 64 prosessorer parvis i seks runder.</p>',
+      more: Q + '#minne'
+    },
+    'numa': {
+      term: 'UMA og NUMA',
+      alias: 'uniform memory access, nonuniform memory access',
+      def: '<p>To utgaver av delt minne. UMA: en minneaksess tar omtrent like lang tid uansett hvilken prosessor som spør. NUMA: noen aksesser er mye raskere enn andre, fordi minnet er delt opp og festet til ulike prosessorer. NUMA er vanskeligere å programmere, men kan bygges større.</p>',
+      more: Q + '#minne'
+    },
+    'traad': {
+      term: 'Tråd',
+      alias: 'thread, prosess, process',
+      def: '<p>En utføringsstrøm med egen programteller, egne registre og egen stakk. Tråder i samme prosess deler adresserom; prosesser gjør det ikke. Å bytte tråd er derfor mye billigere enn å bytte prosess.</p>',
+      more: Q + '#flerkjerne'
+    },
+    'maskinvare-multitraading': {
+      term: 'Maskinvare-multitråding',
+      alias: 'hardware multithreading, finkornet, grovkornet, fine-grained, coarse-grained',
+      def: '<p>Flere tråder deler funksjonsenhetene i én kjerne, som har en kopi av programteller og registre per tråd. Finkornet bytter tråd for hver instruksjon, grovkornet bare ved dyre stans som hurtigbufferbom, og SMT kjører flere tråder i samme sykel.</p>',
+      more: Q + '#flerkjerne'
+    },
+    'smt': {
+      term: 'Samtidig multitråding (SMT)',
+      alias: 'simultaneous multithreading, hyperthreading',
+      def: '<p>Maskinvare-multitråding i en superskalar kjerne med dynamisk planlegging: instruksjoner fra flere tråder startes i samme sykel og fyller plassene én tråd alene ikke klarer å bruke. Register renaming holder trådene fra hverandre.</p>',
+      more: Q + '#flerkjerne'
+    },
+    'synkronisering': {
+      term: 'Synkronisering',
+      alias: 'synchronization',
+      def: '<p>Koordinering av to eller flere tråder eller prosesser, som kan kjøre på ulike prosessorer, slik at en tråd er ferdig med å skrive delte data før en annen leser dem.</p>',
+      more: Q + '#synkronisering'
+    },
+    'data-race': {
+      term: 'Data race',
+      alias: 'kappløp om data, race condition',
+      def: '<p>To minneaksesser fra ulike tråder til samme adresse, der minst én er en skriving og de kommer rett etter hverandre. Resultatet av programmet avhenger da av hvilken som tilfeldigvis kom først.</p>',
+      more: Q + '#synkronisering'
+    },
+    'synk-laas': {
+      term: 'Lås (synkronisering)',
+      alias: 'lock, unlock, mutex',
+      def: '<p>Synkroniseringsmekanisme som bare lar én prosessor om gangen få tilgang til delte data. I praksis en minnecelle (0 = ledig, 1 = opptatt) som tas med en atomisk les-og-endre og slippes ved å skrive 0.</p>',
+      more: Q + '#synkronisering'
+    },
+    'gjensidig-utelukkelse': {
+      term: 'Gjensidig utelukkelse',
+      alias: 'mutual exclusion, kritisk område, critical section',
+      def: '<p>At bare én prosessor om gangen kan utføre et kodeområde som bruker delte data. Lages med lås rundt området.</p>',
+      more: Q + '#synkronisering'
+    },
+    'atomisk-operasjon': {
+      term: 'Atomisk operasjon',
+      alias: 'atomic exchange, atomic swap, atomisk bytte',
+      def: '<p>En les-og-endre av en minnecelle der ingenting kan komme imellom lesingen og skrivingen. Maskinvaren må tilby en slik operasjon for at låser skal kunne bygges, enten som én instruksjon (atomisk bytte av register og minne) eller som et instruksjonspar (lr.w og sc.w).</p>',
+      more: Q + '#synkronisering'
+    },
+    'lr-sc': {
+      term: 'lr.w og sc.w',
+      alias: 'load-reserved, store-conditional',
+      def: '<p>RISC-V-instruksjonsparet for atomiske operasjoner. <code>lr.w</code> leser en minnecelle og reserverer adressen; <code>sc.w</code> skriver bare hvis ingen har skrevet til adressen i mellomtiden, og gir 0 i et register når det gikk. Ellers prøver programmet på nytt.</p>',
+      more: Q + '#synkronisering'
+    },
+    'hurtigbufferkoherens': {
+      term: 'Hurtigbufferkoherens',
+      alias: 'cache coherence, koherensproblemet, koherensprotokoll',
+      def: '<p>At alle prosessorer ser samme verdi for samme minneadresse selv om hver har sin egen hurtigbuffer. Problemet oppstår når to hurtigbuffere har kopi av samme blokk og én prosessor skriver. Løses med en koherensprotokoll i maskinvaren.</p>',
+      more: Q + '#koherens'
+    },
+    'snooping': {
+      term: 'Snooping',
+      alias: 'snooping protocol, snoking',
+      def: '<p>Den vanligste typen koherensprotokoll: alle hurtigbufferne er koblet til et felles kringkastingsmedium (buss), og hver kontroller lytter etter bommer og ugyldiggjøringer for blokker den selv har en kopi av. Enkelt, men skalerer dårlig.</p>',
+      more: Q + '#koherens'
+    },
+    'write-invalidate': {
+      term: 'Ugyldiggjøring ved skriving',
+      alias: 'write invalidate protocol',
+      def: '<p>Koherensprotokoll der en prosessor skaffer seg eksklusiv tilgang til en blokk før den skriver, ved å kringkaste en ugyldiggjøring. Alle andre kopier merkes ugyldige og må hentes på nytt ved neste lesing. Gir også skriveserialisering.</p>',
+      more: Q + '#koherens'
+    },
+    'falsk-deling': {
+      term: 'Falsk deling',
+      alias: 'false sharing',
+      def: '<p>To variabler uten sammenheng ligger i samme hurtigbufferblokk og skrives av hver sin prosessor. Hele blokken ugyldiggjøres og sendes fram og tilbake selv om ingen data egentlig deles. Programmet blir riktig, men tregt.</p>',
+      more: Q + '#koherens'
+    },
+    'minnekonsistens': {
+      term: 'Minnekonsistens',
+      alias: 'memory consistency model, konsistensmodell, sekvensiell konsistens',
+      def: '<p>Regelen for når en skrevet verdi må være synlig for andre prosessorer, og dermed hvilken rekkefølge de ser skrivinger i. Koherens sier hvilke verdier en lesing kan gi; konsistens sier når.</p>',
+      more: Q + '#koherens'
+    },
+
+    /* ── T7.3 Akseleratorer (7B) ── */
+    'heterogen-datamaskin': {
+      term: 'Heterogen datamaskin',
+      alias: 'heterogeneous computer',
+      def: '<p>Maskin som kombinerer ulike typer prosessorer: generelle CPU-kjerner for operativsystemet og vanlige programmer, og akseleratorer (GPU-er, domenespesifikke brikker) for arbeid de er spesialisert for.</p>',
+      more: Q + '#gpu'
+    },
+    'akselerator': {
+      term: 'Akselerator',
+      alias: 'accelerator, koprosessor',
+      def: '<p>Prosessor som står ved siden av CPU-en og gjør én type arbeid mye raskere eller med mye mindre energi. Den trenger ikke kunne alt, fordi CPU-en tar resten.</p>',
+      more: Q + '#gpu'
+    },
+    'gpu': {
+      term: 'Grafikkprosessor (GPU)',
+      alias: 'graphics processing unit',
+      def: '<p>Akselerator laget for grafikk, nå brukt til dataparallell beregning generelt. En MIMD-maskin av mange flertrådede SIMD-prosessorer, som skjuler minneforsinkelsen med multitråding i stedet for store hurtigbuffere og har eget minne bygd for høy båndbredde.</p>',
+      more: Q + '#gpu'
+    },
+    'cuda': {
+      term: 'CUDA',
+      alias: 'OpenCL, CUDA-tråd, trådblokk, grid, rutenett',
+      def: '<p>NVIDIAs C-liknende språk for generell beregning på GPU (OpenCL er det leverandøruavhengige motstykket). Programmereren skriver koden for én CUDA-tråd, som er én iterasjon av en løkke; trådene samles i blokker og blokkene i et rutenett, som maskinvaren fordeler på SIMD-prosessorene.</p>',
+      more: Q + '#gpu'
+    },
+    'dsa': {
+      term: 'Domenespesifikk akselerator (DSA)',
+      alias: 'domain-specific architecture, DSE',
+      def: '<p>Prosessor skreddersydd for ett anvendelsesområde. Bruker dedikerte minner, flere regneenheter i stedet for avanserte CPU-optimaliseringer, den enkleste parallelliteten som passer, små datatyper og et domenespesifikt språk, og kan derfor slå både CPU-er og GPU-er på sitt område.</p>',
+      more: Q + '#dsa'
+    },
+    'tpu': {
+      term: 'TPU',
+      alias: 'tensor processing unit',
+      def: '<p>Googles domenespesifikke akselerator for nevrale nett: en matriseenhet med 256 × 256 ALU-er styrt som SIMD, 8- og 16-bits heltall, store buffere på brikka og programmering i TensorFlow.</p>',
+      more: Q + '#dsa'
+    },
+    /* ── T4.2 Sekvensiell logikk (4A) ── */
+    'sekvensiell-logikk': {
+      term: 'Sekvensiell logikk',
+      alias: 'sequential logic',
+      def: '<p>Logikk med minne: utgangen avhenger både av inngangene nå og av en lagret tilstand. Motsatsen er kombinatorisk logikk, der utgangen bare følger inngangene. Alle kretser som inneholder en lås, en vippe eller et register er sekvensielle.</p>',
+      more: I + '#klokke'
+    },
+    'klokkesignal': {
+      term: 'Klokkesignal',
+      alias: 'clock, klokke',
+      def: '<p>Signal som veksler mellom lav og høy med fast periode og bestemmer når tilstandselementene oppdateres. Mellom to flanker regner kombinatorisk logikk ut de nye verdiene; på flanken lagres de. Frekvensen er 1 / perioden.</p>',
+      more: I + '#klokke'
+    },
+    'klokkeflanke': {
+      term: 'Klokkeflanke',
+      alias: 'clock edge, stigende flanke, fallende flanke, rising edge, falling edge',
+      def: '<p>Overgangen fra lav til høy (stigende flanke) eller fra høy til lav (fallende flanke) i klokkesignalet. I et kantstyrt system er én av dem aktiv, og all tilstand endres bare der.</p>',
+      more: I + '#klokke'
+    },
+    'synkront-system': {
+      term: 'Synkront system',
+      alias: 'synchronous system',
+      def: '<p>System der alle tilstandselementene styres av en felles klokke, og der datasignaler bare leses når klokka sier at de er stabile. Kravet er at signalet som skal lagres, er gyldig når den aktive flanken kommer.</p>',
+      more: I + '#klokke'
+    },
+    'laas': {
+      term: 'Lås',
+      alias: 'latch',
+      def: '<p>Lagerelement for én bit der innholdet kan endres så lenge klokka er aktiv (nivåstyrt). Utgangen Q viser det som er lagret. SR-låsen har ikke klokke; D-låsen er åpen når C = 1.</p>',
+      more: I + '#laaser'
+    },
+    'sr-laas': {
+      term: 'SR-lås',
+      alias: 'S-R latch, set-reset latch',
+      def: '<p>To krysskoblede NOR-porter. S = 1 setter Q til 1, R = 1 nullstiller Q til 0, og med S = R = 0 holder portene hverandre fast, så Q huskes. S = R = 1 er ugyldig. Grunnlaget for D-låsen og D-vippen.</p>',
+      more: I + '#laaser'
+    },
+    'd-laas': {
+      term: 'D-lås',
+      alias: 'D latch, transparent lås, transparent latch',
+      def: '<p>Lås med datainngang D og klokkeinngang C. Når C = 1 er låsen åpen og Q følger D; når C = 0 er den lukket og Q holder verdien fra sist den var åpen. Bygges av en SR-lås med to AND-porter foran (S = C · D, R = C · D̄).</p>',
+      more: I + '#laaser'
+    },
+    'vippe': {
+      term: 'Vippe',
+      alias: 'flip-flop',
+      def: '<p>Lagerelement for én bit der innholdet bare endres på en klokkeflanke (kantstyrt). Utgangen står fast resten av sykelen, uansett hva inngangen gjør. Prosessorens registre er bygget av vipper.</p>',
+      more: I + '#laaser'
+    },
+    'd-vippe': {
+      term: 'D-vippe',
+      alias: 'D flip-flop',
+      def: '<p>Vippe som på klokkeflanken lagrer verdien på datainngangen D og viser den på Q til neste flanke. Bygges av to D-låser, master og slave, med motsatt klokke. n D-vipper med felles klokke er et n-bits register.</p>',
+      more: I + '#laaser'
+    },
+    'master-slave': {
+      term: 'Master og slave',
+      alias: 'master latch, slave latch',
+      def: '<p>De to D-låsene i en D-vippe. Masteren er åpen i den ene klokkefasen og følger D; når klokka skifter, lukkes den, og slaven åpnes og slipper masterens verdi ut på Q. Dermed endres Q bare på flanken.</p>',
+      more: I + '#laaser'
+    },
+    'setup-tid': {
+      term: 'Setup-tid',
+      alias: 'setup time, oppsettstid',
+      def: '<p>Minste tid datainngangen til en vippe må være stabil <em>før</em> klokkeflanken. Inngår i regnestykket for minste klokkeperiode: t<sub>prop</sub> + t<sub>komb</sub> + t<sub>setup</sub>.</p>',
+      more: I + '#laaser'
+    },
+    'hold-tid': {
+      term: 'Hold-tid',
+      alias: 'hold time',
+      def: '<p>Minste tid datainngangen til en vippe må holdes stabil <em>etter</em> klokkeflanken. Vanligvis null eller svært liten, og regnes ikke med i klokkeperioden.</p>',
+      more: I + '#laaser'
+    },
+    'skrivesignal': {
+      term: 'Skrivesignal',
+      alias: 'write enable, write control signal',
+      def: '<p>Kontrollsignal som avgjør om et tilstandselement skal lagre på flanken. Det AND-es med klokka inn på C-inngangen, så vippene bare får flanke når signalet er 1. RegWrite, MemWrite, IRWrite og PCWrite er skrivesignaler.</p>',
+      more: I + '#registerfil'
+    },
+    'leseport': {
+      term: 'Leseport og skriveport',
+      alias: 'read port, write port',
+      def: '<p>Inn- og utgangene som gir tilgang til registerfilen. En leseport er en mux over alle registrene, styrt av registernummeret. Skriveporten er en dekoder på registernummeret, AND med skrivesignalet inn på hvert registers C-inngang, og data på D-inngangen til alle.</p>',
+      more: I + '#registerfil'
+    },
+    'tilstandsmaskin': {
+      term: 'Tilstandsmaskin',
+      alias: 'finite-state machine, FSM, endelig tilstandsmaskin',
+      def: '<p>Sekvensiell krets beskrevet med et sett tilstander, en neste-tilstand-funksjon og en utgangsfunksjon. I maskinvare: et tilstandsregister og en blokk kombinatorisk logikk. Kontrollenheten i flersykelprosessoren er en tilstandsmaskin.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'neste-tilstand-funksjon': {
+      term: 'Neste-tilstand-funksjon',
+      alias: 'next-state function',
+      def: '<p>Kombinatorisk funksjon som fra nåværende tilstand og inngangene gir tilstanden maskinen går til på neste klokkeflanke. Buene i tilstandsdiagrammet.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'utgangsfunksjon': {
+      term: 'Utgangsfunksjon',
+      alias: 'output function',
+      def: '<p>Kombinatorisk funksjon som gir tilstandsmaskinens utganger. I en Moore-maskin avhenger den bare av tilstanden, i en Mealy-maskin også av inngangene. For flersykelkontrollen er utgangen kontrollordet.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'moore-maskin': {
+      term: 'Moore-maskin',
+      alias: 'Moore machine, Mealy-maskin, Mealy machine',
+      def: '<p>Tilstandsmaskin der utgangene bare avhenger av tilstanden. I en Mealy-maskin avhenger de også av inngangene. De kan gjøre det samme; Moore kan være raskere, Mealy kan trenge færre tilstander.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'tilstandsregister': {
+      term: 'Tilstandsregister',
+      alias: 'state register',
+      def: '<p>Registeret som holder tilstandsmaskinens nåværende tilstand. n vipper gir plass til 2<sup>n</sup> tilstander. På klokkeflanken lagres neste tilstand, som den kombinatoriske logikken har regnet ut.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'tilstandstilordning': {
+      term: 'Tilstandstilordning',
+      alias: 'state assignment',
+      def: '<p>Å gi hver tilstand i en tilstandsmaskin et binært nummer, slik at neste-tilstand- og utgangsfunksjonen kan skrives som sannhetstabeller og bygges med porter. Trafikklyset: NSgreen = 0, EWgreen = 1.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'tilstandsdiagram': {
+      term: 'Tilstandsdiagram',
+      alias: 'state diagram',
+      def: '<p>Tegning av en tilstandsmaskin: en node per tilstand med utgangene som er aktive der, og buer mellom nodene merket med betingelsen for overgangen.</p>',
+      more: I + '#tilstandsmaskin'
+    },
+    'kritisk-sti': {
+      term: 'Kritisk sti',
+      alias: 'critical path',
+      def: '<p>Stien mellom to tilstandselementer med størst samlet forsinkelse gjennom kombinatorisk logikk. Den bestemmer minste klokkeperiode og dermed høyeste klokkefrekvens. I enkeltsykelprosessoren er det stien lw bruker.</p>',
+      more: I + '#kritisk-sti'
+    },
+    'forplantningstid': {
+      term: 'Forplantningstid',
+      alias: 'propagation time, clock-to-Q',
+      def: '<p>Tiden fra klokkeflanken til utgangen Q på en vippe har fått den nye verdien. Første ledd i klokkeperioden: t<sub>prop</sub> + t<sub>komb</sub> + t<sub>setup</sub>.</p>',
+      more: I + '#kritisk-sti'
+    },
+    'klokkeskjevhet': {
+      term: 'Klokkeskjevhet',
+      alias: 'clock skew',
+      def: '<p>Forskjellen i tid mellom når to tilstandselementer ser samme klokkeflanke, fordi klokkesignalet går ulike veier fram. Legges til i minste klokkeperiode, og kan gi kappløp om den blir for stor.</p>',
+      more: I + '#kritisk-sti'
+    },
+    'metastabilitet': {
+      term: 'Metastabilitet',
+      alias: 'metastability, synkronisator, synchronizer',
+      def: '<p>Tilstand der utgangen fra en vippe ligger mellom 0 og 1 en stund, fordi inngangen skiftet innenfor setup- og hold-vinduet. Oppstår med asynkrone signaler; en synkronisator av to vipper etter hverandre gir tid til å falle til ro.</p>',
+      more: I + '#kritisk-sti'
+    },
+
+    /* ── T4.1 Flersykelprosessor (4B) ── */
+    'flersykelprosessor': {
+      term: 'Flersykelprosessor',
+      alias: 'multicycle implementation, flersyklisk prosessor',
+      def: '<p>Prosessor der hver instruksjon deles i steg som tar én kort klokkesykel hver, tre til fem sykler per instruksjon. Ett minne og én ALU brukes om igjen i ulike steg, interne registre holder mellomresultatene, og kontrollenheten er en tilstandsmaskin.</p>',
+      more: J + '#ide'
+    },
+    'interne-registre': {
+      term: 'Interne registre',
+      alias: 'temporary registers, IR, MDR, A, B, ALUOut',
+      def: '<p>De fem registrene flersykeldatastien legger etter de store enhetene: IR og MDR etter minnet, A og B etter registerfilen, ALUOut etter ALU-en. De holder verdier som samme instruksjon trenger i en senere sykel. Bare IR har skrivesignal.</p>',
+      more: J + '#ide'
+    },
+    'instruksjonsregister': {
+      term: 'Instruksjonsregister (IR)',
+      alias: 'instruction register, IR',
+      def: '<p>Internt register som holder instruksjonen fra hentesteget til instruksjonen er ferdig. Skrives bare når IRWrite = 1. Feltene rs1, rs2, rd, immediate og opcode leses rett fra IR.</p>',
+      more: J + '#ide'
+    },
+    'minnedataregister': {
+      term: 'Minnedataregister (MDR)',
+      alias: 'memory data register, MDR',
+      def: '<p>Internt register som tar imot dataordet lw har lest fra minnet, slik at det kan skrives til registerfilen i neste sykel. Skrives hver sykel og har ikke skrivesignal.</p>',
+      more: J + '#ide'
+    },
+    'aluout': {
+      term: 'ALUOut',
+      alias: 'ALU output register',
+      def: '<p>Internt register som lagrer ALU-resultatet til neste sykel: hoppmålet (regnet ut i dekodesteget), minneadressen for lw og sw, eller resultatet av en R-instruksjon. Skrives hver sykel.</p>',
+      more: J + '#ide'
+    },
+    'synlig-tilstand': {
+      term: 'Programmerer-synlig tilstand',
+      alias: 'programmer-visible state',
+      def: '<p>Tilstandselementene programmet kan se: PC, registerfilen og minnet. Data som en senere instruksjon skal bruke, lagres her. Data som bare samme instruksjon trenger i en senere sykel, lagres i de interne registrene.</p>',
+      more: J + '#ide'
+    },
+    'iord': {
+      term: 'IorD',
+      alias: 'instruction or data',
+      def: '<p>Mux-signal foran minnets adresseinngang i flersykeldatastien. 0: adressen er PC (hent instruksjon). 1: adressen er ALUOut (les eller skriv data).</p>',
+      more: J + '#datasti'
+    },
+    'alusrca': {
+      term: 'ALUSrcA',
+      def: '<p>Mux-signal for ALU-ens første operand i flersykeldatastien. 0: PC (for PC + 4 og hoppmålet). 1: A-registeret (for adresse, R-operasjon og sammenlikning).</p>',
+      more: J + '#datasti'
+    },
+    'alusrcb': {
+      term: 'ALUSrcB',
+      def: '<p>To-bits mux-signal for ALU-ens andre operand i flersykeldatastien. 00: B-registeret. 01: konstanten 4. 10: immediaten fra Imm Gen.</p>',
+      more: J + '#datasti'
+    },
+    'pcsource': {
+      term: 'PCSource',
+      def: '<p>Mux-signal som velger hva som skrives til PC i flersykeldatastien. 0: ALU-resultatet (PC + 4, i hentesteget). 1: ALUOut (hoppmålet, for beq).</p>',
+      more: J + '#datasti'
+    },
+    'pcwrite': {
+      term: 'PCWrite',
+      def: '<p>Skrivesignal som skriver PC ubetinget. Er 1 i hentesteget, der PC får PC + 4. PC skrives når PCWrite OR (PCWriteCond AND Zero) er 1.</p>',
+      more: J + '#datasti'
+    },
+    'pcwritecond': {
+      term: 'PCWriteCond',
+      def: '<p>Skrivesignal som skriver PC bare hvis Zero fra ALU-en også er 1. Er 1 i siste tilstand av beq: hoppet tas hvis registrene er like.</p>',
+      more: J + '#datasti'
+    },
+    'irwrite': {
+      term: 'IRWrite',
+      def: '<p>Skrivesignalet til instruksjonsregisteret. Er 1 bare i hentesteget, så instruksjonen står urørt i IR gjennom resten av stegene, også når minnet leverer data.</p>',
+      more: J + '#datasti'
+    },
+    'kontrollord': {
+      term: 'Kontrollord',
+      alias: 'control word, kontrollsignaler',
+      def: '<p>Verdiene på alle kontrollsignalene samlet. I enkeltsykelprosessoren bestemmes kontrollordet av opcoden alene. I flersykelprosessoren hører det til tilstanden: hver tilstand i tilstandsmaskinen har sitt faste kontrollord, og opcoden velger bare neste tilstand.</p>',
+      more: J + '#kontroll'
     }
   };
 })();
